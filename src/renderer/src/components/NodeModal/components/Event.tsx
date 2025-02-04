@@ -2,9 +2,7 @@ import React, { useMemo, useState } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
-import { serializeEvent } from '@renderer/lib/data/GraphmlBuilder';
 import { operatorSet, PlatformManager } from '@renderer/lib/data/PlatformManager';
-import { useModelContext } from '@renderer/store/ModelContext';
 import { Condition, Event as EventData, Variable } from '@renderer/types/diagram';
 
 import { MonoPicto } from './MonoPicto';

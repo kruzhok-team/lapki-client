@@ -1,14 +1,12 @@
-import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 
 import { Modal } from '@renderer/components/UI';
-import { useModal } from '@renderer/hooks/useModal';
-import { serializeEvent } from '@renderer/lib/data/GraphmlBuilder';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { State } from '@renderer/lib/drawable';
 import { useModelContext } from '@renderer/store/ModelContext';
-import { Action, Event, EventData } from '@renderer/types/diagram';
+import { Action, EventData } from '@renderer/types/diagram';
 
-import { Actions, ColorField, Trigger, Condition } from './components';
+import { Actions, Trigger, Condition } from './components';
 import { useTrigger, useActions, useCondition } from './hooks';
 
 interface EditEventModalProps {
@@ -137,6 +135,9 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
         condition: getCondition(),
         do: getActions(),
       };
+      if (currentEventIndex !== undefined && currentEventIndex >= state.data.events.length) {
+        return [...state.data.events, currentEvent];
+      }
 
       if (currentEventIndex !== undefined) {
         return state.data.events.map((e, i) => (i === currentEventIndex ? currentEvent : e));
@@ -144,7 +145,6 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
 
       return [...state.data.events, currentEvent];
     };
-
     modelController.changeState({
       smId: smId,
       id: state.id,

@@ -1,5 +1,7 @@
-import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
+import { ReactComponent as AddIcon } from '@renderer/assets/icons/add.svg';
+import { ReactComponent as SubtractIcon } from '@renderer/assets/icons/subtract.svg';
 import { Modal } from '@renderer/components/UI';
 import { useEditEventModal } from '@renderer/hooks';
 import { useModal } from '@renderer/hooks/useModal';
@@ -8,12 +10,10 @@ import { CanvasController } from '@renderer/lib/data/ModelController/CanvasContr
 import { PlatformManager } from '@renderer/lib/data/PlatformManager';
 import { State } from '@renderer/lib/drawable';
 import { useModelContext } from '@renderer/store/ModelContext';
-import { Component, Condition, Event as EventData } from '@renderer/types/diagram';
-import { Platform } from '@renderer/types/platform';
+import { Component, Condition, Event, EventData } from '@renderer/types/diagram';
 
-import { Actions, ColorField, Trigger, Event } from './components';
+import { ColorField, Event as EventPicto } from './components';
 import { EditEventModal } from './EditEventModal';
-import { useTrigger, useActions, useCondition } from './hooks';
 
 interface StateModalProps {
   smId: string;
@@ -28,6 +28,7 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
   const components = modelController.model.useData(smId, 'elements.components') as {
     [id: string]: Component;
   };
+  const _ = modelController.model.useData(smId, 'elements.states');
   const platforms = controller.useData('platform') as { [id: string]: PlatformManager };
   const platform = platforms[smId];
   const [isOpen, open, close] = useModal(false);
@@ -36,6 +37,7 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
 
   // Данные формы
   const [currentEventIndex, setCurrentEventIndex] = useState<number | undefined>();
+  const [currentEvent, setCurrentEvent] = useState<EventData | null>(null);
   const [color, setColor] = useState<string | undefined>();
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -45,6 +47,14 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
 
   // // Сброс формы после закрытия
   const handleAfterClose = () => {
+    if (state) {
+      modelController.changeState({
+        ...state.data,
+        color: color,
+        smId,
+        id: state.id,
+      });
+    }
     setColor(undefined);
 
     setState(null);
@@ -75,6 +85,31 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // костыль для того, чтобы при смене режима на текстовый парсеры работали верно
 
+  const addEvent = () => {
+    if (!state) return;
+
+    setCurrentEventIndex(state.data.events.length);
+    setCurrentEvent({ trigger: { component: 'System', method: 'onEnter' }, do: [] });
+    openEditEventModal();
+  };
+
+  const removeEvent = () => {
+    if (!state || currentEventIndex === undefined) return;
+
+    const getEvents = () => {
+      if (state.data.events.length === 1) {
+        return [];
+      }
+      return [
+        ...state.data.events.slice(0, currentEventIndex),
+        ...state.data.events.slice(currentEventIndex + 1, state.data.events.length),
+      ];
+    };
+
+    modelController.changeState({ smId: smId, id: state.id, events: getEvents() }, true);
+    setCurrentEventIndex(undefined);
+  };
+
   const getCondition = (condition: string | Condition | undefined) => {
     if (!condition) return '';
     if (typeof condition === 'string') return `[${condition}]`;
@@ -94,35 +129,51 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
         onAfterClose={handleAfterClose}
       >
         <div className="flex flex-col gap-3">
-          <div className="ml-11 mr-11 h-96 w-auto overflow-y-auto break-words rounded border border-border-primary bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
-            {state &&
-              state.data.events.map((event, key) => (
-                <Event
-                  onDoubleClick={() => openEditEventModal()}
-                  key={key}
-                  event={event.trigger as EventData}
-                  isSelected={key === currentEventIndex}
-                  platform={platform}
-                  condition={event.condition as Condition}
-                  text={`↳ ${serializeEvent(
-                    components,
-                    platform.data,
-                    event.trigger as EventData
-                  )}${getCondition(event.condition)}/`}
-                  onClick={() => setCurrentEventIndex(key)}
-                />
-              ))}
+          <div className="flex">
+            <div className="ml-11 mr-3 h-96 w-full overflow-y-auto break-words rounded border border-border-primary bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
+              {state &&
+                state.data.events.map((event, key) => (
+                  <EventPicto
+                    onDoubleClick={() => openEditEventModal()}
+                    key={key}
+                    event={event.trigger as Event}
+                    isSelected={key === currentEventIndex}
+                    platform={platform}
+                    condition={event.condition as Condition}
+                    text={`↳ ${serializeEvent(
+                      components,
+                      platform.data,
+                      event.trigger as Event
+                    )}${getCondition(event.condition)}/`}
+                    onClick={() => {
+                      setCurrentEventIndex(key);
+                      setCurrentEvent(state.data.events[key]);
+                    }}
+                  />
+                ))}
+            </div>
+            <div className="flex flex-col gap-2">
+              <button type="button" className="btn-secondary border-red p-1" onClick={addEvent}>
+                <AddIcon />
+              </button>
+              <button type="button" className="btn-secondary p-1" onClick={removeEvent}>
+                <SubtractIcon />
+              </button>
+            </div>
           </div>
           <ColorField label="Цвет обводки:" value={color} onChange={setColor} />
         </div>
       </Modal>
       <EditEventModal
         isOpen={props.isEditEventModalOpen}
-        close={closeEditEventModal}
+        close={() => {
+          closeEditEventModal();
+          setCurrentEventIndex(undefined);
+        }}
         smId={smId}
         state={state}
         currentEventIndex={currentEventIndex}
-        event={currentEventIndex !== undefined ? state?.data.events[currentEventIndex] : null}
+        event={currentEvent}
         controller={controller}
       />
     </div>

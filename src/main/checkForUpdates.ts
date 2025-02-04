@@ -1,16 +1,16 @@
 import { compare } from 'compare-versions';
 
+import { autoUpdateHost } from './version';
+
 export const checkForUpdates = (version: string) => async () => {
+  if (!autoUpdateHost) return false;
   try {
-    const response = await fetch(
-      'https://api.github.com/repos/kruzhok-team/lapki-client/releases/latest',
-      {
-        method: 'GET',
-        headers: {
-          Accept: 'application/vnd.github.v3+json',
-        },
-      }
-    );
+    const response = await fetch(autoUpdateHost, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/vnd.github.v3+json',
+      },
+    });
 
     if (!response.ok) {
       return false;

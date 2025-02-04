@@ -35,8 +35,8 @@ export class ArrowsWithoutLabel implements Drawable {
     ctx.strokeStyle = this.parent.data.color ?? getColor('default-transition-color');
     ctx.fillStyle = fillStyle;
 
-    if (!this.parent.isSelected && this.parent.source instanceof Note) {
-      ctx.globalAlpha = 0.3;
+    if (!this.parent.isSelected) {
+      ctx.globalAlpha = transitionStyle.notSelectedAlpha;
     }
     drawCurvedLine(ctx, line, 12 / this.app.controller.scale);
     ctx.globalAlpha = 1;

@@ -44,11 +44,17 @@
   animation: loadingSpin 0.5s linear 0s infinite;
 }
 
+.big-small {
+  width: 50px;
+  height: 50px;
+  animation: loadingBigger 1.5s linear 0s infinite;
+}
+
 @keyframes loadingBigger {
-  from {
-    transform: scale(0);
+  0%, 75% {
+    transform: scale(1);
   }
-  to {
+  25%, 50% {
     transform: scale(2);
   }
 }

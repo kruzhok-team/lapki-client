@@ -4,8 +4,6 @@ import { Resizable } from 're-resizable';
 import { toast } from 'sonner';
 import { twMerge } from 'tailwind-merge';
 
-import { ReactComponent as Question } from '@renderer/assets/icons/question.svg';
-import { EditorSettings } from '@renderer/components';
 import { useFetch, useSettings } from '@renderer/hooks';
 import { useDoc } from '@renderer/store/useDoc';
 import { File } from '@renderer/types/documentation';

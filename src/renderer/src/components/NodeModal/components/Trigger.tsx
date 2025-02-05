@@ -65,6 +65,7 @@ export const Trigger: React.FC<TriggerProps> = memo(function Trigger(props) {
   };
 
   useEffect(() => {
+    if (!event) return;
     setSelectedComponent((event?.trigger as Event).component);
     setSelectedMethod((event?.trigger as Event).method);
   }, [event]);

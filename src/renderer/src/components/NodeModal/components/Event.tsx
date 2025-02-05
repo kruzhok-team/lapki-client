@@ -53,11 +53,7 @@ export const Event: React.FC<EventProps> = ({
 
         setConditionsPicto((p) => [
           ...p,
-          <Picto
-            className="border-border-primary bg-[#5b7173]"
-            leftIcon={leftIcon}
-            rightIcon={rightIcon}
-          />,
+          <Picto className="bg-[#5b7173]" leftIcon={leftIcon} rightIcon={rightIcon} />,
         ]);
         return;
       }

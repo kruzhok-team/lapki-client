@@ -25,7 +25,7 @@
   }
 
   .btn-error {
-    @apply btn border-error bg-error text-text-secondary enabled:hover:opacity-90 enabled:active:opacity-80;
+    @apply btn border-[#7a7a7a] bg-[#7a7a7a] text-text-secondary enabled:hover:opacity-90 enabled:active:opacity-80;
   }
 
   .horizontal-flip {

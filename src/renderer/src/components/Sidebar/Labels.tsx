@@ -19,8 +19,8 @@ export const Labels: React.FC<LabelsProps> = ({ items }) => {
           {(props) => (
             <button
               className={twMerge(
-                'w-12 border-l-2 border-transparent p-2 text-text-inactive transition-colors hover:text-text-primary',
-                activeTab === i && 'border-primary text-text-primary',
+                'w-12 border-l-4 border-transparent p-2 text-icon-secondary transition-colors hover:text-icon-active',
+                activeTab === i && 'border-primary text-icon-active',
                 bottom && 'mt-auto'
               )}
               onClick={action ?? (() => changeTab(i))}

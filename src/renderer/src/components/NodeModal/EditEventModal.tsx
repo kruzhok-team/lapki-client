@@ -62,7 +62,6 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
           (val.trigger as unknown as Event).component === 'System' &&
           (val.trigger as unknown as Event).method === selectedMethod
       );
-      debugger;
       if (dublicated !== -1 && currentEventIndex !== dublicated) {
         setError(`Повторение системого события ${selectedMethod}!`);
         return;

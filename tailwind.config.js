@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
+/* eslint-disable no-undef */
 /** @type {import('tailwindcss').Config} */
 import { colors } from './src/renderer/src/theme';
 
@@ -19,7 +21,7 @@ export default {
     plugin(function ({ addBase }) {
       const themesToInject = {
         ':root': {
-          '--p': '#0C4BEE',
+          '--p': '#186AA9',
           '--p-h': '#225EF9',
           '--p-a': '#2A62F4',
           '--e': 'red',
@@ -29,8 +31,8 @@ export default {
           '--m-a': '#f8f9fa',
           '--m-i': '#343a40',
 
-          '--bg-p': '#262626',
-          '--bg-s': '#121111',
+          '--bg-p': '#333333',
+          '--bg-s': '#1F1F1F',
           '--bg-h': '#434343',
           '--bg-a': '#545454',
 
@@ -57,7 +59,7 @@ export default {
           '--d-t-o': '#FFFFFF',
         },
         ':root[data-theme="light"]': {
-          '--p': '#0C4BEE',
+          '--p': '#186AA9',
           '--p-h': '#225EF9',
           '--p-a': '#2A62F4',
           '--e': 'red',
@@ -67,8 +69,8 @@ export default {
           '--m-a': '#f8f9fa',
           '--m-i': '#343a40',
 
-          '--bg-p': '#e7e7e7',
-          '--bg-s': '#f2f2f2',
+          '--bg-p': '#F1F1F1',
+          '--bg-s': '#EDEDED',
           '--bg-h': '#cfcfcf',
           '--bg-a': '#c2c2c2',
 

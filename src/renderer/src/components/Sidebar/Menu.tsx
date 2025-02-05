@@ -152,7 +152,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
       </h3>
 
       {items.map(({ text, onClick, disabled = false, hidden = false, className, badge, hint }) => (
-        <WithHint hint={hint ?? ''}>
+        <WithHint key={text} hint={hint ?? ''}>
           {(props) => (
             <button
               key={text}

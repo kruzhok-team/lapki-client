@@ -106,6 +106,11 @@ export const MainContainer: React.FC = () => {
   useEffect(() => {
     if (autoSaveSettings === null || restoreSession === null) return;
 
+    if (isInitialized && !isReservedDataPresent) {
+      setIsReservedPresent(true);
+      return;
+    }
+
     if (!basename && restoreSession && !isReservedDataPresent) {
       if (!isRestoreDataModalOpen) {
         openRestoreDataModal();

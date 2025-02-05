@@ -32,6 +32,9 @@ const colorNames = {
   'default-transition-color': '--d-t-c',
   'default-state-outline': '--d-s-o',
   'default-transition-outline': '--d-t-o',
+
+  'icon-active': '--i-a',
+  'icon-secondary': '--i-s',
 } as const;
 type ColorNames = typeof colorNames;
 type ColorName = keyof ColorNames;

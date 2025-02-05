@@ -10,6 +10,8 @@ import { useTabs } from '@renderer/store/useTabs';
 import { Elements } from '@renderer/types/diagram';
 import { isLeft, isRight, unwrapEither } from '@renderer/types/Either';
 
+import { useSettings } from './useSettings';
+
 const tempSaveKey = 'tempSave';
 
 interface useFileOperationsArgs {
@@ -27,6 +29,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   const name = modelController.model.useData('', 'name') as string | null;
   const isStale = modelController.model.useData('', 'isStale');
   const [clearTabs, openTab] = useTabs((state) => [state.clearTabs, state.openTab]);
+  const [, setRestoreSession] = useSettings('restoreSession');
 
   const [data, setData] = useState<SaveModalData | null>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -198,7 +201,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   /**
    * Временное сохранение схемы в localstorage
    */
-  const tempSave = () => {
+  const tempSave = async () => {
     window.localStorage.setItem(tempSaveKey, modelController.model.serializer.getAll('Cyberiada'));
   };
 
@@ -214,6 +217,10 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
     modelController.initData(null, 'Без названия', parsedData);
     openTabs();
     return true;
+  };
+
+  const deleteTempSave = () => {
+    window.localStorage.removeItem(tempSaveKey);
   };
 
   useEffect(() => {
@@ -255,7 +262,10 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
     initImportData,
     performNewFile,
     handleOpenFromTemplate,
-    tempSave,
-    loadTempSave,
+    tempSaveOperations: {
+      tempSave,
+      loadTempSave,
+      deleteTempSave,
+    },
   };
 };

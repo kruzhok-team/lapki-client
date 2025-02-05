@@ -46,19 +46,13 @@ export const MainContainer: React.FC = () => {
 
   const { errorModalProps, openLoadError, openPlatformError, openSaveError, openImportError } =
     useErrorModal();
-  const {
-    saveModalProps,
-    operations,
-    performNewFile,
-    handleOpenFromTemplate,
-    tempSave,
-    loadTempSave,
-  } = useFileOperations({
-    openLoadError,
-    openCreateSchemeModal,
-    openSaveError,
-    openImportError,
-  });
+  const { saveModalProps, operations, performNewFile, handleOpenFromTemplate, tempSaveOperations } =
+    useFileOperations({
+      openLoadError,
+      openCreateSchemeModal,
+      openSaveError,
+      openImportError,
+    });
 
   useAppTitle();
   const onDrop = useCallback(
@@ -93,12 +87,13 @@ export const MainContainer: React.FC = () => {
 
   const restoreData = () => {
     setIsReservedPresent(true);
-    loadTempSave();
+    tempSaveOperations.loadTempSave();
   };
 
   const cancelRestoreData = async () => {
     await setRestoreSession(false).then(() => {
       setIsReservedPresent(true);
+      tempSaveOperations.deleteTempSave();
     });
   };
 
@@ -133,7 +128,7 @@ export const MainContainer: React.FC = () => {
     } else {
       interval = setInterval(async () => {
         console.log('temp save...');
-        tempSave();
+        tempSaveOperations.tempSave();
         if (!isReservedDataPresent) setIsReservedPresent(true);
         if (!restoreSession) await setRestoreSession(true);
       }, ms);

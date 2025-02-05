@@ -3,6 +3,7 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 
 import { Modal } from '@renderer/components/UI';
+import { useSettings } from '@renderer/hooks';
 
 interface SaveRemindModalProps {
   isOpen: boolean;
@@ -22,8 +23,10 @@ export interface SaveRemindModalFormValues {}
 
 export const SaveRemindModal: React.FC<SaveRemindModalProps> = ({ onClose, data, ...props }) => {
   const { reset, handleSubmit: hookHandleSubmit } = useForm<SaveRemindModalFormValues>();
+  const [, setRestoreSession] = useSettings('restoreSession');
 
   const handleSave = hookHandleSubmit(async () => {
+    await setRestoreSession(false);
     await data?.onSave();
     await data?.onOpen();
     // FIXME: не выполняет подтверждаемое действие после сохранения
@@ -36,6 +39,7 @@ export const SaveRemindModal: React.FC<SaveRemindModalProps> = ({ onClose, data,
   };
 
   const handleUnsave = async () => {
+    await setRestoreSession(false);
     data?.onConfirm();
     onRequestClose();
   };

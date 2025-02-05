@@ -37,7 +37,7 @@ export const MainContainer: React.FC = () => {
   const isMounted = controller.useData('isMounted') as boolean;
   const [isCreateSchemeModalOpen, openCreateSchemeModal, closeCreateSchemeModal] = useModal(false);
   const [autoSaveSettings] = useSettings('autoSave');
-  const [restoreSession, setRestoreSession] = useSettings('restoreSession');
+  const [restoreSession] = useSettings('restoreSession');
   const [isReservedDataPresent, setIsReservedPresent] = useState<boolean>(false); // Схема без названия сохранена, либо загружена
   const [isRestoreDataModalOpen, openRestoreDataModal, closeRestoreDataModal] = useModal(false);
   const isStale = modelController.model.useData('', 'isStale');
@@ -85,16 +85,15 @@ export const MainContainer: React.FC = () => {
     });
   }, [openPlatformError]);
 
-  const restoreData = () => {
+  const restoreData = async () => {
+    //  (Roundabout) TODO: обработка ошибок загрузки
+    await tempSaveOperations.loadTempSave();
     setIsReservedPresent(true);
-    tempSaveOperations.loadTempSave();
   };
 
   const cancelRestoreData = async () => {
-    await setRestoreSession(false).then(() => {
-      setIsReservedPresent(true);
-      tempSaveOperations.deleteTempSave();
-    });
+    await tempSaveOperations.deleteTempSave();
+    setIsReservedPresent(true);
   };
 
   // автосохранение
@@ -113,8 +112,8 @@ export const MainContainer: React.FC = () => {
       return;
     }
 
-    if (basename && restoreSession && isInitialized) {
-      setRestoreSession(false);
+    if (basename && !isReservedDataPresent && isInitialized) {
+      setIsReservedPresent(true);
     }
 
     if (!isStale || !isInitialized) return;
@@ -128,9 +127,8 @@ export const MainContainer: React.FC = () => {
     } else {
       interval = setInterval(async () => {
         console.log('temp save...');
-        tempSaveOperations.tempSave();
+        await tempSaveOperations.tempSave();
         if (!isReservedDataPresent) setIsReservedPresent(true);
-        if (!restoreSession) await setRestoreSession(true);
       }, ms);
     }
 

@@ -5,8 +5,8 @@ import { Modal } from './UI';
 interface RestoreDataModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onRestore: () => void;
-  onCancelRestore: () => void;
+  onRestore: () => Promise<void>;
+  onCancelRestore: () => Promise<void>;
 }
 
 export const RestoreDataModal: React.FC<RestoreDataModalProps> = ({
@@ -16,13 +16,13 @@ export const RestoreDataModal: React.FC<RestoreDataModalProps> = ({
   ...props
 }) => {
   const onRequestClose = () => {
-    onCancelRestore();
-    onClose();
+    onCancelRestore().then(() => onClose());
   };
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onRestore();
-    onClose();
+    onRestore().then(() => {
+      onClose();
+    });
   };
   return (
     <Modal

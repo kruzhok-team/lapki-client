@@ -29,7 +29,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   const name = modelController.model.useData('', 'name') as string | null;
   const isStale = modelController.model.useData('', 'isStale');
   const [clearTabs, openTab] = useTabs((state) => [state.clearTabs, state.openTab]);
-  const [, setRestoreSession] = useSettings('restoreSession');
+  const [restoreSession, setRestoreSession] = useSettings('restoreSession');
 
   const [data, setData] = useState<SaveModalData | null>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -203,9 +203,12 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
    */
   const tempSave = async () => {
     window.localStorage.setItem(tempSaveKey, modelController.model.serializer.getAll('Cyberiada'));
+    if (!restoreSession) {
+      await setRestoreSession(true);
+    }
   };
 
-  const loadTempSave = () => {
+  const loadTempSave = async () => {
     const restoredData = window.localStorage.getItem(tempSaveKey);
     if (restoredData === null) {
       return false;
@@ -216,11 +219,17 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
     }
     modelController.initData(null, 'Без названия', parsedData);
     openTabs();
+    if (!restoreSession) {
+      await setRestoreSession(true);
+    }
     return true;
   };
 
-  const deleteTempSave = () => {
+  const deleteTempSave = async () => {
     window.localStorage.removeItem(tempSaveKey);
+    if (restoreSession) {
+      await setRestoreSession(false);
+    }
   };
 
   useEffect(() => {
@@ -251,7 +260,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   }, [handleSaveFile, model]);
 
   return {
-    saveModalProps: { isOpen, onClose, data },
+    saveModalProps: { isOpen, onClose, data, deleteTempSave },
     operations: {
       onRequestNewFile: handleNewFile,
       onRequestOpenFile: handleOpenFile,

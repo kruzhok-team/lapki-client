@@ -98,7 +98,7 @@ export const MainContainer: React.FC = () => {
 
   // автосохранение
   useEffect(() => {
-    if (autoSaveSettings === null || restoreSession === null) return;
+    if (autoSaveSettings === null || restoreSession === null || saveModalProps.isOpen) return;
 
     if (isInitialized && !isReservedDataPresent) {
       setIsReservedPresent(true);
@@ -134,7 +134,15 @@ export const MainContainer: React.FC = () => {
 
     //Clearing the intervals
     return () => clearInterval(interval);
-  }, [autoSaveSettings, isStale, isInitialized, basename, restoreSession, isReservedDataPresent]);
+  }, [
+    autoSaveSettings,
+    isStale,
+    isInitialized,
+    basename,
+    restoreSession,
+    isReservedDataPresent,
+    saveModalProps,
+  ]);
 
   return (
     <div className="h-screen select-none">

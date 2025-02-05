@@ -112,8 +112,13 @@ export const MainContainer: React.FC = () => {
       return;
     }
 
-    if (basename && !isReservedDataPresent && isInitialized) {
-      setIsReservedPresent(true);
+    if (basename && isInitialized) {
+      if (!isReservedDataPresent) {
+        setIsReservedPresent(true);
+      }
+      if (restoreSession) {
+        tempSaveOperations.deleteTempSave();
+      }
     }
 
     if (!isStale || !isInitialized) return;

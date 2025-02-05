@@ -56,16 +56,17 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
       return;
     }
 
-    if (
-      selectedComponent === 'System' &&
-      state.data.events.find(
+    if (selectedComponent === 'System') {
+      const dublicated = state.data.events.findIndex(
         (val) =>
           (val.trigger as unknown as Event).component === 'System' &&
           (val.trigger as unknown as Event).method === selectedMethod
-      )
-    ) {
-      setError(`Повторение системого события ${selectedMethod}!`);
-      return;
+      );
+      debugger;
+      if (dublicated !== -1 && currentEventIndex !== dublicated) {
+        setError(`Повторение системого события ${selectedMethod}!`);
+        return;
+      }
     }
 
     const {
@@ -125,7 +126,9 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
       return condition.text.trim() || undefined;
     };
 
-    for (const event of state.data.events) {
+    for (const eventIdx in state.data.events) {
+      if (currentEventIndex === Number(eventIdx)) continue;
+      const event = state.data.events[eventIdx];
       const trigger = event.trigger as Event;
       const condition = event.condition as ConditionData | undefined;
       if (trigger.component === selectedComponent && trigger.method === selectedMethod) {

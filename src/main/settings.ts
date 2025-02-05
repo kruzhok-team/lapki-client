@@ -84,7 +84,7 @@ export const defaultSettings = {
     /**
      * Количество секунд между авто сохранениями.
      */
-    interval: 10,
+    interval: 120,
     disabled: false,
   },
   restoreSession: false,

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 import { ReactComponent as Icon } from '@renderer/assets/icons/icon.svg';
+import { ReactComponent as SeriousIcon } from '@renderer/assets/icons/state_machine.svg';
 import { appName, appVersion, askAppVersion, seriousMode } from '@renderer/version';
 
 const combination = [
@@ -50,8 +51,8 @@ export const NotInitialized: React.FC = () => {
     });
   }, []);
 
-  // TODO: подобрать логотип
-  const icon = seriousMode ? <></> : <Icon />;
+  const seriousIcon = <SeriousIcon width={200} opacity={0.3} />;
+  const icon = seriousMode ? seriousIcon : <Icon />;
 
   const hotKeyStyle = 'rounded border-2 border-border-contrast px-1';
 

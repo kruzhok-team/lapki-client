@@ -53,6 +53,8 @@ export const NotInitialized: React.FC = () => {
   // TODO: подобрать логотип
   const icon = seriousMode ? <></> : <Icon />;
 
+  const hotKeyStyle = 'rounded border-2 border-border-contrast px-1';
+
   return (
     <div className="flex flex-col items-center pt-24">
       {icon}
@@ -69,15 +71,11 @@ export const NotInitialized: React.FC = () => {
             <tr key={key}>
               <td className="px-1 py-1">{value.name}</td>
               <td className="ml-3 flex items-start py-1">
-                <div className="rounded border-b-2 bg-gray-600 px-1 text-gray-300">
-                  {value.command.button1}
-                </div>
+                <div className={hotKeyStyle}>{value.command.button1}</div>
                 {value.command.button2 && (
                   <>
                     <p className="px-1">+</p>
-                    <div className="rounded border-b-2 bg-gray-600 px-1 text-gray-300">
-                      {value.command.button2}
-                    </div>
+                    <div className={hotKeyStyle}>{value.command.button2}</div>
                   </>
                 )}
               </td>

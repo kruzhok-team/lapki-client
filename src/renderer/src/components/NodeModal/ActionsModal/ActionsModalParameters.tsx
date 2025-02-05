@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 
 import { ReactComponent as QuestionMark } from '@renderer/assets/icons/question-mark.svg';
+import { AttributeConstSwitch } from '@renderer/components/AttributeConstSwitch';
 import { ComponentFormFieldLabel } from '@renderer/components/ComponentFormFieldLabel';
-import { Checkbox, Select, SelectOption, WithHint } from '@renderer/components/UI';
+import { Select, SelectOption, WithHint } from '@renderer/components/UI';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { isVariable } from '@renderer/lib/utils';
 import { ArgList, Variable } from '@renderer/types/diagram';
@@ -101,7 +102,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
           return (
             <ComponentFormFieldLabel key={name} label={label} hint={hint}>
               <Select
-                className="w-[250px]"
+                className="w-[332px] pl-[82px]"
                 options={options}
                 value={options.find((o) => o.value === value)}
                 onChange={(opt) => handleInputChange(name, opt?.value ?? '')}
@@ -166,19 +167,17 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
           currentChecked = true;
         }
         const methodOptions = methodOptionsSearch(selectedParameterComponent);
-
         return (
-          <div className="flex items-start" key={name}>
-            <Checkbox
-              checked={currentChecked}
-              onCheckedChange={() => {
-                setCheckedTo(name, !currentChecked);
+          <div className="flex items-start space-x-1" key={name}>
+            <AttributeConstSwitch
+              defaultIsAttribute={currentChecked}
+              beforeSwitch={(currentIsAttribute) => {
+                setCheckedTo(name, !currentIsAttribute);
                 handleInputChange(name, '');
               }}
-              className="mr-2 mt-[9px]"
-            />
+            ></AttributeConstSwitch>
             {currentChecked ? (
-              <div className="w-full">
+              <div>
                 <div className="flex">
                   <label className="grid grid-cols-[max-content,1fr] items-center justify-start gap-2">
                     <div className="flex min-w-28 items-center gap-1">
@@ -196,7 +195,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                   </label>
                   <div className="flex w-full">
                     <Select
-                      containerClassName="w-full"
+                      containerClassName="w-[250px]"
                       options={componentOptions}
                       onChange={(opt) => handleComponentAttributeChange(name, opt?.value ?? '', '')}
                       value={
@@ -206,7 +205,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                       noOptionsMessage={() => 'Нет подходящих компонентов'}
                     />
                     <Select
-                      containerClassName="w-full"
+                      containerClassName="w-[250px]"
                       options={methodOptions}
                       onChange={(opt) =>
                         handleComponentAttributeChange(

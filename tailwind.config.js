@@ -55,6 +55,9 @@ export default {
           '--d-t-c': '#F2F2F2',
           '--d-s-o': '#F2F2F2',
           '--d-t-o': '#FFFFFF',
+
+          '--i-a': '#CBCACA',
+          '--i-s': '#B7B6B6',
         },
         ':root[data-theme="light"]': {
           '--p': '#0C4BEE',
@@ -93,6 +96,9 @@ export default {
           '--d-t-c': '#404040',
           '--d-s-o': '#0a0a0a',
           '--d-t-o': '#0C4BEE',
+
+          '--i-a': '#5A5959',
+          '--i-s': '#878686',
         },
       };
 

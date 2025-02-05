@@ -81,7 +81,10 @@ export const Autosave: React.FC = () => {
         <WithHint hint={'Вернуть интервал на значение по-умолчанию'}>
           {(props) => (
             <button
-              className={twMerge('opacity-50', !settings.disabled && 'hover:opacity-100')}
+              className={twMerge(
+                'text-icon-secondary',
+                !settings.disabled && 'hover:text-icon-active'
+              )}
               {...props}
               onClick={() => {
                 resetSettings().then(() => {

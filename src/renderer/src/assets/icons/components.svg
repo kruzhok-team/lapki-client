@@ -1,5 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 485 485">
-<path d="M440.9,136.3a4,4,0,0,0,0-6.91L288.16,40.65a64.14,64.14,0,0,0-64.33,0L71.12,129.39a4,4,0,0,0,0,6.91L254,243.88a4,4,0,0,0,4.06,0Z"/>
-<path d="M54,163.51A4,4,0,0,0,48,167V340.89a48,48,0,0,0,23.84,41.39L234,479.51a4,4,0,0,0,6-3.46V274.3a4,4,0,0,0-2-3.46Z"/>
-<path d="M272,275v201a4,4,0,0,0,6,3.46l162.15-97.23A48,48,0,0,0,464,340.89V167a4,4,0,0,0-6-3.45l-184,108A4,4,0,0,0,272,275Z"/>
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Creator: CorelDRAW 2021 (64-Bit) -->
+<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" version="1.1" shape-rendering="geometricPrecision"
+    text-rendering="geometricPrecision" image-rendering="optimizeQuality" fill-rule="evenodd" clip-rule="evenodd"
+    viewBox="0 0 5646 5575" xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:xodm="http://www.corel.com/coreldraw/odm/2003">
+    <g id="Слой_x0020_1">
+        <metadata id="CorelCorpID_0Corel-Layer" />
+        <path fill="currentColor"
+            d="M2956 5571l1319 -659 1338 -669c20,-10 33,-30 33,-53l0 -1334 0 -1313c0,-12 -6,-23 -17,-30 -11,-7 -24,-8 -35,-2l-2657 1328c-20,11 -33,31 -33,54l0 2646c0,13 6,24 17,31 11,6 24,7 35,1zm252 -453l2158 -1067 0 -2158 -2158 1067 0 2158zm-519 453l-1318 -659 -1338 -669c-21,-10 -33,-30 -33,-53l0 -1334 0 -1313c0,-12 6,-23 17,-30 11,-7 24,-7 35,-2l2656 1328c21,11 33,31 33,54l0 2646c0,13 -6,24 -17,31 -11,6 -23,7 -35,1zm-227 -453l-2182 -1067 0 -2158 2182 1067 0 2158zm-2301 -3793l1300 -650 1338 -668c17,-9 36,-9 53,0l1338 668 1300 650c12,7 20,19 20,33 0,13 -8,25 -20,32l-2638 1318c-17,9 -36,9 -53,0l-2638 -1318c-13,-7 -20,-19 -20,-32 0,-14 7,-26 20,-33zm4823 33l-2159 1002 -2159 -1026 2183 -1051 2135 1075z" />
+    </g>
 </svg>

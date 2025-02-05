@@ -12,6 +12,7 @@ import {
   Sidebar,
   UpdateModal,
   DiagramContextMenu,
+  EditorSettings,
 } from '@renderer/components';
 import { hideLoadingOverlay } from '@renderer/components/utils/OverlayControl';
 import { useErrorModal, useFileOperations } from '@renderer/hooks';
@@ -90,8 +91,15 @@ export const MainContainer: React.FC = () => {
           <input {...getInputProps()} />
 
           <Tabs />
-
-          <Documentation topOffset={!!isMounted} />
+          <div
+            className={twMerge(
+              'absolute right-0 top-0 flex h-full',
+              !!isMounted && 'top-[44.19px] h-[calc(100vh-44.19px)]'
+            )}
+          >
+            <Documentation />
+            <EditorSettings />
+          </div>
         </div>
 
         {isMounted && <DiagramContextMenu />}

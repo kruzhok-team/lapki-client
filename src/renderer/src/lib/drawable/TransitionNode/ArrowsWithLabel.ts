@@ -41,7 +41,7 @@ export class ArrowsWithLabel implements Drawable {
     ctx.fillStyle = fillStyle;
 
     if (!this.parent.isSelected) {
-      ctx.globalAlpha = 0.3;
+      ctx.globalAlpha = transitionStyle.notSelectedAlpha;
     }
     drawCurvedLine(ctx, sourceLine, 12 / this.app.controller.scale);
     drawCurvedLine(ctx, targetLine, 12 / this.app.controller.scale);

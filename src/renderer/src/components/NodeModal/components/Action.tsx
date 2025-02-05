@@ -8,6 +8,8 @@ import { useModelContext } from '@renderer/store/ModelContext';
 import { Action as ActionData, Component, Variable } from '@renderer/types/diagram';
 import { getMatrixDimensions } from '@renderer/utils';
 
+import { Picto } from './Picto';
+
 import { MatrixWidget } from '../ActionsModal/MatrixWidget';
 
 interface ActionProps {
@@ -55,18 +57,10 @@ export const Action: React.FC<ActionProps> = (props) => {
       onDrop={onDrop}
       onDoubleClick={onChange}
     >
-      <div className="flex items-center gap-[2px] overflow-hidden rounded-md bg-border-primary">
-        <div className="bg-bg-primary px-4 py-2">
-          {platform.getFullComponentIcon(data.component)}
-        </div>
-
-        <div className="bg-bg-primary px-4 py-2">
-          <img
-            className="size-8 object-contain"
-            src={platform.getActionIconUrl(data.component, data.method, true)}
-          />
-        </div>
-      </div>
+      <Picto
+        leftIcon={platform.getFullComponentIcon(data.component)}
+        rightIcon={platform.getActionIconUrl(data.component, data.method, true)}
+      />
 
       <div className="flex flex-row items-center">
         <div>{data.component}.</div>

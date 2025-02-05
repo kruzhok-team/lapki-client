@@ -1,7 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { ReactComponent as Icon } from '@renderer/assets/icons/icon.svg';
-import { appVersion, askAppVersion } from '@renderer/version';
+import { ReactComponent as SeriousIcon } from '@renderer/assets/icons/state_machine.svg';
+import { appName, appVersion, askAppVersion, seriousMode } from '@renderer/version';
 
 const combination = [
   {
@@ -42,17 +43,26 @@ const combination = [
 ];
 
 export const NotInitialized: React.FC = () => {
+  const [shownVersion, setShownVersion] = useState(appVersion);
+
   useEffect(() => {
-    if (!appVersion) {
-      askAppVersion();
-    }
+    askAppVersion().then(() => {
+      if (shownVersion !== appVersion) setShownVersion(appVersion);
+    });
   }, []);
+
+  const seriousIcon = <SeriousIcon width={200} opacity={0.3} />;
+  const icon = seriousMode ? seriousIcon : <Icon />;
+
+  const hotKeyStyle = 'rounded border-2 border-border-contrast px-1';
 
   return (
     <div className="flex flex-col items-center pt-24">
-      <Icon />
+      {icon}
       <br />
-      <p className="text-center text-2xl font-bold">Lapki IDE v{appVersion}</p>
+      <p className="text-center text-2xl font-bold">
+        {appName} {shownVersion ? `v${shownVersion}` : ''}
+      </p>
       <p className="py-6 text-center text-base">
         Перетащите файл в эту область или воспользуйтесь комбинацией клавиш:
       </p>
@@ -62,15 +72,11 @@ export const NotInitialized: React.FC = () => {
             <tr key={key}>
               <td className="px-1 py-1">{value.name}</td>
               <td className="ml-3 flex items-start py-1">
-                <div className="rounded border-b-2 bg-gray-600 px-1 text-gray-300">
-                  {value.command.button1}
-                </div>
+                <div className={hotKeyStyle}>{value.command.button1}</div>
                 {value.command.button2 && (
                   <>
                     <p className="px-1">+</p>
-                    <div className="rounded border-b-2 bg-gray-600 px-1 text-gray-300">
-                      {value.command.button2}
-                    </div>
+                    <div className={hotKeyStyle}>{value.command.button2}</div>
                   </>
                 )}
               </td>

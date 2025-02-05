@@ -62,7 +62,7 @@ export const CreateSchemeModal: React.FC<CreateSchemeModalProps> = ({
     >
       <Tabs
         className="mb-4"
-        tabs={['Создать пустую', 'Выбрать шаблон']}
+        tabs={['Создать пустую', 'Выбрать пример']}
         value={tabValue}
         onChange={setTabValue}
       />

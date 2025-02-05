@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, memo } from 'react';
+import React, { useMemo, useRef, memo, useEffect } from 'react';
 
 import CodeMirror, { ReactCodeMirrorRef, Transaction, EditorState } from '@uiw/react-codemirror';
 import throttle from 'lodash.throttle';
@@ -50,7 +50,6 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
   const {
     show,
     handleChangeConditionShow,
-
     tabValue,
     onTabChange,
 
@@ -85,6 +84,8 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
     onChangeText,
 
     errors,
+    condition,
+    parse,
   } = props;
 
   const editor = useModelContext();
@@ -93,6 +94,10 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
   const visual = controller.useData('visual');
 
   const editorRef = useRef<ReactCodeMirrorRef | null>(null);
+
+  useEffect(() => {
+    parse(condition);
+  }, [condition, parse]);
 
   const handleTabChange = (tab: number) => {
     onTabChange(tab);

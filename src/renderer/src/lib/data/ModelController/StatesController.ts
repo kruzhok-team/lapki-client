@@ -220,7 +220,6 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
   createInitialState = (params: CreateInitialStateControllerParams) => {
     const { smId, id, targetId } = params;
-    debugger;
 
     const target = this.data.states.get(targetId);
     if (!target || !id) return;

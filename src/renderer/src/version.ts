@@ -4,6 +4,7 @@ export const releaseName = 'Caracal';
 
 export const appName = 'Lapki IDE';
 export const seriousMode = false;
+export const noTextMode = false;
 
 export function initAppVersion() {
   askAppVersion().then(() => {

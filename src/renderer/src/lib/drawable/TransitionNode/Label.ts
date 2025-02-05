@@ -92,7 +92,7 @@ export class Label implements Drawable {
     ctx.font = `${fontSize}px/${stateStyle.titleLineHeight} ${stateStyle.titleFontFamily}`;
     ctx.fillStyle = stateStyle.eventColor;
     ctx.textBaseline = stateStyle.eventBaseLine;
-    ctx.fillStyle = 'rgb(23, 23, 23)';
+    ctx.fillStyle = 'rgb(100, 100, 100)'; // ТУТ ЦВЕТ ПЕРЕХОДА
 
     ctx.beginPath();
     ctx.roundRect(x, y, width, height, 8 / this.app.controller.scale);

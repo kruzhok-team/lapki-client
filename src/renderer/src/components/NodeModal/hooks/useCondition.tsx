@@ -12,7 +12,11 @@ import { Component, Condition, Variable as VariableData } from '@renderer/types/
 /**
  * Инкапсуляция логики условия формы
  */
-export const useCondition = (smId: string, controller: CanvasController) => {
+export const useCondition = (
+  smId: string,
+  controller: CanvasController,
+  condition: Condition | null | undefined | string
+) => {
   const modelController = useModelContext();
 
   const componentsData = modelController.model.useData(smId, 'elements.components') as {
@@ -343,5 +347,6 @@ export const useCondition = (smId: string, controller: CanvasController) => {
     clear,
     controller,
     smId,
+    condition,
   };
 };

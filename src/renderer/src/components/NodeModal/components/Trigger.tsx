@@ -1,16 +1,20 @@
-import React, { memo, useMemo, useRef } from 'react';
+import React, { memo, useEffect, useMemo, useRef } from 'react';
 
 import CodeMirror, { Transaction, EditorState, ReactCodeMirrorRef } from '@uiw/react-codemirror';
 import throttle from 'lodash.throttle';
 
 import { Select, TabPanel, Tabs } from '@renderer/components/UI';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
+import { Event, EventData } from '@renderer/types/diagram';
 
 import { useTrigger } from '../hooks';
 
 import '../style.css';
 
-type TriggerProps = ReturnType<typeof useTrigger> & { controller: CanvasController };
+type TriggerProps = ReturnType<typeof useTrigger> & {
+  controller: CanvasController;
+  event: EventData | null | undefined;
+};
 
 /**
  * Виджет редактирования триггера (сигнала) события.
@@ -32,6 +36,9 @@ export const Trigger: React.FC<TriggerProps> = memo(function Trigger(props) {
     controller,
     text,
     onChangeText,
+    event,
+    setSelectedComponent,
+    setSelectedMethod,
   } = props;
   const visual = controller.useData('visual');
 
@@ -56,6 +63,12 @@ export const Trigger: React.FC<TriggerProps> = memo(function Trigger(props) {
       }, 0);
     }
   };
+
+  useEffect(() => {
+    if (!event) return;
+    setSelectedComponent((event?.trigger as Event).component);
+    setSelectedMethod((event?.trigger as Event).method);
+  }, [event]);
 
   const handleLengthLimit = (tr: Transaction) => {
     return tr.newDoc.lines <= 10;

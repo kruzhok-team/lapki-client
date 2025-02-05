@@ -1,4 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="none">
-  <path d="M24.25 15.567C24.5833 15.7594 24.5833 16.2406 24.25 16.433L12.25 23.3612C11.9167 23.5537 11.5 23.3131 11.5 22.9282L11.5 9.07179C11.5 8.68689 11.9167 8.44633 12.25 8.63878L24.25 15.567Z" fill="currentColor"/>
-  <circle cx="16" cy="16" r="14" stroke="currentColor" stroke-width="2"/>
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Creator: CorelDRAW 2021 (64-Bit) -->
+<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" version="1.1" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" image-rendering="optimizeQuality" fill-rule="evenodd" clip-rule="evenodd"
+viewBox="0 0 9370 9370"
+ xmlns:xlink="http://www.w3.org/1999/xlink"
+ xmlns:xodm="http://www.corel.com/coreldraw/odm/2003">
+ <g id="Слой_x0020_1">
+  <metadata id="CorelCorpID_0Corel-Layer"/>
+  <path fill="currentColor" d="M7152 4636l-1829 -1056 -1829 -1056c-18,-10 -39,-10 -56,0 -18,11 -29,28 -29,49l0 2112 0 2112c0,21 11,39 29,49 17,10 38,10 56,0l1829 -1056 1829 -1056c18,-10 28,-28 28,-49 0,-21 -10,-38 -28,-49zm-2467 4167c-2274,0 -4118,-1844 -4118,-4118 0,-2274 1844,-4118 4118,-4118 2274,0 4118,1844 4118,4118 0,2274 -1844,4118 -4118,4118zm0 567c-2587,0 -4685,-2097 -4685,-4685 0,-2587 2098,-4685 4685,-4685 2588,0 4685,2098 4685,4685 0,2588 -2097,4685 -4685,4685z"/>
+ </g>
 </svg>

@@ -1,6 +1,8 @@
 import { ipcMain, WebContents } from 'electron';
 import settings from 'electron-settings';
 
+import { defaultCompilerHost, defaultCompilerPort, defaultDocHost } from './version';
+
 type MetaType =
   | {
       RefBlHw: string; // Описывает физическое окружение контроллера (плату)
@@ -23,11 +25,11 @@ type AddressBook = {
 
 export const defaultSettings = {
   doc: {
-    host: 'https://lapki-doc.polyus-nt.ru/v/0.3.0/',
+    host: defaultDocHost,
   },
   compiler: {
-    host: 'lapki.polyus-nt.ru',
-    port: 8083,
+    host: defaultCompilerHost,
+    port: defaultCompilerPort,
   },
   flasher: {
     host: 'localhost',

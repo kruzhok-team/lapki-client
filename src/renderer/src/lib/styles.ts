@@ -25,9 +25,10 @@ export const stateStyle = {
  * Стиль переходов в редакторе машин состояний
  */
 export const transitionStyle = {
-  width: 2,
+  width: 3,
   bgColor: '#FFF',
   startSize: 5,
   padEnd: 5,
-  endSize: 11,
+  endSize: 19,
+  notSelectedAlpha: 0.7,
 };

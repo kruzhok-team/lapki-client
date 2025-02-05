@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
-import { ReactComponent as StateMachineIcon } from '@renderer/assets/icons/cpu-bw.svg';
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/new transition.svg';
+import { ReactComponent as StateMachineIcon } from '@renderer/assets/icons/state_machine.svg';
 import { StateMachineEditModal } from '@renderer/components/StateMachineEditModal';
 import { useStateMachines } from '@renderer/hooks';
 import { getAvailablePlatforms } from '@renderer/lib/data/PlatformLoader';
@@ -122,7 +122,6 @@ export const StateMachinesList: React.FC = () => {
         platformList={platformList}
         isDuplicateName={isDuplicateName}
         selectPlatformDisabled={false}
-        duplicateStateMachine={onDuplicateStateMachine}
       />
       <StateMachineDeleteModal {...{ ...deleteProps, idx: selectedSm ?? undefined }} />
     </section>

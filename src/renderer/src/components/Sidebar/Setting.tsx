@@ -6,6 +6,8 @@ import { useModal } from '@renderer/hooks/useModal';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { useFlasher } from '@renderer/store/useFlasher';
 
+import { Autosave } from './AutosaveSetting';
+
 import { AboutTheProgramModal } from '../AboutTheProgramModal';
 import { ClientStatus } from '../Modules/Websocket/ClientStatus';
 import { ResetSettingsModal } from '../ResetSettingsModal';
@@ -89,9 +91,11 @@ export const Setting: React.FC<SettingProps> = ({ openCompilerSettings, openLoad
         <button className="btn-primary mb-4" onClick={openDocModal}>
           Документация…
         </button>
-
-        <div className="mb-auto flex items-center justify-between">
-          Анимации на холсте
+        <div className=" mb-4">
+          <Autosave></Autosave>
+        </div>
+        <div className="mb-auto flex items-center gap-1">
+          Анимации на холсте:
           <Switch
             checked={canvasSettings?.animations}
             onCheckedChange={handleChangeCanvasAnimations}

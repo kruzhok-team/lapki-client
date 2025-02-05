@@ -80,6 +80,14 @@ export const defaultSettings = {
      */
     hideGetAddressModal: false,
   },
+  autoSave: {
+    /**
+     * Количество секунд между авто сохранениями.
+     */
+    interval: 120,
+    disabled: false,
+  },
+  restoreSession: false,
 };
 
 export type Settings = typeof defaultSettings;

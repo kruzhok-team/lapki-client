@@ -1,11 +1,18 @@
 import { useState, useEffect, useCallback, Dispatch } from 'react';
 
+import { toast } from 'sonner';
+
 import { SaveModalData } from '@renderer/components';
 import { Compiler } from '@renderer/components/Modules/Compiler';
+import { importGraphml } from '@renderer/lib/data/GraphmlParser';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { useTabs } from '@renderer/store/useTabs';
 import { Elements } from '@renderer/types/diagram';
 import { isLeft, isRight, unwrapEither } from '@renderer/types/Either';
+
+import { useSettings } from './useSettings';
+
+const tempSaveKey = 'tempSave';
 
 interface useFileOperationsArgs {
   openLoadError: (cause: any) => void;
@@ -22,6 +29,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   const name = modelController.model.useData('', 'name') as string | null;
   const isStale = modelController.model.useData('', 'isStale');
   const [clearTabs, openTab] = useTabs((state) => [state.clearTabs, state.openTab]);
+  const [restoreSession, setRestoreSession] = useSettings('restoreSession');
 
   const [data, setData] = useState<SaveModalData | null>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -121,6 +129,8 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
       if (cause) {
         openSaveError(cause);
       }
+    } else {
+      toast.success('Схема сохранена!');
     }
   };
 
@@ -132,7 +142,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
         openSaveError(cause);
       }
     } else {
-      // TODO: информировать об успешном сохранении
+      toast.success('Схема сохранена!');
     }
   }, [model, openSaveError]);
 
@@ -188,6 +198,39 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
       openTabs();
     }
   };
+  /**
+   * Временное сохранение схемы в localstorage
+   */
+  const tempSave = async () => {
+    window.localStorage.setItem(tempSaveKey, modelController.model.serializer.getAll('Cyberiada'));
+    if (!restoreSession) {
+      await setRestoreSession(true);
+    }
+  };
+
+  const loadTempSave = async () => {
+    const restoredData = window.localStorage.getItem(tempSaveKey);
+    if (restoredData === null) {
+      return false;
+    }
+    const parsedData = importGraphml(restoredData, openImportError);
+    if (parsedData === undefined) {
+      return false;
+    }
+    modelController.initData(null, 'Без названия', parsedData);
+    openTabs();
+    if (!restoreSession) {
+      await setRestoreSession(true);
+    }
+    return true;
+  };
+
+  const deleteTempSave = async () => {
+    window.localStorage.removeItem(tempSaveKey);
+    if (restoreSession) {
+      await setRestoreSession(false);
+    }
+  };
 
   useEffect(() => {
     //Сохранение проекта после закрытия редактора
@@ -217,7 +260,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   }, [handleSaveFile, model]);
 
   return {
-    saveModalProps: { isOpen, onClose, data },
+    saveModalProps: { isOpen, onClose, data, deleteTempSave },
     operations: {
       onRequestNewFile: handleNewFile,
       onRequestOpenFile: handleOpenFile,
@@ -228,5 +271,10 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
     initImportData,
     performNewFile,
     handleOpenFromTemplate,
+    tempSaveOperations: {
+      tempSave,
+      loadTempSave,
+      deleteTempSave,
+    },
   };
 };

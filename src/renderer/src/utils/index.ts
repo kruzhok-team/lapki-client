@@ -85,6 +85,10 @@ export const escapeRegExp = (string: string) => {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
 };
 
+export const removeNonNumbers = (str: string) => {
+  return str.replace(/[^0-9]/g, '');
+};
+
 export const languageMappers = {
   h: 'cpp',
   ino: 'cpp',

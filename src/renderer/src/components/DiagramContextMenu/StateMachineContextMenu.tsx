@@ -255,7 +255,7 @@ export const StateMachineContextMenu: React.FC<StateMachineContextMenuProps> = (
                 onClick={() =>
                   modelController.createState({
                     smId: smId,
-                    dimensions: { width: 100, height: 50 },
+                    dimensions: DEFAULT_STATE_DIMENSIONS,
                     events: [],
                     name: 'Состояние',
                     position: controller.view.windowToWorldCoords(position),

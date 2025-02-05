@@ -6,7 +6,7 @@ import { SelectOption } from '@renderer/components/UI';
 import { serializeEvent } from '@renderer/lib/data/GraphmlBuilder';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { useModelContext } from '@renderer/store/ModelContext';
-import { Component, Event } from '@renderer/types/diagram';
+import { Component, Event, EventData } from '@renderer/types/diagram';
 
 /**
  * Инкапсуляция логики триггера формы {@link CreateModal}
@@ -14,7 +14,8 @@ import { Component, Event } from '@renderer/types/diagram';
 export const useTrigger = (
   smId: string,
   controller: CanvasController,
-  addSystemComponents: boolean
+  addSystemComponents: boolean,
+  event: EventData | null | undefined
 ) => {
   const modelController = useModelContext();
   const componentsData = modelController.model.useData(smId, 'elements.components') as {
@@ -24,9 +25,13 @@ export const useTrigger = (
   const visual = controller.useData('visual');
 
   const [tabValue, setTabValue] = useState(0);
+  const [selectedComponent, setSelectedComponent] = useState<string | null>(
+    event ? (event.trigger as Event).component : null
+  );
 
-  const [selectedComponent, setSelectedComponent] = useState<string | null>(null);
-  const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
+  const [selectedMethod, setSelectedMethod] = useState<string | null>(
+    event ? (event.trigger as Event).method : null
+  );
 
   const [text, setText] = useState('');
 

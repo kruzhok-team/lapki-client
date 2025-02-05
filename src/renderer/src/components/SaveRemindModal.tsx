@@ -23,9 +23,10 @@ export interface SaveRemindModalFormValues {}
 export const SaveRemindModal: React.FC<SaveRemindModalProps> = ({ onClose, data, ...props }) => {
   const { reset, handleSubmit: hookHandleSubmit } = useForm<SaveRemindModalFormValues>();
 
-  const handleSubmit = hookHandleSubmit(() => {
-    // data.id = data?.state.target.id;
-    data?.onConfirm();
+  const handleSave = hookHandleSubmit(async () => {
+    await data?.onSave();
+    await data?.onOpen();
+    // FIXME: не выполняет подтверждаемое действие после сохранения
     onRequestClose();
   });
 
@@ -34,10 +35,8 @@ export const SaveRemindModal: React.FC<SaveRemindModalProps> = ({ onClose, data,
     reset();
   };
 
-  const handleSave = async () => {
-    await data?.onSave();
-    await data?.onOpen();
-    // FIXME: не выполняет подтверждаемое действие после сохранения
+  const handleUnsave = async () => {
+    data?.onConfirm();
     onRequestClose();
   };
 
@@ -46,11 +45,11 @@ export const SaveRemindModal: React.FC<SaveRemindModalProps> = ({ onClose, data,
       {...props}
       onRequestClose={onRequestClose}
       title={'Подтверждение'}
-      extraLabel={data?.onSave ? 'Сохранить' : undefined}
-      submitLabel="Не сохранять"
-      submitClassName="btn-error"
-      onSubmit={handleSubmit}
-      onExtra={handleSave}
+      extraLabel="Не сохранять"
+      submitLabel="Сохранить"
+      extraClassName="btn-error"
+      onSubmit={handleSave}
+      onExtra={handleUnsave}
       cancelLabel="Отменить"
     >
       <h3>Файл был отредактирован.</h3>

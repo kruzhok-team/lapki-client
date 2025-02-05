@@ -37,7 +37,7 @@ export const Explorer: React.FC = () => {
 
   return (
     <section className="flex h-full flex-col">
-      <h3 className="mx-4 border-b border-border-primary py-2 text-center text-lg">Проводник</h3>
+      <h3 className="mx-4 border-b border-border-primary py-2 text-center text-lg">Диаграмма</h3>
       <PanelGroup direction="vertical">
         <Panel
           ref={componentPanelRef}
@@ -84,7 +84,7 @@ export const Explorer: React.FC = () => {
                 hierarchyPanelRef.current?.isCollapsed() && '-rotate-90'
               )}
             />
-            <h3 className="font-semibold">Структура</h3>
+            <h3 className="font-semibold">Иерархия</h3>
           </button>
 
           {isInitialized ? <StateMachinesHierarchy /> : 'Недоступно до открытия схемы'}

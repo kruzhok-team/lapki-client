@@ -543,8 +543,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const initialState = sm.initialStates[transitionFromInitialState.sourceId];
 
     const position = {
-      x: state.position.x - INITIAL_STATE_OFFSET,
-      y: state.position.y - INITIAL_STATE_OFFSET,
+      x: state.position.x - INITIAL_STATE_OFFSET.x,
+      y: state.position.y - INITIAL_STATE_OFFSET.y,
     };
 
     if (state.parentId) {
@@ -1015,7 +1015,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
           smId,
           id: childId,
           startPosition: child.position,
-          endPosition: { x: INITIAL_STATE_OFFSET, y: INITIAL_STATE_OFFSET },
+          endPosition: { x: INITIAL_STATE_OFFSET.x, y: INITIAL_STATE_OFFSET.y },
         },
         false
       );
@@ -1052,8 +1052,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const siblings = this.getSiblings(smId, prevId, target.parentId, 'initialStates')[1];
     if (siblings.length) return;
     const position = {
-      x: target.position.x - INITIAL_STATE_OFFSET,
-      y: target.position.y - INITIAL_STATE_OFFSET,
+      x: target.position.x - INITIAL_STATE_OFFSET.y,
+      y: target.position.y - INITIAL_STATE_OFFSET.x,
     };
 
     if (target.parentId) {

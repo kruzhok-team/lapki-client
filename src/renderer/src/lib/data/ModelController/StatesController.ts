@@ -131,6 +131,10 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     });
   }
 
+  private getElementsCount = () => {
+    return Object.values(this.data).flatMap((map) => [...map.values()]).length;
+  };
+
   initState = (args: CreateStateParams) => {
     const { id, smId } = args;
 
@@ -231,6 +235,10 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     }
 
     this.watch(state);
+    // Потому что начальное состояние всегда создается после таргет-состояния
+    if (this.getElementsCount() === 2) {
+      this.view.viewCentering();
+    }
 
     return state;
   };

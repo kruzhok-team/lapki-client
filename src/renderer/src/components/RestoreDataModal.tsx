@@ -26,9 +26,9 @@ export const RestoreDataModal: React.FC<RestoreDataModalProps> = ({
   };
   return (
     <Modal
+      {...props}
       shouldCloseOnEsc={false}
       shouldCloseOnOverlayClick={false}
-      {...props}
       onRequestClose={onRequestClose}
       title="Восстановление схемы"
       submitLabel="Да"

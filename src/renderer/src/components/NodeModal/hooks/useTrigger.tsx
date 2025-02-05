@@ -15,7 +15,7 @@ export const useTrigger = (
   smId: string,
   controller: CanvasController,
   addSystemComponents: boolean,
-  event: EventData | null | undefined
+  event: Event | null | undefined
 ) => {
   const modelController = useModelContext();
   const componentsData = modelController.model.useData(smId, 'elements.components') as {
@@ -26,11 +26,11 @@ export const useTrigger = (
 
   const [tabValue, setTabValue] = useState(0);
   const [selectedComponent, setSelectedComponent] = useState<string | null>(
-    event ? (event.trigger as Event).component : null
+    event ? (event as Event).component : null
   );
 
   const [selectedMethod, setSelectedMethod] = useState<string | null>(
-    event ? (event.trigger as Event).method : null
+    event ? (event as Event).method : null
   );
 
   const [text, setText] = useState('');

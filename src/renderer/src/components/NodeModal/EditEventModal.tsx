@@ -36,7 +36,7 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
   const modelController = useModelContext();
 
   // Данные формы
-  const trigger = useTrigger(smId, controller, true, event);
+  const trigger = useTrigger(smId, controller, true, event?.trigger as Event | null);
   const condition = useCondition(smId, controller, event?.condition);
   const actions = useActions(smId, controller, (event?.do as Action[] | undefined) ?? null);
   const [error, setError] = useState<string | undefined>(undefined);
@@ -199,7 +199,7 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
         <Trigger event={event} {...trigger} />
         {showCondition && <Condition {...condition} />}
         <Actions event={event} {...actions} />
-        {error ? <div className="text-error">{error}</div> : <></>}
+        {error && <div className="text-error">{error}</div>}
       </div>
     </Modal>
   );

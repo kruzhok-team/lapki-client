@@ -1,5 +1,5 @@
-appId: ru.kruzhok.lapki-ide
-productName: lapki-ide
+appId: ru.kruzhok.cyberiada-ide
+productName: Cyberiada IDE
 directories:
   buildResources: build
 files:
@@ -13,7 +13,7 @@ asarUnpack:
   - resources/**
 # TODO: afterSign: build/notarize.js
 win:
-  executableName: lapki-ide
+  executableName: cyberiada-ide
 nsis:
   artifactName: ${name}-v${version}-setup.${ext}
   shortcutName: ${productName}

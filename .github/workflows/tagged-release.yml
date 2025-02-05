@@ -3,7 +3,7 @@ name: 'tagged-release'
 on:
   push:
     tags:
-      - 'v*'
+      - 'cyberiada/v*'
 
 jobs:
   linux-windows-build:

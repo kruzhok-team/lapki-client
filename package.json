@@ -1,6 +1,6 @@
 {
-  "name": "lapki-ide",
-  "version": "0.5.0",
+  "name": "cyberiada-ide",
+  "version": "0.5.2",
   "description": "Statemachine-based IDE for cyber-physical systems",
   "main": "./out/main/index.js",
   "author": "Kruzhok Association, Polyus-NT",

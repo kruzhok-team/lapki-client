@@ -169,25 +169,15 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
         const methodOptions = methodOptionsSearch(selectedParameterComponent);
         return (
           <div className="flex items-center space-x-2" key={name}>
-            <WithHint
-              hint={
-                currentChecked
-                  ? 'Переключиться на константу'
-                  : 'Переключиться на атрибут компонента'
-              }
-            >
-              {(hintProps) => (
-                <div {...hintProps}>
-                  <Switch
-                    checked={currentChecked}
-                    onCheckedChange={() => {
-                      setCheckedTo(name, !currentChecked);
-                      handleInputChange(name, '');
-                    }}
-                  />
-                </div>
-              )}
-            </WithHint>
+            <div className="mt-[4px]">
+              <AttributeConstSwitch
+                checked={currentChecked}
+                onCheckedChange={() => {
+                  setCheckedTo(name, !currentChecked);
+                  handleInputChange(name, '');
+                }}
+              />
+            </div>
             {currentChecked ? (
               <div>
                 <div className="flex">

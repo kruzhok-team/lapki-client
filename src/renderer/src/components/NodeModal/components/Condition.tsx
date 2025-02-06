@@ -4,13 +4,12 @@ import CodeMirror, { ReactCodeMirrorRef, Transaction, EditorState } from '@uiw/r
 import throttle from 'lodash.throttle';
 import { twMerge } from 'tailwind-merge';
 
+import { AttributeConstSwitch } from '@renderer/components/AttributeConstSwitch';
 import { Select, TabPanel, Tabs, TextField } from '@renderer/components/UI';
 import { useModelContext } from '@renderer/store/ModelContext';
 
 import { useCondition } from '../hooks';
-
 import '../style.css';
-import { AttributeConstSwitch } from '@renderer/components/AttributeConstSwitch';
 
 const operand = [
   {
@@ -153,11 +152,11 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
         <TabPanel value={0} tabValue={tabValue}>
           <div className="flex flex-col gap-2">
             <div className="flex items-start">
-              <div className="mr-2 mt-[2px]">
+              <div className="mr-2 mt-[6px]">
                 <AttributeConstSwitch
-                  defaultIsAttribute={isParamOneInput1}
-                  beforeSwitch={(v) => handleParamOneInput1(!v)}
-                ></AttributeConstSwitch>
+                  checked={isParamOneInput1}
+                  onCheckedChange={() => handleParamOneInput1(!isParamOneInput1)}
+                />
               </div>
               {isParamOneInput1 ? (
                 <div className="flex gap-2">
@@ -196,7 +195,7 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
             </div>
 
             <Select
-              containerClassName="pl-20"
+              containerClassName="pl-[50px]"
               className="max-w-[220px]"
               placeholder="Выберите оператор"
               options={operand}
@@ -206,11 +205,11 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
             />
 
             <div className="flex items-start">
-              <div className="mr-2 mt-[2px]">
+              <div className="mr-2 mt-[6px]">
                 <AttributeConstSwitch
-                  defaultIsAttribute={isParamOneInput2}
-                  beforeSwitch={(v) => handleParamOneInput2(!v)}
-                ></AttributeConstSwitch>
+                  checked={isParamOneInput2}
+                  onCheckedChange={() => handleParamOneInput2(!isParamOneInput2)}
+                />
               </div>
               {isParamOneInput2 ? (
                 <div className="flex gap-2">

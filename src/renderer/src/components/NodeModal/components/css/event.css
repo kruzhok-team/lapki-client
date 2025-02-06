@@ -1,5 +1,3 @@
-/* .event:hover:has(+ .event) .hr {
-    display: hidden
-}; */
-
-.event:has(+ .event:hover) hr {display: hidden}
+.event:has(+ .event:hover) hr {
+    border-color: transparent;
+}

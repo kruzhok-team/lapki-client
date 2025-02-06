@@ -1,57 +1,59 @@
-import React, { useEffect, useState } from 'react';
+import React, { useLayoutEffect } from 'react';
 
-import { toast } from 'sonner';
+import { Controller, useForm } from 'react-hook-form';
 import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as QuestionMark } from '@renderer/assets/icons/question-mark.svg';
 import { useSettings } from '@renderer/hooks';
 import { removeNonNumbers } from '@renderer/utils';
 
-import { Switch, TextInput, WithHint } from '../UI';
-export const Autosave: React.FC = () => {
+import { Modal, Switch, TextInput, WithHint } from '../UI';
+
+export interface AutosaveFormValues {
+  interval: number;
+  disabled: boolean;
+}
+
+interface AutosaveProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export const Autosave: React.FC<AutosaveProps> = ({ isOpen, onClose, ...props }) => {
   const [settings, setSettings, resetSettings] = useSettings('autoSave');
-  const [timerId, setTimerId] = useState<NodeJS.Timeout | null>(null);
-  const [interval, setInterval] = useState<number | null>(null);
-  useEffect(() => {
-    if (settings === null) return;
-    if (interval === null) {
-      setInterval(settings.interval);
-      return;
-    }
-    const settingInterval = () => {
-      setSettings({ ...settings, interval: interval });
-    };
-    // TODO (Roundabout): не работает при закрытии приложении, но работает при перезагрузке
-    const onBeforeUnload = (e: BeforeUnloadEvent) => {
-      e.preventDefault();
-      settingInterval();
-    };
-    if (timerId) {
-      clearTimeout(timerId);
-      window.removeEventListener('beforeunload', onBeforeUnload, { capture: true });
-      // сразу же применяем настройки без таймера
-      if (settings.disabled && interval !== settings.interval && interval > 0) {
-        settingInterval();
-        return;
-      }
-    }
-    if (interval !== settings.interval && interval > 0) {
-      window.addEventListener('beforeunload', onBeforeUnload, { capture: true });
-      const newTimerId = setTimeout(() => {
-        settingInterval();
-        toast.info(`Интервал автосохранения изменён на ${interval} сек.`);
-        window.removeEventListener('beforeunload', onBeforeUnload, { capture: true });
-      }, 1500);
-      setTimerId(newTimerId);
-    }
-  }, [interval, settings]);
+
+  const {
+    register,
+    control,
+    handleSubmit: hookHandleSubmit,
+    watch,
+    setValue,
+  } = useForm<AutosaveFormValues>();
+
+  const handleSubmit = hookHandleSubmit((data) => {
+    setSettings(data);
+    onClose();
+  });
+
+  useLayoutEffect(() => {
+    if (!settings) return;
+
+    setValue('interval', settings.interval);
+    setValue('disabled', settings.disabled);
+  }, [setValue, settings]);
+
   if (settings === null) {
     return;
   }
   return (
-    <div>
-      <span>Автосохранение</span>
-      <div className="mb-2 flex items-center gap-1 pl-2">
+    <Modal
+      {...props}
+      title={'Настройки автосохранения'}
+      isOpen={isOpen}
+      onRequestClose={onClose}
+      onSubmit={handleSubmit}
+    >
+      <div className="mb-2 flex items-center gap-1">
         <span>Интервал:</span>
         <WithHint
           hint={
@@ -65,19 +67,19 @@ export const Autosave: React.FC = () => {
           )}
         </WithHint>
         <TextInput
+          {...register('interval', { valueAsNumber: true })}
           maxLength={4}
           className="max-w-[55px] disabled:opacity-50"
-          value={interval ?? settings.interval}
-          disabled={settings.disabled}
+          disabled={watch('disabled')}
           onInput={(event) => {
             const { target } = event;
             if (target) {
-              const filteredInput = removeNonNumbers((target as HTMLInputElement).value);
-              (target as HTMLInputElement).value = filteredInput;
-              setInterval(Number(filteredInput));
+              (target as HTMLInputElement).value = removeNonNumbers(
+                (target as HTMLInputElement).value
+              );
             }
           }}
-        ></TextInput>
+        />
         <WithHint hint={'Вернуть интервал на значение по-умолчанию'}>
           {(props) => (
             <button
@@ -86,11 +88,9 @@ export const Autosave: React.FC = () => {
                 !settings.disabled && 'hover:text-icon-active'
               )}
               {...props}
-              onClick={() => {
-                resetSettings().then(() => {
-                  setInterval(null);
-                  toast.info(`Интервал автосохранения возвращён на значение по-умолчанию`);
-                });
+              onClick={(e) => {
+                e.preventDefault();
+                resetSettings();
               }}
               disabled={settings.disabled}
             >
@@ -99,15 +99,16 @@ export const Autosave: React.FC = () => {
           )}
         </WithHint>
       </div>
-      <div className=" mb-auto flex items-center gap-1 pl-2">
+      <div className=" mb-auto flex items-center gap-[22px]">
         Отключить:
-        <Switch
-          checked={settings.disabled}
-          onCheckedChange={() => {
-            setSettings({ ...settings, disabled: !settings.disabled });
+        <Controller
+          control={control}
+          name="disabled"
+          render={({ field: { value, onChange } }) => {
+            return <Switch checked={value} onCheckedChange={onChange} />;
           }}
         />
       </div>
-    </div>
+    </Modal>
   );
 };

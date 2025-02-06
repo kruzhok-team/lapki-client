@@ -408,11 +408,11 @@ export const actionFunctions: ActionFunctions = {
 
   createComponent: (sM, { args }) => ({
     redo: sM.createComponent.bind(sM, args, false),
-    undo: sM.deleteComponent.bind(sM, { id: args.name, smId: args.smId, purge: false }, false),
+    undo: sM.deleteComponent.bind(sM, { id: args.id, smId: args.smId, purge: false }, false),
   }),
   deleteComponent: (sM, { args, prevComponent }) => ({
     redo: sM.deleteComponent.bind(sM, args, false),
-    undo: sM.createComponent.bind(sM, { name: args.id, smId: args.smId, ...prevComponent }, false),
+    undo: sM.createComponent.bind(sM, { id: args.id, smId: args.smId, ...prevComponent }, false),
   }),
   editComponent: (sM, { args, prevComponent }) => ({
     redo: sM.editComponent.bind(sM, args, false),
@@ -421,9 +421,10 @@ export const actionFunctions: ActionFunctions = {
       {
         smId: args.smId,
         type: args.type,
-        id: args.newName ?? args.id,
+        id: args.newId ?? args.id,
+        name: prevComponent.name,
         parameters: prevComponent.parameters,
-        newName: args.newName ? args.id : undefined,
+        newId: args.newId ? args.id : undefined,
       },
       false
     ),
@@ -645,9 +646,9 @@ export const actionDescriptions: ActionDescriptions = {
     description: `Имя: ${args.id}\nТип: ${prevComponent.type}`,
   }),
   editComponent: ({ args, prevComponent }) => {
-    const prev = { prevComponent, name: args.id };
+    const prev = { prevComponent, id: args.id, name: args.name };
     const newComp = { ...args, type: prevComponent.type };
-    delete newComp.newName;
+    delete newComp.newId;
 
     return {
       name: 'Изменение компонента',

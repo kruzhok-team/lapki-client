@@ -94,16 +94,22 @@ function serializeArgs(
 export function serializeEvent(
   components: { [id: string]: Component },
   platform: Platform,
-  trigger: Event
+  trigger: Event,
+  useName: boolean = false
 ): string {
   if (isDefaultComponent(trigger)) {
     return convertDefaultComponent(trigger.component, trigger.method);
   }
 
+  const componentName =
+    useName && components[trigger.component].name
+      ? components[trigger.component].name
+      : trigger.component;
+
   if (trigger.args === undefined || Object.keys(trigger.args).length === 0) {
-    return `${trigger.component}.${trigger.method}`;
+    return `${componentName}.${trigger.method}`;
   } else {
-    return `${trigger.component}.${trigger.method}(${serializeArgs(
+    return `${componentName}.${trigger.method}(${serializeArgs(
       components,
       platform,
       trigger.args
@@ -460,10 +466,18 @@ function serializeComponents(components: { [id: string]: Component }): {
     cgmlComponents[`c${id}`] = {
       id: id,
       type: component.type,
-      parameters: component.parameters,
+      parameters: {
+        ...component.parameters,
+      },
       order: component.order,
       unsupportedDataNodes: [getPointNode(component.position)],
     };
+    if (component.name) {
+      cgmlComponents[`c${id}`].parameters = {
+        ...cgmlComponents[`c${id}`].parameters,
+        name: component.name,
+      };
+    }
   }
   return cgmlComponents;
 }

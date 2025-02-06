@@ -154,7 +154,8 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
                       text={`↳ ${serializeEvent(
                         components,
                         platform.data,
-                        event.trigger as Event
+                        event.trigger as Event,
+                        true
                       )}${getCondition(event.condition)}/`}
                       onClick={() => {
                         setCurrentEventIndex(key);

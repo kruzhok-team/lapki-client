@@ -88,28 +88,27 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
         {sortedComponents.length === 0 ? (
           <p className="text-text-inactive">Нет компонентов</p>
         ) : (
-          sortedComponents.map((name) => {
-            const key = controller.components.getComponentKey(smId, name);
+          sortedComponents.map((id) => {
+            const name = components[id].name;
+            const key = controller.components.getComponentKey(smId, id);
             return (
               <Component
                 key={key}
-                name={name}
+                name={name ?? id}
                 description={
                   platform[smId] !== undefined
-                    ? platform[smId].getComponent(name)?.description
+                    ? platform[smId].getComponent(id)?.description
                     : undefined
                 }
                 icon={
-                  platform[smId] !== undefined
-                    ? platform[smId].getFullComponentIcon(name)
-                    : undefined
+                  platform[smId] !== undefined ? platform[smId].getFullComponentIcon(id) : undefined
                 }
                 isSelected={key === selectedComponent}
                 isDragging={key === dragName}
-                onCallContextMenu={() => onRequestEditComponent(smId, components, name)}
+                onCallContextMenu={() => onRequestEditComponent(smId, components, id)}
                 onSelect={() => setSelectedComponent(key)}
-                onEdit={() => onRequestEditComponent(smId, components, name)}
-                onDelete={() => onRequestDeleteComponent(smId, components, name)}
+                onEdit={() => onRequestEditComponent(smId, components, id)}
+                onDelete={() => onRequestDeleteComponent(smId, components, id)}
                 onDragStart={() => setDragName(key)}
                 onDrop={() => onDropComponent(key)}
               />

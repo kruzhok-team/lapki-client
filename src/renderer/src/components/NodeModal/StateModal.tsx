@@ -136,8 +136,12 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
             >
               {state &&
                 (state.data.events.length === 0 ? (
-                  <div className="flex h-full w-full select-none items-center justify-center text-center align-middle text-text-inactive">
-                    <span>(Чтобы добавить событие нажмите [+])</span>{' '}
+                  <div className="flex h-full w-full select-none flex-row items-center justify-center text-center align-middle text-text-inactive">
+                    <span className="mr-2">(Чтобы добавить событие нажмите</span>
+                    <div>
+                      <AddIcon className="btn-secondary h-5 w-5 cursor-default border-text-inactive p-[0.5px]" />
+                    </div>
+                    <span className="ml-1">)</span>
                   </div>
                 ) : (
                   state.data.events.map((event, key) => (

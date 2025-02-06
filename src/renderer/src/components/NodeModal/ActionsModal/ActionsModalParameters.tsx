@@ -205,6 +205,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                       }
                       isSearchable={false}
                       noOptionsMessage={() => 'Нет подходящих компонентов'}
+                      placeholder="Выберите компонент..."
                     />
                     <Select
                       containerClassName="w-[250px]"
@@ -219,6 +220,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                       value={methodOptions.find((o) => o.value === selectedParameterMethod) ?? null}
                       isSearchable={false}
                       noOptionsMessage={() => 'Нет подходящих атрибутов'}
+                      placeholder="Выберите метод..."
                     />
                   </div>
                 </div>
@@ -232,6 +234,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                 error={error}
                 value={value as string}
                 name={name}
+                placeholder="Введите значение..."
                 onChange={(e) => handleInputChange(name, e.target.value)}
               />
             )}

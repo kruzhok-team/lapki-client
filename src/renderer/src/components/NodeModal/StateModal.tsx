@@ -137,7 +137,7 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
               {state &&
                 (state.data.events.length === 0 ? (
                   <div className="flex h-full w-full select-none items-center justify-center text-center align-middle text-text-inactive">
-                    <span>(Нет событий...)</span>{' '}
+                    <span>(Чтобы добавить событие нажмите [+])</span>{' '}
                   </div>
                 ) : (
                   state.data.events.map((event, key) => (

@@ -154,7 +154,7 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
             <div className="flex items-start">
               <div className="mr-2 mt-[6px]">
                 <AttributeConstSwitch
-                  checked={isParamOneInput1}
+                  isAttribute={isParamOneInput1}
                   onCheckedChange={() => handleParamOneInput1(!isParamOneInput1)}
                 />
               </div>
@@ -209,7 +209,7 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
             <div className="flex items-start">
               <div className="mr-2 mt-[6px]">
                 <AttributeConstSwitch
-                  checked={isParamOneInput2}
+                  isAttribute={isParamOneInput2}
                   onCheckedChange={() => handleParamOneInput2(!isParamOneInput2)}
                 />
               </div>

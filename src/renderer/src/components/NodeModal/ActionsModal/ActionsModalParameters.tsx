@@ -171,7 +171,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
           <div className="flex items-center space-x-2" key={name}>
             <div className="mt-[4px]">
               <AttributeConstSwitch
-                checked={currentChecked}
+                isAttribute={currentChecked}
                 onCheckedChange={() => {
                   setCheckedTo(name, !currentChecked);
                   handleInputChange(name, '');

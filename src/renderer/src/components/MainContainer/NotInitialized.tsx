@@ -52,7 +52,8 @@ export const NotInitialized: React.FC = () => {
   }, []);
 
   const seriousIcon = <SeriousIcon width={200} opacity={0.3} />;
-  const icon = seriousMode ? seriousIcon : <Icon />;
+  const lapkiIcon = <Icon width={200} opacity={0.3} />;
+  const icon = seriousMode ? seriousIcon : lapkiIcon;
 
   const hotKeyStyle = 'rounded border-2 border-border-contrast px-1';
 

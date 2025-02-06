@@ -69,7 +69,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
   >(undefined);
   const [compilerData, setCompilerData] = useState<CompilerResult | undefined>(undefined);
   const [compilerStatus, setCompilerStatus] = useState('Не подключен.');
-  const [onDocumentationToggle] = useDoc((state) => [state.onDocumentationToggle]);
+  const [onDocumentationToggle, isDocOpen] = useDoc((state) => [
+    state.onDocumentationToggle,
+    state.isOpen,
+  ]);
 
   const isEditorDataStale = modelController.model.useData('', 'isStale');
 
@@ -171,13 +174,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
         Icon: <DocumentationIcon />,
         hint: 'Документация',
         action: () => onDocumentationToggle(),
+        isActive: isDocOpen,
+        hideSideBorder: true,
       },
       {
         Icon: <SettingsIcon />,
         hint: 'Настройки',
       },
     ],
-    [isEditorDataStale]
+    [isEditorDataStale, isDocOpen]
   );
 
   return (

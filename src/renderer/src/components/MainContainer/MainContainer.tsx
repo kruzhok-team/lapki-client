@@ -100,6 +100,13 @@ export const MainContainer: React.FC = () => {
   useEffect(() => {
     if (autoSaveSettings === null || restoreSession === null || saveModalProps.isOpen) return;
 
+    if (autoSaveSettings.disabled) {
+      if (restoreSession) {
+        cancelRestoreData();
+      }
+      return;
+    }
+
     if (isInitialized && !isReservedDataPresent) {
       setIsReservedPresent(true);
       return;

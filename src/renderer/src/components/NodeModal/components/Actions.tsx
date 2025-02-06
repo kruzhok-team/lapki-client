@@ -32,6 +32,7 @@ export const Actions: React.FC<ActionsProps> = (props) => {
     controller,
     text,
     onChangeText,
+    getComponentName,
     setActions,
     event,
   } = props;
@@ -118,7 +119,10 @@ export const Actions: React.FC<ActionsProps> = (props) => {
                   onChange={() => onChangeAction(data)}
                   onDragStart={() => handleDrag(i)}
                   onDrop={() => handleDrop(i)}
-                  data={data}
+                  data={{
+                    ...data,
+                    componentName: getComponentName(data.component) ?? data.component,
+                  }}
                 />
               ))}
             </div>

@@ -156,7 +156,12 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
               <button type="button" className="btn-secondary border-red p-1" onClick={addEvent}>
                 <AddIcon />
               </button>
-              <button type="button" className="btn-secondary p-1" onClick={removeEvent}>
+              <button
+                type="button"
+                className="btn-secondary p-1"
+                onClick={removeEvent}
+                disabled={currentEventIndex === undefined}
+              >
                 <SubtractIcon />
               </button>
             </div>

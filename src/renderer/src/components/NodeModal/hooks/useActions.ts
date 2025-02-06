@@ -5,7 +5,7 @@ import { useModal } from '@renderer/hooks/useModal';
 import { serializeActions } from '@renderer/lib/data/GraphmlBuilder';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { useModelContext } from '@renderer/store/ModelContext';
-import { Action } from '@renderer/types/diagram';
+import { Action, Component } from '@renderer/types/diagram';
 
 export const useActions = (
   smId: string,
@@ -13,8 +13,10 @@ export const useActions = (
   defaultActions: Action[] | null
 ) => {
   const modelController = useModelContext();
-  const componentsData = modelController.model.useData(smId, 'elements.components');
-  const visual = controller.useData('visual');
+  const componentsData = modelController.model.useData(smId, 'elements.components') as {
+    [id: string]: Component;
+  };
+  const visual = controller.useData('visual') as boolean;
 
   const [isActionsModalOpen, openActionsModal, closeActionsModal] = useModal(false);
   const [actionsModalData, setActionsModalData] = useState<ActionsModalData>();
@@ -67,6 +69,13 @@ export const useActions = (
     closeActionsModal();
   };
 
+  const getComponentName = (id: string) => {
+    const component = componentsData[id];
+    if (!component) return id;
+
+    return component.name ?? id;
+  };
+
   const clear = () => {
     setActions([]);
     setText('');
@@ -116,6 +125,7 @@ export const useActions = (
       initialData: actionsModalData,
     },
     smId,
+    getComponentName,
     controller,
     parse,
     clear,

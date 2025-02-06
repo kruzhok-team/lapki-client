@@ -54,7 +54,7 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
   }
 
   createComponent = (args: CreateComponentParams) => {
-    const key = this.getComponentKey(args.smId, args.name);
+    const key = this.getComponentKey(args.smId, args.id);
     if (this.items.get(key)) return;
     const platform = this.controller.platform[args.smId];
     if (!platform) return;
@@ -67,7 +67,7 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
     };
     const component = new DrawableComponent(
       this.app,
-      args.name,
+      args.id,
       args.smId,
       args.position,
       markedIcon
@@ -93,14 +93,15 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
     const component = this.items.get(key);
     if (!component) return;
     // const componentData = component.data;
-    if (args.newName !== undefined) {
+    if (args.newId !== undefined) {
       this.controller.deleteComponent(args);
       // (L140-beep) скорее всего придется потом возиться с переходами
       // на схематехническом экране
       this.controller.createComponent({
         smId: args.smId,
         type: args.type,
-        name: args.newName,
+        name: args.name,
+        id: args.newId,
         position: component.position,
         parameters: args.parameters,
         order: 0,
@@ -123,7 +124,8 @@ export class ComponentsController extends EventEmitter<ComponentsControllerEvent
     this.controller.createComponent({
       smId: args.smId,
       type: args.type,
-      name: args.newName,
+      name: args.name,
+      id: args.newId,
       position: component.position,
       parameters: args.parameters,
       order: 0,

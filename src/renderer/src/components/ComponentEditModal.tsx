@@ -41,7 +41,7 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
   const headControllerId = modelController.model.useData('', 'headControllerId');
   const controller = modelController.controllers[headControllerId];
   const editor = controller.app;
-  const [name, setName] = useState('');
+  const [name, setName] = useState<string | undefined>();
   const [componentId, setComponentId] = useState('');
   // const platformId = model.useData(smId, 'elements.platform');
   // const platform = getPlatform(platformId);
@@ -78,7 +78,7 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
     for (const key in errors) {
       if (errors[key]) return;
     }
-    const submitData = { type: data.type, name: name, parameters };
+    const submitData = { type: data.type, name: name === '' ? undefined : name, parameters };
     const newId = componentId === id ? undefined : componentId;
 
     onEdit(id, submitData, newId);

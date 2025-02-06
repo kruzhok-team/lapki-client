@@ -14,7 +14,7 @@ interface ComponentFormFieldsProps {
   protoInitializationParameters: ComponentProto['initializationParameters'];
   parameters: ComponentData['parameters'];
   setParameters: (data: ComponentData['parameters']) => void;
-  name: string;
+  name: string | undefined;
   id: string;
   setName: (data: string) => void;
   setComponentId: (data: string) => void;
@@ -96,6 +96,7 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
         <>
           <ComponentFormFieldLabel
             label="Название:"
+            placeholder="Введите название..."
             maxLength={20}
             value={name}
             onChange={(e) => handleNameChange(e)}
@@ -103,6 +104,7 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
           />
 
           <ComponentFormFieldLabel
+            placeholder="Введите идентификатор..."
             label={
               <>
                 Техническое <br /> название:

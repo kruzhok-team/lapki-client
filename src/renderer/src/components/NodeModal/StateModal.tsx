@@ -130,26 +130,35 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
       >
         <div className="flex flex-col gap-3">
           <div className="flex">
-            <div className="ml-11 mr-3 h-96 w-full overflow-y-auto break-words rounded border border-border-primary bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
+            <div
+              onDoubleClick={addEvent}
+              className="ml-11 mr-3 h-96 w-full overflow-y-auto break-words rounded border border-border-primary bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
+            >
               {state &&
-                state.data.events.map((event, key) => (
-                  <EventPicto
-                    onDoubleClick={() => openEditEventModal()}
-                    key={key}
-                    event={event.trigger as Event}
-                    isSelected={key === currentEventIndex}
-                    platform={platform}
-                    condition={event.condition as Condition}
-                    text={`↳ ${serializeEvent(
-                      components,
-                      platform.data,
-                      event.trigger as Event
-                    )}${getCondition(event.condition)}/`}
-                    onClick={() => {
-                      setCurrentEventIndex(key);
-                      setCurrentEvent(state.data.events[key]);
-                    }}
-                  />
+                (state.data.events.length === 0 ? (
+                  <div className="flex h-full w-full select-none items-center justify-center text-center align-middle text-text-inactive">
+                    <span>(Нет событий...)</span>{' '}
+                  </div>
+                ) : (
+                  state.data.events.map((event, key) => (
+                    <EventPicto
+                      onDoubleClick={() => openEditEventModal()}
+                      key={key}
+                      event={event.trigger as Event}
+                      isSelected={key === currentEventIndex}
+                      platform={platform}
+                      condition={event.condition as Condition}
+                      text={`↳ ${serializeEvent(
+                        components,
+                        platform.data,
+                        event.trigger as Event
+                      )}${getCondition(event.condition)}/`}
+                      onClick={() => {
+                        setCurrentEventIndex(key);
+                        setCurrentEvent(state.data.events[key]);
+                      }}
+                    />
+                  ))
                 ))}
             </div>
             <div className="flex flex-col gap-2">

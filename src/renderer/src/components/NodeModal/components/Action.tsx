@@ -71,6 +71,14 @@ export const Action: React.FC<ActionProps> = (props) => {
             Object.entries(data.args).map(([id, value], index) => {
               const protoComponent =
                 platform.data.components[platform.resolveComponentType(data.component)];
+              if (!protoComponent) {
+                return (
+                  <>
+                    {serializeParameter(value)}
+                    {index !== 0 && ', '}
+                  </>
+                );
+              }
               const protoMethod = protoComponent.methods[data.method];
               const protoParameters = protoMethod.parameters;
 

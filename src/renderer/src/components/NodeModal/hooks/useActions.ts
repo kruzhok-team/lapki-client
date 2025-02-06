@@ -71,7 +71,7 @@ export const useActions = (
 
   const getComponentName = (id: string) => {
     const component = componentsData[id];
-    if (!component) throw new Error(`Попытка получить имя несуществующего компонента ${id}!`);
+    if (!component) return id;
 
     return component.name ?? id;
   };

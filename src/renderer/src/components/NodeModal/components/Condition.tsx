@@ -4,11 +4,11 @@ import CodeMirror, { ReactCodeMirrorRef, Transaction, EditorState } from '@uiw/r
 import throttle from 'lodash.throttle';
 import { twMerge } from 'tailwind-merge';
 
-import { Checkbox, Select, TabPanel, Tabs, TextField } from '@renderer/components/UI';
+import { AttributeConstSwitch } from '@renderer/components/AttributeConstSwitch';
+import { Select, TabPanel, Tabs, TextField } from '@renderer/components/UI';
 import { useModelContext } from '@renderer/store/ModelContext';
 
 import { useCondition } from '../hooks';
-
 import '../style.css';
 
 const operand = [
@@ -152,15 +152,16 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
         <TabPanel value={0} tabValue={tabValue}>
           <div className="flex flex-col gap-2">
             <div className="flex items-start">
-              <Checkbox
-                checked={!isParamOneInput1}
-                onCheckedChange={(v) => handleParamOneInput1(!v)}
-                className="mr-2 mt-[9px]"
-              />
+              <div className="mr-2 mt-[6px]">
+                <AttributeConstSwitch
+                  isAttribute={isParamOneInput1}
+                  onCheckedChange={() => handleParamOneInput1(!isParamOneInput1)}
+                />
+              </div>
               {isParamOneInput1 ? (
-                <div className="flex w-full gap-2">
+                <div className="flex gap-2">
                   <Select
-                    containerClassName="w-full"
+                    containerClassName="w-[290px]"
                     options={componentOptionsParam1}
                     onChange={handleComponentParam1Change}
                     value={
@@ -169,9 +170,11 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
                     }
                     isSearchable={false}
                     error={errors.selectedComponentParam1 || ''}
+                    placeholder="Выберите компонент..."
+                    noOptionsMessage={() => 'Нет подходящих компонентов'}
                   />
                   <Select
-                    containerClassName="w-full"
+                    containerClassName="w-[290px]"
                     options={methodOptionsParam1}
                     onChange={handleMethodParam1Change}
                     value={
@@ -179,6 +182,8 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
                     }
                     isSearchable={false}
                     error={errors.selectedMethodParam1 || ''}
+                    placeholder="Выберите атрибут..."
+                    noOptionsMessage={() => 'Нет подходящих атрибутов'}
                   />
                 </div>
               ) : (
@@ -194,7 +199,7 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
             </div>
 
             <Select
-              containerClassName="pl-7"
+              containerClassName="pl-[50px]"
               className="max-w-[220px]"
               placeholder="Выберите оператор"
               options={operand}
@@ -204,15 +209,16 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
             />
 
             <div className="flex items-start">
-              <Checkbox
-                checked={!isParamOneInput2}
-                onCheckedChange={(v) => handleParamOneInput2(!v)}
-                className="mr-2 mt-[9px]"
-              />
+              <div className="mr-2 mt-[6px]">
+                <AttributeConstSwitch
+                  isAttribute={isParamOneInput2}
+                  onCheckedChange={() => handleParamOneInput2(!isParamOneInput2)}
+                />
+              </div>
               {isParamOneInput2 ? (
-                <div className="flex w-full gap-2">
+                <div className="flex gap-2">
                   <Select
-                    containerClassName="w-full"
+                    containerClassName="w-[290px]"
                     options={componentOptionsParam2}
                     onChange={handleComponentParam2Change}
                     value={
@@ -221,9 +227,11 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
                     }
                     isSearchable={false}
                     error={errors.selectedComponentParam2 || ''}
+                    placeholder="Выберите компонент..."
+                    noOptionsMessage={() => 'Нет подходящих компонентов'}
                   />
                   <Select
-                    containerClassName="w-full"
+                    containerClassName="w-[290px]"
                     options={methodOptionsParam2}
                     onChange={handleMethodParam2Change}
                     value={
@@ -231,6 +239,8 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
                     }
                     isSearchable={false}
                     error={errors.selectedMethodParam2 || ''}
+                    placeholder="Выберите атрибут..."
+                    noOptionsMessage={() => 'Нет подходящих атрибутов'}
                   />
                 </div>
               ) : (

@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 
 import { ReactComponent as QuestionMark } from '@renderer/assets/icons/question-mark.svg';
+import { AttributeConstSwitch } from '@renderer/components/AttributeConstSwitch';
 import { ComponentFormFieldLabel } from '@renderer/components/ComponentFormFieldLabel';
-import { Checkbox, Select, SelectOption, WithHint } from '@renderer/components/UI';
+import { Select, SelectOption, WithHint } from '@renderer/components/UI';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { isVariable } from '@renderer/lib/utils';
 import { ArgList, Variable } from '@renderer/types/diagram';
@@ -101,7 +102,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
           return (
             <ComponentFormFieldLabel key={name} label={label} hint={hint}>
               <Select
-                className="w-[250px]"
+                className="w-[300px] pl-[50px]"
                 options={options}
                 value={options.find((o) => o.value === value)}
                 onChange={(opt) => handleInputChange(name, opt?.value ?? '')}
@@ -166,19 +167,19 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
           currentChecked = true;
         }
         const methodOptions = methodOptionsSearch(selectedParameterComponent);
-
         return (
-          <div className="flex items-start" key={name}>
-            <Checkbox
-              checked={currentChecked}
-              onCheckedChange={() => {
-                setCheckedTo(name, !currentChecked);
-                handleInputChange(name, '');
-              }}
-              className="mr-2 mt-[9px]"
-            />
+          <div className="flex items-center space-x-2" key={name}>
+            <div className="mt-[4px]">
+              <AttributeConstSwitch
+                isAttribute={currentChecked}
+                onCheckedChange={() => {
+                  setCheckedTo(name, !currentChecked);
+                  handleInputChange(name, '');
+                }}
+              />
+            </div>
             {currentChecked ? (
-              <div className="w-full">
+              <div>
                 <div className="flex">
                   <label className="grid grid-cols-[max-content,1fr] items-center justify-start gap-2">
                     <div className="flex min-w-28 items-center gap-1">
@@ -196,7 +197,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                   </label>
                   <div className="flex w-full">
                     <Select
-                      containerClassName="w-full"
+                      containerClassName="w-[250px]"
                       options={componentOptions}
                       onChange={(opt) => handleComponentAttributeChange(name, opt?.value ?? '', '')}
                       value={
@@ -204,9 +205,10 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                       }
                       isSearchable={false}
                       noOptionsMessage={() => 'Нет подходящих компонентов'}
+                      placeholder="Выберите компонент..."
                     />
                     <Select
-                      containerClassName="w-full"
+                      containerClassName="w-[250px]"
                       options={methodOptions}
                       onChange={(opt) =>
                         handleComponentAttributeChange(
@@ -218,6 +220,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                       value={methodOptions.find((o) => o.value === selectedParameterMethod) ?? null}
                       isSearchable={false}
                       noOptionsMessage={() => 'Нет подходящих атрибутов'}
+                      placeholder="Выберите атрибут..."
                     />
                   </div>
                 </div>
@@ -231,6 +234,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                 error={error}
                 value={value as string}
                 name={name}
+                placeholder="Введите значение..."
                 onChange={(e) => handleInputChange(name, e.target.value)}
               />
             )}

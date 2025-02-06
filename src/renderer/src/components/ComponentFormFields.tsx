@@ -98,6 +98,7 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
             label="Название:"
             placeholder="Введите название..."
             maxLength={20}
+            hint="Человекочитаемое название, которое будет отображаться в интерфейсе."
             value={name}
             onChange={(e) => handleNameChange(e)}
             autoFocus

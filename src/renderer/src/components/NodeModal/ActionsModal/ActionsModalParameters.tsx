@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { ReactComponent as QuestionMark } from '@renderer/assets/icons/question-mark.svg';
 import { AttributeConstSwitch } from '@renderer/components/AttributeConstSwitch';
 import { ComponentFormFieldLabel } from '@renderer/components/ComponentFormFieldLabel';
-import { Select, SelectOption, WithHint } from '@renderer/components/UI';
+import { Select, SelectOption, Switch, WithHint } from '@renderer/components/UI';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { isVariable } from '@renderer/lib/utils';
 import { ArgList, Variable } from '@renderer/types/diagram';
@@ -102,7 +102,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
           return (
             <ComponentFormFieldLabel key={name} label={label} hint={hint}>
               <Select
-                className="w-[332px] pl-[82px]"
+                className="w-[300px] pl-[50px]"
                 options={options}
                 value={options.find((o) => o.value === value)}
                 onChange={(opt) => handleInputChange(name, opt?.value ?? '')}
@@ -168,14 +168,26 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
         }
         const methodOptions = methodOptionsSearch(selectedParameterComponent);
         return (
-          <div className="flex items-start space-x-1" key={name}>
-            <AttributeConstSwitch
-              defaultIsAttribute={currentChecked}
-              beforeSwitch={(currentIsAttribute) => {
-                setCheckedTo(name, !currentIsAttribute);
-                handleInputChange(name, '');
-              }}
-            ></AttributeConstSwitch>
+          <div className="flex items-center space-x-2" key={name}>
+            <WithHint
+              hint={
+                currentChecked
+                  ? 'Переключиться на константу'
+                  : 'Переключиться на атрибут компонента'
+              }
+            >
+              {(hintProps) => (
+                <div {...hintProps}>
+                  <Switch
+                    checked={currentChecked}
+                    onCheckedChange={() => {
+                      setCheckedTo(name, !currentChecked);
+                      handleInputChange(name, '');
+                    }}
+                  />
+                </div>
+              )}
+            </WithHint>
             {currentChecked ? (
               <div>
                 <div className="flex">

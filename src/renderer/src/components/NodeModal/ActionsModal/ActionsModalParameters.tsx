@@ -220,7 +220,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                       value={methodOptions.find((o) => o.value === selectedParameterMethod) ?? null}
                       isSearchable={false}
                       noOptionsMessage={() => 'Нет подходящих атрибутов'}
-                      placeholder="Выберите метод..."
+                      placeholder="Выберите атрибут..."
                     />
                   </div>
                 </div>

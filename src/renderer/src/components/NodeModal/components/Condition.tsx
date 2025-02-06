@@ -181,7 +181,7 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
                     }
                     isSearchable={false}
                     error={errors.selectedMethodParam1 || ''}
-                    placeholder="Выберите метод..."
+                    placeholder="Выберите атрибут..."
                   />
                 </div>
               ) : (
@@ -236,7 +236,7 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
                     }
                     isSearchable={false}
                     error={errors.selectedMethodParam2 || ''}
-                    placeholder="Выберите метод..."
+                    placeholder="Выберите атрибут..."
                   />
                 </div>
               ) : (

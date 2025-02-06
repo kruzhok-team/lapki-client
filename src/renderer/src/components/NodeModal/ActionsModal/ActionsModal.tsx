@@ -57,7 +57,7 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
       if (!platforms[smId]) {
         return {
           value: id,
-          label: id,
+          label: componentsData[id].name ?? id,
           hint: undefined,
           icon: undefined,
         };
@@ -66,7 +66,7 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
 
       return {
         value: id,
-        label: id,
+        label: componentsData[id].name ?? id,
         hint: proto?.description,
         icon: platforms[smId].getFullComponentIcon(id, 'mr-1 h-7 w-7'),
       };

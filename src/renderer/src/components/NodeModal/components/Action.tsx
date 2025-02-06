@@ -19,7 +19,7 @@ interface ActionProps {
   onChange: () => void;
   onDragStart: () => void;
   onDrop: () => void;
-  data: ActionData;
+  data: ActionData & { componentName: string };
 }
 
 /**
@@ -63,7 +63,7 @@ export const Action: React.FC<ActionProps> = (props) => {
       />
 
       <div className="flex flex-row items-center">
-        <div>{data.component}.</div>
+        <div>{data.componentName}.</div>
         <div>{data.method}</div>
         <div>(</div>
         <div className="flex items-center gap-[2px]">
@@ -71,6 +71,14 @@ export const Action: React.FC<ActionProps> = (props) => {
             Object.entries(data.args).map(([id, value], index) => {
               const protoComponent =
                 platform.data.components[platform.resolveComponentType(data.component)];
+              if (!protoComponent) {
+                return (
+                  <>
+                    {serializeParameter(value)}
+                    {index !== 0 && ', '}
+                  </>
+                );
+              }
               const protoMethod = protoComponent.methods[data.method];
               const protoParameters = protoMethod.parameters;
 

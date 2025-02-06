@@ -9,18 +9,18 @@ import { ComponentProto } from '@renderer/types/platform';
 import { ComponentFormFields } from './ComponentFormFields';
 
 // название ключа ошибки для поля ввода имени, он также нужен для ComponentFormFields
-export const nameError = 'name';
+export const idError = 'id';
 
 interface ComponentEditModalProps {
   isOpen: boolean;
   onClose: () => void;
 
-  idx: string;
+  id: string;
   data: ComponentData;
   proto: ComponentProto;
-  onEdit: (idx: string, data: Omit<ComponentData, 'order' | 'position'>, newName?: string) => void;
+  onEdit: (id: string, data: Omit<ComponentData, 'order' | 'position'>, newName?: string) => void;
   onDelete: (idx: string) => void;
-  validateComponentName: (
+  validateComponentId: (
     name: string,
     validateProto: ComponentProto,
     idx: string
@@ -29,19 +29,20 @@ interface ComponentEditModalProps {
 
 export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
   isOpen,
-  idx,
+  id,
   data,
   proto,
   onClose,
   onEdit,
   onDelete,
-  validateComponentName,
+  validateComponentId,
 }) => {
   const modelController = useModelContext();
   const headControllerId = modelController.model.useData('', 'headControllerId');
   const controller = modelController.controllers[headControllerId];
   const editor = controller.app;
-  const [name, setName] = useState('');
+  const [name, setName] = useState<string | undefined>();
+  const [componentId, setComponentId] = useState('');
   // const platformId = model.useData(smId, 'elements.platform');
   // const platform = getPlatform(platformId);
   const [parameters, setParameters] = useState<ComponentData['parameters']>({});
@@ -50,18 +51,19 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
 
   // Сброс к начальному состоянию после закрытия
   const handleAfterClose = () => {
-    setName(idx);
+    setName(data.name);
+    setComponentId(id);
     setParameters({ ...data.parameters });
     editor.focus();
   };
 
   const handleNameValidation = (): boolean => {
-    const validationResult = validateComponentName(name, proto, idx);
+    const validationResult = validateComponentId(componentId, proto, id);
     if (validationResult.status) return true;
 
     setErrors((prevErrors) => ({
       ...prevErrors,
-      [nameError]: validationResult.error,
+      [idError]: validationResult.error,
     }));
 
     return false;
@@ -76,25 +78,25 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
     for (const key in errors) {
       if (errors[key]) return;
     }
+    const submitData = { type: data.type, name: name === '' ? undefined : name, parameters };
+    const newId = componentId === id ? undefined : componentId;
 
-    const submitData = { type: data.type, parameters };
-    const newName = name === idx ? undefined : name;
-
-    onEdit(idx, submitData, newName);
+    onEdit(id, submitData, newId);
     onClose();
   };
 
   const handleDelete = () => {
-    onDelete(idx);
+    onDelete(id);
     onClose();
   };
 
   const componentType = proto.name ?? data.type;
-  const componentName = proto.singletone ? componentType : `${componentType} ${idx}`;
+  const componentName = proto.singletone ? componentType : `${componentType} ${id}`;
 
   useLayoutEffect(() => {
-    setName(idx);
-  }, [idx]);
+    setName(data.name);
+    setComponentId(id);
+  }, [id, data.name]);
 
   useLayoutEffect(() => {
     setParameters({ ...data.parameters });
@@ -124,6 +126,8 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
         protoInitializationParameters={proto.initializationParameters}
         name={name}
         setName={setName}
+        id={componentId}
+        setComponentId={setComponentId}
         parameters={parameters}
         setParameters={setParameters}
         errors={errors}

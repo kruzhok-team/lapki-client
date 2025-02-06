@@ -7,7 +7,11 @@ import { CanvasController } from '@renderer/lib/data/ModelController/CanvasContr
 import { useModelContext } from '@renderer/store/ModelContext';
 import { Action, Component } from '@renderer/types/diagram';
 
-export const useActions = (smId: string, controller: CanvasController) => {
+export const useActions = (
+  smId: string,
+  controller: CanvasController,
+  defaultActions: Action[] | null
+) => {
   const modelController = useModelContext();
   const componentsData = modelController.model.useData(smId, 'elements.components') as {
     [id: string]: Component;
@@ -19,7 +23,7 @@ export const useActions = (smId: string, controller: CanvasController) => {
 
   const [tabValue, setTabValue] = useState(0);
 
-  const [actions, setActions] = useState<Action[]>([]);
+  const [actions, setActions] = useState<Action[]>(defaultActions ?? []);
   const [text, setText] = useState('');
 
   const handleAddAction = () => {

@@ -1,18 +1,14 @@
 import React from 'react';
 
 import { ReactComponent as Grid } from '@renderer/assets/icons/grid.svg';
-import { ReactComponent as Question } from '@renderer/assets/icons/question.svg';
+import { ReactComponent as Redo } from '@renderer/assets/icons/redo.svg';
 import { ReactComponent as ZoomIn } from '@renderer/assets/icons/zoom-in.svg';
 import { ReactComponent as ZoomOut } from '@renderer/assets/icons/zoom-out.svg';
 import { useSettings } from '@renderer/hooks/useSettings';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { useTabs } from '@renderer/store/useTabs';
 
-export interface EditorSettingsProps {
-  toggle: () => void;
-}
-
-export const EditorSettings: React.FC<EditorSettingsProps> = ({ toggle }) => {
+export const EditorSettings: React.FC = () => {
   const [activeTabName, items] = useTabs((state) => [state.activeTab, state.items]);
   const activeTab = items.find((tab) => tab.name === activeTabName);
   const modelController = useModelContext();
@@ -34,6 +30,14 @@ export const EditorSettings: React.FC<EditorSettingsProps> = ({ toggle }) => {
     controller.view.changeScale(1, true);
   };
 
+  const handleUndo = () => {
+    modelController.history.undo();
+  };
+
+  const handleRedo = () => {
+    modelController.history.redo();
+  };
+
   const handleCanvasGrid = () => {
     setCanvasSettings({
       ...canvasSettings!,
@@ -45,7 +49,21 @@ export const EditorSettings: React.FC<EditorSettingsProps> = ({ toggle }) => {
 
   return (
     activeTab?.type === 'editor' && (
-      <div className="absolute -left-60 bottom-3 flex items-stretch overflow-hidden rounded bg-bg-secondary">
+      <div className="absolute -left-[280px] bottom-3 flex items-stretch overflow-hidden rounded bg-bg-secondary">
+        <button
+          className="horizontal-flip px-2 outline-none hover:bg-bg-hover active:bg-bg-active"
+          onClick={handleUndo}
+        >
+          <Redo width={20} height={20} />
+        </button>
+
+        <button
+          className="px-2 outline-none hover:bg-bg-hover active:bg-bg-active"
+          onClick={handleRedo}
+        >
+          <Redo width={20} height={20} />
+        </button>
+
         <button
           className="px-2 outline-none hover:bg-bg-hover active:bg-bg-active"
           onClick={handleCanvasGrid}
@@ -72,13 +90,6 @@ export const EditorSettings: React.FC<EditorSettingsProps> = ({ toggle }) => {
           onClick={handleZoomIn}
         >
           <ZoomIn width={20} height={20} />
-        </button>
-
-        <button
-          className="px-2 text-primary outline-none hover:bg-bg-hover active:bg-bg-active"
-          onClick={toggle}
-        >
-          <Question height={20} width={20} />
         </button>
       </div>
     )

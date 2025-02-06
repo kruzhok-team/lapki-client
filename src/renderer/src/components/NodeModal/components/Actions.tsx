@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import CodeMirror, { Transaction, EditorState, ReactCodeMirrorRef } from '@uiw/react-codemirror';
 import throttle from 'lodash.throttle';
@@ -7,12 +7,13 @@ import { ReactComponent as AddIcon } from '@renderer/assets/icons/add.svg';
 import { ReactComponent as SubtractIcon } from '@renderer/assets/icons/subtract.svg';
 import { ActionsModal } from '@renderer/components';
 import { TabPanel, Tabs } from '@renderer/components/UI';
+import { Action as ActionData, EventData } from '@renderer/types/diagram';
 
 import { Action } from './Action';
 
 import { useActions } from '../hooks';
 
-type ActionsProps = ReturnType<typeof useActions>;
+type ActionsProps = ReturnType<typeof useActions> & { event: EventData | null | undefined };
 
 /**
  * Блок действия в модалках редактирования нод
@@ -32,6 +33,8 @@ export const Actions: React.FC<ActionsProps> = (props) => {
     text,
     onChangeText,
     getComponentName,
+    setActions,
+    event,
   } = props;
   const visual = controller.useData('visual');
 
@@ -65,6 +68,10 @@ export const Actions: React.FC<ActionsProps> = (props) => {
 
     // return tr.startState.doc.length + tr.newDoc.length < 200;
   };
+
+  useEffect(() => {
+    setActions(event ? (event.do as ActionData[]) : []);
+  }, [event]);
 
   const handleChangeText = useMemo(() => throttle(onChangeText, 500), [onChangeText]);
 

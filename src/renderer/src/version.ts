@@ -1,16 +1,22 @@
+/* eslint-disable no-console */
 export let appVersion = null;
-export const releaseDate = '14 января 2025 года';
 export const releaseName = 'Caracal';
+
+export const appName = 'Lapki IDE';
+export const seriousMode = false;
+export const noTextMode = false;
 
 export function initAppVersion() {
   askAppVersion().then(() => {
-    // eslint-disable-next-line no-console
-    console.log('😺 Lapki IDE v' + appVersion + ' «' + releaseName + '»');
+    if (seriousMode) {
+      console.log('👋 ' + appName + ' v' + appVersion);
+    } else {
+      console.log('😸 ' + appName + ' v' + appVersion + ' «' + releaseName + '»');
+    }
   });
 }
 
-export function askAppVersion() {
-  return window.electron.ipcRenderer.invoke('appVersion').then((version) => {
-    appVersion = version;
-  });
+export async function askAppVersion() {
+  const version = await window.electron.ipcRenderer.invoke('appVersion');
+  appVersion = version;
 }

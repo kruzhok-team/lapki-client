@@ -14,7 +14,8 @@ import { Component, Event } from '@renderer/types/diagram';
 export const useTrigger = (
   smId: string,
   controller: CanvasController,
-  addSystemComponents: boolean
+  addSystemComponents: boolean,
+  event: Event | null | undefined
 ) => {
   const modelController = useModelContext();
   const componentsData = modelController.model.useData(smId, 'elements.components') as {
@@ -24,9 +25,13 @@ export const useTrigger = (
   const visual = controller.useData('visual');
 
   const [tabValue, setTabValue] = useState(0);
+  const [selectedComponent, setSelectedComponent] = useState<string | null>(
+    event ? (event as Event).component : null
+  );
 
-  const [selectedComponent, setSelectedComponent] = useState<string | null>(null);
-  const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
+  const [selectedMethod, setSelectedMethod] = useState<string | null>(
+    event ? (event as Event).method : null
+  );
 
   const [text, setText] = useState('');
 

@@ -117,15 +117,15 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
           />
 
           <ComponentFormFieldLabel
-            label="Метка:"
-            hint="До 3-х символов. Метка нужна для различения разных компонентов одного типа."
+            label="Подпись:"
+            hint="До 3-х символов. Подпись нужна для различения иконок разных компонентов одного типа на схеме."
             value={parameters['label'] ?? ''}
             name="label"
             maxLength={3}
             onChange={(e) => handleInputChange('label', e.target.value)}
           />
 
-          <ComponentFormFieldLabel label="Цвет метки:" name="labelColor" as="div">
+          <ComponentFormFieldLabel label="Цвет подписи:" name="labelColor" as="div">
             <ColorInput
               clearable={false}
               value={parameters['labelColor'] ?? '#FFFFFF'}

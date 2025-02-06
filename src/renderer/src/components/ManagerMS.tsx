@@ -12,6 +12,7 @@ import { SelectedMsFirmwaresType } from '@renderer/types/FlasherTypes';
 import { AddressBookModal } from './AddressBook';
 import { FlashSelect } from './FirmwareSelectMS1';
 import { ManagerMS } from './Modules/ManagerMS';
+import { MsGetAddressModal } from './MsGetAddressModal';
 import { Switch } from './UI';
 
 export const ManagerMSTab: React.FC = () => {
@@ -33,6 +34,7 @@ export const ManagerMSTab: React.FC = () => {
   const [managerMSSetting, setManagerMSSetting] = useSettings('managerMS');
   const [isAddressBookOpen, openAddressBook, closeAddressBook] = useModal(false);
   const [isFlashSelectOpen, openFlashSelect, closeFlashSelect] = useModal(false);
+  const [isMsGetAddressOpen, openMsGetAddressModal, closeMsGetAddressModal] = useModal(false);
   const [selectedFirmwares, setSelectedFirmwares] = useState<SelectedMsFirmwaresType[]>([]);
   const logContainerRef = useRef<HTMLDivElement>(null);
 
@@ -85,8 +87,12 @@ export const ManagerMSTab: React.FC = () => {
     );
   }, [meta]);
   const handleGetAddress = () => {
-    if (!device) return;
-    ManagerMS.getAddress(device.deviceID);
+    if (!device || !managerMSSetting) return;
+    if (!managerMSSetting.hideGetAddressModal) {
+      openMsGetAddressModal();
+    } else {
+      ManagerMS.getAddress(device.deviceID);
+    }
   };
   const handleOpenAddressBook = () => {
     openAddressBook();
@@ -173,7 +179,7 @@ export const ManagerMSTab: React.FC = () => {
       </label>
       <div className="m-2 flex">
         <button className="btn-primary mr-4" onClick={handleGetAddress}>
-          Узнать адрес...
+          Получить адрес...
         </button>
         <button className="btn-primary mr-4" onClick={handleOpenAddressBook}>
           Адресная книга
@@ -270,9 +276,22 @@ export const ManagerMSTab: React.FC = () => {
         onClose={closeFlashSelect}
         stateMachineAddresses={stateMachineAddresses}
         assignStateMachineToAddress={assignStateMachineToAddress}
-        selectedFirmwares={selectedFirmwares}
         setSelectedFirmwares={setSelectedFirmwares}
       ></FlashSelect>
+      <MsGetAddressModal
+        isOpen={isMsGetAddressOpen}
+        onClose={closeMsGetAddressModal}
+        onSubmit={() => {
+          if (!device) return;
+          ManagerMS.getAddress(device.deviceID);
+        }}
+        onNoRemind={() => {
+          setManagerMSSetting({
+            ...managerMSSetting,
+            hideGetAddressModal: true,
+          });
+        }}
+      ></MsGetAddressModal>
     </section>
   );
 };

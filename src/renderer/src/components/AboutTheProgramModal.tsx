@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { Modal } from '@renderer/components/UI';
-import { releaseName, releaseDate, appVersion } from '@renderer/version';
+import { releaseName, appVersion, seriousMode } from '@renderer/version';
 
 interface AboutTheProgramModalProps {
   isOpen: boolean;
@@ -12,12 +12,12 @@ export const AboutTheProgramModal: React.FC<AboutTheProgramModalProps> = ({
   onClose,
   ...props
 }) => {
+  const codeName = !seriousMode ? `«${releaseName}»` : '';
+
   return (
     <Modal {...props} onRequestClose={onClose} title="О программе">
       <div>
-        <b>Версия:</b> {appVersion} «{releaseName}»
-        <br />
-        <b>Дата релиза:</b> {releaseDate}
+        <b>Версия:</b> {appVersion} {codeName}
         <br />
         <b>Ссылка на проект:</b>{' '}
         <a

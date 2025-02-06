@@ -9,8 +9,8 @@ const colorNames = {
   primaryActive: '--p-a',
   'matrix-active': '--m-a',
   'matrix-inactive': '--m-i',
-  'bg-primary': '--bg-p',
-  'bg-secondary': '--bg-s',
+  'bg-primary': '--bg-p', // экран, самое левое меню с иконками, вкладки
+  'bg-secondary': '--bg-s', // сайдбар, верхняя панель
   'bg-hover': '--bg-h',
   'bg-active': '--bg-a',
 
@@ -32,6 +32,9 @@ const colorNames = {
   'default-transition-color': '--d-t-c',
   'default-state-outline': '--d-s-o',
   'default-transition-outline': '--d-t-o',
+
+  'icon-active': '--i-a',
+  'icon-secondary': '--i-s',
 } as const;
 type ColorNames = typeof colorNames;
 type ColorName = keyof ColorNames;
@@ -53,10 +56,10 @@ export default {
 
     diagram: {
       state: {
-        bodyBg: '#404040',
+        bodyBg: '#7c7c7c',
         titleColor: '#FFF',
         titleColorUndefined: '#89a3af',
-        titleBg: '#525252',
+        titleBg: '#494949',
         eventColor: '#FFF',
         selectedBorderColor: '#FFF',
       },

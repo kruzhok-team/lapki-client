@@ -119,7 +119,10 @@ export const Actions: React.FC<ActionsProps> = (props) => {
                   onChange={() => onChangeAction(data)}
                   onDragStart={() => handleDrag(i)}
                   onDrop={() => handleDrop(i)}
-                  data={{ ...data, componentName: getComponentName(data.component) }}
+                  data={{
+                    ...data,
+                    componentName: getComponentName(data.component) ?? data.component,
+                  }}
                 />
               ))}
             </div>

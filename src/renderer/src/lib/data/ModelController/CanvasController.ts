@@ -873,7 +873,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     if (!this.platform[args.smId]) {
       return;
     }
-    this.platform[args.smId].nameToVisual.set(args.name, {
+    this.platform[args.smId].nameToVisual.set(args.id, {
       component: args.type,
       label: args.parameters['label'],
       color: args.parameters['labelColor'],

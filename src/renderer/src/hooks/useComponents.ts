@@ -120,7 +120,6 @@ export const useComponents = (controller: CanvasController) => {
     const realId = name ?? componentType;
     modelController.createComponent({
       smId: requestedSmId,
-      name: realId,
       id: realId,
       type: componentType,
       parameters: {},

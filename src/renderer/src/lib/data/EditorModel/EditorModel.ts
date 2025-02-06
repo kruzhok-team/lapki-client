@@ -767,7 +767,7 @@ export class EditorModel {
     return name;
   }
 
-  editComponent(smId: string, id: string, name: string, parameters: Component['parameters']) {
+  editComponent(smId: string, id: string, parameters: Component['parameters'], name?: string) {
     const component = this.data.elements.stateMachines[smId].components[id];
     if (!component) return false;
 

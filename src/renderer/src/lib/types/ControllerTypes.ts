@@ -38,7 +38,7 @@ export const emptyControllerListeners = Object.fromEntries([
 export interface EditComponentParams {
   smId: string;
   id: string;
-  name: string;
+  name?: string;
   type: string;
   parameters: ComponentData['parameters'];
   newId?: string;
@@ -60,7 +60,7 @@ export interface ChangeSelectionParams {
 export interface RenameComponentParams {
   smId: string;
   id: string;
-  name: string;
+  name?: string;
   newId: string;
   type: string;
   parameters: ComponentData['parameters'];

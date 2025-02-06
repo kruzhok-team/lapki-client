@@ -51,7 +51,7 @@ export const useTrigger = (
         };
       }
       const proto = controller.platform[smId]?.getComponent(id);
-      const name = componentsData[id] ? componentsData[id].name : id;
+      const name = componentsData[id] && componentsData[id].name ? componentsData[id].name : id;
       return {
         value: id,
         label: name,

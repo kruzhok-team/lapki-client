@@ -94,7 +94,7 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
             return (
               <Component
                 key={key}
-                name={name}
+                name={name ?? id}
                 description={
                   platform[smId] !== undefined
                     ? platform[smId].getComponent(id)?.description

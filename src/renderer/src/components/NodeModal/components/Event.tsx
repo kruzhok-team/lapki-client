@@ -87,7 +87,7 @@ export const Event: React.FC<EventProps> = ({
       onClick={onClick}
       id="event"
       className={twMerge(
-        'event font-Fira-sans pl-6 pr-6 pt-4 font-sans hover:bg-bg-hover',
+        'event font-Fira-sans select-none pl-6 pr-6 pt-4 font-sans hover:bg-bg-hover',
         isSelected && 'bg-bg-active'
       )}
     >

@@ -11,7 +11,7 @@ interface ColorFieldProps {
 export const ColorField: React.FC<ColorFieldProps> = ({ value, onChange, label }) => {
   return (
     <div className="flex items-center gap-2">
-      <p className="text-lg font-bold">{label}</p>
+      <p className="select-none text-lg font-bold">{label}</p>
       <ColorInput clearable value={value} onChange={onChange} />
     </div>
   );

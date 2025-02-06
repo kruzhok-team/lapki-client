@@ -130,34 +130,51 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
       >
         <div className="flex flex-col gap-3">
           <div className="flex">
-            <div className="ml-11 mr-3 h-96 w-full overflow-y-auto break-words rounded border border-border-primary bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
+            <div
+              onDoubleClick={addEvent}
+              className="ml-11 mr-3 h-96 w-full overflow-y-auto break-words rounded border border-border-primary bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
+            >
               {state &&
-                state.data.events.map((event, key) => (
-                  <EventPicto
-                    onDoubleClick={() => openEditEventModal()}
-                    key={key}
-                    event={event.trigger as Event}
-                    isSelected={key === currentEventIndex}
-                    platform={platform}
-                    condition={event.condition as Condition}
-                    text={`↳ ${serializeEvent(
-                      components,
-                      platform.data,
-                      event.trigger as Event,
-                      true
-                    )}${getCondition(event.condition)}/`}
-                    onClick={() => {
-                      setCurrentEventIndex(key);
-                      setCurrentEvent(state.data.events[key]);
-                    }}
-                  />
+                (state.data.events.length === 0 ? (
+                  <div className="flex h-full w-full select-none flex-row items-center justify-center text-center align-middle text-text-inactive">
+                    <span className="mr-2">Чтобы добавить событие, нажмите</span>
+                    <div>
+                      <AddIcon className="btn-secondary h-5 w-5 cursor-default border-text-inactive p-[0.5px]" />
+                    </div>
+                  </div>
+                ) : (
+                  state.data.events.map((event, key) => (
+                    <EventPicto
+                      onDoubleClick={() => openEditEventModal()}
+                      key={key}
+                      event={event.trigger as Event}
+                      isSelected={key === currentEventIndex}
+                      platform={platform}
+                      condition={event.condition as Condition}
+                      text={`↳ ${serializeEvent(
+                        components,
+                        platform.data,
+                        event.trigger as Event,
+                        true
+                      )}${getCondition(event.condition)}/`}
+                      onClick={() => {
+                        setCurrentEventIndex(key);
+                        setCurrentEvent(state.data.events[key]);
+                      }}
+                    />
+                  ))
                 ))}
             </div>
             <div className="flex flex-col gap-2">
               <button type="button" className="btn-secondary border-red p-1" onClick={addEvent}>
                 <AddIcon />
               </button>
-              <button type="button" className="btn-secondary p-1" onClick={removeEvent}>
+              <button
+                type="button"
+                className="btn-secondary p-1"
+                onClick={removeEvent}
+                disabled={currentEventIndex === undefined}
+              >
                 <SubtractIcon />
               </button>
             </div>

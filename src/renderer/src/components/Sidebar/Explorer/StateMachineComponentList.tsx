@@ -84,7 +84,7 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
           </button>
         </div>
       </div>
-      <div className="mb-2 mt-1">
+      <div className="mb-2 mt-1 select-none">
         {sortedComponents.length === 0 ? (
           <p className="text-text-inactive">Нет компонентов</p>
         ) : (

@@ -171,6 +171,7 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
                     isSearchable={false}
                     error={errors.selectedComponentParam1 || ''}
                     placeholder="Выберите компонент..."
+                    noOptionsMessage={() => 'Нет подходящих компонентов'}
                   />
                   <Select
                     containerClassName="w-[290px]"
@@ -182,6 +183,7 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
                     isSearchable={false}
                     error={errors.selectedMethodParam1 || ''}
                     placeholder="Выберите атрибут..."
+                    noOptionsMessage={() => 'Нет подходящих атрибутов'}
                   />
                 </div>
               ) : (
@@ -226,6 +228,7 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
                     isSearchable={false}
                     error={errors.selectedComponentParam2 || ''}
                     placeholder="Выберите компонент..."
+                    noOptionsMessage={() => 'Нет подходящих компонентов'}
                   />
                   <Select
                     containerClassName="w-[290px]"
@@ -237,6 +240,7 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
                     isSearchable={false}
                     error={errors.selectedMethodParam2 || ''}
                     placeholder="Выберите атрибут..."
+                    noOptionsMessage={() => 'Нет подходящих атрибутов'}
                   />
                 </div>
               ) : (

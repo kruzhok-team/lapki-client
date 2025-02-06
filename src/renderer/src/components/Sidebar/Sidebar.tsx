@@ -175,7 +175,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
         hint: 'Документация',
         action: () => onDocumentationToggle(),
         isActive: isDocOpen,
-        hideSideBorder: true,
       },
       {
         Icon: <SettingsIcon />,

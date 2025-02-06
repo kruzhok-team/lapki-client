@@ -8,11 +8,13 @@ import { TemplatesList } from '@renderer/types/templates';
 interface TemplateSelectionProps {
   selectedTemplate: { type: string; name: string } | null;
   setSelectedTemplate: (value: { type: string; name: string }) => void;
+  onDoubleClick?: () => void;
 }
 
 export const TemplateSelection: React.FC<TemplateSelectionProps> = ({
   selectedTemplate,
   setSelectedTemplate,
+  onDoubleClick,
 }) => {
   const modelController = useModelContext();
 
@@ -50,6 +52,7 @@ export const TemplateSelection: React.FC<TemplateSelectionProps> = ({
               isSelected(type, name) && 'bg-bg-active'
             )}
             onClick={() => setSelectedTemplate({ type, name })}
+            onDoubleClick={onDoubleClick}
           >
             {name}
           </button>

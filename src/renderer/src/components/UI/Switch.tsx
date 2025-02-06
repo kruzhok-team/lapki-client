@@ -5,7 +5,7 @@ import * as RSwitch from '@radix-ui/react-switch';
 export const Switch: React.FC<RSwitch.SwitchProps> = (props) => {
   return (
     <RSwitch.Root
-      className="relative h-[25px] w-[42px] cursor-pointer rounded-full bg-bg-primary shadow-border-primary outline-none data-[state=checked]:bg-primary focus:shadow-[0_0_0_1px]"
+      className="relative h-[25px] w-[42px] cursor-pointer rounded-full bg-bg-primary shadow-border-primary outline-none data-[state=checked]:bg-primary data-[state=unchecked]:shadow-[0_0_0_1px] data-[state=unchecked]:shadow-border-primary focus:shadow-[0_0_0_1px]"
       style={{ WebkitTapHighlightColor: 'rgba(0, 0, 0, 0)' }}
       {...props}
     >

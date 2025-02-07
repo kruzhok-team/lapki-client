@@ -287,6 +287,7 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
           options={componentOptions}
           value={componentOptions.find((o) => o.value === selectedComponent) ?? null}
           onChange={handleComponentChange}
+          placeholder="Выберите компонент..."
           isMulti={false}
           isClearable={false}
           isSearchable={false}
@@ -296,6 +297,7 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
           options={methodOptions}
           value={methodOptions.find((o) => o.value === selectedMethod) ?? null}
           onChange={handleMethodChange}
+          placeholder="Выберите действие..."
           isMulti={false}
           isClearable={false}
           isSearchable={false}

@@ -74,7 +74,7 @@
           "description": "Адрес устройства."
         },
         "lastData": {
-          "img": "tjc-ms/dataRecv.svg",
+          "img": "tjc-ms/lastData.svg",
           "type": "uint8_t",
           "description": "Последний полученный символ."
         }
@@ -131,7 +131,7 @@
       },
       "variables": {
         "lastByte": {
-          "img": "tjc-ms/dataRecv.svg",
+          "img": "tjc-ms/lastByte.svg",
           "type": "uint8_t",
           "description": "Последний полученный байт."
         }

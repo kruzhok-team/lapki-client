@@ -5,6 +5,10 @@ export const releaseName = 'Caracal';
 export const appName = 'Lapki IDE';
 export const seriousMode = false;
 export const noTextMode = false;
+export const showDevInfo = true;
+
+export const telegramLink = 'https://t.me/LapkiSupportBot';
+export const sourceLink = 'https://github.com/kruzhok-team/lapki-client';
 
 export function initAppVersion() {
   askAppVersion().then(() => {

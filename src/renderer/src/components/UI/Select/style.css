@@ -47,5 +47,5 @@
 }
 
 .CustomSelect__placeholder {
-  @apply text-border-primary !important;
+  @apply text-border-contrast !important;
 }

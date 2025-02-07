@@ -87,7 +87,7 @@ export class State extends Shape {
       (this.children.isEmpty ? 6 : 0) / this.scale,
     ]);
     ctx.fill();
-
+    // ctx.ellipse(x, y, 3, 3, 0, 0, 0);
     ctx.closePath();
   }
 

@@ -296,41 +296,7 @@
     "Counter": {
       "description": "Переменная-счетчик.",
       "img": "arduino/counter.svg",
-      "signals": {
-        "isEqual": {
-          "img": "arduino/isEqual.svg",
-          "description": "Издать сигнал, если значение счетчика равно value",
-          "checkMethod": "isEqual",
-          "parameters": [
-            {
-              "name": "value",
-              "type": "int"
-            }
-          ]
-        },
-        "isLess": {
-          "img": "arduino/isLess.svg",
-          "description": "Издать сигнал, если значение счетчика меньше value",
-          "checkMethod": "isLess",
-          "parameters": [
-            {
-              "name": "value",
-              "type": "int"
-            }
-          ]
-        },
-        "isGreater": {
-          "img": "arduino/isGreater.svg",
-          "description": "Издать сигнал, если значение счетчика больше value",
-          "checkMethod": "isGreater",
-          "parameters": [
-            {
-              "name": "value",
-              "type": "int"
-            }
-          ]
-        }
-      },
+      "signals": {},
       "constructorParameters": {},
       "methods": {
         "add": {

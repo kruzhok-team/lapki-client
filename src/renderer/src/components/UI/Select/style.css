@@ -1,5 +1,5 @@
 .CustomSelect__control {
-  @apply border-icon-secondary bg-transparent shadow-none !important;
+  @apply border-border-primary bg-transparent shadow-none !important;
 }
 
 .CustomSelect__control--is-focused {
@@ -47,5 +47,5 @@
 }
 
 .CustomSelect__placeholder {
-  @apply text-icon-secondary !important;
+  @apply text-border-primary !important;
 }

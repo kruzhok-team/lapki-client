@@ -89,7 +89,7 @@
           "description": "Назначить новый адрес для получения пакетов."
         },
         "sendPacket": {
-          "img": "tjc-ms/message.svg",
+          "img": "tjc-ms/sendPacket.svg",
           "parameters": [
             {
               "name": "address",
@@ -135,7 +135,7 @@
       },
       "methods": {
         "sendByte": {
-          "img": "tjc-ms/message.svg",
+          "img": "tjc-ms/sendByte.svg",
           "parameters": [
             {
               "name": "data",

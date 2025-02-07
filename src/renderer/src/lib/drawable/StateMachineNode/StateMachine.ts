@@ -1,4 +1,5 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
+import { COMPONENT_DEFAULT_POSITION } from '@renderer/lib/constants';
 import { Shape } from '@renderer/lib/drawable/Shape';
 import { Dimensions, GetCapturedNodeParams, Layer, Point } from '@renderer/lib/types';
 import { drawText } from '@renderer/lib/utils/text';
@@ -31,7 +32,14 @@ export class DrawableStateMachine extends Shape {
       height: 100,
     };
     this.children.add(
-      new DrawableComponent(app, id, this.id, { x: 0, y: 0 }, { ...icon, label: undefined }, this),
+      new DrawableComponent(
+        app,
+        id,
+        this.id,
+        COMPONENT_DEFAULT_POSITION,
+        { ...icon, label: undefined },
+        this
+      ),
       Layer.Components
     );
   }

@@ -123,7 +123,7 @@ export const useComponents = (controller: CanvasController) => {
       id: realId,
       type: componentType,
       parameters: {},
-      position: { x: 0, y: 0 },
+      position: { x: 30, y: 30 },
       order: 0,
     });
 

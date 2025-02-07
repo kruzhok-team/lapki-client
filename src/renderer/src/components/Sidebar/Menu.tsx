@@ -62,7 +62,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
       onClick: props.onRequestSaveFile,
       disabled: !isStale || !isInitialized,
       badge: isStale && isInitialized,
-      hint: 'Есть несохранённые изменения',
+      hint: isStale && isInitialized ? 'Есть несохранённые изменения' : '',
     },
     {
       text: 'Сохранить как...',
@@ -145,31 +145,49 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
     }
   };
 
+  const renderButton = (
+    text: string,
+    onClick: () => void,
+    disabled: boolean,
+    hidden: boolean,
+    className?: string,
+    badge?: boolean,
+    props?: Record<string, any>
+  ) => {
+    return (
+      <button
+        key={text}
+        className={twMerge(
+          'px-2 py-2 text-base transition-colors enabled:hover:bg-bg-hover enabled:active:bg-bg-active disabled:text-text-disabled',
+          className
+        )}
+        {...props}
+        onClick={onClick}
+        disabled={disabled}
+        hidden={hidden}
+      >
+        <Badge show={badge ?? false}>{text}</Badge>
+      </button>
+    );
+  };
+
   return (
     <section className="flex flex-col">
       <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
         Документ
       </h3>
 
-      {items.map(({ text, onClick, disabled = false, hidden = false, className, badge, hint }) => (
-        <WithHint key={text} hint={hint ?? ''}>
-          {(props) => (
-            <button
-              key={text}
-              className={twMerge(
-                'px-2 py-2 text-base transition-colors enabled:hover:bg-bg-hover enabled:active:bg-bg-active disabled:text-text-disabled',
-                className
-              )}
-              {...props}
-              onClick={onClick}
-              disabled={disabled}
-              hidden={hidden}
-            >
-              <Badge show={badge ?? false}>{text}</Badge>
-            </button>
-          )}
-        </WithHint>
-      ))}
+      {items.map(({ text, onClick, disabled = false, hidden = false, className, badge, hint }) => {
+        if (hint) {
+          return (
+            <WithHint key={text} hint={hint ?? ''}>
+              {(props) => renderButton(text, onClick, disabled, hidden, className, badge, props)}
+            </WithHint>
+          );
+        } else {
+          return renderButton(text, onClick, disabled, hidden, className, badge);
+        }
+      })}
 
       <PropertiesModal {...propertiesModalProps} />
       <TextModeModal isOpen={isTextModeModalOpen} onClose={closeTextModeModal} />

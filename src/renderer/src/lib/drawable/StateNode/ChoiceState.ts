@@ -50,7 +50,7 @@ export class ChoiceState extends Shape {
     const halfWidth = width / 2;
     const halfHeight = height / 2;
 
-    ctx.fillStyle = style.bodyBg;
+    ctx.fillStyle = getColor('primary');
 
     ctx.beginPath();
 

@@ -55,14 +55,12 @@ export class DrawableStateMachine extends Shape {
   //Прорисовка заголовка блока состояния
   private drawTitle(ctx: CanvasRenderingContext2D) {
     const { x, y } = this.drawBounds;
-    const stateMachineHeight = this.drawBounds.height;
     const { height, width, fontSize, paddingX, paddingY } = this.computedTitleSizes;
-    const computedY = y + stateMachineHeight - height;
     ctx.beginPath();
 
     ctx.fillStyle = style.titleBg;
 
-    ctx.roundRect(x, computedY, width, height, [
+    ctx.roundRect(x, y, width, height, [
       6 / this.app.controller.scale,
       6 / this.app.controller.scale,
       0,
@@ -71,7 +69,7 @@ export class DrawableStateMachine extends Shape {
     ctx.fill();
     drawText(ctx, this.icon.label || 'Без названия', {
       x: x + paddingX,
-      y: computedY + paddingY,
+      y: y + paddingY,
       textAlign: 'left',
       color: this.icon.label !== '' ? style.titleColor : style.titleColorUndefined,
       font: {
@@ -95,13 +93,13 @@ export class DrawableStateMachine extends Shape {
   }
 
   private drawChildren(ctx: CanvasRenderingContext2D, _canvas: HTMLCanvasElement) {
-    const { x, y, width, height, childrenHeight } = this.drawBounds;
+    const { x, y, width, childrenHeight } = this.drawBounds;
     ctx.lineWidth = 2;
     ctx.strokeStyle = style.bodyBg;
 
     ctx.beginPath();
 
-    ctx.roundRect(x + 1, y + height, width - 2, childrenHeight, [
+    ctx.roundRect(x + 1, y + this.titleHeight, width - 2, childrenHeight - this.titleHeight, [
       0,
       0,
       6 / this.app.controller.scale,

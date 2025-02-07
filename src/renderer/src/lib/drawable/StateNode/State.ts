@@ -87,7 +87,6 @@ export class State extends Shape {
       (this.children.isEmpty ? 6 : 0) / this.scale,
     ]);
     ctx.fill();
-    // ctx.ellipse(x, y, 3, 3, 0, 0, 0);
     ctx.closePath();
   }
 
@@ -131,7 +130,6 @@ export class State extends Shape {
         fontFamily: 'Fira Sans',
       },
     });
-
     ctx.closePath();
   }
 
@@ -202,7 +200,7 @@ export class State extends Shape {
 
     ctx.beginPath();
 
-    ctx.roundRect(x + 1, y + height, width - 2, childrenHeight, [
+    ctx.roundRect(x + 1, y + height, width - 2, childrenHeight - height, [
       0,
       0,
       6 / this.scale,

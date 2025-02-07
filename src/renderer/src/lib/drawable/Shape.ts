@@ -64,8 +64,8 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
     if (this.parent) {
       const { x: px, y: py } = this.parent.compoundPosition;
 
-      x += px + CHILDREN_PADDING;
-      y += py + this.parent.dimensions.height + CHILDREN_PADDING;
+      x += px;
+      y += py;
     }
 
     return { x, y };
@@ -285,10 +285,6 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
     const { position, layer, exclude, includeChildrenHeight } = args;
 
     if (exclude?.includes(this)) return null;
-    // TODO: Флаг includeChildrenHeight выставить в true
-    if (this.isUnderMouse(position, includeChildrenHeight)) {
-      return this;
-    }
 
     if (layer !== undefined) {
       for (let i = this.children.getSize(layer) - 1; i >= 0; i--) {
@@ -306,6 +302,12 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
           if (node) return node;
         }
       }
+    }
+
+    // TODO: Флаг includeChildrenHeight выставить в true
+    // Не совсем помню по какому поводу
+    if (this.isUnderMouse(position, includeChildrenHeight)) {
+      return this;
     }
 
     return null;

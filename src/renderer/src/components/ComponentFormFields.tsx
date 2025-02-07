@@ -98,7 +98,7 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
             label="Название:"
             placeholder="Введите название..."
             maxLength={20}
-            hint="Человекочитаемое название, которое будет отображаться в интерфейсе."
+            hint="Человекочитаемое название, которое будет отображаться в интерфейсе вместо технического. До 20 символов."
             value={name}
             onChange={(e) => handleNameChange(e)}
             autoFocus
@@ -112,7 +112,7 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
               </>
             }
             maxLength={20}
-            hint="Название, которое будет отображаться в коде."
+            hint="Уникальное техническое название, которое будет использоваться в коде. До 20 символов, среди которых – латинские буквы, цифры и знаки подчёркивания. Не должно начинаться с цифры."
             value={id}
             onChange={(e) => handleIdChange(e)}
             error={errors[idError]}

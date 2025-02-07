@@ -79,7 +79,7 @@ export const EditorSettings: React.FC = () => {
     },
     {
       className: defaultItemClassName,
-      hint: 'Отделить',
+      hint: 'Отдалить',
       content: <ZoomOut width={20} height={20} />,
       onClick: handleZoomOut,
     },

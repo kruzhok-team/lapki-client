@@ -690,12 +690,19 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const { smId, id, startPosition, endPosition } = args;
     const sm = this.model.data.elements.stateMachines[smId];
     const state = sm.states[id];
+    if (state.position.x === endPosition.x && state.position.y === endPosition.y) return;
+
     if (!state) return;
 
     if (canUndo) {
       this.history.do({
         type: 'changeStatePosition',
-        args: { smId, id, startPosition: startPosition ?? state.position, endPosition },
+        args: {
+          smId,
+          id,
+          startPosition: startPosition ?? state.position,
+          endPosition: { ...endPosition },
+        },
       });
     }
     this.model.changeStatePosition(smId, id, endPosition);

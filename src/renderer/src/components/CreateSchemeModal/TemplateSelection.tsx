@@ -36,12 +36,12 @@ export const TemplateSelection: React.FC<TemplateSelectionProps> = ({
   }, [modelController.files]);
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <div>Загружаю...</div>;
   }
 
   return Object.entries(templates).map(([type, names]) => (
     <div key={type}>
-      <h3 className="mb-1 text-lg capitalize">{type}</h3>
+      <h3 className="mb-1 text-lg capitalize opacity-70">{type}</h3>
       <div className="flex flex-col">
         {names.map((name) => (
           <button

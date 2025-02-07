@@ -12,6 +12,9 @@
   <key for="node" id="dColor"></key>
   <graph id="g">
     <data key="dStateMachine"></data>
+    <data key="dGeometry">
+      <rect x="0" y="0" width="450" height="100"></rect>
+    </data>
     <node id="coreMeta">
       <data key="dNote">formal</data>
       <data key="dName">CGML_META</data>
@@ -57,7 +60,7 @@ exit/
 
 </data>
           <data key="dGeometry">
-            <rect x="78.6599999999997" y="22.905932999999266" width="468" height="145"></rect>
+            <rect x="83.60999999999956" y="158.85000000000025" width="468" height="145"></rect>
           </data>
           <data key="dColor">#FFFFFF</data>
         </node>
@@ -68,7 +71,7 @@ exit/
 
 </data>
           <data key="dGeometry">
-            <rect x="74.24999999999994" y="304.0931890000012" width="468" height="95"></rect>
+            <rect x="83.87999999999981" y="413.623189" width="468" height="95"></rect>
           </data>
           <data key="dColor">#FFFFFF</data>
         </node>
@@ -84,14 +87,14 @@ exit/
 
 </data>
       <data key="dGeometry">
-        <rect x="-1536.78857" y="516.747559" width="468" height="145"></rect>
+        <rect x="-1540.20857" y="540.6875590000004" width="468" height="145"></rect>
       </data>
       <data key="dColor">#FFFFFF</data>
     </node>
     <node id="init">
       <data key="dVertex">initial</data>
       <data key="dGeometry">
-        <point x="-1480.4985699999997" y="448.677559"></point>
+        <rect x="-1480.4985699999997" y="448.677559" width="-1" height="-1"></rect>
       </data>
     </node>
     <edge id="init-n3" source="init" target="n3"></edge>
@@ -119,7 +122,7 @@ exit/
 </data>
       <data key="dColor">#3fe09a</data>
       <data key="dLabelGeometry">
-        <point x="120.15000000000002" y="204.25000000000023"></point>
+        <point x="102.41999999999996" y="326.7399999999995"></point>
       </data>
     </edge>
     <edge id="n0::n2-n0::n1" source="n0::n2" target="n0::n1">
@@ -128,7 +131,7 @@ exit/
 </data>
       <data key="dColor">#554a3b</data>
       <data key="dLabelGeometry">
-        <point x="337.45" y="205.30000000000007"></point>
+        <point x="404.5899999999996" y="323.2899999999993"></point>
       </data>
     </edge>
     <edge id="lnjmwqsafxzhjthzfyly" source="n0" target="n3">
@@ -136,7 +139,7 @@ exit/
 
 </data>
       <data key="dLabelGeometry">
-        <point x="-998.5667849999991" y="650.4424075000005"></point>
+        <point x="-996.856784999999" y="658.9924075000007"></point>
       </data>
     </edge>
   </graph>

@@ -56,7 +56,7 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
 
     const getComponentOption = (id: string) => {
       const name = componentsData[id] ? componentsData[id].name ?? id : id;
-      debugger;
+
       if (!platforms[smId]) {
         return {
           value: id,
@@ -67,9 +67,6 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
       }
       const proto = platforms[smId].getComponent(id);
 
-      console.log(structuredClone(componentsData));
-      console.log(id);
-      console.log('-------------');
       return {
         value: id,
         label: name,
@@ -78,13 +75,11 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
       };
     };
 
-    console.log(structuredClone(Object.entries(componentsData)));
     const result = Object.entries(componentsData)
       .sort((a, b) => a[1].order - b[1].order)
       .map(([idx]) => getComponentOption(idx));
 
     if (isEditingEvent) {
-      console.log('isEdditing');
       result.unshift(getComponentOption('System'));
     }
 

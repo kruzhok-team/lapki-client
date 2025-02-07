@@ -28,9 +28,16 @@ export const Autosave: React.FC<AutosaveProps> = ({ isOpen, onClose, ...props })
     handleSubmit: hookHandleSubmit,
     watch,
     setValue,
+    setError,
+    clearErrors,
+    formState: { errors },
   } = useForm<AutosaveFormValues>();
 
   const handleSubmit = hookHandleSubmit((data) => {
+    if (data.interval <= 0) {
+      setError('interval', { message: 'Значение интервала должно быть больше 0!' });
+      return;
+    }
     setSettings(data);
     onClose();
   });
@@ -53,7 +60,7 @@ export const Autosave: React.FC<AutosaveProps> = ({ isOpen, onClose, ...props })
       onRequestClose={onClose}
       onSubmit={handleSubmit}
     >
-      <div className="mb-2 flex items-center gap-1">
+      <div className="flex items-center gap-1">
         <span>Интервал:</span>
         <WithHint
           hint={
@@ -81,23 +88,29 @@ export const Autosave: React.FC<AutosaveProps> = ({ isOpen, onClose, ...props })
           }}
         />
         <WithHint hint={'Вернуть интервал на значение по-умолчанию'}>
-          {(props) => (
-            <button
-              className={twMerge(
-                'text-icon-secondary',
-                !settings.disabled && 'hover:text-icon-active'
-              )}
-              {...props}
-              onClick={(e) => {
-                e.preventDefault();
-                resetSettings();
-              }}
-              disabled={settings.disabled}
-            >
-              ↺
-            </button>
-          )}
+          {(props) => {
+            const isDisabled = watch('disabled');
+            return (
+              <button
+                className={twMerge(
+                  'text-icon-secondary disabled:text-text-disabled',
+                  !isDisabled && 'hover:text-icon-active'
+                )}
+                {...props}
+                onClick={(e) => {
+                  e.preventDefault();
+                  resetSettings();
+                }}
+                disabled={isDisabled}
+              >
+                ↺
+              </button>
+            );
+          }}
         </WithHint>
+      </div>
+      <div className="mb-4">
+        {errors.interval && <p className="text-error">{errors.interval.message}</p>}
       </div>
       <div className=" mb-auto flex items-center gap-[22px]">
         Отключить:

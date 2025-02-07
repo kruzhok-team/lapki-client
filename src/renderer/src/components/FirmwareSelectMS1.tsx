@@ -168,10 +168,13 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
           <div className="flex h-60 w-full flex-col overflow-y-auto break-words rounded border border-border-primary bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
             {rowRender(null, null)}
             {stateMachinesId.map(([id, sm]) => id && rowRender(id, sm))}
+            <button className="btn-secondary ml-[28px] mt-[1px] border-border-primary">
+              Добавить файл с прошивкой
+            </button>
             {stateMachinesId.length !== 0 && (
               <div className="flex items-start">
                 <Checkbox
-                  className={'ml-1 mr-1 mt-[9px]'}
+                  className={'ml-1 mr-1 mt-[4px]'}
                   checked={checkedAll}
                   onCheckedChange={() => {
                     if (!checkedAll) {
@@ -188,7 +191,7 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
                     setCheckedAll(!checkedAll);
                   }}
                 ></Checkbox>
-                <label className="mt-[9px]">{'Выбрать всё'}</label>
+                <label className="mt-[4px]">{'Выбрать всё'}</label>
               </div>
             )}
           </div>

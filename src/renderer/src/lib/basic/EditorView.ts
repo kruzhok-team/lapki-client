@@ -38,13 +38,9 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
     this.app.keyboard.on('spacedown', this.handleSpaceDown);
     this.app.keyboard.on('spaceup', this.handleSpaceUp);
     this.app.keyboard.on('delete', this.app.controller.model.deleteSelected);
-    this.app.keyboard.on('ctrlz', this.app.controller.model.history.undo);
-    this.app.keyboard.on('ctrly', this.app.controller.model.history.redo);
     this.app.keyboard.on('ctrlc', this.app.controller.model.copySelected);
     this.app.keyboard.on('ctrlv', this.app.controller.model.pasteSelected);
     this.app.keyboard.on('ctrld', this.app.controller.model.duplicateSelected);
-    this.app.keyboard.on('ctrls', this.app.controller.model.files.save);
-    this.app.keyboard.on('ctrlshifta', this.app.controller.model.files.saveAs);
 
     this.app.mouse.on('mouseout', this.handleMouseUp);
     this.app.mouse.on('mousedown', this.handleMouseDown);
@@ -60,13 +56,9 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
     this.app.keyboard.off('spacedown', this.handleSpaceDown);
     this.app.keyboard.off('spaceup', this.handleSpaceUp);
     this.app.keyboard.off('delete', this.app.controller.model.deleteSelected);
-    this.app.keyboard.off('ctrlz', this.app.controller.model.history.undo);
-    this.app.keyboard.off('ctrly', this.app.controller.model.history.redo);
     this.app.keyboard.off('ctrlc', this.app.controller.model.copySelected);
     this.app.keyboard.off('ctrlv', this.app.controller.model.pasteSelected);
     this.app.keyboard.off('ctrld', this.app.controller.model.duplicateSelected);
-    this.app.keyboard.off('ctrls', this.app.controller.model.files.save);
-    this.app.keyboard.off('ctrlshifta', this.app.controller.model.files.saveAs);
 
     this.app.mouse.off('mouseout', this.handleMouseUp);
     this.app.mouse.off('mousedown', this.handleMouseDown);

@@ -8,6 +8,17 @@ import { useSettings } from '@renderer/hooks/useSettings';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { useTabs } from '@renderer/store/useTabs';
 
+import { WithHint } from './UI';
+
+interface SettingsItem {
+  content: JSX.Element | string;
+  onClick: () => void;
+  hint: string;
+  className: string;
+}
+
+const defaultItemClassName = 'px-2 outline-none hover:bg-bg-hover active:bg-bg-active';
+
 export const EditorSettings: React.FC = () => {
   const [activeTabName, items] = useTabs((state) => [state.activeTab, state.items]);
   const activeTab = items.find((tab) => tab.name === activeTabName);
@@ -45,52 +56,59 @@ export const EditorSettings: React.FC = () => {
     });
   };
 
-  if (!isMounted) return null;
+  if (!isMounted || !canvasSettings) return null;
+
+  const buttons: SettingsItem[] = [
+    {
+      className: defaultItemClassName + ' horizontal-flip',
+      hint: 'Отменить действие',
+      content: <Redo width={20} height={20} />,
+      onClick: handleUndo,
+    },
+    {
+      className: defaultItemClassName,
+      hint: 'Вернуть отменённое действие',
+      content: <Redo width={20} height={20} />,
+      onClick: handleRedo,
+    },
+    {
+      className: defaultItemClassName,
+      hint: canvasSettings.grid ? 'Выключить сетку' : 'Включить сетку',
+      content: <Grid width={20} height={20} />,
+      onClick: handleCanvasGrid,
+    },
+    {
+      className: defaultItemClassName,
+      hint: 'Отделить',
+      content: <ZoomOut width={20} height={20} />,
+      onClick: handleZoomOut,
+    },
+    {
+      className: 'flex w-16 justify-center py-2 outline-none hover:bg-bg-hover active:bg-bg-active',
+      hint: 'Текущий масштаб. Нажмите, чтобы вернуть масштаб на стандартное значение.',
+      content: Math.floor((1 / scale) * 100).toString() + '%',
+      onClick: handleReset,
+    },
+    {
+      className: defaultItemClassName,
+      hint: 'Приблизить',
+      content: <ZoomIn width={20} height={20} />,
+      onClick: handleZoomIn,
+    },
+  ];
 
   return (
     activeTab?.type === 'editor' && (
       <div className="absolute -left-[280px] bottom-3 flex items-stretch overflow-hidden rounded bg-bg-secondary">
-        <button
-          className="horizontal-flip px-2 outline-none hover:bg-bg-hover active:bg-bg-active"
-          onClick={handleUndo}
-        >
-          <Redo width={20} height={20} />
-        </button>
-
-        <button
-          className="px-2 outline-none hover:bg-bg-hover active:bg-bg-active"
-          onClick={handleRedo}
-        >
-          <Redo width={20} height={20} />
-        </button>
-
-        <button
-          className="px-2 outline-none hover:bg-bg-hover active:bg-bg-active"
-          onClick={handleCanvasGrid}
-        >
-          <Grid width={20} height={20} />
-        </button>
-
-        <button
-          className="px-2 outline-none hover:bg-bg-hover active:bg-bg-active"
-          onClick={handleZoomOut}
-        >
-          <ZoomOut width={20} height={20} />
-        </button>
-
-        <button
-          className="flex w-16 justify-center py-2 outline-none hover:bg-bg-hover active:bg-bg-active"
-          onClick={handleReset}
-        >
-          {Math.floor((1 / scale) * 100)}%
-        </button>
-
-        <button
-          className="px-2 outline-none hover:bg-bg-hover active:bg-bg-active"
-          onClick={handleZoomIn}
-        >
-          <ZoomIn width={20} height={20} />
-        </button>
+        {buttons.map(({ className, content, hint, onClick }, index) => (
+          <WithHint key={index} hint={hint}>
+            {(props) => (
+              <button {...props} className={className} onClick={onClick}>
+                {content}
+              </button>
+            )}
+          </WithHint>
+        ))}
       </div>
     )
   );

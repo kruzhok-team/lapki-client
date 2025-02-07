@@ -222,7 +222,11 @@ export const actionFunctions: ActionFunctions = {
   }),
   changeStatePosition: (sM, { smId, id, startPosition, endPosition }) => ({
     redo: sM.changeStatePosition.bind(sM, { smId, id, startPosition, endPosition }, false),
-    undo: sM.changeStatePosition.bind(sM, { smId, id, endPosition, startPosition }, false),
+    undo: sM.changeStatePosition.bind(
+      sM,
+      { smId, id, startPosition: endPosition, endPosition: startPosition },
+      false
+    ),
   }),
 
   createInitialState: (sM, args) => ({

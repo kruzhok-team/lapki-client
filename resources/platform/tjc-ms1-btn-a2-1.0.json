@@ -74,7 +74,7 @@
           "description": "Адрес устройства."
         },
         "lastData": {
-          "img": "tjc-ms/dataRecv.svg",
+          "img": "tjc-ms/lastData.svg",
           "type": "uint8_t",
           "description": "Последний полученный символ."
         }
@@ -92,7 +92,7 @@
           "description": "Назначить новый адрес для получения пакетов."
         },
         "sendPacket": {
-          "img": "tjc-ms/message.svg",
+          "img": "tjc-ms/sendPacket.svg",
           "parameters": [
             {
               "name": "address",
@@ -131,14 +131,14 @@
       },
       "variables": {
         "lastByte": {
-          "img": "tjc-ms/dataRecv.svg",
+          "img": "tjc-ms/lastByte.svg",
           "type": "uint8_t",
           "description": "Последний полученный байт."
         }
       },
       "methods": {
         "sendByte": {
-          "img": "tjc-ms/message.svg",
+          "img": "tjc-ms/sendByte.svg",
           "parameters": [
             {
               "name": "data",

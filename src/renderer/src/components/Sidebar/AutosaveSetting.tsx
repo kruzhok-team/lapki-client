@@ -1,4 +1,4 @@
-import React, { useLayoutEffect } from 'react';
+import React, { useLayoutEffect, useState } from 'react';
 
 import { Controller, useForm } from 'react-hook-form';
 import { twMerge } from 'tailwind-merge';
@@ -22,6 +22,8 @@ interface AutosaveProps {
 export const Autosave: React.FC<AutosaveProps> = ({ isOpen, onClose, ...props }) => {
   const [settings, setSettings, resetSettings] = useSettings('autoSave');
 
+  const [timerId, setTimerId] = useState<NodeJS.Timeout | null>(null);
+
   const {
     register,
     control,
@@ -34,6 +36,10 @@ export const Autosave: React.FC<AutosaveProps> = ({ isOpen, onClose, ...props })
   } = useForm<AutosaveFormValues>();
 
   const handleSubmit = hookHandleSubmit((data) => {
+    if (!data.interval) {
+      setError('interval', { message: 'Введите значение интервала!' });
+      return;
+    }
     if (data.interval <= 0) {
       setError('interval', { message: 'Значение интервала должно быть больше 0!' });
       return;
@@ -48,6 +54,18 @@ export const Autosave: React.FC<AutosaveProps> = ({ isOpen, onClose, ...props })
     setValue('interval', settings.interval);
     setValue('disabled', settings.disabled);
   }, [setValue, settings]);
+
+  const handleIntervalClick = () => {
+    if (!watch('disabled')) return;
+    setError('disabled', { message: 'Включите автосохранение, чтобы изменить интервал.' });
+    if (timerId) {
+      clearTimeout(timerId);
+    }
+    const timeout = setTimeout(() => {
+      clearErrors('disabled');
+    }, 5000);
+    setTimerId(timeout);
+  };
 
   if (settings === null) {
     return;
@@ -73,20 +91,22 @@ export const Autosave: React.FC<AutosaveProps> = ({ isOpen, onClose, ...props })
             </div>
           )}
         </WithHint>
-        <TextInput
-          {...register('interval', { valueAsNumber: true })}
-          maxLength={4}
-          className="max-w-[55px] disabled:opacity-50"
-          disabled={watch('disabled')}
-          onInput={(event) => {
-            const { target } = event;
-            if (target) {
-              (target as HTMLInputElement).value = removeNonNumbers(
-                (target as HTMLInputElement).value
-              );
-            }
-          }}
-        />
+        <div onClick={handleIntervalClick}>
+          <TextInput
+            {...register('interval', { valueAsNumber: true })}
+            maxLength={4}
+            className="max-w-[55px] disabled:opacity-50"
+            disabled={watch('disabled')}
+            onInput={(event) => {
+              const { target } = event;
+              if (target) {
+                (target as HTMLInputElement).value = removeNonNumbers(
+                  (target as HTMLInputElement).value
+                );
+              }
+            }}
+          />
+        </div>
         <WithHint hint={'Вернуть интервал на значение по-умолчанию'}>
           {(props) => {
             const isDisabled = watch('disabled');
@@ -118,10 +138,22 @@ export const Autosave: React.FC<AutosaveProps> = ({ isOpen, onClose, ...props })
           control={control}
           name="disabled"
           render={({ field: { value, onChange } }) => {
-            return <Switch checked={value} onCheckedChange={onChange} />;
+            return (
+              <Switch
+                checked={value}
+                onCheckedChange={(e) => {
+                  if (timerId) {
+                    clearErrors('disabled');
+                    clearTimeout(timerId);
+                  }
+                  onChange(e);
+                }}
+              />
+            );
           }}
         />
       </div>
+      {errors.disabled && <p className="text-warning">{errors.disabled.message}</p>}
     </Modal>
   );
 };

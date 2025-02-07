@@ -4,6 +4,7 @@ import { SingleValue } from 'react-select';
 
 import { Modal, Select, SelectOption } from '@renderer/components/UI';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
+import { PlatformManager } from '@renderer/lib/data/PlatformManager';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { ArgList, Component, Action } from '@renderer/types/diagram';
 import { ArgumentProto } from '@renderer/types/platform';
@@ -37,7 +38,7 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
 }) => {
   const modelController = useModelContext();
   const model = modelController.model;
-  const platforms = controller.useData('platform');
+  const platforms = controller.useData('platform') as { [id: string]: PlatformManager };
   const visual = controller.useData('visual');
   const componentsData = model.useData(smId, 'elements.components') as {
     [id: string]: Component;
@@ -54,29 +55,36 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
     if (!platforms[smId]) return [];
 
     const getComponentOption = (id: string) => {
+      const name = componentsData[id] ? componentsData[id].name ?? id : id;
+      debugger;
       if (!platforms[smId]) {
         return {
           value: id,
-          label: componentsData[id].name ?? id,
+          label: name,
           hint: undefined,
           icon: undefined,
         };
       }
       const proto = platforms[smId].getComponent(id);
 
+      console.log(structuredClone(componentsData));
+      console.log(id);
+      console.log('-------------');
       return {
         value: id,
-        label: componentsData[id].name ?? id,
+        label: name,
         hint: proto?.description,
         icon: platforms[smId].getFullComponentIcon(id, 'mr-1 h-7 w-7'),
       };
     };
 
+    console.log(structuredClone(Object.entries(componentsData)));
     const result = Object.entries(componentsData)
       .sort((a, b) => a[1].order - b[1].order)
       .map(([idx]) => getComponentOption(idx));
 
     if (isEditingEvent) {
+      console.log('isEdditing');
       result.unshift(getComponentOption('System'));
     }
 

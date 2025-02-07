@@ -61,7 +61,7 @@ export function Select<
   return (
     <div className={containerClassName}>
       <ReactSelect
-        placeholder="Выберите..."
+        placeholder={props.placeholder ?? 'Выберите...'}
         {...props}
         className={twMerge(className, !!error && 'error')}
         classNamePrefix="CustomSelect"

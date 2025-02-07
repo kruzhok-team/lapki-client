@@ -983,7 +983,14 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   };
 
   linkState = (args: LinkStateParams, canUndo = true) => {
-    const { smId, parentId, childId, addOnceOff = true, canBeInitial = true } = args;
+    const {
+      smId,
+      parentId,
+      childId,
+      addOnceOff = true,
+      canBeInitial = true,
+      dragEndPos = { x: 0, y: 0 },
+    } = args;
     const parent = this.model.data.elements.stateMachines[smId].states[parentId];
     const child = this.model.data.elements.stateMachines[smId].states[childId];
     if (!parent || !child) return;
@@ -1006,7 +1013,15 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
     this.model.linkState(smId, parentId, childId);
     this.changeStatePosition(
-      { smId, id: childId, startPosition: child.position, endPosition: { x: 0, y: 0 } },
+      {
+        smId,
+        id: childId,
+        startPosition: child.position,
+        endPosition: {
+          x: dragEndPos.x - parent.position.x,
+          y: Math.max(0, dragEndPos.y - parent.position.y),
+        },
+      },
       false
     );
     this.emit('linkState', args);
@@ -1022,7 +1037,10 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
           smId,
           id: childId,
           startPosition: child.position,
-          endPosition: { x: Math.abs(INITIAL_STATE_OFFSET.x), y: INITIAL_STATE_OFFSET.y },
+          endPosition: {
+            x: Math.abs(INITIAL_STATE_OFFSET.x) + CHILDREN_PADDING,
+            y: INITIAL_STATE_OFFSET.y + parent.dimensions.height + CHILDREN_PADDING,
+          },
         },
         false
       );
@@ -1064,8 +1082,11 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     };
 
     if (target.parentId) {
-      position.x = 0;
-      position.y = 0;
+      const parent = this.model.data.elements.stateMachines[smId].states[target.parentId];
+      if (parent) {
+        position.x += 2 * INITIAL_STATE_OFFSET.x;
+        position.y = Math.max(0, position.y);
+      }
     }
 
     const id = this.model.createInitialState({

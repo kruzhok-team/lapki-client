@@ -1019,7 +1019,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         startPosition: child.position,
         endPosition: {
           x: dragEndPos.x - parent.position.x,
-          y: dragEndPos.y - parent.position.y,
+          y: Math.max(0, dragEndPos.y - parent.position.y),
         },
       },
       false

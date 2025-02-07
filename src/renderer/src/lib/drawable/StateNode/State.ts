@@ -186,7 +186,7 @@ export class State extends Shape {
     ctx.strokeStyle = getColor('primaryActive');
 
     ctx.beginPath();
-    ctx.roundRect(x, y, width, height + childrenHeight, 6 / this.scale);
+    ctx.roundRect(x, y, width, childrenHeight !== 0 ? childrenHeight : height, 6 / this.scale);
     ctx.stroke();
     ctx.closePath();
   }

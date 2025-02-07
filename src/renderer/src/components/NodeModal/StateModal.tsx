@@ -48,12 +48,14 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
   // // Сброс формы после закрытия
   const handleAfterClose = () => {
     if (state) {
-      modelController.changeState({
-        ...state.data,
-        color: color,
-        smId,
-        id: state.id,
-      });
+      if (state.data.color !== color) {
+        modelController.changeState({
+          ...state.data,
+          color: color,
+          smId,
+          id: state.id,
+        });
+      }
     }
     setColor(undefined);
 

@@ -7,6 +7,7 @@ import { Modal } from '@renderer/components/UI';
 interface SaveRemindModalProps {
   isOpen: boolean;
   data: SaveModalData | null;
+  deleteTempSave: () => Promise<void>;
   onClose: () => void;
 }
 
@@ -20,10 +21,16 @@ export type SaveModalData = {
 
 export interface SaveRemindModalFormValues {}
 
-export const SaveRemindModal: React.FC<SaveRemindModalProps> = ({ onClose, data, ...props }) => {
+export const SaveRemindModal: React.FC<SaveRemindModalProps> = ({
+  onClose,
+  deleteTempSave,
+  data,
+  ...props
+}) => {
   const { reset, handleSubmit: hookHandleSubmit } = useForm<SaveRemindModalFormValues>();
 
   const handleSave = hookHandleSubmit(async () => {
+    await deleteTempSave();
     await data?.onSave();
     await data?.onOpen();
     // FIXME: не выполняет подтверждаемое действие после сохранения
@@ -36,6 +43,7 @@ export const SaveRemindModal: React.FC<SaveRemindModalProps> = ({ onClose, data,
   };
 
   const handleUnsave = async () => {
+    await deleteTempSave();
     data?.onConfirm();
     onRequestClose();
   };

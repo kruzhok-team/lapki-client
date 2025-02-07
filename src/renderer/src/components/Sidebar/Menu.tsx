@@ -122,16 +122,28 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
     //   TODO: модальное окно с выбором примера
     // },
   ];
-
+  // TODO (L140-beep): переместить в MainContainer.tsx
   useLayoutEffect(() => {
     window.addEventListener('keyup', handleKeyUp);
     return () => window.removeEventListener('keyup', handleKeyUp);
   });
 
-  const handleKeyUp = (e: KeyboardEvent) => {
+  const handleKeyUp = async (e: KeyboardEvent) => {
     if (e.ctrlKey) {
       if (e.code === 'KeyN') {
         return props.onRequestNewFile();
+      }
+      if (e.code === 'KeyZ') {
+        return modelController.history.undo();
+      }
+      if (e.code === 'KeyY') {
+        return modelController.history.redo();
+      }
+      if (!e.shiftKey && e.code === 'KeyS') {
+        return await modelController.files.save();
+      }
+      if (e.shiftKey && e.code === 'KeyS') {
+        return await modelController.files.saveAs();
       }
       if (e.code === 'KeyO') {
         return props.onRequestOpenFile();

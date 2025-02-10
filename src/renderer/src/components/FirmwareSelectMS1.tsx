@@ -7,6 +7,13 @@ import { useModelContext } from '@renderer/store/ModelContext';
 import { StateMachine } from '@renderer/types/diagram';
 import { AddressData, SelectedMsFirmwaresType } from '@renderer/types/FlasherTypes';
 
+type FirmwareItem = {
+  ID: string;
+  name?: string;
+  isFile: boolean;
+  type?: string;
+};
+
 interface FlashSelectMS1Props {
   addressBookSetting: AddressData[] | null;
   stateMachineAddresses: Map<string, number>;
@@ -25,6 +32,7 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
   ...props
 }) => {
   const modelController = useModelContext();
+
   const stateMachinesId = [
     ...Object.entries(
       modelController.model.useData('', 'elements.stateMachinesId') as {
@@ -34,9 +42,23 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
   ].filter(([, sm]) => {
     return sm.platform.startsWith('tjc');
   });
+
   const addressOptions = new Map<string, SelectOption[]>();
   const [isChecked, setIsChecked] = useState<Map<string, boolean>>(new Map());
   const [checkedAll, setCheckedAll] = useState<boolean>(true);
+  const [fileList, setFileList] = useState<FirmwareItem[]>([]);
+
+  const firmwareList = Array.from(stateMachinesId, ([smId, sm]) => {
+    const newItem: FirmwareItem = {
+      ID: smId,
+      name: sm.name,
+      isFile: false,
+      type: sm.platform,
+    };
+    return newItem;
+  });
+  firmwareList.push(...fileList);
+
   const handleClose = () => {
     if (addressBookSetting === null) {
       return;
@@ -44,25 +66,26 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
     const submitFirmwares: SelectedMsFirmwaresType[] = [];
     const checks = isChecked;
     if (checkedAll) {
-      stateMachinesId.forEach(([smId]) => {
-        checks.set(smId, true);
+      firmwareList.forEach((item) => {
+        checks.set(item.ID, true);
       });
     }
-    stateMachinesId.forEach(([smId]) => {
-      if (checks.get(smId) ?? true) {
-        const addressIndex = stateMachineAddresses.get(smId);
+    firmwareList.forEach((item) => {
+      if (checks.get(item.ID) ?? true) {
+        const addressIndex = stateMachineAddresses.get(item.ID);
         if (addressIndex === undefined) {
           return;
         }
         submitFirmwares.push({
-          isFile: false,
-          source: smId,
+          isFile: item.isFile,
+          source: item.ID,
         });
       }
     });
     setSelectedFirmwares(submitFirmwares);
     onClose();
   };
+
   const stateMachineOption = (addressData: AddressData | null | undefined, index: number) => {
     if (!addressData) return null;
     return {
@@ -92,6 +115,7 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
       addressOptions.set(key, [...value, stateMachineOption(entry, index)!]);
     });
   }
+
   const noPlatformOptions = addressOptions.get('');
   if (noPlatformOptions !== undefined) {
     for (const key of addressOptions.keys()) {
@@ -102,23 +126,29 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
       }
     }
   }
-  const rowRender = (smId: string | null = null, sm: StateMachine | null = null) => {
-    const checked = checkedAll || (smId ? isChecked.get(smId) ?? true : false);
+
+  const handleAddFile = () => {
+    console.log('clicked');
+  };
+
+  const rowRender = (firmware: FirmwareItem | null = null) => {
+    const ID = firmware ? firmware.ID : null;
+    const checked = checkedAll || (ID ? isChecked.get(ID) ?? true : false);
     const textCellClassName =
       "'w-full placeholder:text-border-primary' w-[250px] rounded border border-border-primary bg-transparent px-[9px] py-[6px] text-text-primary outline-none transition-colors";
     return (
-      <div key={smId}>
+      <div key={ID}>
         <div className="flex w-full items-start">
           <Checkbox
-            className={twMerge('ml-1 mr-1 mt-[9px]', !smId && 'opacity-0')}
+            className={twMerge('ml-1 mr-1 mt-[9px]', !ID && 'opacity-0')}
             checked={checked}
             onCheckedChange={() => {
-              if (!smId) return;
+              if (!ID) return;
               if (checkedAll) {
                 setIsChecked(() => {
                   const newMap = new Map();
-                  stateMachinesId.forEach(([curSmId]) => {
-                    newMap.set(curSmId, curSmId !== smId);
+                  firmwareList.forEach((item) => {
+                    newMap.set(item.ID, item.ID !== ID);
                   });
                   return newMap;
                 });
@@ -127,26 +157,31 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
               }
               setIsChecked((oldValue) => {
                 const newValue = new Map(oldValue);
-                newValue.set(smId, !checked);
+                newValue.set(ID, !checked);
                 return newValue;
               });
             }}
-            disabled={!smId}
+            disabled={!ID}
           ></Checkbox>
           <label className={textCellClassName}>
-            {sm ? (sm.name ? sm.name : smId) : 'Машина состояний'}
+            {firmware ? (firmware.name ? firmware.name : ID) : 'Машина состояний'}
           </label>
-          <label className={textCellClassName}>{sm ? sm.platform : 'Тип'}</label>
-          {smId && sm ? (
+          <label className={textCellClassName}>
+            {firmware ? (firmware.isFile ? 'Файл' : firmware.type) : 'Тип'}
+          </label>
+          {ID && firmware ? (
             <Select
-              options={addressOptions.get(platformWithoutVersion(sm.platform)) ?? noPlatformOptions}
+              options={
+                //TODO
+                addressOptions.get(platformWithoutVersion(firmware.type)) ?? noPlatformOptions
+              }
               className="w-52"
               isSearchable={false}
               placeholder="Выберите адрес..."
               noOptionsMessage={() => 'Нет подходящих адресов'}
-              value={assignedStateMachineOption(smId) as SelectOption}
+              value={assignedStateMachineOption(ID) as SelectOption}
               onChange={(opt) => {
-                assignStateMachineToAddress(smId, Number(opt?.value));
+                assignStateMachineToAddress(ID, Number(opt?.value));
               }}
             ></Select>
           ) : (
@@ -156,6 +191,7 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
       </div>
     );
   };
+
   return (
     <div>
       <Modal
@@ -166,12 +202,16 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
       >
         <div className="flex gap-2 pl-4">
           <div className="flex h-60 w-full flex-col overflow-y-auto break-words rounded border border-border-primary bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
-            {rowRender(null, null)}
-            {stateMachinesId.map(([id, sm]) => id && rowRender(id, sm))}
-            <button className="btn-secondary ml-[28px] mt-[1px] border-border-primary">
+            {rowRender(null)}
+            {firmwareList.map((firmware) => firmware.ID && rowRender(firmware))}
+            <button
+              type="button"
+              className="btn-secondary ml-[28px] mt-[1px] border-border-primary"
+              onClick={() => handleAddFile()}
+            >
               Добавить файл с прошивкой
             </button>
-            {stateMachinesId.length !== 0 && (
+            {firmwareList.length !== 0 && (
               <div className="flex items-start">
                 <Checkbox
                   className={'ml-1 mr-1 mt-[4px]'}
@@ -182,8 +222,8 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
                     } else {
                       setIsChecked(() => {
                         const newMap = new Map();
-                        stateMachinesId.forEach(([smId]) => {
-                          newMap.set(smId, false);
+                        firmwareList.forEach((firmware) => {
+                          newMap.set(firmware.ID, false);
                         });
                         return newMap;
                       });

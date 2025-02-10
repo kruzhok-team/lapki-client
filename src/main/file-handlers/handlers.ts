@@ -253,9 +253,9 @@ export async function handleFileSelect(
       properties: ['openFile'],
     });
     if (canceled) {
-      return resolve([null]);
+      return resolve([true, '', '']);
     } else {
-      return resolve([filePaths[0]]);
+      return resolve([false, filePaths[0], basename(filePaths[0])]);
     }
   });
 }

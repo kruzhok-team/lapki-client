@@ -119,8 +119,6 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
     });
   }
 
-  console.log('all adress', allAddressOptions);
-
   const noPlatformOptions = addressOptions.get('');
   if (noPlatformOptions !== undefined) {
     for (const key of addressOptions.keys()) {
@@ -133,17 +131,14 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
   }
 
   const handleAddFile = async () => {
-    const [filePath] = await window.api.fileHandlers.selectFile('bin файлы', ['bin']);
-    if (filePath) {
-      const filePathWitoutExtension = filePath.substring(0, filePath.lastIndexOf('.'));
-      let nameIndex = filePathWitoutExtension.lastIndexOf('/');
-      if (nameIndex === -1) {
-        nameIndex = filePathWitoutExtension.lastIndexOf('\\');
-      }
+    const [cancleld, filePath, basename] = await window.api.fileHandlers.selectFile('bin файлы', [
+      'bin',
+    ]);
+    if (!cancleld) {
       const newFile: FirmwareItem = {
         ID: filePath,
         isFile: true,
-        name: filePathWitoutExtension.substring(nameIndex + 1),
+        name: basename.substring(0, basename.lastIndexOf('.')),
       };
       setFileList([...fileList, newFile]);
     }

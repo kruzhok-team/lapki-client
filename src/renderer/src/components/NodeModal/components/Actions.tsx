@@ -108,7 +108,14 @@ export const Actions: React.FC<ActionsProps> = (props) => {
         <TabPanel value={0} tabValue={tabValue}>
           <div className="flex gap-2">
             <div className="flex h-44 w-full flex-col overflow-y-auto break-words rounded border border-border-primary bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
-              {actions.length === 0 && <div className="mx-2 my-2 flex">(нет действий)</div>}
+              {actions.length === 0 && (
+                <div className="flex h-full w-full select-none flex-row items-center justify-center text-center align-middle text-text-inactive">
+                  <span className="mr-2">Чтобы добавить действие, нажмите</span>
+                  <div>
+                    <AddIcon className="btn-secondary h-5 w-5 cursor-default border-text-inactive p-[0.5px]" />
+                  </div>
+                </div>
+              )}
 
               {actions.map((data, i) => (
                 <Action

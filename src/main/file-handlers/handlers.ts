@@ -15,6 +15,7 @@ import {
   HandleFileSaveReturn,
   HandleFileSaveAsReturn,
   HandleBinFileOpenReturn,
+  HandleFileSelectReturn,
 } from './handlersTypes';
 
 /**
@@ -235,6 +236,26 @@ export async function handleBinFileOpen(): HandleBinFileOpenReturn {
       });
     } else {
       resolve([false, null, null, '']);
+    }
+  });
+}
+
+/**
+ * Асинхронный диалог для получения пути к выбранному файлу.
+ */
+export async function handleFileSelect(
+  fileNames: string = '',
+  extensions: string[] = ['*']
+): HandleFileSelectReturn {
+  return new Promise(async (resolve) => {
+    const { canceled, filePaths } = await dialog.showOpenDialog({
+      filters: [{ name: fileNames, extensions: extensions }],
+      properties: ['openFile'],
+    });
+    if (canceled) {
+      return resolve([null]);
+    } else {
+      return resolve([filePaths[0]]);
     }
   });
 }

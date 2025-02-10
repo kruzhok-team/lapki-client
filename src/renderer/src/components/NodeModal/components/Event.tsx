@@ -12,7 +12,7 @@ interface EventProps {
   platform: PlatformManager;
   event: EventData;
   isSelected: boolean;
-  onDoubleClick?: () => void;
+  onDoubleClick?: (e: React.MouseEvent) => void;
   onClick?: () => void;
   text?: string;
   condition?: Condition;

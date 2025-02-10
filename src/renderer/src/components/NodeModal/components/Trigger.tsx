@@ -102,6 +102,7 @@ export const Trigger: React.FC<TriggerProps> = memo(function Trigger(props) {
               onChange={onComponentChange}
               value={componentOptions.find((o) => o.value === selectedComponent) ?? null}
               isSearchable={false}
+              placeholder="Выберите компонент..."
             />
             <Select
               containerClassName="w-full"
@@ -109,6 +110,7 @@ export const Trigger: React.FC<TriggerProps> = memo(function Trigger(props) {
               onChange={onMethodChange}
               value={methodOptions.find((o) => o.value === selectedMethod) ?? null}
               isSearchable={false}
+              placeholder="Выберите событие..."
             />
           </div>
         </TabPanel>

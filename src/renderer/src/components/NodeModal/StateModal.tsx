@@ -119,6 +119,12 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
     return `[${serializeCondition(condition, platform.data, components)}]`;
   };
 
+  const handleEventDoubleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    openEditEventModal();
+  };
+
   return (
     <div>
       <Modal
@@ -147,7 +153,7 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
                 ) : (
                   state.data.events.map((event, key) => (
                     <EventPicto
-                      onDoubleClick={() => openEditEventModal()}
+                      onDoubleClick={handleEventDoubleClick}
                       key={key}
                       event={event.trigger as Event}
                       isSelected={key === currentEventIndex}

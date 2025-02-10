@@ -573,11 +573,13 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
         smId: state.smId,
         parentId: this.dragInfo.parentId,
         childId: this.dragInfo.childId,
+        dragEndPos: e.dragEndPosition,
       });
       this.app.controller.emit('linkState', {
         smId: state.smId,
         childId: this.dragInfo.childId,
         parentId: this.dragInfo.parentId,
+        dragEndPos: e.dragEndPosition,
       });
       this.dragInfo = null;
     } else {

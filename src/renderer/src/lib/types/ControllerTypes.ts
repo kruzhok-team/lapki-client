@@ -83,6 +83,7 @@ export interface LinkStateParams {
   childId: string;
   // Поля ниже нужны для коректной отмены этого действия с помощью истории
   smId: string;
+  dragEndPos?: Point;
   addOnceOff?: boolean;
   canBeInitial?: boolean;
 }

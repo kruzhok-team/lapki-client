@@ -36,6 +36,7 @@ import { getMatrixDimensions, isString, parseMatrixFromString } from '@renderer/
 import { validateElements } from './ElementsValidator';
 import { getPlatform, isPlatformAvailable } from './PlatformLoader';
 
+import { COMPONENT_DEFAULT_POSITION } from '../constants';
 import { Point } from '../types';
 
 const systemComponentAlias = {
@@ -383,16 +384,10 @@ function getComponentPosition(rawComponent: CGMLComponent): Point {
     (value) => value.key == 'dLapkiSchemePosition'
   );
   if (!node) {
-    return {
-      x: 0,
-      y: 0,
-    };
+    return COMPONENT_DEFAULT_POSITION;
   }
   if (!node.point) {
-    return {
-      x: 0,
-      y: 0,
-    };
+    return COMPONENT_DEFAULT_POSITION;
   }
 
   return {

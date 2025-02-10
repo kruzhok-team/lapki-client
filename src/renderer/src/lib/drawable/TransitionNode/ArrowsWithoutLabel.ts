@@ -23,8 +23,16 @@ export class ArrowsWithoutLabel implements Drawable {
     const sourceBounds = this.parent.source.drawBounds;
 
     const line = getLine({
-      rect1: { ...targetBounds, height: targetBounds.height + targetBounds.childrenHeight },
-      rect2: { ...sourceBounds, height: sourceBounds.height + sourceBounds.childrenHeight },
+      rect1: {
+        ...targetBounds,
+        height:
+          targetBounds.childrenHeight === 0 ? targetBounds.height : targetBounds.childrenHeight,
+      },
+      rect2: {
+        ...sourceBounds,
+        height:
+          sourceBounds.childrenHeight === 0 ? sourceBounds.height : sourceBounds.childrenHeight,
+      },
       rectPadding: 10,
     });
 

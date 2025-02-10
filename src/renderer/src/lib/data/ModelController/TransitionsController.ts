@@ -18,7 +18,6 @@ import {
   DeleteDrawableParams,
 } from '@renderer/lib/types/ModelTypes';
 import { MyMouseEvent } from '@renderer/lib/types/mouse';
-import { indexOfMin } from '@renderer/lib/utils';
 
 interface TransitionsControllerEvents {
   changeTransition: string;
@@ -139,27 +138,29 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     const transition = this.items.get(id);
     if (!transition) return;
 
+    this.view.children.add(transition, Layer.Transitions);
+    // TODO (L140-beep): Линковка переходов сразу при создании?
     // Убираем из предыдущего родителя
-    transition.source.parent?.children.remove(transition, Layer.Transitions);
-    transition.target.parent?.children.remove(transition, Layer.Transitions);
-    this.view.children.remove(transition, Layer.Transitions);
+    // transition.source.parent?.children.remove(transition, Layer.Transitions);
+    // transition.target.parent?.children.remove(transition, Layer.Transitions);
+    // this.view.children.remove(transition, Layer.Transitions);
 
-    if (!transition.source.parent || !transition.target.parent) {
-      this.view.children.add(transition, Layer.Transitions);
-      transition.parent = undefined;
-    } else {
-      this.view.children.remove(transition, Layer.Transitions);
+    // if (!transition.source.parent || !transition.target.parent) {
+    //   this.view.children.add(transition, Layer.Transitions);
+    //   transition.parent = undefined;
+    // } else {
+    //   this.view.children.remove(transition, Layer.Transitions);
 
-      const possibleParents = [transition.source.parent, transition.target.parent].filter(Boolean);
-      const possibleParentsDepth = possibleParents.map((p) => p?.getDepth() ?? 0);
-      const parent = possibleParents[indexOfMin(possibleParentsDepth)] ?? this.view;
+    //   const possibleParents = [transition.source.parent, transition.target.parent].filter(Boolean);
+    //   const possibleParentsDepth = possibleParents.map((p) => p?.getDepth() ?? 0);
+    //   const parent = possibleParents[indexOfMin(possibleParentsDepth)] ?? this.view;
 
-      if (parent instanceof State) {
-        transition.parent = parent;
-      }
+    //   if (parent instanceof State) {
+    //     transition.parent = parent;
+    //   }
 
-      parent.children.add(transition, Layer.Transitions);
-    }
+    //   parent.children.add(transition, Layer.Transitions);
+    // }
   };
 
   changeTransition = (args: ChangeTransitionParams) => {

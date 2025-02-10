@@ -103,6 +103,7 @@ export const Trigger: React.FC<TriggerProps> = memo(function Trigger(props) {
               value={componentOptions.find((o) => o.value === selectedComponent) ?? null}
               isSearchable={false}
               placeholder="Выберите компонент..."
+              noOptionsMessage={() => 'Отсутствуют компоненты'}
             />
             <Select
               containerClassName="w-full"
@@ -111,6 +112,11 @@ export const Trigger: React.FC<TriggerProps> = memo(function Trigger(props) {
               value={methodOptions.find((o) => o.value === selectedMethod) ?? null}
               isSearchable={false}
               placeholder="Выберите событие..."
+              noOptionsMessage={() => (
+                <div>
+                  У компонента отсутствуют события <br /> Выберите другой компонент
+                </div>
+              )}
             />
           </div>
         </TabPanel>

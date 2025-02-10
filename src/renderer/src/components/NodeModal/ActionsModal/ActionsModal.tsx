@@ -291,6 +291,7 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
           isMulti={false}
           isClearable={false}
           isSearchable={false}
+          noOptionsMessage={() => <div>Отсутствуют подходящие компоненты</div>}
         />
         <Select
           className="w-full"
@@ -301,6 +302,11 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
           isMulti={false}
           isClearable={false}
           isSearchable={false}
+          noOptionsMessage={() => (
+            <div>
+              У компонента отсутствуют действия <br /> Выберите другой компонент
+            </div>
+          )}
         />
       </div>
 

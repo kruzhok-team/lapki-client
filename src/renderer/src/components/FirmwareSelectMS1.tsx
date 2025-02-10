@@ -127,8 +127,21 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
     }
   }
 
-  const handleAddFile = () => {
-    console.log('clicked');
+  const handleAddFile = async () => {
+    const [filePath] = await window.api.fileHandlers.selectFile('bin файлы', ['bin']);
+    if (filePath) {
+      const filePathWitoutExtension = filePath.substring(0, filePath.lastIndexOf('.'));
+      let nameIndex = filePathWitoutExtension.lastIndexOf('/');
+      if (nameIndex === -1) {
+        nameIndex = filePathWitoutExtension.lastIndexOf('\\');
+      }
+      const newFile: FirmwareItem = {
+        ID: filePath,
+        isFile: true,
+        name: filePathWitoutExtension.substring(nameIndex + 1),
+      };
+      setFileList([...fileList, newFile]);
+    }
   };
 
   const rowRender = (firmware: FirmwareItem | null = null) => {

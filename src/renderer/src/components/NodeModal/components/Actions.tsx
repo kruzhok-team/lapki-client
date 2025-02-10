@@ -106,7 +106,7 @@ export const Actions: React.FC<ActionsProps> = (props) => {
 
       <div className="pl-4">
         <TabPanel value={0} tabValue={tabValue}>
-          <div className="flex gap-2">
+          <div onDoubleClick={onAddAction} className="flex gap-2">
             <div className="flex h-44 w-full flex-col overflow-y-auto break-words rounded border border-border-primary bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
               {actions.length === 0 && (
                 <div className="flex h-full w-full select-none flex-row items-center justify-center text-center align-middle text-text-inactive">
@@ -138,7 +138,12 @@ export const Actions: React.FC<ActionsProps> = (props) => {
               <button type="button" className="btn-secondary p-1" onClick={onAddAction}>
                 <AddIcon />
               </button>
-              <button type="button" className="btn-secondary p-1" onClick={handleClickDelete}>
+              <button
+                type="button"
+                className="btn-secondary p-1"
+                onClick={handleClickDelete}
+                disabled={selectedActionIndex === null}
+              >
                 <SubtractIcon />
               </button>
             </div>

@@ -18,7 +18,6 @@ import {
   DeleteDrawableParams,
 } from '@renderer/lib/types/ModelTypes';
 import { MyMouseEvent } from '@renderer/lib/types/mouse';
-import { indexOfMin } from '@renderer/lib/utils';
 
 interface TransitionsControllerEvents {
   changeTransition: string;

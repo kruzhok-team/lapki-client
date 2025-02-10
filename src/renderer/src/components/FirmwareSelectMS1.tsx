@@ -44,6 +44,7 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
   });
 
   const addressOptions = new Map<string, SelectOption[]>();
+  const allAddressOptions: SelectOption[] = [];
   const [isChecked, setIsChecked] = useState<Map<string, boolean>>(new Map());
   const [checkedAll, setCheckedAll] = useState<boolean>(true);
   const [fileList, setFileList] = useState<FirmwareItem[]>([]);
@@ -113,8 +114,12 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
       // здесь null не будет, так как мы уже делаем проверку addressBookSetting
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       addressOptions.set(key, [...value, stateMachineOption(entry, index)!]);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      allAddressOptions.push(stateMachineOption(entry, index)!);
     });
   }
+
+  console.log('all adress', allAddressOptions);
 
   const noPlatformOptions = addressOptions.get('');
   if (noPlatformOptions !== undefined) {
@@ -185,8 +190,9 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
           {ID && firmware ? (
             <Select
               options={
-                //TODO
-                addressOptions.get(platformWithoutVersion(firmware.type)) ?? noPlatformOptions
+                firmware.isFile
+                  ? allAddressOptions
+                  : addressOptions.get(platformWithoutVersion(firmware.type))
               }
               className="w-52"
               isSearchable={false}

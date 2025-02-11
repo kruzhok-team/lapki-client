@@ -65,7 +65,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
       setData({
         shownName: name,
         question: 'Хотите сохранить файл перед тем, как открыть другой?',
-        onConfirm: performOpenFile,
+        onConfirm: async () => await performOpenFile(path),
         onSave: handleSaveFile,
         onOpen: async () => await performOpenFile(path),
       });

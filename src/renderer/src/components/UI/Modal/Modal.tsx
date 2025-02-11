@@ -57,7 +57,7 @@ export const Modal: React.FC<ModalProps> = ({
     <ReactModal
       {...props}
       className={twMerge(
-        'absolute left-1/2 top-12 max-h-[90vh] w-full max-w-3xl -translate-x-1/2 overflow-auto rounded-lg bg-bg-primary p-6 outline-none scrollbar-thin scrollbar-track-transparent scrollbar-thumb-current',
+        'absolute left-1/2 top-12 max-h-[90vh] w-full max-w-3xl -translate-x-1/2 rounded-lg bg-bg-primary p-6 outline-none scrollbar-thin scrollbar-track-transparent scrollbar-thumb-current',
         className
       )}
       overlayClassName={twMerge(

@@ -6,6 +6,7 @@ import { SaveModalData } from '@renderer/components';
 import { Compiler } from '@renderer/components/Modules/Compiler';
 import { importGraphml } from '@renderer/lib/data/GraphmlParser';
 import { useModelContext } from '@renderer/store/ModelContext';
+import { SidebarIndex, useSidebar } from '@renderer/store/useSidebar';
 import { useTabs } from '@renderer/store/useTabs';
 import { Elements } from '@renderer/types/diagram';
 import { isLeft, isRight, unwrapEither } from '@renderer/types/Either';
@@ -23,7 +24,7 @@ interface useFileOperationsArgs {
 
 export const useFileOperations = (args: useFileOperationsArgs) => {
   const { openLoadError, openSaveError, openCreateSchemeModal, openImportError } = args;
-
+  const { changeTab } = useSidebar();
   const modelController = useModelContext();
   const model = modelController.model;
   const name = modelController.model.useData('', 'name') as string | null;
@@ -41,6 +42,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
 
   // Открыть вкладки на каждый контроллер
   const openTabs = () => {
+    changeTab(SidebarIndex.Explorer);
     for (const controllerId in modelController.controllers) {
       if (controllerId === '') continue;
       const controller = modelController.controllers[controllerId];

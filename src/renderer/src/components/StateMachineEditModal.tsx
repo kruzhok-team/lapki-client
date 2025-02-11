@@ -53,6 +53,7 @@ export const StateMachineEditModal: React.FC<StateMachineEditModalProps> = ({
   // Сброс к начальному состоянию после закрытия
   const handleAfterClose = () => {
     editor.focus();
+    reset();
   };
 
   const handleSubmit = hookHandleSubmit((data) => {

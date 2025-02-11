@@ -58,21 +58,21 @@ export const NotInitialized: React.FC = () => {
   const hotKeyStyle = 'rounded border-2 border-border-contrast px-1';
 
   return (
-    <div className="flex flex-col items-center pt-24">
+    <div className="flex flex-col items-center">
       {icon}
       <br />
       <p className="text-center text-2xl font-bold">
         {appName} {shownVersion ? `v${shownVersion}` : ''}
       </p>
-      <p className="py-6 text-center text-base">
+      <p className="pt- pb-5 text-center text-base">
         Перетащите файл в эту область или воспользуйтесь комбинацией клавиш:
       </p>
       <table>
         <tbody>
           {combination.map((value, key) => (
             <tr key={key}>
-              <td className="px-1 py-1">{value.name}</td>
-              <td className="ml-3 flex items-start py-1">
+              <td className="px-1 py-2">{value.name}</td>
+              <td className="ml-3 flex items-start py-2">
                 <div className={hotKeyStyle}>{value.command.button1}</div>
                 {value.command.button2 && (
                   <>

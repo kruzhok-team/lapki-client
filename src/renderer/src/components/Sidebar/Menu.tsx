@@ -3,12 +3,14 @@ import React, { Dispatch, useLayoutEffect } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import { PropertiesModal, TextModeModal } from '@renderer/components';
+import { useSettings } from '@renderer/hooks';
 import { useModal } from '@renderer/hooks/useModal';
 import { useProperties } from '@renderer/hooks/useProperties';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { useTabs } from '@renderer/store/useTabs';
 import { noTextMode } from '@renderer/version';
 
+import { OpenRecentModal } from '../OpenRecentModal';
 import { Badge, WithHint } from '../UI';
 
 interface MenuItem {
@@ -46,6 +48,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
   const isInitialized = modelController.model.useData('', 'isInitialized');
   const { propertiesModalProps, openPropertiesModal } = useProperties(controller);
   const [isTextModeModalOpen, openTextModeModal, closeTextModeModal] = useModal(false);
+  const [isRecentModalOpen, openRecentModal, closeRecentModal] = useModal(false);
   const visual = controller.useData('visual');
 
   const items: MenuItem[] = [
@@ -56,6 +59,10 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
     {
       text: 'Открыть...',
       onClick: () => props.onRequestOpenFile(), // Если передавать просто функцию, в параметры может попасть то что не нужно
+    },
+    {
+      text: 'Открыть недавние...',
+      onClick: () => openRecentModal(), // Если передавать просто функцию, в параметры может попасть то что не нужно
     },
     {
       text: 'Сохранить',
@@ -203,6 +210,11 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
 
       <PropertiesModal {...propertiesModalProps} />
       <TextModeModal isOpen={isTextModeModalOpen} onClose={closeTextModeModal} />
+      <OpenRecentModal
+        isOpen={isRecentModalOpen}
+        onClose={closeRecentModal}
+        onOpen={(path) => console.log(path)}
+      />
     </section>
   );
 };

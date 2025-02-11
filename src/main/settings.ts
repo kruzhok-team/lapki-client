@@ -23,6 +23,18 @@ type AddressBook = {
   meta: MetaType;
 };
 
+type StateMachineInfo = {
+  name: string;
+  platformIdx: string;
+};
+
+type RecentFile = {
+  basename: string;
+  path: string;
+  stateMachines: StateMachineInfo[];
+  lastOpen: Date;
+};
+
 export const defaultSettings = {
   doc: {
     host: defaultDocHost,
@@ -88,6 +100,7 @@ export const defaultSettings = {
     disabled: false,
   },
   restoreSession: false,
+  recentFiles: [] as RecentFile[],
 };
 
 export type Settings = typeof defaultSettings;

@@ -10,7 +10,7 @@ import { useManagerMS } from '@renderer/store/useManagerMS';
 import { SelectedMsFirmwaresType } from '@renderer/types/FlasherTypes';
 
 import { AddressBookModal } from './AddressBook';
-import { FlashSelect } from './FlasherTable';
+import { FlasherTable } from './FlasherTable';
 import { MsGetAddressModal } from './MsGetAddressModal';
 
 import { ManagerMS } from '../../Modules/ManagerMS';
@@ -271,14 +271,14 @@ export const ManagerMSTab: React.FC = () => {
         onRemove={onRemove}
         onSwapEntries={onSwapEntries}
       ></AddressBookModal>
-      <FlashSelect
+      <FlasherTable
         addressBookSetting={addressBookSetting}
         isOpen={isFlashSelectOpen}
         onClose={closeFlashSelect}
         stateMachineAddresses={stateMachineAddresses}
         assignStateMachineToAddress={assignStateMachineToAddress}
         setSelectedFirmwares={setSelectedFirmwares}
-      ></FlashSelect>
+      ></FlasherTable>
       <MsGetAddressModal
         isOpen={isMsGetAddressOpen}
         onClose={closeMsGetAddressModal}

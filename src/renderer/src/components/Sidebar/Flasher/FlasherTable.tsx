@@ -7,7 +7,7 @@ import { useModelContext } from '@renderer/store/ModelContext';
 import { StateMachine } from '@renderer/types/diagram';
 import { AddressData, SelectedMsFirmwaresType } from '@renderer/types/FlasherTypes';
 
-interface FlashSelectMS1Props {
+interface FlasherTableProps {
   addressBookSetting: AddressData[] | null;
   stateMachineAddresses: Map<string, number>;
   assignStateMachineToAddress: (smId: string, idx: number) => void;
@@ -16,7 +16,7 @@ interface FlashSelectMS1Props {
   onClose: () => void;
 }
 
-export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
+export const FlasherTable: React.FC<FlasherTableProps> = ({
   addressBookSetting,
   stateMachineAddresses,
   assignStateMachineToAddress,

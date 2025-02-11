@@ -10,6 +10,7 @@ import {
   handleOpenPlatformFile,
   handleGetFileMetadata,
   handleFileSelect,
+  handleFileRead,
 } from './handlers';
 
 /**
@@ -28,6 +29,7 @@ const handlers = {
   openPlatformFile: handleOpenPlatformFile,
   getMetadata: handleGetFileMetadata,
   selectFile: handleFileSelect,
+  readFile: handleFileRead,
 };
 
 /**

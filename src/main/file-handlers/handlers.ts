@@ -16,6 +16,7 @@ import {
   HandleFileSaveAsReturn,
   HandleBinFileOpenReturn,
   HandleFileSelectReturn,
+  HandleFileReadReturn,
 } from './handlersTypes';
 
 /**
@@ -257,6 +258,21 @@ export async function handleFileSelect(
     } else {
       return resolve([false, filePaths[0], basename(filePaths[0])]);
     }
+  });
+}
+
+/**
+ * Асинхронное чтение указанного файла.
+ */
+export async function handleFileRead(filePath: string): HandleFileReadReturn {
+  return new Promise(async (resolve) => {
+    fs.readFile(filePath, (err, data) => {
+      if (err) {
+        resolve([null, err.message]);
+      } else {
+        resolve([data, null]);
+      }
+    });
   });
 }
 

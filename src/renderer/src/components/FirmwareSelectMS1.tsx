@@ -135,6 +135,13 @@ export const FlashSelect: React.FC<FlashSelectMS1Props> = ({
       'bin',
     ]);
     if (!cancleld) {
+      if (
+        fileList.find((v) => {
+          return v.ID === filePath;
+        }) !== undefined
+      ) {
+        return;
+      }
       const newFile: FirmwareItem = {
         ID: filePath,
         isFile: true,

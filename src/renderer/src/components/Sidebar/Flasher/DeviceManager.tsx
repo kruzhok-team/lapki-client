@@ -10,7 +10,7 @@ import { useManagerMS } from '@renderer/store/useManagerMS';
 import { SelectedMsFirmwaresType } from '@renderer/types/FlasherTypes';
 
 import { AddressBookModal } from './AddressBook';
-import { FlashSelect } from './FirmwareSelectMS1';
+import { FlashSelect } from './FlasherTable';
 import { MsGetAddressModal } from './MsGetAddressModal';
 
 import { ManagerMS } from '../../Modules/ManagerMS';

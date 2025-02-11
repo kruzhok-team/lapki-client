@@ -16,16 +16,16 @@ import { CompilerResult } from '@renderer/types/CompilerTypes';
 import { StateMachine } from '@renderer/types/diagram';
 import { FlashResult } from '@renderer/types/FlasherTypes';
 
-import { ArduinoDevice, Device, MSDevice } from '../Modules/Device';
-import { ManagerMS } from '../Modules/ManagerMS';
+import { ArduinoDevice, Device, MSDevice } from '../../Modules/Device';
+import { ManagerMS } from '../../Modules/ManagerMS';
 import {
   SERIAL_MONITOR_CONNECTING,
   SERIAL_MONITOR_NO_CONNECTION,
   SERIAL_MONITOR_NO_SERVER_CONNECTION,
   SerialMonitor,
-} from '../Modules/SerialMonitor';
-import { ClientStatus } from '../Modules/Websocket/ClientStatus';
-import { Select } from '../UI/Select';
+} from '../../Modules/SerialMonitor';
+import { ClientStatus } from '../../Modules/Websocket/ClientStatus';
+import { Select } from '../../UI/Select';
 
 export interface FlasherProps {
   compilerData: CompilerResult | undefined;

@@ -3,8 +3,8 @@ import { useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import { CodeEditor, DiagramEditor } from '@renderer/components';
-import { ManagerMSTab } from '@renderer/components/ManagerMS';
-import { SerialMonitorTab } from '@renderer/components/SerialMonitor';
+import { ManagerMSTab } from '@renderer/components/Sidebar/Flasher/ManagerMS';
+import { SerialMonitorTab } from '@renderer/components/Sidebar/Flasher/SerialMonitor';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { useTabs } from '@renderer/store/useTabs';
 import { Tab as TabType } from '@renderer/types/tabs';

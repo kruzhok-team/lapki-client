@@ -11,9 +11,10 @@ import { SelectedMsFirmwaresType } from '@renderer/types/FlasherTypes';
 
 import { AddressBookModal } from './AddressBook';
 import { FlashSelect } from './FirmwareSelectMS1';
-import { ManagerMS } from './Modules/ManagerMS';
 import { MsGetAddressModal } from './MsGetAddressModal';
-import { Switch } from './UI';
+
+import { ManagerMS } from '../../Modules/ManagerMS';
+import { Switch } from '../../UI';
 
 export const ManagerMSTab: React.FC = () => {
   const { device, log, address: serverAddress, meta, compilerData } = useManagerMS();

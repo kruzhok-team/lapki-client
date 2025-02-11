@@ -16,7 +16,7 @@ import { CompilerResult } from '@renderer/types/CompilerTypes';
 
 import { CompilerTab } from './Compiler';
 import { Explorer } from './Explorer';
-import { Loader } from './Flasher/Loader';
+import { Loader } from './Flasher/Flasher';
 import { History } from './History';
 import { Labels } from './Labels';
 import { Menu } from './Menu';

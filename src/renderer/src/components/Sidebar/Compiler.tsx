@@ -2,7 +2,9 @@ import React, { useEffect, useState } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
+import { ReactComponent as OkIcon } from '@renderer/assets/icons/add.svg';
 import { ReactComponent as Setting } from '@renderer/assets/icons/settings.svg';
+import { ReactComponent as NotOkIcon } from '@renderer/assets/icons/sub.svg';
 import { Compiler } from '@renderer/components/Modules/Compiler';
 import { useErrorModal, useFileOperations, useSettings } from '@renderer/hooks';
 import { getPlatform } from '@renderer/lib/data/PlatformLoader';
@@ -172,14 +174,6 @@ export const CompilerTab: React.FC<CompilerProps> = ({
 
   const button = [
     {
-      name: 'Показать журнал компиляции',
-      handler: handleAddStdoutTab,
-      disabled:
-        !smId ||
-        compilerData?.state_machines[smId]?.commands === undefined ||
-        compilerData?.state_machines[smId]?.commands.length === 0,
-    },
-    {
       name: 'Сохранить результат',
       handler: handleSaveBinaryIntoFolder,
       disabled:
@@ -272,8 +266,8 @@ export const CompilerTab: React.FC<CompilerProps> = ({
               ? 'Скомпилировать'
               : 'Переподключиться'}
           </button>
-          <button className="btn-primary px-2" onClick={openCompilerSettings}>
-            <Setting width="1.5rem" height="1.5rem" />
+          <button className="btn-primary px-3" onClick={openCompilerSettings}>
+            <span>...</span>
           </button>
         </div>
 
@@ -288,7 +282,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
             </button>
           </div>
         ) : undefined}
-        <p>
+        <p className="my-1">
           Статус:{' '}
           <span
             className={twMerge(
@@ -300,8 +294,34 @@ export const CompilerTab: React.FC<CompilerProps> = ({
           </span>
         </p>
         {showReconnectTime()}
-        <div className="mb-4 min-h-[350px] select-text overflow-y-auto break-words rounded bg-bg-primary p-2">
-          Результат компиляции: {getCompilerResult()}
+        <button
+          className="btn-primary"
+          onClick={handleAddStdoutTab}
+          disabled={
+            !smId ||
+            compilerData?.state_machines[smId]?.commands === undefined ||
+            compilerData?.state_machines[smId]?.commands.length === 0
+          }
+        >
+          Показать журнал компиляции
+        </button>
+        <div className="my-1"> Машины состояний: </div>
+        <div className="mb-4 flex min-h-[200px] select-text flex-col overflow-y-auto break-words rounded bg-bg-primary p-2">
+          {compilerData?.state_machines
+            ? Object.entries(compilerData.state_machines).map(([id, sm]) => (
+                <div>
+                  <div className="flex h-auto w-auto items-center">
+                    {sm.result === 'OK' ? (
+                      <OkIcon className="size-5" />
+                    ) : (
+                      <NotOkIcon className="size-5" />
+                    )}
+                    <span className="ml-2 flex">{stateMachines[id].name ?? id}</span>
+                  </div>
+                  <hr className="mt-1 h-[1px] w-auto border-bg-hover opacity-70" />
+                </div>
+              ))
+            : 'Нет скомпилированных МС...'}
         </div>
         <Select
           className="mb-2"

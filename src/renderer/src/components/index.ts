@@ -19,3 +19,4 @@ export * from './NoteEdit';
 export * from './StateNameEdit';
 export * from './TextModeModal';
 export * from './StateMachineNameEdit';
+export * from './SelectStateMachinesModal';

@@ -257,7 +257,7 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
       {firmwareList.length > 0
         ? firmwareList.map((firmware) => firmware.ID && rowRender(firmware))
         : cellRender(
-            'Добавьте устройства через кнопку «Подключить плату»',
+            'Добавьте устройства через кнопку «Подключить плату» или кнопку «Адреса плат МС-ТЮК»',
             twMerge(allColumn, 'opacity-70')
           )}
     </div>

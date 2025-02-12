@@ -45,6 +45,10 @@ export interface SidebarCallbacks {
 
 interface SidebarProps {
   callbacks: SidebarCallbacks;
+  setSmDropDownReference: (node: HTMLElement | null) => void;
+  openSmDropDown: () => void;
+  isSmDropDownOpen: boolean;
+  closeSmDropDown: () => void;
   openImportError: (error: string) => void;
 }
 
@@ -56,6 +60,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
     onRequestSaveAsFile,
     onRequestImportFile,
   },
+  setSmDropDownReference,
+  openSmDropDown,
+  closeSmDropDown,
+  isSmDropDownOpen,
   openImportError,
 }) => {
   const modelController = useModelContext();
@@ -107,6 +115,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <StateMachinesList />,
       <Explorer />,
       <CompilerTab
+        closeSmDropDown={closeSmDropDown}
+        isSmDropDownOpen={isSmDropDownOpen}
+        openSmDropDown={openSmDropDown}
+        setSmDropDownReference={setSmDropDownReference}
         openData={openData}
         openCompilerSettings={openCompilerSettings}
         compilerData={compilerData}
@@ -128,6 +140,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
       />,
     ],
     [
+      closeSmDropDown,
+      openSmDropDown,
+      setSmDropDownReference,
+      isSmDropDownOpen,
       onRequestSaveFile,
       onRequestImportFile,
       onRequestNewFile,

@@ -6,7 +6,7 @@ import { ReactComponent as OkIcon } from '@renderer/assets/icons/add.svg';
 import { ReactComponent as Setting } from '@renderer/assets/icons/settings.svg';
 import { ReactComponent as NotOkIcon } from '@renderer/assets/icons/sub.svg';
 import { Compiler } from '@renderer/components/Modules/Compiler';
-import { useErrorModal, useFileOperations, useSettings } from '@renderer/hooks';
+import { useErrorModal, useFileOperations, useModal, useSettings } from '@renderer/hooks';
 import { getPlatform } from '@renderer/lib/data/PlatformLoader';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { SidebarIndex, useSidebar } from '@renderer/store/useSidebar';
@@ -16,7 +16,6 @@ import { Elements, StateMachine } from '@renderer/types/diagram';
 import { languageMappers } from '@renderer/utils';
 
 import { CompilerStatus, CompilerNoDataStatus } from '../Modules/Websocket/ClientStatus';
-import { Select } from '../UI/Select/Select';
 
 export interface CompilerProps {
   openData: [boolean, string | null, string | null, string] | undefined;
@@ -26,6 +25,10 @@ export interface CompilerProps {
   setCompilerStatus: React.Dispatch<React.SetStateAction<string>>;
   openImportError: (error: string) => void;
   openCompilerSettings: () => void;
+  setSmDropDownReference: (node: HTMLElement | null) => void;
+  openSmDropDown: () => void;
+  isSmDropDownOpen: boolean;
+  closeSmDropDown: () => void;
 }
 
 export const CompilerTab: React.FC<CompilerProps> = ({
@@ -35,6 +38,10 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   setCompilerData,
   compilerStatus,
   setCompilerStatus,
+  setSmDropDownReference,
+  isSmDropDownOpen,
+  closeSmDropDown,
+  openSmDropDown,
 }) => {
   const modelController = useModelContext();
   const { openLoadError, openSaveError, openImportError } = useErrorModal();
@@ -44,11 +51,9 @@ export const CompilerTab: React.FC<CompilerProps> = ({
     openCreateSchemeModal: () => undefined,
     openImportError,
   });
+
   const [compilerSetting] = useSettings('compiler');
   const [importData, setImportData] = useState<Elements | undefined>(undefined);
-  const [compilerNoDataStatus, setCompilerNoDataStatus] = useState<string>(
-    CompilerNoDataStatus.DEFAULT
-  );
   const stateMachines = modelController.model.useData('', 'elements.stateMachinesId') as {
     [id: string]: StateMachine;
   };
@@ -150,13 +155,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
 
     const { host, port } = compilerSetting;
 
-    Compiler.bindReact(
-      setCompilerData,
-      setCompilerStatus,
-      setImportData,
-      setCompilerNoDataStatus,
-      setSecondsUntilReconnect
-    );
+    Compiler.bindReact(setCompilerData, setCompilerStatus, setImportData, setSecondsUntilReconnect);
     Compiler.connect(host, port);
   }, [compilerSetting]);
 
@@ -212,49 +211,12 @@ export const CompilerTab: React.FC<CompilerProps> = ({
     if (secondsUntilReconnect == null) return;
     return <p>До подключения: {secondsUntilReconnect} сек.</p>;
   };
-  const getSmOption = (id: string, sm: StateMachine) => {
-    return { value: id, label: sm.name ?? id, hint: getPlatform(sm.platform)?.name ?? '' };
-  };
-  const stateMachinesOptions = () => {
-    const options = [...Object.entries(stateMachines)]
-      .map(([id, sm]) => {
-        return getSmOption(id, sm);
-      })
-      .filter((item) => item.value);
-    return options;
-  };
-
-  const getCompilerResult = () => {
-    if (!compilerData) {
-      return compilerNoDataStatus;
-    }
-    if (compilerData.result === 'NOTOK') {
-      const failedSms = Object.entries(compilerData.state_machines)
-        .filter(([smId, sm]) => sm.result === 'NOTOK' && stateMachines[smId])
-        .map(([smId]) => stateMachines[smId].name ?? smId)
-        .join(', ');
-      return `NOTOK(${failedSms})`;
-    }
-
-    return compilerData.result;
-  };
-
-  const getSelectMachineStateOption = () => {
-    if (!smId) return null;
-    const sm = stateMachines[smId];
-    if (!sm) {
-      setSmId(undefined);
-      return null;
-    }
-    return getSmOption(smId, sm);
-  };
 
   return (
     <section>
       <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
         Компилятор
       </h3>
-
       <div className="flex flex-col px-4">
         <div className="mb-2 flex rounded">
           <button
@@ -266,7 +228,11 @@ export const CompilerTab: React.FC<CompilerProps> = ({
               ? 'Скомпилировать'
               : 'Переподключиться'}
           </button>
-          <button className="btn-primary px-3" onClick={openCompilerSettings}>
+          <button
+            className="btn-primary px-3"
+            onClick={isSmDropDownOpen ? closeSmDropDown : openSmDropDown}
+            ref={setSmDropDownReference}
+          >
             <span>...</span>
           </button>
         </div>
@@ -306,32 +272,32 @@ export const CompilerTab: React.FC<CompilerProps> = ({
           Показать журнал компиляции
         </button>
         <div className="my-1"> Машины состояний: </div>
-        <div className="mb-4 flex min-h-[200px] select-text flex-col overflow-y-auto break-words rounded bg-bg-primary p-2">
-          {compilerData?.state_machines
-            ? Object.entries(compilerData.state_machines).map(([id, sm]) => (
-                <div>
-                  <div className="flex h-auto w-auto items-center">
-                    {sm.result === 'OK' ? (
-                      <OkIcon className="size-5" />
-                    ) : (
-                      <NotOkIcon className="size-5" />
-                    )}
-                    <span className="ml-2 flex">{stateMachines[id].name ?? id}</span>
-                  </div>
-                  <hr className="mt-1 h-[1px] w-auto border-bg-hover opacity-70" />
+        <div className="mb-4 flex h-[200px] select-text flex-col overflow-y-auto break-words rounded bg-bg-primary scrollbar-thin">
+          {compilerData?.state_machines ? (
+            Object.entries(compilerData.state_machines).map(([id, sm]) => (
+              <div
+                onClick={() => setSmId(id)}
+                className={twMerge(
+                  'cursor-pointer hover:bg-bg-hover',
+                  smId === id && 'bg-bg-hover'
+                )}
+              >
+                <div className="flex h-auto w-auto items-center p-2">
+                  {sm.result === 'OK' ? (
+                    <OkIcon className="size-5" />
+                  ) : (
+                    <NotOkIcon className="size-5" />
+                  )}
+                  <span className="ml-2 flex">{stateMachines[id].name ?? id}</span>
                 </div>
-              ))
-            : 'Нет скомпилированных МС...'}
+                <hr className="h-[1px] w-auto border-bg-hover opacity-70" />
+              </div>
+            ))
+          ) : (
+            <div className="p-2">Нет скомпилированных МС...</div>
+          )}
         </div>
-        <Select
-          className="mb-2"
-          isSearchable={false}
-          placeholder="Выберите машину состояний..."
-          options={stateMachinesOptions()}
-          value={getSelectMachineStateOption()}
-          onChange={(opt) => setSmId(opt?.value)}
-          noOptionsMessage={() => 'Машины состояний отсутствуют'}
-        />
+
         {button.map(({ name, handler, disabled }, i) => (
           <button key={i} className="btn-primary mb-2" onClick={handler} disabled={disabled}>
             {name}

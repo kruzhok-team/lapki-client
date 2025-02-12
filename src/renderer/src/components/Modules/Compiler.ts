@@ -37,13 +37,11 @@ export class Compiler extends ClientWS {
     setCompilerData: Dispatch<SetStateAction<CompilerResult | undefined>>,
     setCompilerStatus: Dispatch<SetStateAction<string>>,
     setImportData: Dispatch<SetStateAction<Elements | undefined>>,
-    setCompilerNoDataStatus: Dispatch<SetStateAction<string>>,
     setSecondsUntilReconnect: Dispatch<SetStateAction<number | null>>
   ): void {
     super.bind(setCompilerStatus, setSecondsUntilReconnect);
     this.setCompilerData = setCompilerData;
     this.setImportData = setImportData;
-    this.setCompilerNoDataStatus = setCompilerNoDataStatus;
   }
 
   static binary: { [id: string]: Binary[] } = {}; // id машины состояний - бинарники
@@ -96,7 +94,6 @@ export class Compiler extends ClientWS {
     bearlogaSmId?: string
   ) {
     this.setCompilerData(undefined);
-    this.setCompilerNoDataStatus(CompilerNoDataStatus.DEFAULT);
     await this.connect(this.host, this.port).then((ws: Websocket | undefined) => {
       if (ws !== undefined) {
         // TODO (L140-beep): Понять, что с этим делать
@@ -124,7 +121,6 @@ export class Compiler extends ClientWS {
         this.onStatusChange(CompilerStatus.COMPILATION);
         this.timeoutTimer.timeOut(() => {
           toast.error(CompilerNoDataStatus.TIMEOUT);
-          this.setCompilerNoDataStatus(CompilerNoDataStatus.TIMEOUT);
           // возращаем статут соединения, если соединение присутствует
           // если оно пропало, то статус изменится самостоятельно, то есть тут ничего менять не надо
           if (this.connection && this.connection.OPEN) {
@@ -198,7 +194,6 @@ export class Compiler extends ClientWS {
 
   static closeHandler(host: string, port: number, event: Websocket.CloseEvent) {
     this.timeoutTimer.clear();
-    this.setCompilerNoDataStatus(CompilerNoDataStatus.DEFAULT);
     if (!event.wasClean) {
       toast.error('Ошибка при подключении к компилятору');
     }
@@ -210,7 +205,6 @@ export class Compiler extends ClientWS {
   }
 
   static onOpenHandler(): void {
-    this.setCompilerNoDataStatus(CompilerNoDataStatus.DEFAULT);
     super.onOpenHandler();
   }
 }

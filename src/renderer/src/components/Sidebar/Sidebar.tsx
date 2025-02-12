@@ -12,11 +12,12 @@ import { useSettings } from '@renderer/hooks';
 import { useModal } from '@renderer/hooks/useModal';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { useDoc } from '@renderer/store/useDoc';
+import { useTabs } from '@renderer/store/useTabs';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
 
 import { CompilerTab } from './Compiler';
 import { Explorer } from './Explorer';
-import { Loader } from './Flasher/DeviceList';
+import { FlasherTab } from './Flasher/Flasher';
 import { History } from './History';
 import { Labels } from './Labels';
 import { Menu } from './Menu';
@@ -24,7 +25,6 @@ import { Menus } from './Menus';
 import { Setting } from './Setting';
 import { StateMachinesList } from './StateMachinesTab/StateMachinesList';
 
-import { AvrdudeGuideModal } from '../AvrdudeGuide';
 import { Flasher } from '../Modules/Flasher';
 import { CompilerSelectModal } from '../serverSelect/CompilerSelectModal';
 import {
@@ -48,6 +48,8 @@ interface SidebarProps {
   openImportError: (error: string) => void;
 }
 
+const flasherTabName = 'Загрузчик';
+
 export const Sidebar: React.FC<SidebarProps> = ({
   callbacks: {
     onRequestNewFile,
@@ -62,8 +64,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const [isCompilerOpen, openCompilerSettings, closeCompilerSettings] = useModal(false);
   const [flasherSetting, setFlasherSetting] = useSettings('flasher');
-  const [isFlasherOpen, openFlasherSettings, closeFlasherSettings] = useModal(false);
-  const [isAvrdudeGuideModalOpen, openAvrdudeGuideModal, closeAvrdudeGuideModal] = useModal(false);
+  const [isFlasherSettingsOpen, openFlasherSettings, closeFlasherSettings] = useModal(false);
   const [openData, setOpenData] = useState<
     [boolean, string | null, string | null, string] | undefined
   >(undefined);
@@ -73,6 +74,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
     state.onDocumentationToggle,
     state.isOpen,
   ]);
+  const [openTab, closeTab, tabs] = useTabs((state) => [
+    state.openTab,
+    state.closeTab,
+    state.items,
+  ]);
+  const isFlasherTabOpen = tabs.find((tab) => tab.name === flasherTabName) !== undefined;
 
   const isEditorDataStale = modelController.model.useData('', 'isStale');
 
@@ -90,6 +97,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
     if (!flasherSetting) return;
 
     setFlasherSetting({ ...flasherSetting, ...data });
+  };
+
+  const handleFlasherClick = () => {
+    if (isFlasherTabOpen) {
+      closeTab(flasherTabName, modelController);
+      return;
+    }
+    openTab(modelController, {
+      type: 'managerMS',
+      name: flasherTabName,
+    });
   };
 
   // при добавлении новой вкладки или изменения их расположения нужно обновить SidebarIndex из useSidebar
@@ -115,11 +133,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         setCompilerStatus={setCompilerStatus}
         openImportError={openImportError}
       />,
-      <Loader
-        compilerData={compilerData}
-        openLoaderSettings={openLoaderSettings}
-        openAvrdudeGuideModal={openAvrdudeGuideModal}
-      />,
+      undefined,
       <History />,
       undefined,
       <Setting
@@ -164,6 +178,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {
         Icon: <FlasherIcon />,
         hint: 'Загрузчик',
+        action: handleFlasherClick,
+        isActive: isFlasherTabOpen,
       },
       {
         Icon: <HistoryIcon />,
@@ -181,7 +197,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         hint: 'Настройки',
       },
     ],
-    [isEditorDataStale, isDocOpen]
+    [isEditorDataStale, isDocOpen, isFlasherTabOpen]
   );
 
   return (
@@ -190,12 +206,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <Menus items={menus} />
 
       <FlasherSelectModal
-        isOpen={isFlasherOpen}
+        isOpen={isFlasherSettingsOpen}
         onSubmit={handleFlasherModalSubmit}
         onClose={closeFlasherModal}
       />
       <CompilerSelectModal isOpen={isCompilerOpen} onClose={closeCompilerSettings} />
-      <AvrdudeGuideModal isOpen={isAvrdudeGuideModalOpen} onClose={closeAvrdudeGuideModal} />
     </div>
   );
 };

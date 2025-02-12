@@ -3,6 +3,7 @@
 */
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
+import { AvrdudeGuideModal } from '@renderer/components/AvrdudeGuide';
 import { useAddressBook } from '@renderer/hooks/useAddressBook';
 import { useModal } from '@renderer/hooks/useModal';
 import { useSettings } from '@renderer/hooks/useSettings';
@@ -33,11 +34,16 @@ export const FlasherTab: React.FC = () => {
     stateMachineAddresses,
     assignStateMachineToAddress,
   } = useAddressBook();
-  const { connectionStatus } = useFlasher();
   const [managerMSSetting, setManagerMSSetting] = useSettings('managerMS');
+
+  const { connectionStatus } = useFlasher();
+
+  const [isAvrdudeGuideModalOpen, openAvrdudeGuideModal, closeAvrdudeGuideModal] = useModal(false);
   const [isAddressBookOpen, openAddressBook, closeAddressBook] = useModal(false);
   const [isMsGetAddressOpen, openMsGetAddressModal, closeMsGetAddressModal] = useModal(false);
+
   const [selectedFirmwares, setSelectedFirmwares] = useState<SelectedMsFirmwaresType[]>([]);
+
   const logContainerRef = useRef<HTMLDivElement>(null);
 
   // При изменении log прокручиваем вниз, если включена автопрокрутка
@@ -187,9 +193,25 @@ export const FlasherTab: React.FC = () => {
     }
     ManagerMS.binStart();
   };
+
+  // вывод сообщения об отсутствии avrdude и кнопка с подсказкой для пользователя
+  const avrdudeCheck = () => {
+    //if (!avrdudeBlock) return;
+    return (
+      <button
+        type="button"
+        className="btn-primary mb-2 w-full border-warning bg-warning"
+        onClick={openAvrdudeGuideModal}
+      >
+        Программа avrdude не найдена!
+      </button>
+    );
+  };
+
   if (!managerMSSetting) {
     return null;
   }
+
   return (
     <section className="mr-3 flex h-full flex-col bg-bg-secondary">
       <label className="m-2">Статус: {connectionStatus}</label>
@@ -306,7 +328,8 @@ export const FlasherTab: React.FC = () => {
             hideGetAddressModal: true,
           });
         }}
-      ></MsGetAddressModal>
+      />
+      <AvrdudeGuideModal isOpen={isAvrdudeGuideModalOpen} onClose={closeAvrdudeGuideModal} />
     </section>
   );
 };

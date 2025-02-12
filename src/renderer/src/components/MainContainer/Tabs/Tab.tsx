@@ -4,6 +4,7 @@ import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as CloseIcon } from '@renderer/assets/icons/close.svg';
 import { ReactComponent as CodeIcon } from '@renderer/assets/icons/code.svg';
+import { ReactComponent as FlasherIcon } from '@renderer/assets/icons/flasher.svg';
 import { ReactComponent as MonitorIcon } from '@renderer/assets/icons/serial_monitor.svg';
 import { ReactComponent as StateIcon } from '@renderer/assets/icons/state.svg';
 import { ReactComponent as EditorIcon } from '@renderer/assets/icons/state_machine.svg';
@@ -45,6 +46,7 @@ export const Tab: React.FC<TabProps> = (props) => {
     transition: <TransitionIcon className="text-[#737373]" width={25} height={25} />,
     state: <StateIcon className="text-[#737373]" width={20} height={20} />, // текущая иконка слишком большая, поэтому размеры указаны поменьше
     serialMonitor: <MonitorIcon className="text-[#737373]" width={25} height={25} />,
+    managerMS: <FlasherIcon className="text-[#737373]" width={25} height={25} />,
   };
   const [dragOver, setDragOver] = useState(false);
 

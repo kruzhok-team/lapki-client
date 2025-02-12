@@ -51,6 +51,11 @@ export const useTrigger = (
         };
       }
       const proto = controller.platform[smId]?.getComponent(id);
+
+      if (proto && Object.keys(proto.signals).length === 0) {
+        return;
+      }
+
       const name = componentsData[id] && componentsData[id].name ? componentsData[id].name : id;
       return {
         value: id,
@@ -60,12 +65,19 @@ export const useTrigger = (
       };
     };
 
-    const result = Object.entries(componentsData)
-      .sort((a, b) => a[1].order - b[1].order)
-      .map(([idx]) => getComponentOption(idx));
-
+    const sortedComponents = Object.entries(componentsData).sort((a, b) => a[1].order - b[1].order);
+    const result: Exclude<ReturnType<typeof getComponentOption>, undefined>[] = [];
+    for (const [componentId] of sortedComponents) {
+      const option = getComponentOption(componentId);
+      if (option) {
+        result.push(option);
+      }
+    }
     if (addSystemComponents) {
-      result.unshift(getComponentOption('System'));
+      const system = getComponentOption('System');
+      if (system) {
+        result.unshift(system);
+      }
     }
 
     return result;

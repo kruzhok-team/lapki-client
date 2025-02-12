@@ -9,7 +9,7 @@ import {
 import { useSettings } from '@renderer/hooks';
 import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
 
-import { Select, Switch, TextInput } from './UI';
+import { Select, Switch, TextInput } from '../../UI';
 
 type LineBreakType = 'LF' | 'CR' | 'CRLF' | 'Без';
 // опции выбора символа окончания строки

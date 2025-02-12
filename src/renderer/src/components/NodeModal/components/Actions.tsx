@@ -71,7 +71,7 @@ export const Actions: React.FC<ActionsProps> = (props) => {
 
   useLayoutEffect(() => {
     setActions(event ? (event.do as ActionData[]) : []);
-  }, [event]);
+  }, [event, setActions]);
 
   const handleChangeText = useMemo(() => throttle(onChangeText, 500), [onChangeText]);
 

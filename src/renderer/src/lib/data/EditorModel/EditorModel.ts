@@ -155,6 +155,9 @@ export class EditorModel {
             }
           }
         }
+        if (typeof ev.condition !== 'string' && ev.condition) {
+          this.renameCondition(ev.condition, oldComponentId, newComponentId);
+        }
       }
     }
 

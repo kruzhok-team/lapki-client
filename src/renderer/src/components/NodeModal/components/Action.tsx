@@ -47,6 +47,11 @@ export const Action: React.FC<ActionProps> = (props) => {
     )}${param.method}`;
   };
 
+  const handleDoubleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onChange();
+  };
+
   return (
     <div
       className={twMerge('flex gap-2 p-2 hover:bg-bg-hover', isSelected && 'bg-bg-active')}
@@ -55,7 +60,7 @@ export const Action: React.FC<ActionProps> = (props) => {
       onDragOver={(event) => event.preventDefault()}
       onDragStart={onDragStart}
       onDrop={onDrop}
-      onDoubleClick={onChange}
+      onDoubleClick={handleDoubleClick}
     >
       <Picto
         leftIcon={platform.getFullComponentIcon(data.component)}

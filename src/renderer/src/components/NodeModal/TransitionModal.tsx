@@ -295,7 +295,9 @@ export const TransitionModal: React.FC<TransitionModalProps> = ({ smId, controll
             <Trigger event={(transition?.label as EventData) ?? null} {...trigger} />
           )}
           {!isInitialTransition && <Condition {...condition} />}
-          {!isInitialTransition && <Actions event={null} {...actions} />}
+          {!isInitialTransition && (
+            <Actions event={(transition?.label as EventData) ?? null} {...actions} />
+          )}
           {error && <div className="text-error">{error}</div>}
           <ColorField label="Цвет линии:" value={color} onChange={setColor} />
         </div>

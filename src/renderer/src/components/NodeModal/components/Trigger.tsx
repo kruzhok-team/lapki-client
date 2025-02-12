@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useMemo, useRef } from 'react';
+import React, { memo, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 
 import CodeMirror, { Transaction, EditorState, ReactCodeMirrorRef } from '@uiw/react-codemirror';
 import throttle from 'lodash.throttle';
@@ -64,7 +64,7 @@ export const Trigger: React.FC<TriggerProps> = memo(function Trigger(props) {
     }
   };
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!event) return;
     setSelectedComponent((event?.trigger as Event).component);
     setSelectedMethod((event?.trigger as Event).method);

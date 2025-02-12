@@ -8,7 +8,6 @@ import { ReactComponent as OkIcon } from '@renderer/assets/icons/verify-verified
 import { Compiler } from '@renderer/components/Modules/Compiler';
 import { useErrorModal, useFileOperations, useSettings } from '@renderer/hooks';
 import { useModelContext } from '@renderer/store/ModelContext';
-import { SidebarIndex, useSidebar } from '@renderer/store/useSidebar';
 import { useTabs } from '@renderer/store/useTabs';
 import { CompileCommandResult, CompilerResult } from '@renderer/types/CompilerTypes';
 import { Elements, StateMachine } from '@renderer/types/diagram';

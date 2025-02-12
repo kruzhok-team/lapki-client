@@ -200,7 +200,6 @@ export const FlasherTab: React.FC = () => {
         <button className="btn-primary mr-4" onClick={handleOpenAddressBook}>
           Адреса плат МС-ТЮК
         </button>
-        <button className="btn-primary mr-4">Монитор порта</button>
       </div>
       <div className="m-2">
         <FlasherTable

@@ -7,7 +7,7 @@ import { ReactComponent as OkIcon } from '@renderer/assets/icons/mark-check.svg'
 import { ReactComponent as NotOkIcon } from '@renderer/assets/icons/mark-cross.svg';
 import { ReactComponent as Setting } from '@renderer/assets/icons/settings.svg';
 import { Compiler } from '@renderer/components/Modules/Compiler';
-import { useErrorModal, useFileOperations, useSettings } from '@renderer/hooks';
+import { useErrorModal, useFileOperations, useModal, useSettings } from '@renderer/hooks';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { useTabs } from '@renderer/store/useTabs';
 import { CompileCommandResult, CompilerResult } from '@renderer/types/CompilerTypes';
@@ -15,6 +15,7 @@ import { Elements, StateMachine } from '@renderer/types/diagram';
 import { languageMappers } from '@renderer/utils';
 
 import { CompilerStatus } from '../Modules/Websocket/ClientStatus';
+import { SelectStateMachinesModal } from '../SelectStateMachinesModal';
 
 export interface CompilerProps {
   openData: [boolean, string | null, string | null, string] | undefined;
@@ -43,6 +44,8 @@ export const CompilerTab: React.FC<CompilerProps> = ({
     openImportError,
   });
 
+  const [isOpen, open, close] = useModal(false);
+  const [selectedStateMachines, setSelectedStateMachines] = useState<{ [id: string]: boolean }>({});
   const [compilerSetting] = useSettings('compiler');
   const [importData, setImportData] = useState<Elements | undefined>(undefined);
   const stateMachines = modelController.model.useData('', 'elements.stateMachinesId') as {
@@ -186,6 +189,10 @@ export const CompilerTab: React.FC<CompilerProps> = ({
     return <p>До подключения: {secondsUntilReconnect} сек.</p>;
   };
 
+  const saveRequestedSm = (selected: { [id: string]: boolean }) => {
+    setSelectedStateMachines(selected);
+  };
+
   return (
     <section>
       <h3 className="mx-4 mb-3 flex flex-row items-center border-b border-border-primary py-2 text-center text-lg">
@@ -212,7 +219,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
               ? 'Скомпилировать'
               : 'Переподключиться'}
           </button>
-          <button className="btn-primary px-2" onClick={openCompilerSettings}>
+          <button className="btn-primary px-2" onClick={open}>
             <Setting width="1.5rem" height="1.5rem" />
           </button>
         </div>
@@ -273,6 +280,12 @@ export const CompilerTab: React.FC<CompilerProps> = ({
           </button>
         ))}
       </div>
+      <SelectStateMachinesModal
+        onSubmit={saveRequestedSm}
+        stateMachines={stateMachines}
+        close={close}
+        isOpen={isOpen}
+      />
     </section>
   );
 };

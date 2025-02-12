@@ -23,6 +23,18 @@ interface FlasherTableProps {
   onClose: () => void;
 }
 
+// размеры столбцов
+const checkColumn = 'w-[20px]';
+const nameColumn = 'w-[165px]';
+const typeColumn = 'w-[165px]';
+const addressColumn = 'w-[160px]';
+const firmwareSourceColumn = 'w-[210px]';
+const selectSmSubColumn = 'w-[185px]';
+const selectFileSubColumn = 'w-[25px]';
+
+const tableClassName =
+  'flex h-60 overflow-y-auto break-words rounded border border-border-primary bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb';
+
 export const FlasherTable: React.FC<FlasherTableProps> = ({
   addressBookSetting,
   stateMachineAddresses,
@@ -151,64 +163,86 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
     }
   };
 
-  const rowRender = (firmware: FirmwareItem | null = null) => {
-    const ID = firmware ? firmware.ID : null;
-    const checked = checkedAll || (ID ? isChecked.get(ID) ?? true : false);
+  const cellRender = (content: string | JSX.Element, mergeClassName: string) => {
+    return (
+      <div
+        className={twMerge(
+          mergeClassName,
+          'rounded border border-border-primary bg-transparent px-[9px] py-[6px] text-text-primary outline-none transition-colors'
+        )}
+      >
+        {content}
+      </div>
+    );
+  };
+
+  const headerRender = () => {
+    return (
+      <div className="flex">
+        {cellRender(' ', twMerge(checkColumn))}
+        {cellRender('Наименование', nameColumn)}
+        {cellRender('Тип', typeColumn)}
+        {cellRender('Адрес/Порт', addressColumn)}
+        {cellRender('Что прошиваем', firmwareSourceColumn)}
+      </div>
+    );
+  };
+
+  const rowRender = (firmware: FirmwareItem) => {
+    const checked = checkedAll || (isChecked.get(firmware.ID) ?? true);
     const textCellClassName =
       "'w-full placeholder:text-border-primary' w-[250px] rounded border border-border-primary bg-transparent px-[9px] py-[6px] text-text-primary outline-none transition-colors";
     return (
-      <div key={ID}>
-        <div className="flex w-full items-start">
-          <Checkbox
-            className={twMerge('ml-1 mr-1 mt-[9px]', !ID && 'opacity-0')}
-            checked={checked}
-            onCheckedChange={() => {
-              if (!ID) return;
-              if (checkedAll) {
-                setIsChecked(() => {
-                  const newMap = new Map();
-                  firmwareList.forEach((item) => {
-                    newMap.set(item.ID, item.ID !== ID);
-                  });
-                  return newMap;
+      <div key={firmware.ID} className="flex items-start">
+        <Checkbox
+          className={twMerge('h-[38px] rounded border border-border-primary', checkColumn)}
+          checked={checked}
+          onCheckedChange={() => {
+            if (checkedAll) {
+              setIsChecked(() => {
+                const newMap = new Map();
+                firmwareList.forEach((item) => {
+                  newMap.set(item.ID, item.ID !== firmware.ID);
                 });
-                setCheckedAll(!checkedAll);
-                return;
-              }
-              setIsChecked((oldValue) => {
-                const newValue = new Map(oldValue);
-                newValue.set(ID, !checked);
-                return newValue;
+                return newMap;
               });
-            }}
-            disabled={!ID}
-          ></Checkbox>
-          <label className={textCellClassName}>
-            {firmware ? (firmware.name ? firmware.name : ID) : 'Машина состояний'}
-          </label>
-          <label className={textCellClassName}>
-            {firmware ? (firmware.isFile ? 'Файл' : firmware.type) : 'Тип'}
-          </label>
-          {ID && firmware ? (
-            <Select
-              options={
-                firmware.isFile
-                  ? allAddressOptions
-                  : addressOptions.get(platformWithoutVersion(firmware.type))
-              }
-              className="w-52"
-              isSearchable={false}
-              placeholder="Выберите адрес..."
-              noOptionsMessage={() => 'Нет подходящих адресов'}
-              value={assignedStateMachineOption(ID) as SelectOption}
-              onChange={(opt) => {
-                assignStateMachineToAddress(ID, Number(opt?.value));
-              }}
-            ></Select>
-          ) : (
-            <label className={twMerge(textCellClassName, 'w-56')}>{'Адрес'}</label>
-          )}
-        </div>
+              setCheckedAll(!checkedAll);
+              return;
+            }
+            setIsChecked((oldValue) => {
+              const newValue = new Map(oldValue);
+              newValue.set(firmware.ID, !checked);
+              return newValue;
+            });
+          }}
+        />
+        {cellRender(<label>{firmware.name ? firmware.name : firmware.ID}</label>, nameColumn)}
+        {cellRender(
+          <label>{firmware ? (firmware.isFile ? 'Файл' : firmware.type) : 'Тип'}</label>,
+          typeColumn
+        )}
+        {cellRender(<label>{firmware.ID}</label>, addressColumn)}
+        <Select
+          options={
+            firmware.isFile
+              ? allAddressOptions
+              : addressOptions.get(platformWithoutVersion(firmware.type))
+          }
+          className={selectSmSubColumn}
+          isSearchable={false}
+          placeholder="Выберите..."
+          noOptionsMessage={() => 'Нет подходящих адресов'}
+          value={assignedStateMachineOption(firmware.ID) as SelectOption}
+          onChange={(opt) => {
+            assignStateMachineToAddress(firmware.ID, Number(opt?.value));
+          }}
+        />
+        <button
+          type="button"
+          className={twMerge('h-[38px] rounded border border-border-primary', selectFileSubColumn)}
+        >
+          …
+        </button>
       </div>
     );
   };
@@ -221,41 +255,9 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
         title="Выбор прошивок для загрузки"
         cancelLabel="Вернуться"
       >
-        <div className="flex gap-2 pl-4">
-          <div className="flex h-60 w-full flex-col overflow-y-auto break-words rounded border border-border-primary bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
-            {rowRender(null)}
-            {firmwareList.map((firmware) => firmware.ID && rowRender(firmware))}
-            <button
-              type="button"
-              className="btn-secondary ml-[28px] mt-[1px] border-border-primary"
-              onClick={() => handleAddFile()}
-            >
-              Добавить файл с прошивкой
-            </button>
-            {firmwareList.length !== 0 && (
-              <div className="flex items-start">
-                <Checkbox
-                  className={'ml-1 mr-1 mt-[4px]'}
-                  checked={checkedAll}
-                  onCheckedChange={() => {
-                    if (!checkedAll) {
-                      setIsChecked(new Map());
-                    } else {
-                      setIsChecked(() => {
-                        const newMap = new Map();
-                        firmwareList.forEach((firmware) => {
-                          newMap.set(firmware.ID, false);
-                        });
-                        return newMap;
-                      });
-                    }
-                    setCheckedAll(!checkedAll);
-                  }}
-                ></Checkbox>
-                <label className="mt-[4px]">{'Выбрать всё'}</label>
-              </div>
-            )}
-          </div>
+        <div className="flex h-60 flex-col overflow-y-auto break-words rounded border border-border-primary bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
+          {headerRender()}
+          {firmwareList.map((firmware) => firmware.ID && rowRender(firmware))}
         </div>
       </Modal>
     </div>

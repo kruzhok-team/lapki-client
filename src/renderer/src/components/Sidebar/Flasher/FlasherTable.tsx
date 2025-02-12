@@ -32,9 +32,6 @@ const firmwareSourceColumn = 'w-[210px]';
 const selectSmSubColumn = 'w-[185px]';
 const selectFileSubColumn = 'w-[25px]';
 
-const tableClassName =
-  'flex h-60 overflow-y-auto break-words rounded border border-border-primary bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb';
-
 export const FlasherTable: React.FC<FlasherTableProps> = ({
   addressBookSetting,
   stateMachineAddresses,

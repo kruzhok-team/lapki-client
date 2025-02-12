@@ -83,9 +83,17 @@ export const CompilerTab: React.FC<CompilerProps> = ({
 
   const handleCompile = async () => {
     if (!name) return;
+    const selectedElements: Elements = {
+      stateMachines: {},
+    };
 
+    for (const smId in selectedStateMachines) {
+      if (selectedStateMachines[smId]) {
+        selectedElements.stateMachines[smId] = stateMachines[smId];
+      }
+    }
     Compiler.filename = name;
-    modelController.files.compile();
+    modelController.files.compile(selectedElements);
   };
 
   const handleSaveSourceIntoFolder = async () => {
@@ -183,7 +191,9 @@ export const CompilerTab: React.FC<CompilerProps> = ({
     compilerStatus == CompilerStatus.COMPILATION || compilerStatus == CompilerStatus.CONNECTING;
   const canCompile = compilerStatus == CompilerStatus.CONNECTED && isInitialized;
   const disabled =
-    processing || (!processing && !canCompile && compilerStatus !== CompilerStatus.NO_CONNECTION);
+    processing ||
+    (!processing && !canCompile && compilerStatus !== CompilerStatus.NO_CONNECTION) ||
+    Object.values(selectedStateMachines).find((val) => val === true) === undefined;
   const showReconnectTime = () => {
     if (secondsUntilReconnect == null) return;
     return <p>До подключения: {secondsUntilReconnect} сек.</p>;

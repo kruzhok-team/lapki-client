@@ -22,10 +22,14 @@ export const SelectStateMachinesModal: React.FC<SelectStateMachinesModalProps> =
   const [selectedStateMachines, setSelectedStateMachines] = useState<{ [id: string]: boolean }>({});
 
   useLayoutEffect(() => {
-    debugger;
+    handleAfterClose();
+  }, [stateMachines]);
+
+  const handleAfterClose = () => {
     const getDefaultValues = () => {
       const defaultMap: { [id: string]: boolean } = {};
       Object.keys(stateMachines).map((id) => {
+        if (id === '') return;
         if (defaultMap[id] === undefined) {
           defaultMap[id] = true;
         }
@@ -34,15 +38,17 @@ export const SelectStateMachinesModal: React.FC<SelectStateMachinesModalProps> =
       return defaultMap;
     };
     setSelectedStateMachines(getDefaultValues());
-  }, [stateMachines]);
+  };
 
   const handleCheckedChange = (id: string) => {
-    debugger;
-    const isSelected = selectedStateMachines[id];
-    if (isSelected === undefined) return;
+    setSelectedStateMachines((selectedStateMachines) => {
+      const isSelected = selectedStateMachines[id];
+      if (isSelected === undefined) return selectedStateMachines;
 
-    selectedStateMachines[id] = !isSelected;
-    setSelectedStateMachines({ ...selectedStateMachines });
+      selectedStateMachines[id] = !isSelected;
+
+      return { ...selectedStateMachines };
+    });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -66,24 +72,22 @@ export const SelectStateMachinesModal: React.FC<SelectStateMachinesModalProps> =
             return (
               <div
                 key={id}
-                onClick={(e) => {
-                  debugger;
+                onClick={() => {
                   handleCheckedChange(id);
                 }}
-                className="flex flex-col pl-2 pt-2 align-middle hover:bg-bg-hover"
+                className="flex cursor-pointer flex-col pl-2 pt-2 align-middle hover:bg-bg-hover"
               >
                 <div className="flex flex-row ">
                   <Checkbox
-                    checked={isSelected}
-                    onClick={(e) => {
-                      debugger;
+                    onClick={() => {
                       handleCheckedChange(id);
                     }}
+                    checked={isSelected}
                   />
 
                   <span className="ml-2">{stateMachines[id].name ?? id}</span>
                 </div>
-                <hr className="mt-2 h-[1px] w-auto border-bg-hover opacity-70" />
+                <hr className="ml-2 mr-2 mt-2 h-[1px] w-auto border-bg-hover opacity-70" />
               </div>
             );
           })}

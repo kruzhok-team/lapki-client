@@ -1,21 +1,23 @@
 /*
-Окно менеджера для МС-ТЮК
+Окно загрузчика
 */
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { useAddressBook } from '@renderer/hooks/useAddressBook';
 import { useModal } from '@renderer/hooks/useModal';
 import { useSettings } from '@renderer/hooks/useSettings';
+import { useFlasher } from '@renderer/store/useFlasher';
 import { useManagerMS } from '@renderer/store/useManagerMS';
-import { SelectedMsFirmwaresType } from '@renderer/types/FlasherTypes';
+import { AddressData, SelectedMsFirmwaresType } from '@renderer/types/FlasherTypes';
 
 import { AddressBookModal } from './AddressBook';
-import { FlashSelect } from './FirmwareSelectMS1';
-import { ManagerMS } from './Modules/ManagerMS';
+import { FlasherTable } from './FlasherTable';
 import { MsGetAddressModal } from './MsGetAddressModal';
-import { Switch } from './UI';
 
-export const ManagerMSTab: React.FC = () => {
+import { ManagerMS } from '../../Modules/ManagerMS';
+import { Switch } from '../../UI';
+
+export const FlasherTab: React.FC = () => {
   const { device, log, address: serverAddress, meta, compilerData } = useManagerMS();
   const {
     addressBookSetting,
@@ -31,11 +33,18 @@ export const ManagerMSTab: React.FC = () => {
     stateMachineAddresses,
     assignStateMachineToAddress,
   } = useAddressBook();
+  const { connectionStatus } = useFlasher();
   const [managerMSSetting, setManagerMSSetting] = useSettings('managerMS');
   const [isAddressBookOpen, openAddressBook, closeAddressBook] = useModal(false);
-  const [isFlashSelectOpen, openFlashSelect, closeFlashSelect] = useModal(false);
   const [isMsGetAddressOpen, openMsGetAddressModal, closeMsGetAddressModal] = useModal(false);
   const [selectedFirmwares, setSelectedFirmwares] = useState<SelectedMsFirmwaresType[]>([]);
+  const [addressStateMachine, setAddressStateMachine] = useState<
+    Map<string, SelectedMsFirmwaresType>
+  >(new Map());
+  const [checkedStateMachine, setCheckedStateMachine] = useState<Map<string, boolean>>(new Map());
+  const [devList, setDevList] = useState<AddressData[]>([
+    { address: 'pupupu', name: 'dev', type: '', meta: undefined },
+  ]);
   const logContainerRef = useRef<HTMLDivElement>(null);
 
   // При изменении log прокручиваем вниз, если включена автопрокрутка
@@ -44,10 +53,12 @@ export const ManagerMSTab: React.FC = () => {
       logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight;
     }
   }, [log, managerMSSetting]);
+
   useEffect(() => {
     if (serverAddress === '') return;
     setSelectedAddress(serverAddress);
   }, [serverAddress]);
+
   useEffect(() => {
     if (!meta || addressBookSetting === null) return;
     const metaStr = `
@@ -86,6 +97,12 @@ export const ManagerMSTab: React.FC = () => {
       selectedAddressIndex
     );
   }, [meta]);
+
+  useEffect(() => {
+    if (addressBookSetting === null) return;
+    // TODO: переименование, удаление и т.д.
+  }, [addressBookSetting]);
+
   const handleGetAddress = () => {
     if (!device || !managerMSSetting) return;
     if (!managerMSSetting.hideGetAddressModal) {
@@ -112,25 +129,19 @@ export const ManagerMSTab: React.FC = () => {
     ManagerMS.getMetaData(device.deviceID, selectedAddress());
     ManagerMS.addLog('Отправлен запрос на метаданные устройства.');
   };
-  const handleCurrentDeviceDisplay = () => {
-    if (device === undefined) {
-      return 'Устройство отсутствует.';
-    }
-    return device.displayName();
-  };
   const isFlashDisabled = () => {
     if (selectedFirmwares.length === 0) return true;
     return !selectedFirmwares.every((item) => {
       if (!item.isFile) {
         if (!compilerData) return false;
-        const data = compilerData.state_machines[item.source];
+        const data = compilerData.state_machines[item.target];
         return data && data.binary && data.binary.length !== 0;
       }
       return true;
     });
   };
 
-  const handleSendBin = () => {
+  const handleSendBin = async () => {
     if (!addressBookSetting) {
       ManagerMS.addLog('Ошибка! Адресная книга не загрузилась!');
       return;
@@ -139,33 +150,56 @@ export const ManagerMSTab: React.FC = () => {
       ManagerMS.addLog('Прошивку начать нельзя! Выберите устройство!');
       return;
     }
-    selectedFirmwares.forEach((item) => {
+    for (const item of selectedFirmwares) {
+      const addressIndex = stateMachineAddresses.get(item.target);
+      // значит адрес или машина состояний были удалены
+      if (addressIndex === undefined) {
+        ManagerMS.addLog(
+          `Ошибка! Не удаётся найти адрес для ${
+            item.isFile ? 'файла с прошивкой' : 'машины состояний'
+          } (${item.target}). Возможно Вы удалили адрес или ${
+            item.isFile ? 'файл с прошивкой' : 'машину состояний'
+          }.`
+        );
+        continue;
+      }
       if (item.isFile) {
-        // TODO
-      } else {
-        if (!compilerData) return;
-        const addressIndex = stateMachineAddresses.get(item.source);
-        // значит адрес или машина состояний были удалены
-        if (addressIndex === undefined) {
-          return;
+        const [binData, errorMessage] = await window.api.fileHandlers.readFile(item.target);
+        if (errorMessage !== null) {
+          ManagerMS.addLog(
+            `Ошибка! Не удалось извлечь данные из файла ${item.target}. Текст ошибки: ${errorMessage}`
+          );
+          continue;
         }
-        const smData = compilerData.state_machines[item.source];
+        if (binData !== null) {
+          ManagerMS.binAdd({
+            addressInfo: addressBookSetting[addressIndex],
+            device: device,
+            verification: managerMSSetting ? managerMSSetting.verification : false,
+            binaries: new Blob([binData]),
+            isFile: true,
+          });
+        }
+      } else {
+        if (!compilerData) continue;
+        const smData = compilerData.state_machines[item.target];
         if (!smData || !smData.binary || smData.binary.length === 0) {
           ManagerMS.addLog(
             `Ошибка! Загрузка по адресу ${displayEntry(
               addressIndex
-            )} невозможна! Отсутствуют бинарные данные для машины состояния ${item.source}.`
+            )} невозможна! Отсутствуют бинарные данные для машины состояния ${item.target}.`
           );
-          return;
+          continue;
         }
         ManagerMS.binAdd({
           addressInfo: addressBookSetting[addressIndex],
           device: device,
           verification: managerMSSetting ? managerMSSetting.verification : false,
           binaries: smData.binary,
+          isFile: false,
         });
       }
-    });
+    }
     ManagerMS.binStart();
   };
   if (!managerMSSetting) {
@@ -173,17 +207,44 @@ export const ManagerMSTab: React.FC = () => {
   }
   return (
     <section className="mr-3 flex h-full flex-col bg-bg-secondary">
-      <div className="m-2 flex justify-between">{handleCurrentDeviceDisplay()}</div>
-      <label className="m-2">
-        Адрес: {displayEntry(selectedAddressIndex ?? -1) ?? 'выберите из адресной книги'}
-      </label>
+      <label className="m-2">Статус: {connectionStatus}</label>
       <div className="m-2 flex">
         <button className="btn-primary mr-4" onClick={handleGetAddress}>
-          Получить адрес...
+          Подключить плату
         </button>
         <button className="btn-primary mr-4" onClick={handleOpenAddressBook}>
-          Адресная книга
+          Адреса плат МС-ТЮК
         </button>
+      </div>
+      <div className="m-2">
+        <FlasherTable
+          checkedStateMachine={checkedStateMachine}
+          setCheckedStateMachine={setCheckedStateMachine}
+          setStateMachineAddresses={setAddressStateMachine}
+          stateMachineAddresses={addressStateMachine}
+          devList={devList}
+        />
+      </div>
+      <div className="m-2 flex">
+        <button
+          className="btn-primary mr-4"
+          onClick={() => handleSendBin()}
+          disabled={isFlashDisabled()}
+        >
+          Прошить!
+        </button>
+        <div className="mr-4 flex w-40 items-center justify-between">
+          <Switch
+            checked={managerMSSetting.verification}
+            onCheckedChange={() =>
+              setManagerMSSetting({
+                ...managerMSSetting,
+                verification: !managerMSSetting.verification,
+              })
+            }
+          />
+          Верификация
+        </div>
         <button
           className="btn-primary mr-4"
           onClick={handlePing}
@@ -206,31 +267,24 @@ export const ManagerMSTab: React.FC = () => {
           Получить метаданные
         </button>
       </div>
-      <div className="m-2 flex">
-        <button className="btn-primary mr-4" onClick={openFlashSelect}>
-          Выбрать прошивки...
-        </button>
-        <button
-          className="btn-primary mr-4"
-          onClick={() => handleSendBin()}
-          disabled={isFlashDisabled()}
-        >
-          Прошить!
-        </button>
-        <div className="mr-4 flex w-40 items-center justify-between">
-          <Switch
-            checked={managerMSSetting.verification}
-            onCheckedChange={() =>
-              setManagerMSSetting({
-                ...managerMSSetting,
-                verification: !managerMSSetting.verification,
-              })
-            }
-          />
-          Верификация
-        </div>
+      <div className="m-2">Журнал действий</div>
+      <div
+        className="mx-2 h-72 overflow-y-auto whitespace-break-spaces bg-bg-primary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
+        ref={logContainerRef}
+      >
+        {log.map((msg, index) => (
+          <div key={index}>{msg}</div>
+        ))}
       </div>
-      <div className="m-2 flex">
+      <div className="m-2 flex flex-row-reverse">
+        <button
+          className="btn-primary"
+          onClick={() => {
+            ManagerMS.clearLog();
+          }}
+        >
+          Очистить
+        </button>
         <div className="mr-4 flex w-40 items-center justify-between">
           <Switch
             checked={managerMSSetting.autoScroll}
@@ -240,22 +294,6 @@ export const ManagerMSTab: React.FC = () => {
           />
           Автопрокрутка
         </div>
-        <button
-          className="btn-primary"
-          onClick={() => {
-            ManagerMS.clearLog();
-          }}
-        >
-          Очистить
-        </button>
-      </div>
-      <div
-        className="mx-2 h-full overflow-y-auto whitespace-break-spaces bg-bg-primary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
-        ref={logContainerRef}
-      >
-        {log.map((msg, index) => (
-          <div key={index}>{msg}</div>
-        ))}
       </div>
       <AddressBookModal
         isOpen={isAddressBookOpen}
@@ -270,14 +308,6 @@ export const ManagerMSTab: React.FC = () => {
         onRemove={onRemove}
         onSwapEntries={onSwapEntries}
       ></AddressBookModal>
-      <FlashSelect
-        addressBookSetting={addressBookSetting}
-        isOpen={isFlashSelectOpen}
-        onClose={closeFlashSelect}
-        stateMachineAddresses={stateMachineAddresses}
-        assignStateMachineToAddress={assignStateMachineToAddress}
-        setSelectedFirmwares={setSelectedFirmwares}
-      ></FlashSelect>
       <MsGetAddressModal
         isOpen={isMsGetAddressOpen}
         onClose={closeMsGetAddressModal}

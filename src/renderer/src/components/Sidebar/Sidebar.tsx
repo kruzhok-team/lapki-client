@@ -16,9 +16,9 @@ import { CompilerResult } from '@renderer/types/CompilerTypes';
 
 import { CompilerTab } from './Compiler';
 import { Explorer } from './Explorer';
+import { Loader } from './Flasher/DeviceList';
 import { History } from './History';
 import { Labels } from './Labels';
-import { Loader } from './Loader';
 import { Menu } from './Menu';
 import { Menus } from './Menus';
 import { Setting } from './Setting';

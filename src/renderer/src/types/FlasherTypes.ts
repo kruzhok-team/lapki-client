@@ -212,7 +212,12 @@ export interface MetaDataID extends MetaData {
 
 // выбранные для прошивки МС-ТЮК платы
 export type SelectedMsFirmwaresType = {
-  source: string;
+  target: string;
+  isFile: boolean;
+};
+
+export type SourceAddress = {
+  address: string;
   isFile: boolean;
 };
 
@@ -220,7 +225,8 @@ export type BinariesMsType = {
   device: MSDevice;
   addressInfo: AddressData;
   verification: boolean;
-  binaries: Array<Binary>;
+  binaries: Array<Binary> | Blob;
+  isFile: boolean;
 };
 
 export type FlashBacktrackMs = {

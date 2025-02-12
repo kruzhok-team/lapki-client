@@ -181,7 +181,7 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
         {cellRender(' ', checkColumn)}
         {cellRender('Наименование', nameColumn)}
         {cellRender('Тип', typeColumn)}
-        {cellRender('Адрес/Порт', addressColumn)}
+        {cellRender('Адрес', addressColumn)}
         {cellRender('Что прошиваем', firmwareSourceColumn)}
       </div>
     );

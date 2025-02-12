@@ -152,7 +152,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
 
   const button = [
     {
-      name: 'Посмотреть  код',
+      name: 'Посмотреть код',
       handler: handleShowSource,
       disabled:
         !smId ||

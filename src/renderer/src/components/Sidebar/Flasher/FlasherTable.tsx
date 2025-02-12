@@ -22,13 +22,16 @@ interface FlasherTableProps {
 }
 
 // размеры столбцов
-const checkColumn = 'w-[40px]';
-const nameColumn = 'w-[285px]';
-const typeColumn = 'w-[285px]';
-const addressColumn = 'w-[285px]';
-const firmwareSourceColumn = 'w-[325px]';
-const selectSmSubColumn = 'w-[285px]';
-const selectFileSubColumn = 'w-[40px]';
+// tailwind почему-то не реагирует на название классов, в которые подставленны переменные (`w-[${v}vw]`),
+// поэтому при изменение стобцов приходится всё в ручную пересчитывать
+const checkColumn = 'w-[2vw]';
+const nameColumn = 'w-[18vw]';
+const typeColumn = 'w-[18vw]';
+const addressColumn = 'w-[18vw]';
+const firmwareSourceColumn = 'w-[20vw]';
+const selectSmSubColumn = 'w-[18vw]';
+const selectFileSubColumn = 'w-[2vw]';
+const allColumn = 'w-[76vw]';
 // высота клеток
 const cellHeight = 'h-[38px]';
 
@@ -175,7 +178,7 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
   const headerRender = () => {
     return (
       <div className="flex">
-        {cellRender(' ', twMerge(checkColumn))}
+        {cellRender(' ', checkColumn)}
         {cellRender('Наименование', nameColumn)}
         {cellRender('Тип', typeColumn)}
         {cellRender('Адрес/Порт', addressColumn)}
@@ -222,7 +225,7 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
               ? allAddressOptions
               : addressOptions.get(platformWithoutVersion(firmware.type))
           }
-          className={twMerge(selectSmSubColumn)}
+          containerClassName={selectSmSubColumn}
           isSearchable={false}
           placeholder="Выберите..."
           noOptionsMessage={() => 'Нет подходящих адресов'}
@@ -246,9 +249,17 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
   };
 
   return (
-    <div {...props} className="flex w-full flex-col">
+    <div
+      {...props}
+      className="flex max-h-60 flex-col overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
+    >
       {headerRender()}
-      {firmwareList.map((firmware) => firmware.ID && rowRender(firmware))}
+      {firmwareList.length > 0
+        ? firmwareList.map((firmware) => firmware.ID && rowRender(firmware))
+        : cellRender(
+            'Добавьте устройства через кнопку «Подключить плату»',
+            twMerge(allColumn, 'opacity-70')
+          )}
     </div>
   );
 };

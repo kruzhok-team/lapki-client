@@ -2,10 +2,12 @@
 Окно менеджера для МС-ТЮК
 */
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React from 'react';
 
 import { useAddressBook } from '@renderer/hooks/useAddressBook';
 import { useModal } from '@renderer/hooks/useModal';
 import { useSettings } from '@renderer/hooks/useSettings';
+import { useFlasher } from '@renderer/store/useFlasher';
 import { useManagerMS } from '@renderer/store/useManagerMS';
 import { SelectedMsFirmwaresType } from '@renderer/types/FlasherTypes';
 
@@ -32,6 +34,7 @@ export const ManagerMSTab: React.FC = () => {
     stateMachineAddresses,
     assignStateMachineToAddress,
   } = useAddressBook();
+  const { connectionStatus } = useFlasher();
   const [managerMSSetting, setManagerMSSetting] = useSettings('managerMS');
   const [isAddressBookOpen, openAddressBook, closeAddressBook] = useModal(false);
   const [isMsGetAddressOpen, openMsGetAddressModal, closeMsGetAddressModal] = useModal(false);
@@ -112,12 +115,6 @@ export const ManagerMSTab: React.FC = () => {
     ManagerMS.getMetaData(device.deviceID, selectedAddress());
     ManagerMS.addLog('Отправлен запрос на метаданные устройства.');
   };
-  const handleCurrentDeviceDisplay = () => {
-    if (device === undefined) {
-      return 'Устройство отсутствует.';
-    }
-    return device.displayName();
-  };
   const isFlashDisabled = () => {
     if (selectedFirmwares.length === 0) return true;
     return !selectedFirmwares.every((item) => {
@@ -196,17 +193,44 @@ export const ManagerMSTab: React.FC = () => {
   }
   return (
     <section className="mr-3 flex h-full flex-col bg-bg-secondary">
-      <div className="m-2 flex justify-between">{handleCurrentDeviceDisplay()}</div>
-      <label className="m-2">
-        Адрес: {displayEntry(selectedAddressIndex ?? -1) ?? 'выберите из адресной книги'}
-      </label>
+      <label className="m-2">Статус: {connectionStatus}</label>
       <div className="m-2 flex">
         <button className="btn-primary mr-4" onClick={handleGetAddress}>
-          Получить адрес...
+          Подключить плату
         </button>
         <button className="btn-primary mr-4" onClick={handleOpenAddressBook}>
-          Адресная книга
+          Адреса плат МС-ТЮК
         </button>
+        <button className="btn-primary mr-4">Монитор порта</button>
+      </div>
+      <div className="m-2">
+        <FlasherTable
+          addressBookSetting={addressBookSetting}
+          stateMachineAddresses={stateMachineAddresses}
+          assignStateMachineToAddress={assignStateMachineToAddress}
+          setSelectedFirmwares={setSelectedFirmwares}
+        />
+      </div>
+      <div className="m-2 flex">
+        <button
+          className="btn-primary mr-4"
+          onClick={() => handleSendBin()}
+          disabled={isFlashDisabled()}
+        >
+          Прошить!
+        </button>
+        <div className="mr-4 flex w-40 items-center justify-between">
+          <Switch
+            checked={managerMSSetting.verification}
+            onCheckedChange={() =>
+              setManagerMSSetting({
+                ...managerMSSetting,
+                verification: !managerMSSetting.verification,
+              })
+            }
+          />
+          Верификация
+        </div>
         <button
           className="btn-primary mr-4"
           onClick={handlePing}
@@ -229,34 +253,24 @@ export const ManagerMSTab: React.FC = () => {
           Получить метаданные
         </button>
       </div>
-      <FlasherTable
-        addressBookSetting={addressBookSetting}
-        stateMachineAddresses={stateMachineAddresses}
-        assignStateMachineToAddress={assignStateMachineToAddress}
-        setSelectedFirmwares={setSelectedFirmwares}
-      />
-      <div className="m-2 flex">
-        <button
-          className="btn-primary mr-4"
-          onClick={() => handleSendBin()}
-          disabled={isFlashDisabled()}
-        >
-          Прошить!
-        </button>
-        <div className="mr-4 flex w-40 items-center justify-between">
-          <Switch
-            checked={managerMSSetting.verification}
-            onCheckedChange={() =>
-              setManagerMSSetting({
-                ...managerMSSetting,
-                verification: !managerMSSetting.verification,
-              })
-            }
-          />
-          Верификация
-        </div>
+      <div className="m-2">Журнал действий</div>
+      <div
+        className="mx-2 h-72 overflow-y-auto whitespace-break-spaces bg-bg-primary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
+        ref={logContainerRef}
+      >
+        {log.map((msg, index) => (
+          <div key={index}>{msg}</div>
+        ))}
       </div>
-      <div className="m-2 flex">
+      <div className="m-2 flex flex-row-reverse">
+        <button
+          className="btn-primary"
+          onClick={() => {
+            ManagerMS.clearLog();
+          }}
+        >
+          Очистить
+        </button>
         <div className="mr-4 flex w-40 items-center justify-between">
           <Switch
             checked={managerMSSetting.autoScroll}
@@ -266,22 +280,6 @@ export const ManagerMSTab: React.FC = () => {
           />
           Автопрокрутка
         </div>
-        <button
-          className="btn-primary"
-          onClick={() => {
-            ManagerMS.clearLog();
-          }}
-        >
-          Очистить
-        </button>
-      </div>
-      <div
-        className="mx-2 h-full overflow-y-auto whitespace-break-spaces bg-bg-primary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
-        ref={logContainerRef}
-      >
-        {log.map((msg, index) => (
-          <div key={index}>{msg}</div>
-        ))}
       </div>
       <AddressBookModal
         isOpen={isAddressBookOpen}

@@ -11,3 +11,5 @@ export type HandleFileSaveAsReturn = Promise<[boolean, string | null, string | n
 export type HandleBinFileOpenReturn = Promise<
   [boolean, string | null, string | null, string | Buffer]
 >;
+export type HandleFileSelectReturn = Promise<[boolean, string, string]>;
+export type HandleFileReadReturn = Promise<[Buffer | null, string | null]>;

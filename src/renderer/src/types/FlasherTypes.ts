@@ -220,7 +220,8 @@ export type BinariesMsType = {
   device: MSDevice;
   addressInfo: AddressData;
   verification: boolean;
-  binaries: Array<Binary>;
+  binaries: Array<Binary> | Blob;
+  isFile: boolean;
 };
 
 export type FlashBacktrackMs = {

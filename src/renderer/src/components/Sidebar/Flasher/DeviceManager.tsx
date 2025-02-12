@@ -131,7 +131,7 @@ export const ManagerMSTab: React.FC = () => {
     });
   };
 
-  const handleSendBin = () => {
+  const handleSendBin = async () => {
     if (!addressBookSetting) {
       ManagerMS.addLog('Ошибка! Адресная книга не загрузилась!');
       return;
@@ -140,16 +140,38 @@ export const ManagerMSTab: React.FC = () => {
       ManagerMS.addLog('Прошивку начать нельзя! Выберите устройство!');
       return;
     }
-    selectedFirmwares.forEach((item) => {
+    for (const item of selectedFirmwares) {
+      const addressIndex = stateMachineAddresses.get(item.source);
+      // значит адрес или машина состояний были удалены
+      if (addressIndex === undefined) {
+        ManagerMS.addLog(
+          `Ошибка! Не удаётся найти адрес для ${
+            item.isFile ? 'файла с прошивкой' : 'машины состояний'
+          } (${item.source}). Возможно Вы удалили адрес или ${
+            item.isFile ? 'файл с прошивкой' : 'машину состояний'
+          }.`
+        );
+        continue;
+      }
       if (item.isFile) {
-        // TODO
-      } else {
-        if (!compilerData) return;
-        const addressIndex = stateMachineAddresses.get(item.source);
-        // значит адрес или машина состояний были удалены
-        if (addressIndex === undefined) {
-          return;
+        const [binData, errorMessage] = await window.api.fileHandlers.readFile(item.source);
+        if (errorMessage !== null) {
+          ManagerMS.addLog(
+            `Ошибка! Не удалось извлечь данные из файла ${item.source}. Текст ошибки: ${errorMessage}`
+          );
+          continue;
         }
+        if (binData !== null) {
+          ManagerMS.binAdd({
+            addressInfo: addressBookSetting[addressIndex],
+            device: device,
+            verification: managerMSSetting ? managerMSSetting.verification : false,
+            binaries: new Blob([binData]),
+            isFile: true,
+          });
+        }
+      } else {
+        if (!compilerData) continue;
         const smData = compilerData.state_machines[item.source];
         if (!smData || !smData.binary || smData.binary.length === 0) {
           ManagerMS.addLog(
@@ -157,16 +179,17 @@ export const ManagerMSTab: React.FC = () => {
               addressIndex
             )} невозможна! Отсутствуют бинарные данные для машины состояния ${item.source}.`
           );
-          return;
+          continue;
         }
         ManagerMS.binAdd({
           addressInfo: addressBookSetting[addressIndex],
           device: device,
           verification: managerMSSetting ? managerMSSetting.verification : false,
           binaries: smData.binary,
+          isFile: false,
         });
       }
-    });
+    }
     ManagerMS.binStart();
   };
   if (!managerMSSetting) {

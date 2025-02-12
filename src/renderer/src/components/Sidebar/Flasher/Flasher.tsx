@@ -130,7 +130,7 @@ export const Loader: React.FC<FlasherProps> = ({
     if (flasherFile) {
       setFlasherFile(undefined);
     } else {
-      Flasher.setFile();
+      Flasher.openAndSetFile();
     }
   };
 

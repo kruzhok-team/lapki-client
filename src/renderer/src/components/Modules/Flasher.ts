@@ -202,7 +202,7 @@ export class Flasher extends ClientWS {
     return null;
   }
 
-  static setBinary(binaries: Array<Binary>, device: Device) {
+  static setBinaryFromCompiler(binaries: Array<Binary>, device: Device) {
     const extracted = this.extractBinaries(binaries, device);
     if (extracted === null) {
       throw new Error(
@@ -212,7 +212,11 @@ export class Flasher extends ClientWS {
     Flasher.binary = extracted;
   }
 
-  static async setFile() {
+  static setBinary(binary: Blob) {
+    Flasher.binary = binary;
+  }
+
+  static async openAndSetFile() {
     /* 
     openData[0] - удалось ли открыть и прочитать файл
     openData[1] путь к файлу
@@ -269,7 +273,7 @@ export class Flasher extends ClientWS {
     serialMonitorDevice: Device | undefined = undefined,
     serialConnectionStatus: string = ''
   ): void {
-    this.setBinary(binaries, device);
+    this.setBinaryFromCompiler(binaries, device);
     this.flash(device, serialMonitorDevice, serialConnectionStatus);
   }
 

@@ -190,8 +190,6 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
 
   const rowRender = (firmware: FirmwareItem) => {
     const checked = checkedAll || (isChecked.get(firmware.ID) ?? true);
-    const textCellClassName =
-      "'w-full placeholder:text-border-primary' w-[250px] rounded border border-border-primary bg-transparent px-[9px] py-[6px] text-text-primary outline-none transition-colors";
     return (
       <div key={firmware.ID} className="flex items-start">
         <Checkbox

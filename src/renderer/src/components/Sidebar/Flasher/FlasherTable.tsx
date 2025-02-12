@@ -2,7 +2,7 @@ import { Dispatch, SetStateAction, useState } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
-import { Checkbox, Modal, Select, SelectOption } from '@renderer/components/UI';
+import { Checkbox, Select, SelectOption } from '@renderer/components/UI';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { StateMachine } from '@renderer/types/diagram';
 import { AddressData, SelectedMsFirmwaresType } from '@renderer/types/FlasherTypes';
@@ -19,25 +19,24 @@ interface FlasherTableProps {
   stateMachineAddresses: Map<string, number>;
   assignStateMachineToAddress: (smId: string, idx: number) => void;
   setSelectedFirmwares: Dispatch<SetStateAction<SelectedMsFirmwaresType[]>>;
-  isOpen: boolean;
-  onClose: () => void;
 }
 
 // размеры столбцов
-const checkColumn = 'w-[20px]';
-const nameColumn = 'w-[165px]';
-const typeColumn = 'w-[165px]';
-const addressColumn = 'w-[160px]';
-const firmwareSourceColumn = 'w-[210px]';
-const selectSmSubColumn = 'w-[185px]';
-const selectFileSubColumn = 'w-[25px]';
+const checkColumn = 'w-[40px]';
+const nameColumn = 'w-[285px]';
+const typeColumn = 'w-[285px]';
+const addressColumn = 'w-[285px]';
+const firmwareSourceColumn = 'w-[325px]';
+const selectSmSubColumn = 'w-[285px]';
+const selectFileSubColumn = 'w-[40px]';
+// высота клеток
+const cellHeight = 'h-[38px]';
 
 export const FlasherTable: React.FC<FlasherTableProps> = ({
   addressBookSetting,
   stateMachineAddresses,
   assignStateMachineToAddress,
   setSelectedFirmwares,
-  onClose,
   ...props
 }) => {
   const modelController = useModelContext();
@@ -93,7 +92,6 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
       }
     });
     setSelectedFirmwares(submitFirmwares);
-    onClose();
   };
 
   const stateMachineOption = (addressData: AddressData | null | undefined, index: number) => {
@@ -165,7 +163,8 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
       <div
         className={twMerge(
           mergeClassName,
-          'rounded border border-border-primary bg-transparent px-[9px] py-[6px] text-text-primary outline-none transition-colors'
+          cellHeight,
+          'rounded border border-border-primary bg-transparent px-[9px] py-[6px] text-center text-text-primary outline-none transition-colors'
         )}
       >
         {content}
@@ -190,7 +189,7 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
     return (
       <div key={firmware.ID} className="flex items-start">
         <Checkbox
-          className={twMerge('h-[38px] rounded border border-border-primary', checkColumn)}
+          className={twMerge('rounded border border-border-primary', checkColumn, cellHeight)}
           checked={checked}
           onCheckedChange={() => {
             if (checkedAll) {
@@ -223,7 +222,7 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
               ? allAddressOptions
               : addressOptions.get(platformWithoutVersion(firmware.type))
           }
-          className={selectSmSubColumn}
+          className={twMerge(selectSmSubColumn)}
           isSearchable={false}
           placeholder="Выберите..."
           noOptionsMessage={() => 'Нет подходящих адресов'}
@@ -234,7 +233,11 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
         />
         <button
           type="button"
-          className={twMerge('h-[38px] rounded border border-border-primary', selectFileSubColumn)}
+          className={twMerge(
+            'rounded border border-border-primary',
+            selectFileSubColumn,
+            cellHeight
+          )}
         >
           …
         </button>
@@ -243,18 +246,9 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
   };
 
   return (
-    <div>
-      <Modal
-        {...props}
-        onRequestClose={handleClose}
-        title="Выбор прошивок для загрузки"
-        cancelLabel="Вернуться"
-      >
-        <div className="flex h-60 flex-col overflow-y-auto break-words rounded border border-border-primary bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
-          {headerRender()}
-          {firmwareList.map((firmware) => firmware.ID && rowRender(firmware))}
-        </div>
-      </Modal>
+    <div {...props} className="flex w-full flex-col">
+      {headerRender()}
+      {firmwareList.map((firmware) => firmware.ID && rowRender(firmware))}
     </div>
   );
 };

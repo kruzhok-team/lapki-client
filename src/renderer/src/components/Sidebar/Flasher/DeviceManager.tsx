@@ -34,7 +34,6 @@ export const ManagerMSTab: React.FC = () => {
   } = useAddressBook();
   const [managerMSSetting, setManagerMSSetting] = useSettings('managerMS');
   const [isAddressBookOpen, openAddressBook, closeAddressBook] = useModal(false);
-  const [isFlashSelectOpen, openFlashSelect, closeFlashSelect] = useModal(false);
   const [isMsGetAddressOpen, openMsGetAddressModal, closeMsGetAddressModal] = useModal(false);
   const [selectedFirmwares, setSelectedFirmwares] = useState<SelectedMsFirmwaresType[]>([]);
   const logContainerRef = useRef<HTMLDivElement>(null);
@@ -230,10 +229,13 @@ export const ManagerMSTab: React.FC = () => {
           Получить метаданные
         </button>
       </div>
+      <FlasherTable
+        addressBookSetting={addressBookSetting}
+        stateMachineAddresses={stateMachineAddresses}
+        assignStateMachineToAddress={assignStateMachineToAddress}
+        setSelectedFirmwares={setSelectedFirmwares}
+      />
       <div className="m-2 flex">
-        <button className="btn-primary mr-4" onClick={openFlashSelect}>
-          Выбрать прошивки...
-        </button>
         <button
           className="btn-primary mr-4"
           onClick={() => handleSendBin()}
@@ -294,14 +296,6 @@ export const ManagerMSTab: React.FC = () => {
         onRemove={onRemove}
         onSwapEntries={onSwapEntries}
       ></AddressBookModal>
-      <FlasherTable
-        addressBookSetting={addressBookSetting}
-        isOpen={isFlashSelectOpen}
-        onClose={closeFlashSelect}
-        stateMachineAddresses={stateMachineAddresses}
-        assignStateMachineToAddress={assignStateMachineToAddress}
-        setSelectedFirmwares={setSelectedFirmwares}
-      ></FlasherTable>
       <MsGetAddressModal
         isOpen={isMsGetAddressOpen}
         onClose={closeMsGetAddressModal}

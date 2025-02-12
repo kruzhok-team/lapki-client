@@ -38,7 +38,6 @@ export const Action: React.FC<ActionProps> = (props) => {
   const platform = platforms[smId];
 
   const serializeParameter = (index: number, param: undefined | string | Variable | number[][]) => {
-    debugger;
     if (param === undefined) return '';
     if (Array.isArray(param)) return '[...]';
     if (typeof param === 'string') return `${index !== 0 ? ', ' : ''}${param}`;

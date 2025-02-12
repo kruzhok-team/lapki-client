@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, memo, useEffect, useLayoutEffect } from 'react';
+import React, { useMemo, useRef, memo, useLayoutEffect } from 'react';
 
 import CodeMirror, { ReactCodeMirrorRef, Transaction, EditorState } from '@uiw/react-codemirror';
 import throttle from 'lodash.throttle';

@@ -2,12 +2,11 @@ import React, { useEffect, useState } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
-import { ReactComponent as OkIcon } from '@renderer/assets/icons/add.svg';
+import { ReactComponent as NotOkIcon } from '@renderer/assets/icons/red-x-line-icon.svg';
 import { ReactComponent as Setting } from '@renderer/assets/icons/settings.svg';
-import { ReactComponent as NotOkIcon } from '@renderer/assets/icons/sub.svg';
+import { ReactComponent as OkIcon } from '@renderer/assets/icons/verify-verified-check-icon.svg';
 import { Compiler } from '@renderer/components/Modules/Compiler';
-import { useErrorModal, useFileOperations, useModal, useSettings } from '@renderer/hooks';
-import { getPlatform } from '@renderer/lib/data/PlatformLoader';
+import { useErrorModal, useFileOperations, useSettings } from '@renderer/hooks';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { SidebarIndex, useSidebar } from '@renderer/store/useSidebar';
 import { useTabs } from '@renderer/store/useTabs';
@@ -15,7 +14,7 @@ import { CompileCommandResult, CompilerResult } from '@renderer/types/CompilerTy
 import { Elements, StateMachine } from '@renderer/types/diagram';
 import { languageMappers } from '@renderer/utils';
 
-import { CompilerStatus, CompilerNoDataStatus } from '../Modules/Websocket/ClientStatus';
+import { CompilerStatus } from '../Modules/Websocket/ClientStatus';
 
 export interface CompilerProps {
   openData: [boolean, string | null, string | null, string] | undefined;
@@ -25,10 +24,6 @@ export interface CompilerProps {
   setCompilerStatus: React.Dispatch<React.SetStateAction<string>>;
   openImportError: (error: string) => void;
   openCompilerSettings: () => void;
-  setSmDropDownReference: (node: HTMLElement | null) => void;
-  openSmDropDown: () => void;
-  isSmDropDownOpen: boolean;
-  closeSmDropDown: () => void;
 }
 
 export const CompilerTab: React.FC<CompilerProps> = ({
@@ -38,10 +33,6 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   setCompilerData,
   compilerStatus,
   setCompilerStatus,
-  setSmDropDownReference,
-  isSmDropDownOpen,
-  closeSmDropDown,
-  openSmDropDown,
 }) => {
   const modelController = useModelContext();
   const { openLoadError, openSaveError, openImportError } = useErrorModal();
@@ -64,16 +55,9 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   // секунд до переподключения, null - означает, что отчёт до переподключения не ведётся
   const [secondsUntilReconnect, setSecondsUntilReconnect] = useState<number | null>(null);
   const openTab = useTabs((state) => state.openTab);
-  const changeSidebarTab = useSidebar((state) => state.changeTab);
 
   const name = modelController.model.useData('', 'name');
   const isInitialized = modelController.model.useData('', 'isInitialized');
-
-  const [hasBinary, setHasBinary] = useState<boolean>(false);
-
-  const handleFlashButton = () => {
-    changeSidebarTab(SidebarIndex.Flasher);
-  };
 
   const handleSaveBinaryIntoFolder = async () => {
     if (!smId) return;
@@ -116,11 +100,18 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   };
 
   const handleAddStdoutTab = () => {
-    if (!smId || !compilerData) return;
+    if (!compilerData) return;
+    const commands = Object.entries(compilerData.state_machines)
+      .map(([id, sm]) => {
+        return (
+          `Машина состояний ${stateMachines[id].name ?? id}:\n` + commandsResultToStr(sm.commands)
+        );
+      })
+      .join('----------\n\n');
     openTab(modelController, {
       type: 'code',
       name: 'compilerLog',
-      code: commandsResultToStr(compilerData.state_machines[smId].commands),
+      code: commands,
       language: 'txt',
     });
   };
@@ -159,37 +150,9 @@ export const CompilerTab: React.FC<CompilerProps> = ({
     Compiler.connect(host, port);
   }, [compilerSetting]);
 
-  useEffect(() => {
-    if (compilerData === undefined) {
-      setHasBinary(false);
-      return;
-    }
-    setHasBinary(
-      [...Object.values(compilerData?.state_machines)].some((result) => {
-        return result.binary !== undefined && result.binary.length > 0;
-      })
-    );
-  }, [compilerData]);
-
   const button = [
     {
-      name: 'Сохранить результат',
-      handler: handleSaveBinaryIntoFolder,
-      disabled:
-        !smId ||
-        compilerData?.state_machines[smId]?.binary === undefined ||
-        compilerData.state_machines[smId]?.binary.length === 0,
-    },
-    {
-      name: 'Сохранить код',
-      handler: handleSaveSourceIntoFolder,
-      disabled:
-        !smId ||
-        compilerData?.state_machines[smId]?.source === undefined ||
-        compilerData?.state_machines[smId]?.source.length === 0,
-    },
-    {
-      name: 'Показать код',
+      name: 'Посмотреть  код',
       handler: handleShowSource,
       disabled:
         !smId ||
@@ -197,9 +160,20 @@ export const CompilerTab: React.FC<CompilerProps> = ({
         compilerData?.state_machines[smId]?.source.length === 0,
     },
     {
-      name: 'Прошить...',
-      handler: handleFlashButton,
-      disabled: !hasBinary,
+      name: 'Экспорт прошивки',
+      handler: handleSaveBinaryIntoFolder,
+      disabled:
+        !smId ||
+        compilerData?.state_machines[smId]?.binary === undefined ||
+        compilerData.state_machines[smId]?.binary.length === 0,
+    },
+    {
+      name: 'Экспорт кода',
+      handler: handleSaveSourceIntoFolder,
+      disabled:
+        !smId ||
+        compilerData?.state_machines[smId]?.source === undefined ||
+        compilerData?.state_machines[smId]?.source.length === 0,
     },
   ];
   const processing =
@@ -228,12 +202,8 @@ export const CompilerTab: React.FC<CompilerProps> = ({
               ? 'Скомпилировать'
               : 'Переподключиться'}
           </button>
-          <button
-            className="btn-primary px-3"
-            onClick={isSmDropDownOpen ? closeSmDropDown : openSmDropDown}
-            ref={setSmDropDownReference}
-          >
-            <span>...</span>
+          <button className="btn-primary px-2" onClick={openCompilerSettings}>
+            <Setting width="1.5rem" height="1.5rem" />
           </button>
         </div>
 
@@ -260,18 +230,10 @@ export const CompilerTab: React.FC<CompilerProps> = ({
           </span>
         </p>
         {showReconnectTime()}
-        <button
-          className="btn-primary"
-          onClick={handleAddStdoutTab}
-          disabled={
-            !smId ||
-            compilerData?.state_machines[smId]?.commands === undefined ||
-            compilerData?.state_machines[smId]?.commands.length === 0
-          }
-        >
-          Показать журнал компиляции
+        <button className="btn-primary" onClick={handleAddStdoutTab} disabled={!compilerData}>
+          Журнал компиляции
         </button>
-        <div className="my-1"> Машины состояний: </div>
+        <div className="mb-1 mt-20"> Машины состояний: </div>
         <div className="mb-4 flex h-[200px] select-text flex-col overflow-y-auto break-words rounded bg-bg-primary scrollbar-thin">
           {compilerData?.state_machines ? (
             Object.entries(compilerData.state_machines).map(([id, sm]) => (
@@ -284,9 +246,9 @@ export const CompilerTab: React.FC<CompilerProps> = ({
               >
                 <div className="flex h-auto w-auto items-center p-2">
                   {sm.result === 'OK' ? (
-                    <OkIcon className="size-5" />
+                    <OkIcon className="size-5 fill-current" />
                   ) : (
-                    <NotOkIcon className="size-5" />
+                    <NotOkIcon className="size-5 fill-current" />
                   )}
                   <span className="ml-2 flex">{stateMachines[id].name ?? id}</span>
                 </div>

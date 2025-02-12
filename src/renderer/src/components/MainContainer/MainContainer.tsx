@@ -13,10 +13,9 @@ import {
   UpdateModal,
   DiagramContextMenu,
   EditorSettings,
-  DropDownSmList,
 } from '@renderer/components';
 import { hideLoadingOverlay } from '@renderer/components/utils/OverlayControl';
-import { useDropDownSmList, useErrorModal, useFileOperations, useSettings } from '@renderer/hooks';
+import { useErrorModal, useFileOperations, useSettings } from '@renderer/hooks';
 import { useAppTitle } from '@renderer/hooks/useAppTitle';
 import { useModal } from '@renderer/hooks/useModal';
 import {
@@ -97,8 +96,6 @@ export const MainContainer: React.FC = () => {
     setIsReservedPresent(true);
   };
 
-  const smDropList = useDropDownSmList();
-
   // автосохранение
   useEffect(() => {
     if (autoSaveSettings === null || restoreSession === null || saveModalProps.isOpen) return;
@@ -162,7 +159,7 @@ export const MainContainer: React.FC = () => {
   return (
     <div className="h-screen select-none">
       <div className="flex h-full w-full flex-row overflow-x-hidden">
-        <Sidebar callbacks={operations} {...smDropList} openImportError={openImportError} />
+        <Sidebar callbacks={operations} openImportError={openImportError} />
 
         <div
           className={twMerge(
@@ -188,7 +185,6 @@ export const MainContainer: React.FC = () => {
 
         {isMounted && <DiagramContextMenu />}
       </div>
-      <DropDownSmList {...smDropList} />
 
       <SaveRemindModal {...saveModalProps} />
       <ErrorModal {...errorModalProps} />

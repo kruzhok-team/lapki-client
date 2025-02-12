@@ -20,7 +20,6 @@ export class Compiler extends ClientWS {
   static setCompilerData: Dispatch<SetStateAction<CompilerResult | undefined>>;
   static setCompilerMode: Dispatch<SetStateAction<string>>;
   static setImportData: Dispatch<SetStateAction<Elements | undefined>>;
-  static setCompilerNoDataStatus: Dispatch<SetStateAction<string>>;
   static mode: string;
   static filename: string;
 

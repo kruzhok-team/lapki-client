@@ -15,10 +15,11 @@ type FirmwareItem = {
 };
 
 interface FlasherTableProps {
-  addressBookSetting: AddressData[] | null;
-  stateMachineAddresses: Map<string, number>;
-  assignStateMachineToAddress: (smId: string, idx: number) => void;
-  setSelectedFirmwares: Dispatch<SetStateAction<SelectedMsFirmwaresType[]>>;
+  stateMachineAddresses: Map<string, SelectedMsFirmwaresType>;
+  setStateMachineAddresses: Dispatch<SetStateAction<Map<string, SelectedMsFirmwaresType>>>;
+  checkedStateMachine: Map<string, boolean>;
+  setCheckedStateMachine: Dispatch<SetStateAction<Map<string, boolean>>>;
+  devList: AddressData[];
 }
 
 // размеры столбцов
@@ -29,38 +30,34 @@ const nameColumn = 'w-[18vw]';
 const typeColumn = 'w-[18vw]';
 const addressColumn = 'w-[18vw]';
 const firmwareSourceColumn = 'w-[20vw]';
-const selectSmSubColumn = 'w-[18vw]';
-const selectFileSubColumn = 'w-[2vw]';
+const selectSmSubColumn = 'w-[20vw]';
+//const selectFileSubColumn = 'w-[2vw]';
 const allColumn = 'w-[76vw]';
 // высота клеток
 const cellHeight = 'h-[38px]';
 
 export const FlasherTable: React.FC<FlasherTableProps> = ({
-  addressBookSetting,
   stateMachineAddresses,
-  assignStateMachineToAddress,
-  setSelectedFirmwares,
+  setStateMachineAddresses,
+  checkedStateMachine: isChecked,
+  setCheckedStateMachine: setIsChecked,
+  devList,
   ...props
 }) => {
   const modelController = useModelContext();
 
-  const stateMachinesId = [
-    ...Object.entries(
-      modelController.model.useData('', 'elements.stateMachinesId') as {
-        [ID: string]: StateMachine;
-      }
-    ),
-  ].filter(([, sm]) => {
+  const stateMachinesId = modelController.model.useData('', 'elements.stateMachinesId') as {
+    [ID: string]: StateMachine;
+  };
+
+  const stateMachinesArray = [...Object.entries(stateMachinesId)].filter(([, sm]) => {
     return sm.platform.startsWith('tjc');
   });
 
-  const addressOptions = new Map<string, SelectOption[]>();
-  const allAddressOptions: SelectOption[] = [];
-  const [isChecked, setIsChecked] = useState<Map<string, boolean>>(new Map());
   const [checkedAll, setCheckedAll] = useState<boolean>(true);
   const [fileList, setFileList] = useState<FirmwareItem[]>([]);
 
-  const firmwareList = Array.from(stateMachinesId, ([smId, sm]) => {
+  const firmwareList = Array.from(stateMachinesArray, ([smId, sm]) => {
     const newItem: FirmwareItem = {
       ID: smId,
       name: sm.name,
@@ -72,9 +69,6 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
   firmwareList.push(...fileList);
 
   const handleClose = () => {
-    if (addressBookSetting === null) {
-      return;
-    }
     const submitFirmwares: SelectedMsFirmwaresType[] = [];
     const checks = isChecked;
     if (checkedAll) {
@@ -90,26 +84,26 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
         }
         submitFirmwares.push({
           isFile: item.isFile,
-          source: item.ID,
+          target: item.ID,
         });
       }
     });
-    setSelectedFirmwares(submitFirmwares);
+    //setSelectedFirmwares(submitFirmwares);
   };
 
-  const stateMachineOption = (addressData: AddressData | null | undefined, index: number) => {
-    if (!addressData) return null;
+  const stateMachineOption = (sm: StateMachine | null | undefined, smId: string) => {
+    if (!sm) return null;
     return {
-      value: '' + index,
-      label: addressData.name ? addressData.name : addressData.address,
+      value: smId,
+      label: sm.name ?? smId,
     };
   };
 
-  const assignedStateMachineOption = (smId: string) => {
-    if (addressBookSetting === null) return null;
-    const index = stateMachineAddresses.get(smId);
-    if (index === undefined) return null;
-    return stateMachineOption(addressBookSetting[index], index);
+  const assignedStateMachineOption = (address: string) => {
+    const v = stateMachineAddresses.get(address);
+    console.log('here', v);
+    if (v === undefined) return null;
+    return stateMachineOption(stateMachinesId[v.target], v.target);
   };
 
   const platformWithoutVersion = (platform: string | undefined) => {
@@ -117,25 +111,25 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
     return platform.slice(0, platform.lastIndexOf('-'));
   };
 
-  if (addressBookSetting !== null) {
-    addressBookSetting.forEach((entry, index) => {
-      const key = platformWithoutVersion(entry.type);
-      const value = addressOptions.get(key) ?? [];
-      // здесь null не будет, так как мы уже делаем проверку addressBookSetting
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      addressOptions.set(key, [...value, stateMachineOption(entry, index)!]);
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      allAddressOptions.push(stateMachineOption(entry, index)!);
-    });
-  }
+  const stateMachineOptions = new Map<string, SelectOption[]>();
+  const allAddressOptions: SelectOption[] = [];
 
-  const noPlatformOptions = addressOptions.get('');
+  stateMachinesArray.forEach(([smId, sm]) => {
+    const key = platformWithoutVersion(sm.platform);
+    const value = stateMachineOptions.get(key) ?? [];
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    stateMachineOptions.set(key, [...value, stateMachineOption(sm, smId)!]);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    allAddressOptions.push(stateMachineOption(sm, smId)!);
+  });
+
+  const noPlatformOptions = stateMachineOptions.get('');
   if (noPlatformOptions !== undefined) {
-    for (const key of addressOptions.keys()) {
+    for (const key of stateMachineOptions.keys()) {
       if (key === '') continue;
-      const options = addressOptions.get(key);
+      const options = stateMachineOptions.get(key);
       if (options !== undefined) {
-        addressOptions.set(key, options.concat(noPlatformOptions));
+        stateMachineOptions.set(key, options.concat(noPlatformOptions));
       }
     }
   }
@@ -187,10 +181,10 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
     );
   };
 
-  const rowRender = (firmware: FirmwareItem) => {
-    const checked = checkedAll || (isChecked.get(firmware.ID) ?? true);
+  const rowRender = (devInfo: AddressData) => {
+    const checked = checkedAll || (isChecked.get(devInfo.address) ?? true);
     return (
-      <div key={firmware.ID} className="flex items-start">
+      <div key={devInfo.address} className="flex items-start">
         <Checkbox
           className={twMerge('rounded border border-border-primary', checkColumn, cellHeight)}
           checked={checked}
@@ -199,7 +193,7 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
               setIsChecked(() => {
                 const newMap = new Map();
                 firmwareList.forEach((item) => {
-                  newMap.set(item.ID, item.ID !== firmware.ID);
+                  newMap.set(item.ID, item.ID !== devInfo.address);
                 });
                 return newMap;
               });
@@ -208,54 +202,58 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
             }
             setIsChecked((oldValue) => {
               const newValue = new Map(oldValue);
-              newValue.set(firmware.ID, !checked);
+              newValue.set(devInfo.address, !checked);
               return newValue;
             });
           }}
         />
-        {cellRender(<label>{firmware.name ? firmware.name : firmware.ID}</label>, nameColumn)}
-        {cellRender(
-          <label>{firmware ? (firmware.isFile ? 'Файл' : firmware.type) : 'Тип'}</label>,
-          typeColumn
-        )}
-        {cellRender(<label>{firmware.ID}</label>, addressColumn)}
+        {cellRender(<label>{devInfo.name ? devInfo.name : 'Не указано'}</label>, nameColumn)}
+        {cellRender(<label>{devInfo.type ? devInfo.type : 'Неизвестно'}</label>, typeColumn)}
+        {cellRender(<label>{devInfo.address}</label>, addressColumn)}
         <Select
           options={
-            firmware.isFile
-              ? allAddressOptions
-              : addressOptions.get(platformWithoutVersion(firmware.type))
+            stateMachineOptions.get(platformWithoutVersion(devInfo.type)) ?? allAddressOptions
           }
           containerClassName={selectSmSubColumn}
           isSearchable={false}
           placeholder="Выберите..."
           noOptionsMessage={() => 'Нет подходящих адресов'}
-          value={assignedStateMachineOption(firmware.ID) as SelectOption}
+          value={assignedStateMachineOption(devInfo.address) as SelectOption}
           onChange={(opt) => {
-            assignStateMachineToAddress(firmware.ID, Number(opt?.value));
+            if (!opt?.value) return;
+            setStateMachineAddresses((oldMap) => {
+              const newMap = new Map(oldMap);
+              newMap.set(devInfo.address, { target: opt?.value, isFile: false });
+              return newMap;
+            });
           }}
+          menuPlacement="auto"
         />
-        <button
-          type="button"
-          className={twMerge(
-            'rounded border border-border-primary',
-            selectFileSubColumn,
-            cellHeight
-          )}
-        >
-          …
-        </button>
       </div>
     );
   };
 
+  /*
+    <button
+      type="button"
+      className={twMerge(
+        'rounded border border-border-primary',
+        selectFileSubColumn,
+        cellHeight
+      )}
+    >
+      …
+    </button>
+  */
+
   return (
     <div
       {...props}
-      className="flex max-h-60 flex-col overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
+      className="flex max-h-60 min-h-60 flex-col overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
     >
       {headerRender()}
-      {firmwareList.length > 0
-        ? firmwareList.map((firmware) => firmware.ID && rowRender(firmware))
+      {devList.length > 0
+        ? devList.map((devInfo) => rowRender(devInfo))
         : cellRender(
             'Добавьте устройства через кнопку «Подключить плату» или кнопку «Адреса плат МС-ТЮК»',
             twMerge(allColumn, 'opacity-70')

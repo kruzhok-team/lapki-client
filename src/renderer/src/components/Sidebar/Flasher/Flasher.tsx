@@ -8,7 +8,7 @@ import { useModal } from '@renderer/hooks/useModal';
 import { useSettings } from '@renderer/hooks/useSettings';
 import { useFlasher } from '@renderer/store/useFlasher';
 import { useManagerMS } from '@renderer/store/useManagerMS';
-import { SelectedMsFirmwaresType } from '@renderer/types/FlasherTypes';
+import { AddressData, SelectedMsFirmwaresType } from '@renderer/types/FlasherTypes';
 
 import { AddressBookModal } from './AddressBook';
 import { FlasherTable } from './FlasherTable';
@@ -38,6 +38,13 @@ export const FlasherTab: React.FC = () => {
   const [isAddressBookOpen, openAddressBook, closeAddressBook] = useModal(false);
   const [isMsGetAddressOpen, openMsGetAddressModal, closeMsGetAddressModal] = useModal(false);
   const [selectedFirmwares, setSelectedFirmwares] = useState<SelectedMsFirmwaresType[]>([]);
+  const [addressStateMachine, setAddressStateMachine] = useState<
+    Map<string, SelectedMsFirmwaresType>
+  >(new Map());
+  const [checkedStateMachine, setCheckedStateMachine] = useState<Map<string, boolean>>(new Map());
+  const [devList, setDevList] = useState<AddressData[]>([
+    { address: 'pupupu', name: 'dev', type: '', meta: undefined },
+  ]);
   const logContainerRef = useRef<HTMLDivElement>(null);
 
   // При изменении log прокручиваем вниз, если включена автопрокрутка
@@ -46,10 +53,12 @@ export const FlasherTab: React.FC = () => {
       logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight;
     }
   }, [log, managerMSSetting]);
+
   useEffect(() => {
     if (serverAddress === '') return;
     setSelectedAddress(serverAddress);
   }, [serverAddress]);
+
   useEffect(() => {
     if (!meta || addressBookSetting === null) return;
     const metaStr = `
@@ -88,6 +97,12 @@ export const FlasherTab: React.FC = () => {
       selectedAddressIndex
     );
   }, [meta]);
+
+  useEffect(() => {
+    if (addressBookSetting === null) return;
+    // TODO: переименование, удаление и т.д.
+  }, [addressBookSetting]);
+
   const handleGetAddress = () => {
     if (!device || !managerMSSetting) return;
     if (!managerMSSetting.hideGetAddressModal) {
@@ -119,7 +134,7 @@ export const FlasherTab: React.FC = () => {
     return !selectedFirmwares.every((item) => {
       if (!item.isFile) {
         if (!compilerData) return false;
-        const data = compilerData.state_machines[item.source];
+        const data = compilerData.state_machines[item.target];
         return data && data.binary && data.binary.length !== 0;
       }
       return true;
@@ -136,23 +151,23 @@ export const FlasherTab: React.FC = () => {
       return;
     }
     for (const item of selectedFirmwares) {
-      const addressIndex = stateMachineAddresses.get(item.source);
+      const addressIndex = stateMachineAddresses.get(item.target);
       // значит адрес или машина состояний были удалены
       if (addressIndex === undefined) {
         ManagerMS.addLog(
           `Ошибка! Не удаётся найти адрес для ${
             item.isFile ? 'файла с прошивкой' : 'машины состояний'
-          } (${item.source}). Возможно Вы удалили адрес или ${
+          } (${item.target}). Возможно Вы удалили адрес или ${
             item.isFile ? 'файл с прошивкой' : 'машину состояний'
           }.`
         );
         continue;
       }
       if (item.isFile) {
-        const [binData, errorMessage] = await window.api.fileHandlers.readFile(item.source);
+        const [binData, errorMessage] = await window.api.fileHandlers.readFile(item.target);
         if (errorMessage !== null) {
           ManagerMS.addLog(
-            `Ошибка! Не удалось извлечь данные из файла ${item.source}. Текст ошибки: ${errorMessage}`
+            `Ошибка! Не удалось извлечь данные из файла ${item.target}. Текст ошибки: ${errorMessage}`
           );
           continue;
         }
@@ -167,12 +182,12 @@ export const FlasherTab: React.FC = () => {
         }
       } else {
         if (!compilerData) continue;
-        const smData = compilerData.state_machines[item.source];
+        const smData = compilerData.state_machines[item.target];
         if (!smData || !smData.binary || smData.binary.length === 0) {
           ManagerMS.addLog(
             `Ошибка! Загрузка по адресу ${displayEntry(
               addressIndex
-            )} невозможна! Отсутствуют бинарные данные для машины состояния ${item.source}.`
+            )} невозможна! Отсутствуют бинарные данные для машины состояния ${item.target}.`
           );
           continue;
         }
@@ -203,10 +218,11 @@ export const FlasherTab: React.FC = () => {
       </div>
       <div className="m-2">
         <FlasherTable
-          addressBookSetting={addressBookSetting}
-          stateMachineAddresses={stateMachineAddresses}
-          assignStateMachineToAddress={assignStateMachineToAddress}
-          setSelectedFirmwares={setSelectedFirmwares}
+          checkedStateMachine={checkedStateMachine}
+          setCheckedStateMachine={setCheckedStateMachine}
+          setStateMachineAddresses={setAddressStateMachine}
+          stateMachineAddresses={addressStateMachine}
+          devList={devList}
         />
       </div>
       <div className="m-2 flex">

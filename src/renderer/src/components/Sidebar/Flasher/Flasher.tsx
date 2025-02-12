@@ -1,5 +1,5 @@
 /*
-Окно менеджера для МС-ТЮК
+Окно загрузчика
 */
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
@@ -17,7 +17,7 @@ import { MsGetAddressModal } from './MsGetAddressModal';
 import { ManagerMS } from '../../Modules/ManagerMS';
 import { Switch } from '../../UI';
 
-export const DeviceManagerTab: React.FC = () => {
+export const FlasherTab: React.FC = () => {
   const { device, log, address: serverAddress, meta, compilerData } = useManagerMS();
   const {
     addressBookSetting,

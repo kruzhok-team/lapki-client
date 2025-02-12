@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import { CodeEditor, DiagramEditor } from '@renderer/components';
-import { DeviceManagerTab } from '@renderer/components/Sidebar/Flasher/DeviceManager';
+import { FlasherTab } from '@renderer/components/Sidebar/Flasher/Flasher';
 import { SerialMonitorTab } from '@renderer/components/Sidebar/Flasher/SerialMonitor';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { useTabs } from '@renderer/store/useTabs';
@@ -58,7 +58,7 @@ export const Tabs: React.FC = () => {
       case 'serialMonitor':
         return <SerialMonitorTab />;
       case 'managerMS':
-        return <DeviceManagerTab />;
+        return <FlasherTab />;
       default:
         return undefined;
     }

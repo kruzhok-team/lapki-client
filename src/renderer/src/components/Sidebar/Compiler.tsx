@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
-import { ReactComponent as NotOkIcon } from '@renderer/assets/icons/red-x-line-icon.svg';
+import { ReactComponent as ConnectionStatus } from '@renderer/assets/icons/circle.svg';
+import { ReactComponent as OkIcon } from '@renderer/assets/icons/mark-check.svg';
+import { ReactComponent as NotOkIcon } from '@renderer/assets/icons/mark-cross.svg';
 import { ReactComponent as Setting } from '@renderer/assets/icons/settings.svg';
-import { ReactComponent as OkIcon } from '@renderer/assets/icons/verify-verified-check-icon.svg';
 import { Compiler } from '@renderer/components/Modules/Compiler';
 import { useErrorModal, useFileOperations, useSettings } from '@renderer/hooks';
 import { useModelContext } from '@renderer/store/ModelContext';
@@ -187,8 +188,18 @@ export const CompilerTab: React.FC<CompilerProps> = ({
 
   return (
     <section>
-      <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
-        Компилятор
+      <h3 className="mx-4 mb-3 flex flex-row items-center border-b border-border-primary py-2 text-center text-lg">
+        <div className="w-full">Компилятор</div>
+        <div className="relative right-5">
+          <ConnectionStatus
+            className={twMerge(
+              compilerStatus === CompilerStatus.NO_CONNECTION && 'fill-error',
+              compilerStatus === CompilerStatus.CONNECTED && 'fill-success'
+            )}
+            width="10px"
+            height="10px"
+          />
+        </div>
       </h3>
       <div className="flex flex-col px-4">
         <div className="mb-2 flex rounded">
@@ -220,12 +231,9 @@ export const CompilerTab: React.FC<CompilerProps> = ({
         <p className="my-1">
           Статус:{' '}
           <span
-            className={twMerge(
-              'text-primary',
-              compilerStatus === CompilerStatus.NO_CONNECTION && 'text-error'
-            )}
+            className={twMerge('text-primary', compilerData?.result === 'NOTOK' && 'text-error')}
           >
-            {compilerStatus}
+            {compilerData?.result ?? 'Нет данных'}
           </span>
         </p>
         {showReconnectTime()}
@@ -247,7 +255,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
                   {sm.result === 'OK' ? (
                     <OkIcon className="size-5 fill-current" />
                   ) : (
-                    <NotOkIcon className="size-5 fill-current" />
+                    <NotOkIcon className="size-5 fill-error" />
                   )}
                   <span className="ml-2 flex">{stateMachines[id].name ?? id}</span>
                 </div>

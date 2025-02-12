@@ -1,8 +1,7 @@
 /*
 Окно менеджера для МС-ТЮК
 */
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import React from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { useAddressBook } from '@renderer/hooks/useAddressBook';
 import { useModal } from '@renderer/hooks/useModal';
@@ -18,7 +17,7 @@ import { MsGetAddressModal } from './MsGetAddressModal';
 import { ManagerMS } from '../../Modules/ManagerMS';
 import { Switch } from '../../UI';
 
-export const ManagerMSTab: React.FC = () => {
+export const DeviceManagerTab: React.FC = () => {
   const { device, log, address: serverAddress, meta, compilerData } = useManagerMS();
   const {
     addressBookSetting,

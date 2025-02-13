@@ -12,7 +12,7 @@ import { useModelContext } from '@renderer/store/ModelContext';
 import { useTabs } from '@renderer/store/useTabs';
 import { CompileCommandResult, CompilerResult } from '@renderer/types/CompilerTypes';
 import { Elements, StateMachine } from '@renderer/types/diagram';
-import { languageMappers } from '@renderer/utils';
+import { getDefaultSmSelection, languageMappers } from '@renderer/utils';
 
 import { CompilerStatus } from '../Modules/Websocket/ClientStatus';
 import { SelectStateMachinesModal } from '../SelectStateMachinesModal';
@@ -24,12 +24,10 @@ export interface CompilerProps {
   compilerStatus: string;
   setCompilerStatus: React.Dispatch<React.SetStateAction<string>>;
   openImportError: (error: string) => void;
-  openCompilerSettings: () => void;
 }
 
 export const CompilerTab: React.FC<CompilerProps> = ({
   openData,
-  openCompilerSettings,
   compilerData,
   setCompilerData,
   compilerStatus,
@@ -45,7 +43,6 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   });
 
   const [isOpen, open, close] = useModal(false);
-  const [selectedStateMachines, setSelectedStateMachines] = useState<{ [id: string]: boolean }>({});
   const [compilerSetting] = useSettings('compiler');
   const [importData, setImportData] = useState<Elements | undefined>(undefined);
   const stateMachines = modelController.model.useData('', 'elements.stateMachinesId') as {
@@ -59,6 +56,9 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   const [secondsUntilReconnect, setSecondsUntilReconnect] = useState<number | null>(null);
   const openTab = useTabs((state) => state.openTab);
 
+  const [selectedStateMachines, setSelectedStateMachines] = useState<{ [id: string]: boolean }>(
+    getDefaultSmSelection(stateMachines, {})
+  );
   const name = modelController.model.useData('', 'name');
   const isInitialized = modelController.model.useData('', 'isInitialized');
 
@@ -146,6 +146,10 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   };
 
   useEffect(() => {
+    setSelectedStateMachines(getDefaultSmSelection(stateMachines, selectedStateMachines));
+  }, [stateMachines]);
+
+  useEffect(() => {
     if (importData && openData) {
       initImportData(importData, openData);
       setImportData(undefined);
@@ -230,7 +234,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
               : 'Переподключиться'}
           </button>
           <button className="btn-primary px-2" onClick={open}>
-            <Setting width="1.5rem" height="1.5rem" />
+            <span className="size-[1.5rem]">...</span>
           </button>
         </div>
 

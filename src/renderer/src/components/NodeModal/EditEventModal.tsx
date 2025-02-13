@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 
 import { isEqual } from 'lodash';
+import { toast } from 'sonner';
 
 import { Modal } from '@renderer/components/UI';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
@@ -173,6 +174,8 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
       id: state.id,
       events: getEvents(),
     });
+
+    toast.success('Событие сохранено!');
 
     close();
   };

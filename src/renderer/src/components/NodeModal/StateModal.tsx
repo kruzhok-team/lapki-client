@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/add.svg';
+import { ReactComponent as EditIcon } from '@renderer/assets/icons/edit.svg';
 import { ReactComponent as SubtractIcon } from '@renderer/assets/icons/subtract.svg';
 import { Modal } from '@renderer/components/UI';
 import { useEditEventModal } from '@renderer/hooks';
@@ -129,8 +130,6 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
     <div>
       <Modal
         title={`Редактор состояния: ${state?.data.name}`}
-        onSubmit={handleSubmit}
-        submitLabel="Редактировать"
         isOpen={isOpen}
         onRequestClose={close}
         submitDisabled={currentEventIndex === undefined}
@@ -184,6 +183,14 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
                 disabled={currentEventIndex === undefined}
               >
                 <SubtractIcon />
+              </button>
+              <button
+                type="button"
+                className="btn-secondary p-1"
+                onClick={handleSubmit}
+                disabled={currentEventIndex === undefined}
+              >
+                <EditIcon />
               </button>
             </div>
           </div>

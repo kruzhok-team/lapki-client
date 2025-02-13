@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, memo, useEffect } from 'react';
+import React, { useMemo, useRef, memo, useLayoutEffect } from 'react';
 
 import CodeMirror, { ReactCodeMirrorRef, Transaction, EditorState } from '@uiw/react-codemirror';
 import throttle from 'lodash.throttle';
@@ -94,7 +94,7 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
 
   const editorRef = useRef<ReactCodeMirrorRef | null>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     parse(condition);
   }, [condition, parse]);
 

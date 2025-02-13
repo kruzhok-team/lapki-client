@@ -36,7 +36,11 @@ export const Tabs: React.FC = () => {
   };
 
   if (items.length === 0) {
-    return <NotInitialized />;
+    return (
+      <div className="flex h-full w-full flex-row items-center justify-center overflow-auto align-middle scrollbar-thin scrollbar-track-transparent scrollbar-thumb-current">
+        <NotInitialized />
+      </div>
+    );
   }
 
   const selectTab = (item: TabType) => {

@@ -201,7 +201,7 @@ export const MainContainer: React.FC = () => {
         toastOptions={{
           classNames: {
             error: 'bg-error text-text-primary border-none text-[0.875rem]',
-            success: 'bg-success',
+            success: 'bg-[#9bcb64]',
           },
         }}
       />

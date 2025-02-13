@@ -80,7 +80,6 @@ export class EditorModel {
     this.data.elements.stateMachines[''] = emptyStateMachine();
     this.data.isInitialized = true;
     this.initPlatform(); // TODO(bryzZz) Платформа непонятно где вообще в архитектуре, судя по всему ее нужно переносить в данные
-    this.triggerDataUpdate('elements.meta', 'basename', 'name', 'elements', 'isInitialized');
   }
 
   triggerSave(basename: string | null, name: string | null) {

@@ -31,7 +31,7 @@ export class FilesManager {
     const elements = emptyElements();
     elements.stateMachines['Machine1'] = emptyStateMachine();
     elements.stateMachines['Machine1'].platform = platformIdx;
-    this.modelController.initData(null, 'Без названия', elements as any);
+    this.modelController.initData(null, 'Без названия', elements as any, true);
 
     return this.modelController.model.data.headControllerId;
     // this.modelController.model.init(null, 'Без названия', elements as any);
@@ -66,7 +66,8 @@ export class FilesManager {
         this.modelController.initData(
           openData[1]!.replace('.graphml', '.json'),
           openData[2]!.replace('.graphml', '.json'),
-          importData
+          importData,
+          false
         );
         return makeRight(null);
       } catch (e) {
@@ -123,7 +124,7 @@ export class FilesManager {
             content: `Незнакомая платформа "${checkResult[2]}".`,
           });
         }
-        this.modelController.initData(openData[1] ?? '', openData[2] ?? '', data);
+        this.modelController.initData(openData[1] ?? '', openData[2] ?? '', data, false);
         // this.modelController.components.fromElementsComponents(data.components);
         return makeRight(null);
       } catch (e) {
@@ -200,7 +201,7 @@ export class FilesManager {
     if (data == undefined) {
       return;
     }
-    this.modelController.initData(null, 'Без названия', data);
+    this.modelController.initData(null, 'Без названия', data, false);
     // this.modelController.model.init(null, 'Без названия', data);
   }
 }

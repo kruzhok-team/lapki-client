@@ -82,9 +82,9 @@ export const StateMachinesList: React.FC = () => {
                     isSelected={id === selectedSm}
                     icon={<StateMachineIcon className="fill-border-contrast" />}
                     onSelect={() => setSmSelected(id)}
-                    onEdit={() => onRequestEditStateMachine(id)}
+                    onEdit={() => onCallContextMenu(id, sm)}
                     onDelete={() => undefined}
-                    onCallContextMenu={() => onCallContextMenu(id, sm)}
+                    onCallContextMenu={() => onRequestEditStateMachine(id)}
                     // TODO (L140-beep): Доделать свап машин состояний
                     onDragStart={() => console.log('setDragState')}
                     onDrop={() => console.log('onDrop')}

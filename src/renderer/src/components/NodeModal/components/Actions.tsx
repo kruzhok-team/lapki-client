@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import CodeMirror, { Transaction, EditorState, ReactCodeMirrorRef } from '@uiw/react-codemirror';
 import throttle from 'lodash.throttle';
@@ -69,9 +69,9 @@ export const Actions: React.FC<ActionsProps> = (props) => {
     // return tr.startState.doc.length + tr.newDoc.length < 200;
   };
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     setActions(event ? (event.do as ActionData[]) : []);
-  }, [event]);
+  }, [event, setActions]);
 
   const handleChangeText = useMemo(() => throttle(onChangeText, 500), [onChangeText]);
 

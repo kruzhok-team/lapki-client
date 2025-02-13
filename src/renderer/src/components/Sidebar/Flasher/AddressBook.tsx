@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { useForm } from 'react-hook-form';
 
@@ -15,7 +15,7 @@ interface AddressBookModalProps {
   addressBookSetting: AddressData[] | null;
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (address: string) => void;
+  onSubmit: (entryId: number) => void;
   onRemove: (index: number) => void;
   onSwapEntries: (index1: number, index2: number) => void;
   onAdd: (data: AddressData) => void;
@@ -96,7 +96,10 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
 
   const handleSubmit = hookHandleSubmit(() => {
     if (selectedEntry === undefined || addressBookSetting === null) return;
-    onSubmit(addressBookSetting[selectedEntry].address);
+    const ID = getID(selectedEntry);
+    if (ID !== null) {
+      onSubmit(ID);
+    }
     onClose();
   });
 
@@ -108,7 +111,7 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
         title="Адресная книга"
         onSubmit={handleSubmit}
         submitDisabled={selectedEntry === undefined}
-        submitLabel="Выбрать"
+        submitLabel="Добавить в таблицу прошивок"
       >
         <div className="flex gap-2 pl-4">
           <div className="flex h-60 w-full flex-col overflow-y-auto break-words rounded border border-border-primary bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">

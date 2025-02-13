@@ -8,7 +8,7 @@ import { useModal } from '@renderer/hooks/useModal';
 import { useSettings } from '@renderer/hooks/useSettings';
 import { useFlasher } from '@renderer/store/useFlasher';
 import { useManagerMS } from '@renderer/store/useManagerMS';
-import { FlashTableItem } from '@renderer/types/FlasherTypes';
+import { FirmwareTargetType, FlashTableItem } from '@renderer/types/FlasherTypes';
 
 import { AddressBookModal } from './AddressBook';
 import { FlasherTable } from './FlasherTable';
@@ -293,8 +293,21 @@ export const FlasherTab: React.FC = () => {
       <AddressBookModal
         isOpen={isAddressBookOpen}
         onClose={closeAddressBook}
-        onSubmit={(selectedAddress: string) => {
-          setSelectedAddress(selectedAddress);
+        onSubmit={(entryId: number) => {
+          if (
+            flashTableData.find((v) => {
+              return v.targetId === entryId;
+            }) !== undefined
+          ) {
+            return;
+          }
+          const newItem: FlashTableItem = {
+            targetId: entryId,
+            isFile: false,
+            isSelected: true,
+            targetType: FirmwareTargetType.tjc_ms,
+          };
+          setFlashTableData([...flashTableData, newItem]);
         }}
         addressBookSetting={addressBookSetting}
         getID={getID}

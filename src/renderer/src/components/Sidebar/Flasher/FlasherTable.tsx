@@ -137,7 +137,6 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
   const onCheckedChangeHandle = (tableItem: FlashTableItem) => {
     if (checkedAll) {
       setCheckedAll(!checkedAll);
-      return;
     }
     setTableData(
       tableData.map((item) => {
@@ -194,7 +193,7 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
   };
 
   const rowRender = (tableItem: FlashTableItem) => {
-    const checked = checkedAll || tableItem.isSelected;
+    const checked = tableItem.isSelected;
     const addressData = getEntryById(tableItem.targetId);
     if (addressData === undefined) return;
     return (

@@ -116,7 +116,7 @@ function initArgList(args: (string | Variable)[]): ArgList {
 }
 
 const pictoRegex: RegExp = /.+(\.|::).+\(.*\)/;
-const variableRegex: RegExp = /(?<component>.+)(\.|::)(?<method>.+)/;
+export const variableRegex: RegExp = /(?<component>.+)(\.|::)(?<method>.+)/;
 function splitArgs(argString: string): (string | Variable)[] {
   // split по запятой, но не внутри скобок
   const args: (string | Variable)[] = [];

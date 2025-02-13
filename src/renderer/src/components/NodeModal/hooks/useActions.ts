@@ -10,7 +10,7 @@ import { Action, Component } from '@renderer/types/diagram';
 export const useActions = (
   smId: string,
   controller: CanvasController,
-  defaultActions: Action[] | null
+  defaultActions: string | Action[] | null
 ) => {
   const modelController = useModelContext();
   const componentsData = modelController.model.useData(smId, 'elements.components') as {
@@ -23,8 +23,13 @@ export const useActions = (
 
   const [tabValue, setTabValue] = useState(0);
 
-  const [actions, setActions] = useState<Action[]>(defaultActions ?? []);
-  const [text, setText] = useState('');
+  const [actions, setActions] = useState<Action[]>(
+    typeof defaultActions !== 'string' && defaultActions ? defaultActions : []
+  );
+
+  const [text, setText] = useState<string>(
+    typeof defaultActions === 'string' ? defaultActions : ''
+  );
 
   const handleAddAction = () => {
     setActionsModalData(undefined);

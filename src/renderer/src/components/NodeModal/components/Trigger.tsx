@@ -37,8 +37,7 @@ export const Trigger: React.FC<TriggerProps> = memo(function Trigger(props) {
     text,
     onChangeText,
     event,
-    setSelectedComponent,
-    setSelectedMethod,
+    parse,
   } = props;
   const visual = controller.useData('visual');
 
@@ -66,8 +65,7 @@ export const Trigger: React.FC<TriggerProps> = memo(function Trigger(props) {
 
   useLayoutEffect(() => {
     if (!event) return;
-    setSelectedComponent((event?.trigger as Event).component);
-    setSelectedMethod((event?.trigger as Event).method);
+    parse(event.trigger);
   }, [event]);
 
   const handleLengthLimit = (tr: Transaction) => {

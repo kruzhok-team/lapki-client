@@ -69,11 +69,6 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
     const handler = (state: State) => {
       const { data } = state;
 
-      // const eventData = data.events[0];
-
-      // Остальная форма подставляется в эффекте синхронизации с trigger
-      // parseTrigger(eventData?.trigger);
-
       setColor(data.color);
 
       setState(state);
@@ -152,18 +147,18 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
                 ) : (
                   state.data.events.map((event, key) => (
                     <EventPicto
+                      smId={smId}
                       onDoubleClick={handleEventDoubleClick}
                       key={key}
-                      event={event.trigger as Event}
+                      event={event.trigger}
                       isSelected={key === currentEventIndex}
                       platform={platform}
-                      condition={event.condition as Condition}
-                      text={`↳ ${serializeEvent(
-                        components,
-                        platform.data,
-                        event.trigger as Event,
-                        true
-                      )}${getCondition(event.condition)}/`}
+                      condition={event.condition}
+                      text={`↳ ${
+                        typeof event.trigger !== 'string'
+                          ? serializeEvent(components, platform.data, event.trigger, true)
+                          : event.trigger
+                      }${getCondition(event.condition)}/`}
                       onClick={() => {
                         setCurrentEventIndex(key);
                         setCurrentEvent(state.data.events[key]);

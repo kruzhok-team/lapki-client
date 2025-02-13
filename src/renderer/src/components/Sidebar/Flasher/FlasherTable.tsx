@@ -47,30 +47,6 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
   //const [stateMachineAddresses, setStateMachineAddresses] = useState<Map<<>>(new Map());
   const [checkedAll, setCheckedAll] = useState<boolean>(true);
 
-  const handleClose = () => {
-    // const submitFirmwares: FirmwaresType[] = [];
-    // const checks = isChecked;
-    // if (checkedAll) {
-    //   firmwareList.forEach((item) => {
-    //     checks.set(item.ID, true);
-    //   });
-    // }
-    // firmwareList.forEach((item) => {
-    //   if (checks.get(item.ID) ?? true) {
-    //     const addressIndex = stateMachineAddresses.get(item.ID);
-    //     if (addressIndex === undefined) {
-    //       return;
-    //     }
-    //     submitFirmwares.push({
-    //       isFile: item.isFile,
-    //       target: item.ID,
-    //       targetType: FirmwareTargetType.tjc_ms,
-    //     });
-    //   }
-    // });
-    //setSelectedFirmwares(submitFirmwares);
-  };
-
   const stateMachineOption = (sm: StateMachine | null | undefined, smId: string) => {
     if (!sm) return null;
     return {
@@ -113,26 +89,26 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
     }
   }
 
-  const handleAddFile = async () => {
-    // const [cancleld, filePath, basename] = await window.api.fileHandlers.selectFile('bin файлы', [
-    //   'bin',
-    // ]);
-    // if (!cancleld) {
-    //   if (
-    //     fileList.find((v) => {
-    //       return v.ID === filePath;
-    //     }) !== undefined
-    //   ) {
-    //     return;
-    //   }
-    //   const newFile: FirmwareItem = {
-    //     ID: filePath,
-    //     isFile: true,
-    //     name: basename.substring(0, basename.lastIndexOf('.')),
-    //   };
-    //   setFileList([...fileList, newFile]);
-    // }
-  };
+  // const handleAddFile = async () => {
+  //   // const [cancleld, filePath, basename] = await window.api.fileHandlers.selectFile('bin файлы', [
+  //   //   'bin',
+  //   // ]);
+  //   // if (!cancleld) {
+  //   //   if (
+  //   //     fileList.find((v) => {
+  //   //       return v.ID === filePath;
+  //   //     }) !== undefined
+  //   //   ) {
+  //   //     return;
+  //   //   }
+  //   //   const newFile: FirmwareItem = {
+  //   //     ID: filePath,
+  //   //     isFile: true,
+  //   //     name: basename.substring(0, basename.lastIndexOf('.')),
+  //   //   };
+  //   //   setFileList([...fileList, newFile]);
+  //   // }
+  // };
 
   const onCheckedChangeHandle = (tableItem: FlashTableItem) => {
     if (checkedAll) {

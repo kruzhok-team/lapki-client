@@ -219,7 +219,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
     if (parsedData === undefined) {
       return false;
     }
-    modelController.initData(null, 'Без названия', parsedData);
+    modelController.initData(null, 'Без названия', parsedData, true);
     openTabs();
     if (!restoreSession) {
       await setRestoreSession(true);

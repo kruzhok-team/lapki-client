@@ -58,6 +58,7 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
     onSwapEntries(dragIndex, index);
     setDragIndex(undefined);
   };
+
   /**
    * Открытие модального окна для редактирования существующей записи в адресной книге
    * @param data данные, которые нужно отредактированть
@@ -66,6 +67,7 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
     addressEntryEditForm.reset(data);
     openAddressEnrtyEdit();
   };
+
   /**
    * Обновление адресной книги после редактирования
    */
@@ -73,24 +75,30 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
     if (selectedEntry === undefined) return;
     onEdit(data, selectedEntry);
   };
+
   const addressEntryAddSubmitHandle = (data: AddressData) => {
     addressEntryAddForm.reset();
     onAdd(data);
   };
+
   const handleEdit = (data: AddressData, index: number) => {
     setSelectedEntry(index);
     addressEnrtyEdit(data);
   };
+
   const handleRemove = () => {
     if (selectedEntry === undefined) return;
     onRemove(selectedEntry);
   };
+
   const { handleSubmit: hookHandleSubmit } = useForm();
+
   const handleSubmit = hookHandleSubmit(() => {
     if (selectedEntry === undefined || addressBookSetting === null) return;
     onSubmit(addressBookSetting[selectedEntry].address);
     onClose();
   });
+
   return (
     <div>
       <Modal
@@ -116,7 +124,7 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
                 onEdit={() => undefined}
                 onDragStart={() => undefined}
                 onDrop={() => undefined}
-              ></AddressBookRow>
+              />
             )}
             {addressBookSetting?.map((field, index) => (
               <div key={getID(index)}>
@@ -127,7 +135,7 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
                   onEdit={() => handleEdit(field, index)}
                   onDragStart={() => setDragIndex(index)}
                   onDrop={() => handleSwapEntries(index)}
-                ></AddressBookRow>
+                />
               </div>
             ))}
           </div>
@@ -158,7 +166,7 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
         onClose={closeAddressEnrtyEdit}
         onSubmit={addressEntryEditSubmitHandle}
         submitLabel="Сохранить"
-      ></AddressEntryEditModal>
+      />
       <AddressEntryEditModal
         addressBookSetting={addressBookSetting}
         form={addressEntryAddForm}
@@ -166,7 +174,7 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
         onClose={closeAddressEnrtyAdd}
         onSubmit={addressEntryAddSubmitHandle}
         submitLabel="Добавить"
-      ></AddressEntryEditModal>
+      />
     </div>
   );
 };

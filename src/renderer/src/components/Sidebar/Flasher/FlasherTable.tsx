@@ -101,7 +101,6 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
 
   const assignedStateMachineOption = (address: string) => {
     const v = stateMachineAddresses.get(address);
-    console.log('here', v);
     if (v === undefined) return null;
     return stateMachineOption(stateMachinesId[v.target], v.target);
   };

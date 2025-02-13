@@ -307,7 +307,7 @@ export const FlasherTab: React.FC = () => {
         onEdit={onEdit}
         onRemove={onRemove}
         onSwapEntries={onSwapEntries}
-      ></AddressBookModal>
+      />
       <MsGetAddressModal
         isOpen={isMsGetAddressOpen}
         onClose={closeMsGetAddressModal}
@@ -321,7 +321,7 @@ export const FlasherTab: React.FC = () => {
             hideGetAddressModal: true,
           });
         }}
-      ></MsGetAddressModal>
+      />
     </section>
   );
 };

@@ -35,6 +35,8 @@ export const useAddressBook = () => {
    * @returns ID, соответствующий элементу адресной книги, либо null, если индекс некорректный или адресная книга отсутствует (равняется null)
    */
   const getID = (index: number) => {
+    console.log('index to id', indexToId);
+    console.log('id to index', idToIndex);
     if (addressBookSetting === null || index >= indexToId.length) {
       return null;
     }
@@ -85,6 +87,11 @@ export const useAddressBook = () => {
     setIdToIndex((oldMap) => {
       const newMap = new Map(oldMap);
       newMap.delete(indexToId[index]);
+      oldMap.forEach((v, k) => {
+        if (v > index) {
+          newMap.set(k, v - 1);
+        }
+      });
       return newMap;
     });
     setIndexToId(indexToId.toSpliced(index, 1));

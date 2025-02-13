@@ -72,7 +72,7 @@ export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (prop
     }
     sendSubmit();
   });
-  const meta = getValues('meta');
+  //const meta = getValues('meta');
   return (
     <Modal
       title="Адрес устройства"
@@ -83,7 +83,7 @@ export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (prop
     >
       <div className="flex items-start gap-1">
         <label className="flex w-full flex-col">
-          <TextInput placeholder="Название" {...register('name')} />
+          <TextInput className="max-w-[50vw]" placeholder="Название" {...register('name')} />
           <p className="text-sm text-error">{errors.name?.message}</p>
         </label>
 
@@ -92,23 +92,23 @@ export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (prop
             error={!!errors.address?.message}
             maxLength={16}
             placeholder="Адрес"
-            className="w-full max-w-full"
+            className="max-w-[50vw]"
             {...register('address')}
           />
           <p className="text-sm text-error">{errors.address?.message}</p>
         </label>
 
-        <label className="flex w-full flex-col">
+        {/* <label className="flex w-full flex-col">
           <TextInput
             placeholder="Тип"
             className="w-full max-w-full"
             disabled={true}
             {...register('type')}
           />
-        </label>
+        </label> */}
       </div>
-      <br></br>
-      {meta && (
+      {/* <br></br> */}
+      {/* {meta && (
         <div className="mb-2 flex flex-col gap-1">
           <h3 className="mb-1 text-xl">Метаданные</h3>
           <div>
@@ -137,7 +137,7 @@ export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (prop
           </div>
         </div>
       )}
-      {!meta && <p className="mb-1 text-xl opacity-60">Метаданных нет</p>}
+      {!meta && <p className="mb-1 text-xl opacity-60">Метаданных нет</p>} */}
     </Modal>
   );
 };

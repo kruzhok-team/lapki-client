@@ -298,7 +298,11 @@ export const FlasherTab: React.FC = () => {
         <button className="btn-primary mr-4" onClick={() => handleOperation(OperationType.reset)}>
           Перезагрузить
         </button>
-        <button className="btn-primary mr-4" onClick={() => handleOperation(OperationType.meta)}>
+        <button
+          className="btn-primary mr-4"
+          hidden={true}
+          onClick={() => handleOperation(OperationType.meta)}
+        >
           Получить метаданные
         </button>
       </div>

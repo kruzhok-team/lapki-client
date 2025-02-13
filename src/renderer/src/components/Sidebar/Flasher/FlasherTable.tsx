@@ -195,7 +195,7 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
           containerClassName={selectSmSubColumn}
           isSearchable={false}
           placeholder="Выберите..."
-          noOptionsMessage={() => 'Нет подходящих адресов'}
+          noOptionsMessage={() => 'Нет подходящих машин состояний'}
           value={getAssignedStateMachineOption(tableItem) as SelectOption}
           onChange={(opt) => {
             if (opt?.value === undefined) return;

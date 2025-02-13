@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { ManagerMS } from '@renderer/components/Modules/ManagerMS';
 import { AddressData } from '@renderer/types/FlasherTypes';
@@ -14,32 +14,34 @@ export const useAddressBook = () => {
     new Map()
   );
 
-  const [idStorage, setIdStorage] = useState<number[]>([]);
+  const [indexToId, setIndexToId] = useState<number[]>([]);
+  //const [idToIndex, setIdToIndex] = useState<number[]>([]);
   const [idCounter, setIdCounter] = useState<number>(0);
+
+  useEffect(() => {
+    if (addressBookSetting === null || indexToId.length >= addressBookSetting.length) return;
+    let id = idCounter;
+    const newIndexToId: number[] = [id];
+    for (let i = idCounter + 1; i < addressBookSetting.length; i++) {
+      newIndexToId.push(i);
+      id = i;
+    }
+    setIndexToId(indexToId.concat(newIndexToId));
+    setIdCounter(id + 1);
+  }, [addressBookSetting]);
+
   /**
    * Эта функция позволяет получить ID элмента по его индексу.
-   * Она динамически генерирует ID, если они отсутствуют.
    * @param index - индекс адресной книги
    * @returns ID, соответствующий элементу адресной книги, либо null, если индекс некорректный или адресная книга отсутствует (равняется null)
    */
   const getID = (index: number) => {
     // эта функция динамически генерирует ID, если они отсутствуют
 
-    if (addressBookSetting === null || index >= addressBookSetting.length) {
+    if (addressBookSetting === null || index >= indexToId.length) {
       return null;
     }
-    if (index < idStorage.length) {
-      return idStorage[index];
-    }
-    let id = idCounter;
-    const storage: number[] = [id];
-    for (let i = idCounter + 1; i < index; i++) {
-      storage.push(i);
-      id = i;
-    }
-    setIdStorage(idStorage.concat(storage));
-    setIdCounter(id + 1);
-    return id;
+    return indexToId[index];
   };
   /**
    * Позволяет найти индекс адресной книги по ID соответствующей записи, не работает,
@@ -51,8 +53,8 @@ export const useAddressBook = () => {
     if (addressBookSetting === null) {
       return null;
     }
-    for (let index = 0; index < idStorage.length; index++) {
-      if (idStorage[index] === ID) {
+    for (let index = 0; index < indexToId.length; index++) {
+      if (indexToId[index] === ID) {
         return index;
       }
     }
@@ -82,7 +84,7 @@ export const useAddressBook = () => {
     if (selectedAddressIndex === index) {
       setSelectedAddressIndex(null);
     }
-    setIdStorage(idStorage.toSpliced(index, 1));
+    setIndexToId(indexToId.toSpliced(index, 1));
     setAddressBookSetting(addressBookSetting.toSpliced(index, 1));
     setStateMachineAddresses((oldValue) => {
       const newValue = new Map(oldValue);
@@ -109,12 +111,12 @@ export const useAddressBook = () => {
       }
       return v;
     });
-    const newIdStorage = idStorage.map((v, i) => {
+    const newIdStorage = indexToId.map((v, i) => {
       if (i === index1) {
-        return idStorage[index2];
+        return indexToId[index2];
       }
       if (i === index2) {
-        return idStorage[index1];
+        return indexToId[index1];
       }
       return v;
     });
@@ -132,7 +134,7 @@ export const useAddressBook = () => {
       setSelectedAddressIndex(index1);
     }
     setAddressBookSetting(newBook);
-    setIdStorage(newIdStorage);
+    setIndexToId(newIdStorage);
     setStateMachineAddresses(newStateMachineIds);
   };
 

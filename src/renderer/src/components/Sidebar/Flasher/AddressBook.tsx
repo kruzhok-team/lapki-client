@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { useForm } from 'react-hook-form';
 
@@ -46,6 +46,7 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
   const [selectedEntry, setSelectedEntry] = useState<number | undefined>(undefined);
   // индекс записи для переноса при начале drag
   const [dragIndex, setDragIndex] = useState<number | undefined>(undefined);
+
   /**
    * замена двух записей при drag&drop
    * @param index - индекс второй записи, при drop, первая запись берётся из {@link dragIndex}
@@ -126,18 +127,22 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
                 onDrop={() => undefined}
               />
             )}
-            {addressBookSetting?.map((field, index) => (
-              <div key={getID(index)}>
-                <AddressBookRow
-                  isSelected={index === selectedEntry}
-                  data={field}
-                  onSelect={() => setSelectedEntry(index)}
-                  onEdit={() => handleEdit(field, index)}
-                  onDragStart={() => setDragIndex(index)}
-                  onDrop={() => handleSwapEntries(index)}
-                />
-              </div>
-            ))}
+            {addressBookSetting?.map((field, index) => {
+              const ID = getID(index);
+              if (ID === null) return;
+              return (
+                <div key={getID(index)}>
+                  <AddressBookRow
+                    isSelected={index === selectedEntry}
+                    data={field}
+                    onSelect={() => setSelectedEntry(index)}
+                    onEdit={() => handleEdit(field, index)}
+                    onDragStart={() => setDragIndex(index)}
+                    onDrop={() => handleSwapEntries(index)}
+                  />
+                </div>
+              );
+            })}
           </div>
           <div className="flex flex-col gap-2">
             <button

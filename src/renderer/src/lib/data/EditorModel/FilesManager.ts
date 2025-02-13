@@ -37,8 +37,8 @@ export class FilesManager {
     // this.modelController.model.init(null, 'Без названия', elements as any);
   }
 
-  compile() {
-    Compiler.compile(this.data.elements, 'CGML');
+  compile(data: Elements = this.data.elements) {
+    Compiler.compile(data, 'CGML');
   }
 
   isPlatformsAvailable(importData: Elements) {

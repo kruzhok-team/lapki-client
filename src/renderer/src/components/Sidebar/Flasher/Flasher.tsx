@@ -21,10 +21,7 @@ export const FlasherTab: React.FC = () => {
   const { device, log, address: serverAddress, meta, compilerData } = useManagerMS();
   const {
     addressBookSetting,
-    selectedAddress,
-    selectedAddressIndex,
     onEdit,
-    displayEntry,
     getID,
     getEntryById,
     onAdd,

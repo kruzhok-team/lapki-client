@@ -35,8 +35,6 @@ export const useAddressBook = () => {
    * @returns ID, соответствующий элементу адресной книги, либо null, если индекс некорректный или адресная книга отсутствует (равняется null)
    */
   const getID = (index: number) => {
-    console.log('index to id', indexToId);
-    console.log('id to index', idToIndex);
     if (addressBookSetting === null || index >= indexToId.length) {
       return null;
     }

@@ -57,7 +57,8 @@ export const useTrigger = (
         return;
       }
 
-      const name = componentsData[id] && componentsData[id].name ? componentsData[id].name : id;
+      const name =
+        componentsData[id] && visual && componentsData[id].name ? componentsData[id].name : id;
       return {
         value: id,
         label: name,
@@ -114,6 +115,14 @@ export const useTrigger = (
 
   const handleMethodChange = useCallback((value: SingleValue<SelectOption>) => {
     setSelectedMethod(value?.value ?? null);
+    // debugger;
+    // if (!visual && controller.platform[smId] && selectedComponent && value?.value)
+    //   setText(
+    //     serializeEvent(componentsData, controller.platform[smId].data, {
+    //       component: selectedComponent,
+    //       method: value?.value,
+    //     })
+    //   ); // для перехода в текст
   }, []);
 
   const clear = useCallback(() => {

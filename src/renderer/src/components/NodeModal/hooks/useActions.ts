@@ -78,7 +78,7 @@ export const useActions = (
     const component = componentsData[id];
     if (!component) return id;
 
-    return component.name ?? id;
+    return visual && component.name ? component.name : id;
   };
 
   const clear = () => {

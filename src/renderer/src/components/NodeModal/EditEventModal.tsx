@@ -7,7 +7,7 @@ import { Modal } from '@renderer/components/UI';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { State } from '@renderer/lib/drawable';
 import { useModelContext } from '@renderer/store/ModelContext';
-import { Action, Condition as ConditionData, Event, EventData } from '@renderer/types/diagram';
+import { Event, EventData } from '@renderer/types/diagram';
 
 import { Actions, Trigger, Condition } from './components';
 import { useTrigger, useActions, useCondition } from './hooks';

@@ -11,7 +11,7 @@ import { CanvasController } from '@renderer/lib/data/ModelController/CanvasContr
 import { PlatformManager } from '@renderer/lib/data/PlatformManager';
 import { State } from '@renderer/lib/drawable';
 import { useModelContext } from '@renderer/store/ModelContext';
-import { Component, Condition, Event, EventData } from '@renderer/types/diagram';
+import { Component, Condition, EventData } from '@renderer/types/diagram';
 
 import { ColorField, Event as EventPicto } from './components';
 import { EditEventModal } from './EditEventModal';

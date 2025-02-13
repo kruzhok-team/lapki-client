@@ -5,7 +5,7 @@ import throttle from 'lodash.throttle';
 
 import { Select, TabPanel, Tabs } from '@renderer/components/UI';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
-import { Event, EventData } from '@renderer/types/diagram';
+import { EventData } from '@renderer/types/diagram';
 
 import { useTrigger } from '../hooks';
 

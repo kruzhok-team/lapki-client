@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 export let appVersion = null;
-export const releaseName = 'Caracal';
+export const releaseName = 'Donskoy';
 
 export const appName = 'Lapki IDE';
 export const seriousMode = false;

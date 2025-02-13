@@ -135,7 +135,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     return Object.values(this.data).flatMap((map) => [...map.values()]).length;
   };
 
-  initState = (args: CreateStateParams) => {
+  initState = (args: CreateStateParams, watch: boolean = true) => {
     const { id, smId } = args;
 
     if (!id) return;
@@ -145,7 +145,9 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
     this.view.children.add(state, Layer.States);
 
-    this.watch(state);
+    if (watch) {
+      this.watch(state);
+    }
 
     this.view.isDirty = true;
 
@@ -746,14 +748,16 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     state.on('longpress', this.handleStateLongPress.bind(this, state));
   }
   private unwatchState(state: State) {
-    state.off('dragend', this.handleDragEnd.bind(this, state));
-    state.off('click', this.handleStateClick.bind(this, state));
-    state.off('mousedown', this.handleStateMouseDown.bind(this, state));
-    state.off('mouseup', this.handleMouseUpOnState.bind(this, state));
-    state.off('dblclick', this.handleStateDoubleClick.bind(this, state));
-    state.off('contextmenu', this.handleContextMenu.bind(this, state.id));
-    state.off('drag', this.handleDrag.bind(this, state));
-    state.off('longpress', this.handleStateLongPress.bind(this, state));
+    state.handlers.clear();
+    // TODO (L140-beep): почему-то не удаляются события
+    // state.off('dragend', this.handleDragEnd.bind(this, state));
+    // state.off('click', this.handleStateClick.bind(this, state));
+    // state.off('mousedown', this.handleStateMouseDown.bind(this, state));
+    // state.off('mouseup', this.handleMouseUpOnState.bind(this, state));
+    // state.off('dblclick', this.handleStateDoubleClick.bind(this, state));
+    // state.off('contextmenu', this.handleContextMenu.bind(this, state.id));
+    // state.off('drag', this.handleDrag.bind(this, state));
+    // state.off('longpress', this.handleStateLongPress.bind(this, state));
 
     state.edgeHandlers.unbindEvents();
   }

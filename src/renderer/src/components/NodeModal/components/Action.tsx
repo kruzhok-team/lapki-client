@@ -37,11 +37,11 @@ export const Action: React.FC<ActionProps> = (props) => {
   const platforms = controller.useData('platform') as { [id: string]: PlatformManager };
   const platform = platforms[smId];
 
-  const serializeParameter = (param: string | Variable | number[][]) => {
+  const serializeParameter = (index: number, param: undefined | string | Variable | number[][]) => {
+    if (param === undefined) return '';
     if (Array.isArray(param)) return '[...]';
-    if (typeof param === 'string') return param;
-
-    return `${components[param.component].name ?? param.component}${getActionDelimeter(
+    if (typeof param === 'string') return `${index !== 0 ? ', ' : ''}${param}`;
+    return `${index !== 0 && ', '}${components[param.component].name ?? param.component}${getActionDelimeter(
       platform.data,
       components[param.component].type
     )}${param.method}`;
@@ -77,33 +77,16 @@ export const Action: React.FC<ActionProps> = (props) => {
               const protoComponent =
                 platform.data.components[platform.resolveComponentType(data.component)];
               if (!protoComponent) {
-                return (
-                  <>
-                    {serializeParameter(value)}
-                    {index !== 0 && ', '}
-                  </>
-                );
+                return <>{serializeParameter(index, value)}</>;
               }
               const protoMethod = protoComponent.methods[data.method];
               const protoParameters = protoMethod.parameters;
 
-              if (!protoParameters)
-                return (
-                  <>
-                    {serializeParameter(value)}
-                    {index !== 0 && ', '}
-                  </>
-                );
+              if (!protoParameters) return <>{serializeParameter(index, value)}</>;
 
               const parameter = protoParameters.find((param) => param.name === id);
 
-              if (!parameter || !parameter.type)
-                return (
-                  <>
-                    {serializeParameter(value)}
-                    {index !== 0 && ', '}
-                  </>
-                );
+              if (!parameter || !parameter.type) return <>{serializeParameter(index, value)}</>;
 
               if (typeof parameter.type === 'string' && parameter.type.startsWith('Matrix')) {
                 const dimensions = getMatrixDimensions(parameter.type);
@@ -132,12 +115,7 @@ export const Action: React.FC<ActionProps> = (props) => {
                 }
               }
 
-              return (
-                <>
-                  {index !== 0 && ', '}
-                  {serializeParameter(value)}
-                </>
-              );
+              return <>{serializeParameter(index, value)}</>;
             })}
         </div>
         <div>)</div>

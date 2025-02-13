@@ -138,6 +138,16 @@ export const useAddressBook = () => {
     return addressBookSetting[selectedAddressIndex].address;
   };
 
+  const addToAddressBook = (address: string) => {
+    if (addressBookSetting === null) return;
+    const index = addressBookSetting.findIndex((v) => {
+      return v.address === address;
+    });
+    if (index === -1) {
+      onAdd({ name: '', address: address, type: '', meta: undefined });
+    }
+  };
+
   const setSelectedAddress = (address: string) => {
     if (addressBookSetting === null) return;
     const index = addressBookSetting.findIndex((v) => {
@@ -175,5 +185,7 @@ export const useAddressBook = () => {
     getIndex,
     getEntryById,
     displayEntry,
+    addToAddressBook,
+    idCounter, // TODO: костыль!
   };
 };

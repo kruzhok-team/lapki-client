@@ -23,7 +23,6 @@ export const FlasherTab: React.FC = () => {
     addressBookSetting,
     selectedAddress,
     selectedAddressIndex,
-    setSelectedAddress,
     onEdit,
     displayEntry,
     getID,
@@ -31,6 +30,7 @@ export const FlasherTab: React.FC = () => {
     onAdd,
     onRemove,
     onSwapEntries,
+    idCounter,
   } = useAddressBook();
   const { connectionStatus } = useFlasher();
 
@@ -51,8 +51,31 @@ export const FlasherTab: React.FC = () => {
   }, [log, managerMSSetting]);
 
   useEffect(() => {
-    if (serverAddress === '') return;
-    setSelectedAddress(serverAddress);
+    if (serverAddress === '' || addressBookSetting === null) return;
+    //addToAddressBook(serverAddress);
+    const index = addressBookSetting.findIndex((v) => {
+      return v.address === serverAddress;
+    });
+    if (index === -1) {
+      onAdd({ name: '', address: serverAddress, type: '', meta: undefined });
+      const newItem: FlashTableItem = {
+        isFile: false,
+        isSelected: true,
+        targetId: idCounter,
+        targetType: FirmwareTargetType.tjc_ms,
+      };
+      setFlashTableData([...flashTableData, newItem]);
+    } else {
+      const ID = getID(index);
+      if (ID === null) return;
+      const newItem: FlashTableItem = {
+        isFile: false,
+        isSelected: true,
+        targetId: ID,
+        targetType: FirmwareTargetType.tjc_ms,
+      };
+      setFlashTableData([...flashTableData, newItem]);
+    }
   }, [serverAddress]);
 
   useEffect(() => {

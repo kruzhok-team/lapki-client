@@ -81,8 +81,8 @@ export class Transition extends Shape {
   }
 
   draw(ctx: CanvasRenderingContext2D) {
-    this.label.draw(ctx);
     this.arrow.draw(ctx);
+    this.label.draw(ctx);
 
     if (this.isSelected) {
       this.drawSelection(ctx);

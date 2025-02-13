@@ -373,7 +373,6 @@ export const Hierarchy: React.FC<HierarchyProps> = ({
 
   useEffect(() => {
     if (!search) {
-      setSelectedItems([]);
       return;
     }
 

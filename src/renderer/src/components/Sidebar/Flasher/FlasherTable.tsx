@@ -173,7 +173,7 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
     const addressData = getEntryById(tableItem.targetId);
     if (addressData === undefined) return;
     return (
-      <div key={addressData.address} className="flex items-start">
+      <div key={tableItem.targetId} className="flex items-start">
         <Checkbox
           className={twMerge('rounded border border-border-primary', checkColumn, cellHeight)}
           checked={checked}

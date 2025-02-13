@@ -5,7 +5,6 @@ import { twMerge } from 'tailwind-merge';
 import { ReactComponent as ConnectionStatus } from '@renderer/assets/icons/circle.svg';
 import { ReactComponent as OkIcon } from '@renderer/assets/icons/mark-check.svg';
 import { ReactComponent as NotOkIcon } from '@renderer/assets/icons/mark-cross.svg';
-import { ReactComponent as Setting } from '@renderer/assets/icons/settings.svg';
 import { Compiler } from '@renderer/components/Modules/Compiler';
 import { useErrorModal, useFileOperations, useModal, useSettings } from '@renderer/hooks';
 import { useModelContext } from '@renderer/store/ModelContext';

@@ -51,6 +51,13 @@ export const useAddressBook = () => {
     }
     return idToIndex.get(ID);
   };
+  const getEntryById = (ID: number) => {
+    const index = getIndex(ID);
+    if (index === undefined || addressBookSetting === null) {
+      return undefined;
+    }
+    return addressBookSetting[index];
+  };
   /**
    * Добавление новой записи в адресную книгу
    * @param data запись, которую следует добавить
@@ -166,6 +173,7 @@ export const useAddressBook = () => {
     onSwapEntries,
     getID,
     getIndex,
+    getEntryById,
     displayEntry,
   };
 };

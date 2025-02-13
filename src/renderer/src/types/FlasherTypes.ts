@@ -210,14 +210,23 @@ export interface MetaDataID extends MetaData {
   type: string; // тип устройства (определяется по RefBlHw)
 }
 
+export enum FirmwareTargetType {
+  tjc_ms,
+  arduino,
+}
+
 // выбранные для прошивки МС-ТЮК платы
-export type SelectedMsFirmwaresType = {
-  target: string;
+export type FirmwaresType = {
+  target: number;
+  targetType: FirmwareTargetType;
   isFile: boolean;
 };
 
-export type SourceAddress = {
-  address: string;
+export type FlashTableItem = {
+  isSelected: boolean;
+  targetId: number;
+  targetType: FirmwareTargetType;
+  source?: string; // id машины состояний или путь к файлу
   isFile: boolean;
 };
 

@@ -5,21 +5,12 @@ import { twMerge } from 'tailwind-merge';
 import { Checkbox, Select, SelectOption } from '@renderer/components/UI';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { StateMachine } from '@renderer/types/diagram';
-import { AddressData, SelectedMsFirmwaresType } from '@renderer/types/FlasherTypes';
-
-type FirmwareItem = {
-  ID: string;
-  name?: string;
-  isFile: boolean;
-  type?: string;
-};
+import { AddressData, FlashTableItem } from '@renderer/types/FlasherTypes';
 
 interface FlasherTableProps {
-  stateMachineAddresses: Map<string, SelectedMsFirmwaresType>;
-  setStateMachineAddresses: Dispatch<SetStateAction<Map<string, SelectedMsFirmwaresType>>>;
-  checkedStateMachine: Map<string, boolean>;
-  setCheckedStateMachine: Dispatch<SetStateAction<Map<string, boolean>>>;
-  devList: AddressData[];
+  tableData: FlashTableItem[];
+  setTableData: Dispatch<SetStateAction<FlashTableItem[]>>;
+  getEntryById: (ID: number) => AddressData | undefined;
 }
 
 // размеры столбцов
@@ -37,11 +28,9 @@ const allColumn = 'w-[76vw]';
 const cellHeight = 'h-[38px]';
 
 export const FlasherTable: React.FC<FlasherTableProps> = ({
-  stateMachineAddresses,
-  setStateMachineAddresses,
-  checkedStateMachine: isChecked,
-  setCheckedStateMachine: setIsChecked,
-  devList,
+  tableData,
+  setTableData,
+  getEntryById,
   ...props
 }) => {
   const modelController = useModelContext();
@@ -50,44 +39,35 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
     [ID: string]: StateMachine;
   };
 
+  // TODO: (Roundabout1): удалить фильтр (при объединении arduino-загрузчика с менеджером МС-ТЮК)
   const stateMachinesArray = [...Object.entries(stateMachinesId)].filter(([, sm]) => {
     return sm.platform.startsWith('tjc');
   });
 
+  //const [stateMachineAddresses, setStateMachineAddresses] = useState<Map<<>>(new Map());
   const [checkedAll, setCheckedAll] = useState<boolean>(true);
-  const [fileList, setFileList] = useState<FirmwareItem[]>([]);
-
-  const firmwareList = Array.from(stateMachinesArray, ([smId, sm]) => {
-    const newItem: FirmwareItem = {
-      ID: smId,
-      name: sm.name,
-      isFile: false,
-      type: sm.platform,
-    };
-    return newItem;
-  });
-  firmwareList.push(...fileList);
 
   const handleClose = () => {
-    const submitFirmwares: SelectedMsFirmwaresType[] = [];
-    const checks = isChecked;
-    if (checkedAll) {
-      firmwareList.forEach((item) => {
-        checks.set(item.ID, true);
-      });
-    }
-    firmwareList.forEach((item) => {
-      if (checks.get(item.ID) ?? true) {
-        const addressIndex = stateMachineAddresses.get(item.ID);
-        if (addressIndex === undefined) {
-          return;
-        }
-        submitFirmwares.push({
-          isFile: item.isFile,
-          target: item.ID,
-        });
-      }
-    });
+    // const submitFirmwares: FirmwaresType[] = [];
+    // const checks = isChecked;
+    // if (checkedAll) {
+    //   firmwareList.forEach((item) => {
+    //     checks.set(item.ID, true);
+    //   });
+    // }
+    // firmwareList.forEach((item) => {
+    //   if (checks.get(item.ID) ?? true) {
+    //     const addressIndex = stateMachineAddresses.get(item.ID);
+    //     if (addressIndex === undefined) {
+    //       return;
+    //     }
+    //     submitFirmwares.push({
+    //       isFile: item.isFile,
+    //       target: item.ID,
+    //       targetType: FirmwareTargetType.tjc_ms,
+    //     });
+    //   }
+    // });
     //setSelectedFirmwares(submitFirmwares);
   };
 
@@ -99,10 +79,10 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
     };
   };
 
-  const assignedStateMachineOption = (address: string) => {
-    const v = stateMachineAddresses.get(address);
-    if (v === undefined) return null;
-    return stateMachineOption(stateMachinesId[v.target], v.target);
+  const getAssignedStateMachineOption = (tableItem: FlashTableItem) => {
+    const source = tableItem.source;
+    if (source === undefined || tableItem.isFile) return null;
+    return stateMachineOption(stateMachinesId[source], source);
   };
 
   const platformWithoutVersion = (platform: string | undefined) => {
@@ -134,24 +114,57 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
   }
 
   const handleAddFile = async () => {
-    const [cancleld, filePath, basename] = await window.api.fileHandlers.selectFile('bin файлы', [
-      'bin',
-    ]);
-    if (!cancleld) {
-      if (
-        fileList.find((v) => {
-          return v.ID === filePath;
-        }) !== undefined
-      ) {
-        return;
-      }
-      const newFile: FirmwareItem = {
-        ID: filePath,
-        isFile: true,
-        name: basename.substring(0, basename.lastIndexOf('.')),
-      };
-      setFileList([...fileList, newFile]);
+    // const [cancleld, filePath, basename] = await window.api.fileHandlers.selectFile('bin файлы', [
+    //   'bin',
+    // ]);
+    // if (!cancleld) {
+    //   if (
+    //     fileList.find((v) => {
+    //       return v.ID === filePath;
+    //     }) !== undefined
+    //   ) {
+    //     return;
+    //   }
+    //   const newFile: FirmwareItem = {
+    //     ID: filePath,
+    //     isFile: true,
+    //     name: basename.substring(0, basename.lastIndexOf('.')),
+    //   };
+    //   setFileList([...fileList, newFile]);
+    // }
+  };
+
+  const onCheckedChangeHandle = (tableItem: FlashTableItem) => {
+    if (checkedAll) {
+      setCheckedAll(!checkedAll);
+      return;
     }
+    setTableData(
+      tableData.map((item) => {
+        if (item.targetId === tableItem.targetId) {
+          return {
+            ...item,
+            isSelected: !tableItem.isSelected,
+          };
+        }
+        return item;
+      })
+    );
+  };
+
+  const onSelectChangeHandle = (tableItem: FlashTableItem, smId: string) => {
+    setTableData(
+      tableData.map((item) => {
+        if (item.targetId === tableItem.targetId) {
+          return {
+            ...item,
+            source: smId,
+            isFile: false,
+          };
+        }
+        return item;
+      })
+    );
   };
 
   const cellRender = (content: string | JSX.Element, mergeClassName: string) => {
@@ -180,51 +193,38 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
     );
   };
 
-  const rowRender = (devInfo: AddressData) => {
-    const checked = checkedAll || (isChecked.get(devInfo.address) ?? true);
+  const rowRender = (tableItem: FlashTableItem) => {
+    const checked = checkedAll || tableItem.isSelected;
+    const addressData = getEntryById(tableItem.targetId);
+    if (addressData === undefined) return;
     return (
-      <div key={devInfo.address} className="flex items-start">
+      <div key={addressData.address} className="flex items-start">
         <Checkbox
           className={twMerge('rounded border border-border-primary', checkColumn, cellHeight)}
           checked={checked}
-          onCheckedChange={() => {
-            if (checkedAll) {
-              setIsChecked(() => {
-                const newMap = new Map();
-                firmwareList.forEach((item) => {
-                  newMap.set(item.ID, item.ID !== devInfo.address);
-                });
-                return newMap;
-              });
-              setCheckedAll(!checkedAll);
-              return;
-            }
-            setIsChecked((oldValue) => {
-              const newValue = new Map(oldValue);
-              newValue.set(devInfo.address, !checked);
-              return newValue;
-            });
-          }}
+          onCheckedChange={() => onCheckedChangeHandle(tableItem)}
         />
-        {cellRender(<label>{devInfo.name ? devInfo.name : 'Не указано'}</label>, nameColumn)}
-        {cellRender(<label>{devInfo.type ? devInfo.type : 'Неизвестно'}</label>, typeColumn)}
-        {cellRender(<label>{devInfo.address}</label>, addressColumn)}
+        {cellRender(
+          <label>{addressData.name ? addressData.name : 'Не указано'}</label>,
+          nameColumn
+        )}
+        {cellRender(
+          <label>{addressData.type ? addressData.type : 'Неизвестно'}</label>,
+          typeColumn
+        )}
+        {cellRender(<label>{addressData.address}</label>, addressColumn)}
         <Select
           options={
-            stateMachineOptions.get(platformWithoutVersion(devInfo.type)) ?? allAddressOptions
+            stateMachineOptions.get(platformWithoutVersion(addressData.type)) ?? allAddressOptions
           }
           containerClassName={selectSmSubColumn}
           isSearchable={false}
           placeholder="Выберите..."
           noOptionsMessage={() => 'Нет подходящих адресов'}
-          value={assignedStateMachineOption(devInfo.address) as SelectOption}
+          value={getAssignedStateMachineOption(tableItem) as SelectOption}
           onChange={(opt) => {
-            if (!opt?.value) return;
-            setStateMachineAddresses((oldMap) => {
-              const newMap = new Map(oldMap);
-              newMap.set(devInfo.address, { target: opt?.value, isFile: false });
-              return newMap;
-            });
+            if (opt?.value === undefined) return;
+            onSelectChangeHandle(tableItem, opt.value);
           }}
           menuPlacement="auto"
         />
@@ -251,8 +251,8 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
       className="flex max-h-60 min-h-60 flex-col overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
     >
       {headerRender()}
-      {devList.length > 0
-        ? devList.map((devInfo) => rowRender(devInfo))
+      {tableData.length > 0
+        ? tableData.map((tableItem) => rowRender(tableItem))
         : cellRender(
             'Добавьте устройства через кнопку «Подключить плату» или кнопку «Адреса плат МС-ТЮК»',
             twMerge(allColumn, 'opacity-70')

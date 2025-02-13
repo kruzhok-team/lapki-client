@@ -8,7 +8,7 @@ import { useModal } from '@renderer/hooks/useModal';
 import { useSettings } from '@renderer/hooks/useSettings';
 import { useFlasher } from '@renderer/store/useFlasher';
 import { useManagerMS } from '@renderer/store/useManagerMS';
-import { AddressData, SelectedMsFirmwaresType } from '@renderer/types/FlasherTypes';
+import { FlashTableItem } from '@renderer/types/FlasherTypes';
 
 import { AddressBookModal } from './AddressBook';
 import { FlasherTable } from './FlasherTable';
@@ -18,7 +18,7 @@ import { ManagerMS } from '../../Modules/ManagerMS';
 import { Switch } from '../../UI';
 
 export const FlasherTab: React.FC = () => {
-  const { device, log, address: serverAddress, meta, compilerData } = useManagerMS();
+  const { device, log, address: serverAddress, meta } = useManagerMS();
   const {
     addressBookSetting,
     selectedAddress,
@@ -27,22 +27,20 @@ export const FlasherTab: React.FC = () => {
     onEdit,
     displayEntry,
     getID,
+    getEntryById,
     onAdd,
     onRemove,
     onSwapEntries,
   } = useAddressBook();
   const { connectionStatus } = useFlasher();
+
   const [managerMSSetting, setManagerMSSetting] = useSettings('managerMS');
+
   const [isAddressBookOpen, openAddressBook, closeAddressBook] = useModal(false);
   const [isMsGetAddressOpen, openMsGetAddressModal, closeMsGetAddressModal] = useModal(false);
-  const [selectedFirmwares, setSelectedFirmwares] = useState<SelectedMsFirmwaresType[]>([]);
-  const [addressStateMachine, setAddressStateMachine] = useState<
-    Map<string, SelectedMsFirmwaresType>
-  >(new Map());
-  const [checkedStateMachine, setCheckedStateMachine] = useState<Map<string, boolean>>(new Map());
-  const [devList, setDevList] = useState<AddressData[]>([
-    { address: 'pupupu', name: 'dev', type: '', meta: undefined },
-  ]);
+
+  const [flashTableData, setFlashTableData] = useState<FlashTableItem[]>([]);
+
   const logContainerRef = useRef<HTMLDivElement>(null);
 
   // При изменении log прокручиваем вниз, если включена автопрокрутка
@@ -128,15 +126,16 @@ export const FlasherTab: React.FC = () => {
     ManagerMS.addLog('Отправлен запрос на метаданные устройства.');
   };
   const isFlashDisabled = () => {
-    if (selectedFirmwares.length === 0) return true;
-    return !selectedFirmwares.every((item) => {
-      if (!item.isFile) {
-        if (!compilerData) return false;
-        const data = compilerData.state_machines[item.target];
-        return data && data.binary && data.binary.length !== 0;
-      }
-      return true;
-    });
+    return false;
+    // if (selectedFirmwares.length === 0) return true;
+    // return !selectedFirmwares.every((item) => {
+    //   if (!item.isFile) {
+    //     if (!compilerData) return false;
+    //     const data = compilerData.state_machines[item.target];
+    //     return data && data.binary && data.binary.length !== 0;
+    //   }
+    //   return true;
+    // });
   };
 
   const handleSendBin = async () => {
@@ -216,11 +215,9 @@ export const FlasherTab: React.FC = () => {
       </div>
       <div className="m-2">
         <FlasherTable
-          checkedStateMachine={checkedStateMachine}
-          setCheckedStateMachine={setCheckedStateMachine}
-          setStateMachineAddresses={setAddressStateMachine}
-          stateMachineAddresses={addressStateMachine}
-          devList={devList}
+          getEntryById={getEntryById}
+          setTableData={setFlashTableData}
+          tableData={flashTableData}
         />
       </div>
       <div className="m-2 flex">

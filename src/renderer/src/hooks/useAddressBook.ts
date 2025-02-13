@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { ManagerMS } from '@renderer/components/Modules/ManagerMS';
 import { AddressData } from '@renderer/types/FlasherTypes';
@@ -10,53 +10,53 @@ export const useAddressBook = () => {
 
   const [selectedAddressIndex, setSelectedAddressIndex] = useState<number | null>(null);
 
-  const [stateMachineAddresses, setStateMachineAddresses] = useState<Map<string, number>>(
-    new Map()
-  );
-
-  const [idStorage, setIdStorage] = useState<number[]>([]);
+  const [indexToId, setIndexToId] = useState<number[]>([]);
+  const [idToIndex, setIdToIndex] = useState<Map<number, number>>(new Map());
   const [idCounter, setIdCounter] = useState<number>(0);
+
+  useEffect(() => {
+    if (addressBookSetting === null || indexToId.length >= addressBookSetting.length) return;
+    let id = idCounter;
+    const newIndexToId: number[] = [];
+    const newIdToIndex = new Map(idToIndex);
+    for (let i = indexToId.length; i < addressBookSetting.length; i++) {
+      newIdToIndex.set(id, i);
+      newIndexToId.push(id);
+      id++;
+    }
+    setIndexToId(indexToId.concat(newIndexToId));
+    setIdToIndex(newIdToIndex);
+    setIdCounter(id);
+  }, [addressBookSetting]);
+
   /**
    * Эта функция позволяет получить ID элмента по его индексу.
-   * Она динамически генерирует ID, если они отсутствуют.
    * @param index - индекс адресной книги
    * @returns ID, соответствующий элементу адресной книги, либо null, если индекс некорректный или адресная книга отсутствует (равняется null)
    */
   const getID = (index: number) => {
-    // эта функция динамически генерирует ID, если они отсутствуют
-
-    if (addressBookSetting === null || index >= addressBookSetting.length) {
+    if (addressBookSetting === null || index >= indexToId.length) {
       return null;
     }
-    if (index < idStorage.length) {
-      return idStorage[index];
-    }
-    let id = idCounter;
-    const storage: number[] = [id];
-    for (let i = idCounter + 1; i < index; i++) {
-      storage.push(i);
-      id = i;
-    }
-    setIdStorage(idStorage.concat(storage));
-    setIdCounter(id + 1);
-    return id;
+    return indexToId[index];
   };
   /**
-   * Позволяет найти индекс адресной книги по ID соответствующей записи, не работает,
-   * если ID для этой записи не сгенерирован.
+   * Позволяет найти индекс адресной книги по ID соответствующей записи
    * @param ID запси адресной книги
    * @returns индекс адресной книги, соответствующий ID элемента, либо null, если его не удалось найти
    */
   const getIndex = (ID: number) => {
     if (addressBookSetting === null) {
-      return null;
+      return undefined;
     }
-    for (let index = 0; index < idStorage.length; index++) {
-      if (idStorage[index] === ID) {
-        return index;
-      }
+    return idToIndex.get(ID);
+  };
+  const getEntryById = (ID: number) => {
+    const index = getIndex(ID);
+    if (index === undefined || addressBookSetting === null) {
+      return undefined;
     }
-    return null;
+    return addressBookSetting[index];
   };
   /**
    * Добавление новой записи в адресную книгу
@@ -82,17 +82,18 @@ export const useAddressBook = () => {
     if (selectedAddressIndex === index) {
       setSelectedAddressIndex(null);
     }
-    setIdStorage(idStorage.toSpliced(index, 1));
-    setAddressBookSetting(addressBookSetting.toSpliced(index, 1));
-    setStateMachineAddresses((oldValue) => {
-      const newValue = new Map(oldValue);
-      oldValue.forEach((idx, smId) => {
-        if (idx === index) {
-          newValue.delete(smId);
+    setIdToIndex((oldMap) => {
+      const newMap = new Map(oldMap);
+      newMap.delete(indexToId[index]);
+      oldMap.forEach((v, k) => {
+        if (v > index) {
+          newMap.set(k, v - 1);
         }
       });
-      return newValue;
+      return newMap;
     });
+    setIndexToId(indexToId.toSpliced(index, 1));
+    setAddressBookSetting(addressBookSetting.toSpliced(index, 1));
   };
   const onSwapEntries = (index1: number, index2: number) => {
     if (addressBookSetting === null) {
@@ -109,22 +110,17 @@ export const useAddressBook = () => {
       }
       return v;
     });
-    const newIdStorage = idStorage.map((v, i) => {
+    const newIdToIndex = new Map(idToIndex);
+    newIdToIndex.set(indexToId[index1], index2);
+    newIdToIndex.set(indexToId[index2], index1);
+    const newIndexToId = indexToId.map((v, i) => {
       if (i === index1) {
-        return idStorage[index2];
+        return indexToId[index2];
       }
       if (i === index2) {
-        return idStorage[index1];
+        return indexToId[index1];
       }
       return v;
-    });
-    const newStateMachineIds = new Map(stateMachineAddresses);
-    stateMachineAddresses.forEach((index, smId) => {
-      if (index === index1) {
-        newStateMachineIds.set(smId, index2);
-      } else if (index === index2) {
-        newStateMachineIds.set(smId, index1);
-      }
     });
     if (index1 === selectedAddressIndex) {
       setSelectedAddressIndex(index2);
@@ -132,8 +128,8 @@ export const useAddressBook = () => {
       setSelectedAddressIndex(index1);
     }
     setAddressBookSetting(newBook);
-    setIdStorage(newIdStorage);
-    setStateMachineAddresses(newStateMachineIds);
+    setIdToIndex(newIdToIndex);
+    setIndexToId(newIndexToId);
   };
 
   const selectedAddress = () => {
@@ -147,18 +143,28 @@ export const useAddressBook = () => {
     return addressBookSetting[selectedAddressIndex].address;
   };
 
-  const setSelectedAddress = (address: string) => {
-    if (addressBookSetting === null) return;
-    const index = addressBookSetting.findIndex((v) => {
-      return v.address === address;
-    });
-    if (index === -1) {
-      onAdd({ name: '', address: address, type: '', meta: undefined });
-      setSelectedAddressIndex(addressBookSetting.length);
-    } else {
-      setSelectedAddressIndex(index);
-    }
-  };
+  // const addToAddressBook = (address: string) => {
+  //   if (addressBookSetting === null) return;
+  //   const index = addressBookSetting.findIndex((v) => {
+  //     return v.address === address;
+  //   });
+  //   if (index === -1) {
+  //     onAdd({ name: '', address: address, type: '', meta: undefined });
+  //   }
+  // };
+
+  // const setSelectedAddress = (address: string) => {
+  //   if (addressBookSetting === null) return;
+  //   const index = addressBookSetting.findIndex((v) => {
+  //     return v.address === address;
+  //   });
+  //   if (index === -1) {
+  //     onAdd({ name: '', address: address, type: '', meta: undefined });
+  //     setSelectedAddressIndex(addressBookSetting.length);
+  //   } else {
+  //     setSelectedAddressIndex(index);
+  //   }
+  // };
 
   const displayEntry = (index: number) => {
     if (
@@ -171,26 +177,19 @@ export const useAddressBook = () => {
     return ManagerMS.displayAddressInfo(addressBookSetting[index]);
   };
 
-  const assignStateMachineToAddress = (stateMachineID: string, addressIndex: number) => {
-    setStateMachineAddresses((oldValue) => {
-      const newValue = new Map(oldValue);
-      newValue.set(stateMachineID, addressIndex);
-      return newValue;
-    });
-  };
   return {
     addressBookSetting,
     selectedAddress,
     selectedAddressIndex,
-    setSelectedAddress,
+    //setSelectedAddress,
     onAdd,
     onRemove,
     onEdit,
     onSwapEntries,
     getID,
     getIndex,
+    getEntryById,
     displayEntry,
-    stateMachineAddresses,
-    assignStateMachineToAddress,
+    idCounter, // TODO: костыль!
   };
 };

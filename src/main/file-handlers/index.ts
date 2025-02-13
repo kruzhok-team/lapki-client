@@ -9,6 +9,8 @@ import {
   searchPlatforms,
   handleOpenPlatformFile,
   handleGetFileMetadata,
+  handleFileSelect,
+  handleFileRead,
 } from './handlers';
 
 /**
@@ -26,6 +28,8 @@ const handlers = {
   getPlatforms: searchPlatforms,
   openPlatformFile: handleOpenPlatformFile,
   getMetadata: handleGetFileMetadata,
+  selectFile: handleFileSelect,
+  readFile: handleFileRead,
 };
 
 /**

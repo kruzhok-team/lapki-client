@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import { Checkbox, Modal } from './UI';
+import { Checkbox, Modal } from '../../UI';
 
 interface MsGetAddressModalProps {
   isOpen: boolean;

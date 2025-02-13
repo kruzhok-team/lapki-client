@@ -15,7 +15,7 @@ interface AddressBookModalProps {
   addressBookSetting: AddressData[] | null;
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (address: string) => void;
+  onSubmit: (entryId: number) => void;
   onRemove: (index: number) => void;
   onSwapEntries: (index1: number, index2: number) => void;
   onAdd: (data: AddressData) => void;
@@ -46,6 +46,7 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
   const [selectedEntry, setSelectedEntry] = useState<number | undefined>(undefined);
   // индекс записи для переноса при начале drag
   const [dragIndex, setDragIndex] = useState<number | undefined>(undefined);
+
   /**
    * замена двух записей при drag&drop
    * @param index - индекс второй записи, при drop, первая запись берётся из {@link dragIndex}
@@ -58,6 +59,7 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
     onSwapEntries(dragIndex, index);
     setDragIndex(undefined);
   };
+
   /**
    * Открытие модального окна для редактирования существующей записи в адресной книге
    * @param data данные, которые нужно отредактированть
@@ -66,6 +68,7 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
     addressEntryEditForm.reset(data);
     openAddressEnrtyEdit();
   };
+
   /**
    * Обновление адресной книги после редактирования
    */
@@ -73,24 +76,32 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
     if (selectedEntry === undefined) return;
     onEdit(data, selectedEntry);
   };
+
   const addressEntryAddSubmitHandle = (data: AddressData) => {
     addressEntryAddForm.reset();
     onAdd(data);
   };
+
   const handleEdit = (data: AddressData, index: number) => {
     setSelectedEntry(index);
     addressEnrtyEdit(data);
   };
+
   const handleRemove = () => {
     if (selectedEntry === undefined) return;
     onRemove(selectedEntry);
   };
+
   const { handleSubmit: hookHandleSubmit } = useForm();
+
   const handleSubmit = hookHandleSubmit(() => {
     if (selectedEntry === undefined || addressBookSetting === null) return;
-    onSubmit(addressBookSetting[selectedEntry].address);
-    onClose();
+    const ID = getID(selectedEntry);
+    if (ID !== null) {
+      onSubmit(ID);
+    }
   });
+
   return (
     <div>
       <Modal
@@ -99,7 +110,7 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
         title="Адресная книга"
         onSubmit={handleSubmit}
         submitDisabled={selectedEntry === undefined}
-        submitLabel="Выбрать"
+        submitLabel="Добавить в таблицу прошивок"
       >
         <div className="flex gap-2 pl-4">
           <div className="flex h-60 w-full flex-col overflow-y-auto break-words rounded border border-border-primary bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
@@ -116,20 +127,24 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
                 onEdit={() => undefined}
                 onDragStart={() => undefined}
                 onDrop={() => undefined}
-              ></AddressBookRow>
+              />
             )}
-            {addressBookSetting?.map((field, index) => (
-              <div key={getID(index)}>
-                <AddressBookRow
-                  isSelected={index === selectedEntry}
-                  data={field}
-                  onSelect={() => setSelectedEntry(index)}
-                  onEdit={() => handleEdit(field, index)}
-                  onDragStart={() => setDragIndex(index)}
-                  onDrop={() => handleSwapEntries(index)}
-                ></AddressBookRow>
-              </div>
-            ))}
+            {addressBookSetting?.map((field, index) => {
+              const ID = getID(index);
+              if (ID === null) return;
+              return (
+                <div key={getID(index)}>
+                  <AddressBookRow
+                    isSelected={index === selectedEntry}
+                    data={field}
+                    onSelect={() => setSelectedEntry(index)}
+                    onEdit={() => handleEdit(field, index)}
+                    onDragStart={() => setDragIndex(index)}
+                    onDrop={() => handleSwapEntries(index)}
+                  />
+                </div>
+              );
+            })}
           </div>
           <div className="flex flex-col gap-2">
             <button
@@ -158,7 +173,7 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
         onClose={closeAddressEnrtyEdit}
         onSubmit={addressEntryEditSubmitHandle}
         submitLabel="Сохранить"
-      ></AddressEntryEditModal>
+      />
       <AddressEntryEditModal
         addressBookSetting={addressBookSetting}
         form={addressEntryAddForm}
@@ -166,7 +181,7 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
         onClose={closeAddressEnrtyAdd}
         onSubmit={addressEntryAddSubmitHandle}
         submitLabel="Добавить"
-      ></AddressEntryEditModal>
+      />
     </div>
   );
 };

@@ -202,7 +202,7 @@ export class Flasher extends ClientWS {
     return null;
   }
 
-  static setBinary(binaries: Array<Binary>, device: Device) {
+  static setBinaryFromCompiler(binaries: Array<Binary>, device: Device) {
     const extracted = this.extractBinaries(binaries, device);
     if (extracted === null) {
       throw new Error(
@@ -212,7 +212,11 @@ export class Flasher extends ClientWS {
     Flasher.binary = extracted;
   }
 
-  static async setFile() {
+  static setBinary(binary: Blob) {
+    Flasher.binary = binary;
+  }
+
+  static async openAndSetFile() {
     /* 
     openData[0] - удалось ли открыть и прочитать файл
     openData[1] путь к файлу
@@ -269,7 +273,7 @@ export class Flasher extends ClientWS {
     serialMonitorDevice: Device | undefined = undefined,
     serialConnectionStatus: string = ''
   ): void {
-    this.setBinary(binaries, device);
+    this.setBinaryFromCompiler(binaries, device);
     this.flash(device, serialMonitorDevice, serialConnectionStatus);
   }
 
@@ -589,23 +593,25 @@ export class Flasher extends ClientWS {
           const pingResult = response.payload as DeviceCommentCode;
           switch (pingResult.code) {
             case 0:
-              ManagerMS.addLog('Получен ответ устройства на пинг');
+              ManagerMS.finishOperation('Получен ответ устройства на пинг');
               break;
             case 1:
-              ManagerMS.addLog('Не удалось отправить пинг, так как устройство не подключено.');
+              ManagerMS.finishOperation(
+                'Не удалось отправить пинг, так как устройство не подключено.'
+              );
               break;
             case 2: {
               const errorText = pingResult.comment;
               const errorLog = 'Возникла ошибка при попытке отправить пинг';
               if (errorText != '') {
-                ManagerMS.addLog(`${errorLog}. Текст ошибки ${errorText}`);
+                ManagerMS.finishOperation(`${errorLog}. Текст ошибки ${errorText}`);
               } else {
-                ManagerMS.addLog(`${errorLog}.`);
+                ManagerMS.finishOperation(`${errorLog}.`);
               }
               break;
             }
             case 3:
-              ManagerMS.addLog(
+              ManagerMS.finishOperation(
                 'Не удалось отправить пинг, так как переданное устройство не является МС-ТЮК.'
               );
               break;
@@ -614,9 +620,9 @@ export class Flasher extends ClientWS {
               const errorLog =
                 'Не удалось отправить пинг на устройство из-за ошибки обработки JSON';
               if (errorText != '') {
-                ManagerMS.addLog(`${errorLog}. Текст ошибки: ${errorText}`);
+                ManagerMS.finishOperation(`${errorLog}. Текст ошибки: ${errorText}`);
               } else {
-                ManagerMS.addLog(`${errorLog}.`);
+                ManagerMS.finishOperation(`${errorLog}.`);
               }
               break;
             }
@@ -629,10 +635,10 @@ export class Flasher extends ClientWS {
           case 0:
             ManagerMS.addLog(`Получен адрес устройства: ${getAddressStatus.comment}`);
             ManagerMS.setAddress(getAddressStatus.comment);
+            //(Roundabout1) TODO: ManagerMS.getMetaData(getAddressStatus.deviceID, getAddressStatus.comment);
             break;
           case 1:
             ManagerMS.addLog('Не удалось получить адрес устройства, так как оно не подключено.');
-            ManagerMS.setAddress('');
             break;
           case 2: {
             const errorText = getAddressStatus.comment;
@@ -642,7 +648,6 @@ export class Flasher extends ClientWS {
             } else {
               ManagerMS.addLog(`${errorLog}.`);
             }
-            ManagerMS.setAddress('');
             break;
           }
           case 3:
@@ -667,32 +672,34 @@ export class Flasher extends ClientWS {
         const result = response.payload as DeviceCommentCode;
         switch (result.code) {
           case 0:
-            ManagerMS.addLog(`Выполнена операция сброса.`);
+            ManagerMS.finishOperation(`Выполнена операция перезагрузки.`);
             break;
           case 1:
-            ManagerMS.addLog('Не удалось выполнить сброс устройства, так как оно не подключено.');
+            ManagerMS.finishOperation(
+              'Не удалось выполнить перезагрузка устройства, так как оно не подключено.'
+            );
             break;
           case 2: {
             const errorText = result.comment;
-            const errorLog = 'Возникла ошибка при попытке сбросить устройство';
+            const errorLog = 'Возникла ошибка при попытке перезагрузить устройство';
             if (errorText != '') {
-              ManagerMS.addLog(`${errorLog}. Текст ошибки: ${result.comment}`);
+              ManagerMS.finishOperation(`${errorLog}. Текст ошибки: ${result.comment}`);
             } else {
-              ManagerMS.addLog(`${errorLog}.`);
+              ManagerMS.finishOperation(`${errorLog}.`);
             }
             ManagerMS.setAddress('');
             break;
           }
           case 3:
-            ManagerMS.addLog('Переданное устройство для сброса не является МС-ТЮК.');
+            ManagerMS.finishOperation('Переданное устройство для перезагрузки не является МС-ТЮК.');
             break;
           case 4: {
             const errorText = result.comment;
-            const errorLog = 'Не удалось сбросить устройство из-за ошибки обработки JSON';
+            const errorLog = 'Не удалось перезагрузить устройство из-за ошибки обработки JSON';
             if (errorText != '') {
-              ManagerMS.addLog(`${errorLog}. Текст ошибки: ${errorText}`);
+              ManagerMS.finishOperation(`${errorLog}. Текст ошибки: ${errorText}`);
             } else {
-              ManagerMS.addLog(`${errorLog}.`);
+              ManagerMS.finishOperation(`${errorLog}.`);
             }
             break;
           }
@@ -711,31 +718,33 @@ export class Flasher extends ClientWS {
           case 1: {
             const text = 'Не удалось получить метаданные из-за ошибки';
             if (comment) {
-              ManagerMS.addLog(`${text}. Текст ошибки: ${comment}`);
+              ManagerMS.finishOperation(`${text}. Текст ошибки: ${comment}`);
             } else {
-              ManagerMS.addLog(`${text}.`);
+              ManagerMS.finishOperation(`${text}.`);
             }
             break;
           }
           case 2:
-            ManagerMS.addLog('Не удалось получить метаданные, так как устройство не найдено.');
+            ManagerMS.finishOperation(
+              'Не удалось получить метаданные, так как устройство не найдено.'
+            );
             break;
           case 3:
-            ManagerMS.addLog(
-              'Не удалось получить метаданные, так как запрашиваемое устройство не является МС-ТЮК'
+            ManagerMS.finishOperation(
+              'Не удалось получить метаданные, так как запрашиваемое устройство не является МС-ТЮК.'
             );
             break;
           case 4: {
             const text = 'Не удалось получить метаданные из-за ошибки обработки JSON-сообщения';
             if (comment) {
-              ManagerMS.addLog(`${text}. Текст ошибки: ${comment}`);
+              ManagerMS.finishOperation(`${text}. Текст ошибки: ${comment}`);
             } else {
-              ManagerMS.addLog(`${text}.`);
+              ManagerMS.finishOperation(`${text}.`);
             }
             break;
           }
           default:
-            ManagerMS.addLog(
+            ManagerMS.finishOperation(
               `Не удалось получить метаданные из-за незизвестной ошибки с кодом ${result.code}. ${comment}`
             );
         }

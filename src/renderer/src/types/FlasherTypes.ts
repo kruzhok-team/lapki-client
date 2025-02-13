@@ -244,3 +244,15 @@ export type FlashBacktrackMs = {
   CurPack: number;
   TotalPacks: number;
 };
+
+export enum OperationType {
+  ping,
+  reset,
+  meta,
+}
+
+export type OperationInfo = {
+  type: OperationType;
+  addressInfo: AddressData;
+  deviceId: string;
+};

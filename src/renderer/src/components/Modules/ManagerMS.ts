@@ -4,6 +4,8 @@ import {
   BinariesMsType,
   FlashBacktrackMs,
   MetaDataID,
+  OperationInfo,
+  OperationType,
 } from '@renderer/types/FlasherTypes';
 
 import { MSDevice } from './Device';
@@ -29,6 +31,8 @@ export class ManagerMS {
   private static lastBacktrackLogIndex: number | null;
   private static lastBacktrackStage: string = '';
   private static logSize: number = 0;
+
+  private static operationQueue: OperationInfo[] = [];
 
   static bindReact(
     setDevice: (currentDevice: MSDevice | undefined) => void,
@@ -62,7 +66,7 @@ export class ManagerMS {
       verification: binariesInfo.verification,
     });
   }
-  static ping(deviceID: string, address: string) {
+  private static ping(deviceID: string, address: string) {
     Flasher.send('ms-ping', {
       deviceID: deviceID,
       address: address,
@@ -102,13 +106,13 @@ export class ManagerMS {
   static flashingEditLog(log: string, index: number) {
     this.editLog(this.flashingAddressLogString(log), index);
   }
-  static reset(deviceID: string, address: string) {
+  private static reset(deviceID: string, address: string) {
     Flasher.send('ms-reset', {
       deviceID: deviceID,
       address: address,
     });
   }
-  static getMetaData(deviceID: string, address: string) {
+  private static getMetaData(deviceID: string, address: string) {
     Flasher.send('ms-get-meta-data', {
       deviceID: deviceID,
       address: address,
@@ -149,9 +153,9 @@ export class ManagerMS {
     }
   }
   static displayAddressInfo(addressInfo: AddressData) {
-    const name = addressInfo.name === '' ? addressInfo.address : addressInfo.name;
-    const type = addressInfo.type ? ` (${addressInfo.type})` : '';
-    return name + type;
+    const name = addressInfo.name ? addressInfo.name : addressInfo.address;
+    const type = addressInfo.type ? addressInfo.type : 'Неизвестный тип';
+    return `${name} (${type})`;
   }
   static clearLog() {
     this.logSize = 0;
@@ -161,8 +165,53 @@ export class ManagerMS {
   }
   static clearQueue() {
     this.flashQueue = [];
+    this.operationQueue = [];
   }
   static getFlashingAddress() {
     return this.flashingAddress;
+  }
+
+  static addOperation(op: OperationInfo) {
+    this.operationQueue.push(op);
+    if (this.operationQueue.length === 1) {
+      this.nextOperation();
+    }
+  }
+
+  static nextOperation() {
+    if (this.operationQueue.length === 0) return;
+    const op = this.operationQueue[0];
+    if (op === undefined) return;
+    switch (op.type) {
+      case OperationType.meta:
+        this.getMetaData(op.deviceId, op.addressInfo.address);
+        this.addLog(
+          `${this.displayAddressInfo(
+            op.addressInfo
+          )}: Отправлен запрос на получение метаданных устройства.`
+        );
+        break;
+      case OperationType.ping:
+        this.ping(op.deviceId, op.addressInfo.address);
+        this.addLog(`${this.displayAddressInfo(op.addressInfo)}: Отправлен пинг.`);
+        break;
+      case OperationType.reset:
+        this.reset(op.deviceId, op.addressInfo.address);
+        this.addLog(
+          `${this.displayAddressInfo(op.addressInfo)}: Отправлен запрос на перезагрузку платы.`
+        );
+        break;
+    }
+  }
+
+  static finishOperation(log: string) {
+    const op = this.operationQueue.shift();
+    if (op === undefined) {
+      this.addLog(`Неизвестное устройство: ${log}`);
+      return undefined;
+    }
+    this.addLog(`${this.displayAddressInfo(op.addressInfo)}: ${log}`);
+    this.nextOperation();
+    return op;
   }
 }

@@ -8,7 +8,7 @@ import { useModal } from '@renderer/hooks/useModal';
 import { useSettings } from '@renderer/hooks/useSettings';
 import { useFlasher } from '@renderer/store/useFlasher';
 import { useManagerMS } from '@renderer/store/useManagerMS';
-import { FirmwareTargetType, FlashTableItem } from '@renderer/types/FlasherTypes';
+import { FirmwareTargetType, FlashTableItem, OperationType } from '@renderer/types/FlasherTypes';
 
 import { AddressBookModal } from './AddressBook';
 import { FlasherTable } from './FlasherTable';
@@ -89,14 +89,17 @@ export const FlasherTab: React.FC = () => {
 - cybergene REF_HW: ${meta.RefCgHw}
 - cybergene REF_PROTOCOL: ${meta.RefCgProtocol}
     `;
-    if (selectedAddressIndex === null) {
-      ManagerMS.addLog(`Получены метаданные, но не удаётся найти адрес устройства:${metaStr}`);
+    const op = ManagerMS.finishOperation(`Получены метаданные: ${metaStr}`);
+    if (op === undefined) {
       return;
     }
-    ManagerMS.addLog(
-      `Получены метаданные для устройства ${displayEntry(selectedAddressIndex)}: ${metaStr}`
-    );
-    const entry = addressBookSetting[selectedAddressIndex];
+    const index = addressBookSetting.findIndex((v) => {
+      return v.address === op.addressInfo.address;
+    });
+    if (index === -1) {
+      return;
+    }
+    const entry = addressBookSetting[index];
     onEdit(
       {
         name: entry.name,
@@ -113,7 +116,7 @@ export const FlasherTab: React.FC = () => {
           RefCgProtocol: meta.RefCgProtocol,
         },
       },
-      selectedAddressIndex
+      index
     );
   }, [meta]);
 
@@ -133,21 +136,24 @@ export const FlasherTab: React.FC = () => {
   const handleOpenAddressBook = () => {
     openAddressBook();
   };
-  const handlePing = () => {
+
+  const handleOperation = (op: OperationType) => {
     if (!device) return;
-    ManagerMS.ping(device.deviceID, selectedAddress());
-    ManagerMS.addLog('Отправлен пинг на устройство.');
+    for (const item of flashTableData) {
+      if (item.isSelected) {
+        const addr = getEntryById(item.targetId);
+        if (addr === undefined) {
+          continue;
+        }
+        ManagerMS.addOperation({
+          addressInfo: addr,
+          deviceId: device.deviceID,
+          type: op,
+        });
+      }
+    }
   };
-  const handleReset = () => {
-    if (!device) return;
-    ManagerMS.reset(device.deviceID, selectedAddress());
-    ManagerMS.addLog('Отправлен запрос на сброс устройства.');
-  };
-  const handleGetMetaData = () => {
-    if (!device) return;
-    ManagerMS.getMetaData(device.deviceID, selectedAddress());
-    ManagerMS.addLog('Отправлен запрос на метаданные устройства.');
-  };
+
   const isFlashDisabled = () => {
     if (flashTableData.length === 0) return true;
     return !flashTableData.every((item) => {
@@ -267,25 +273,13 @@ export const FlasherTab: React.FC = () => {
           />
           Верификация
         </div>
-        <button
-          className="btn-primary mr-4"
-          onClick={handlePing}
-          disabled={selectedAddress() === ''}
-        >
+        <button className="btn-primary mr-4" onClick={() => handleOperation(OperationType.ping)}>
           Пинг
         </button>
-        <button
-          className="btn-primary mr-4"
-          onClick={handleReset}
-          disabled={selectedAddress() === ''}
-        >
-          Сброс
+        <button className="btn-primary mr-4" onClick={() => handleOperation(OperationType.reset)}>
+          Перезагрузить
         </button>
-        <button
-          className="btn-primary mr-4"
-          onClick={handleGetMetaData}
-          disabled={selectedAddress() === ''}
-        >
+        <button className="btn-primary mr-4" onClick={() => handleOperation(OperationType.meta)}>
           Получить метаданные
         </button>
       </div>

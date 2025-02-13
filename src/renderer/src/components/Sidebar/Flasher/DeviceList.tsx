@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
-import { ReactComponent as Setting } from '@renderer/assets/icons/settings.svg';
 import { ReactComponent as Update } from '@renderer/assets/icons/update.svg';
 import { ErrorModal, ErrorModalData } from '@renderer/components/ErrorModal';
 import { Flasher } from '@renderer/components/Modules/Flasher';
@@ -29,15 +28,10 @@ import { Select } from '../../UI/Select';
 
 export interface FlasherProps {
   compilerData: CompilerResult | undefined;
-  openLoaderSettings: () => void;
   openAvrdudeGuideModal: () => void;
 }
 
-export const Loader: React.FC<FlasherProps> = ({
-  compilerData,
-  openLoaderSettings,
-  openAvrdudeGuideModal,
-}) => {
+export const Loader: React.FC<FlasherProps> = ({ compilerData, openAvrdudeGuideModal }) => {
   const modelController = useModelContext();
   const stateMachinesId = modelController.model.useData('', 'elements.stateMachinesId') as {
     [ID: string]: StateMachine;
@@ -558,13 +552,6 @@ export const Loader: React.FC<FlasherProps> = ({
           >
             <Update width="1.5rem" height="1.5rem" />
             {display()}
-          </button>
-          <button
-            className="btn-primary px-2"
-            onClick={openLoaderSettings}
-            disabled={connectionStatus == ClientStatus.CONNECTING || isFlashing}
-          >
-            <Setting width="1.5rem" height="1.5rem" />
           </button>
         </div>
         <div className="mb-2 h-40 overflow-y-auto break-words rounded bg-bg-primary p-2">

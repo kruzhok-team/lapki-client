@@ -331,7 +331,16 @@ export const FlasherTab: React.FC = () => {
         getID={getID}
         onAdd={onAdd}
         onEdit={onEdit}
-        onRemove={onRemove}
+        onRemove={(index) => {
+          onRemove(index);
+          const id = getID(index);
+          if (id === null) return;
+          const tableIndex = flashTableData.findIndex((v) => {
+            v.targetId === id;
+          });
+          if (tableIndex === -1) return;
+          setFlashTableData(flashTableData.toSpliced(tableIndex, 1));
+        }}
         onSwapEntries={onSwapEntries}
       />
       <MsGetAddressModal

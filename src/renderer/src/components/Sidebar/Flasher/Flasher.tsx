@@ -18,7 +18,7 @@ import { ManagerMS } from '../../Modules/ManagerMS';
 import { Switch } from '../../UI';
 
 export const FlasherTab: React.FC = () => {
-  const { device, log, address: serverAddress, meta } = useManagerMS();
+  const { device, log, address: serverAddress, meta, compilerData } = useManagerMS();
   const {
     addressBookSetting,
     selectedAddress,
@@ -149,78 +149,82 @@ export const FlasherTab: React.FC = () => {
     ManagerMS.addLog('Отправлен запрос на метаданные устройства.');
   };
   const isFlashDisabled = () => {
-    return false;
-    // if (selectedFirmwares.length === 0) return true;
-    // return !selectedFirmwares.every((item) => {
-    //   if (!item.isFile) {
-    //     if (!compilerData) return false;
-    //     const data = compilerData.state_machines[item.target];
-    //     return data && data.binary && data.binary.length !== 0;
-    //   }
-    //   return true;
-    // });
+    if (flashTableData.length === 0) return true;
+    return !flashTableData.every((item) => {
+      if (item.source === undefined || !item.isSelected) return false;
+      if (!item.isFile) {
+        if (!compilerData) return false;
+        const data = compilerData.state_machines[item.source];
+        return data && data.binary && data.binary.length !== 0;
+      }
+      return true;
+    });
   };
 
   const handleSendBin = async () => {
-    // if (!addressBookSetting) {
-    //   ManagerMS.addLog('Ошибка! Адресная книга не загрузилась!');
-    //   return;
-    // }
-    // if (!device) {
-    //   ManagerMS.addLog('Прошивку начать нельзя! Выберите устройство!');
-    //   return;
-    // }
-    // for (const item of selectedFirmwares) {
-    //   const addressIndex = stateMachineAddresses.get(item.target);
-    //   // значит адрес или машина состояний были удалены
-    //   if (addressIndex === undefined) {
-    //     ManagerMS.addLog(
-    //       `Ошибка! Не удаётся найти адрес для ${
-    //         item.isFile ? 'файла с прошивкой' : 'машины состояний'
-    //       } (${item.target}). Возможно Вы удалили адрес или ${
-    //         item.isFile ? 'файл с прошивкой' : 'машину состояний'
-    //       }.`
-    //     );
-    //     continue;
-    //   }
-    //   if (item.isFile) {
-    //     const [binData, errorMessage] = await window.api.fileHandlers.readFile(item.target);
-    //     if (errorMessage !== null) {
-    //       ManagerMS.addLog(
-    //         `Ошибка! Не удалось извлечь данные из файла ${item.target}. Текст ошибки: ${errorMessage}`
-    //       );
-    //       continue;
-    //     }
-    //     if (binData !== null) {
-    //       ManagerMS.binAdd({
-    //         addressInfo: addressBookSetting[addressIndex],
-    //         device: device,
-    //         verification: managerMSSetting ? managerMSSetting.verification : false,
-    //         binaries: new Blob([binData]),
-    //         isFile: true,
-    //       });
-    //     }
-    //   } else {
-    //     if (!compilerData) continue;
-    //     const smData = compilerData.state_machines[item.target];
-    //     if (!smData || !smData.binary || smData.binary.length === 0) {
-    //       ManagerMS.addLog(
-    //         `Ошибка! Загрузка по адресу ${displayEntry(
-    //           addressIndex
-    //         )} невозможна! Отсутствуют бинарные данные для машины состояния ${item.target}.`
-    //       );
-    //       continue;
-    //     }
-    //     ManagerMS.binAdd({
-    //       addressInfo: addressBookSetting[addressIndex],
-    //       device: device,
-    //       verification: managerMSSetting ? managerMSSetting.verification : false,
-    //       binaries: smData.binary,
-    //       isFile: false,
-    //     });
-    //   }
-    // }
-    // ManagerMS.binStart();
+    if (!addressBookSetting) {
+      ManagerMS.addLog('Ошибка! Адресная книга не загрузилась!');
+      return;
+    }
+    if (!device) {
+      ManagerMS.addLog('Прошивку начать нельзя! Выберите устройство!');
+      return;
+    }
+    for (const item of flashTableData) {
+      if (!item.isSelected) continue;
+      const entry = getEntryById(item.targetId);
+      // значит адрес или машина состояний были удалены
+      if (entry === undefined) {
+        ManagerMS.addLog(
+          `Ошибка! Не удаётся найти адрес для ${
+            item.isFile ? 'файла с прошивкой' : 'машины состояний'
+          } (${item.source}). Возможно Вы удалили адрес или ${
+            item.isFile ? 'файл с прошивкой' : 'машину состояний'
+          }.`
+        );
+        continue;
+      }
+      if (item.isFile) {
+        const [binData, errorMessage] = await window.api.fileHandlers.readFile(item.source!);
+        if (errorMessage !== null) {
+          ManagerMS.addLog(
+            `Ошибка! Не удалось извлечь данные из файла ${item.source}. Текст ошибки: ${errorMessage}`
+          );
+          continue;
+        }
+        if (binData !== null) {
+          ManagerMS.binAdd({
+            addressInfo: addressBookSetting[entry.address],
+            device: device,
+            verification: managerMSSetting ? managerMSSetting.verification : false,
+            binaries: new Blob([binData]),
+            isFile: true,
+          });
+        }
+      } else {
+        if (!compilerData) continue;
+        const smData = compilerData.state_machines[item.source!];
+        if (!smData || !smData.binary || smData.binary.length === 0) {
+          // ManagerMS.addLog(
+          //   `Ошибка! Загрузка по адресу ${displayEntry(
+          //     addressIndex
+          //   )} невозможна! Отсутствуют бинарные данные для машины состояния ${item.target}.`
+          // );
+          ManagerMS.addLog(
+            `Ошибка! Загрузка невозможна! Отсутствуют бинарные данные для машины состояния ${item.source}.`
+          );
+          continue;
+        }
+        ManagerMS.binAdd({
+          addressInfo: entry,
+          device: device,
+          verification: managerMSSetting ? managerMSSetting.verification : false,
+          binaries: smData.binary,
+          isFile: false,
+        });
+      }
+    }
+    ManagerMS.binStart();
   };
   if (!managerMSSetting) {
     return null;

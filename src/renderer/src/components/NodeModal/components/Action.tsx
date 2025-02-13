@@ -41,7 +41,7 @@ export const Action: React.FC<ActionProps> = (props) => {
     if (Array.isArray(param)) return '[...]';
     if (typeof param === 'string') return param;
 
-    return `${param.component}${getActionDelimeter(
+    return `${components[param.component].name ?? param.component}${getActionDelimeter(
       platform.data,
       components[param.component].type
     )}${param.method}`;

@@ -114,11 +114,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         setCompilerStatus={setCompilerStatus}
         openImportError={openImportError}
       />,
-      <Loader
-        compilerData={compilerData}
-        openLoaderSettings={openLoaderSettings}
-        openAvrdudeGuideModal={openAvrdudeGuideModal}
-      />,
+      <Loader compilerData={compilerData} openAvrdudeGuideModal={openAvrdudeGuideModal} />,
       <History />,
       undefined,
       <Setting

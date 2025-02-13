@@ -98,15 +98,18 @@ export async function handleGetPlatforms(directory: string): HandleGetPlatformsR
           resolve([false, err.message]);
         });
     } else {
-      resolve([false, `${directory} doesn't exists!`]);
-      console.log(`${directory} doesn't exists!`);
+      resolve([false, `${directory} doesn't exist`]);
+      console.log(`${directory} doesn't exist`);
     }
   });
 }
 
 export async function searchPlatforms(): SearchPlatformsReturn {
   const basePath = path.join(__dirname, '../../resources').replace('app.asar', 'app.asar.unpacked');
-  const DEFAULT_PATH = [basePath + '/platform', app.getPath('userData') + '/platform'];
+  const DEFAULT_PATH = [
+    path.join(basePath, 'platform'),
+    path.join(app.getPath('userData'), 'platform'),
+  ];
 
   return new Promise(async (resolve) => {
     const platformsPaths = new Array<string>();

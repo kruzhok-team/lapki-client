@@ -17,7 +17,7 @@ import { FlasherTable } from './FlasherTable';
 import { MsGetAddressModal } from './MsGetAddressModal';
 
 import { ManagerMS } from '../../Modules/ManagerMS';
-import { Switch } from '../../UI';
+import { Switch, WithHint } from '../../UI';
 
 export const FlasherTab: React.FC = () => {
   const { device, log, address: serverAddress, meta, compilerData } = useManagerMS();
@@ -231,9 +231,21 @@ export const FlasherTab: React.FC = () => {
     }
     ManagerMS.binStart();
   };
+
+  const handleRemoveDevs = () => {
+    const newTable: FlashTableItem[] = [];
+    for (const item of flashTableData) {
+      if (!item.isSelected) {
+        newTable.push(item);
+      }
+    }
+    setFlashTableData(newTable);
+  };
+
   if (!managerMSSetting) {
     return null;
   }
+
   return (
     <section className="mr-3 flex h-full flex-col bg-bg-secondary">
       <label className="m-2">Статус: {connectionStatus}</label>
@@ -282,6 +294,13 @@ export const FlasherTab: React.FC = () => {
           Получить метаданные
         </button>
       </div>
+      <WithHint hint={'Убрать отмеченные платы из таблицы.'}>
+        {(hintProps) => (
+          <button {...hintProps} className="btn-error m-2 max-w-[10vw]" onClick={handleRemoveDevs}>
+            Убрать платы
+          </button>
+        )}
+      </WithHint>
       <div className="m-2">Журнал действий</div>
       <div
         className="mx-2 h-72 overflow-y-auto whitespace-break-spaces bg-bg-primary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"

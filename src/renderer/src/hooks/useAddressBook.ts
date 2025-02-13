@@ -10,10 +10,6 @@ export const useAddressBook = () => {
 
   const [selectedAddressIndex, setSelectedAddressIndex] = useState<number | null>(null);
 
-  const [stateMachineAddresses, setStateMachineAddresses] = useState<Map<string, number>>(
-    new Map()
-  );
-
   const [indexToId, setIndexToId] = useState<number[]>([]);
   const [idToIndex, setIdToIndex] = useState<Map<number, number>>(new Map());
   const [idCounter, setIdCounter] = useState<number>(0);
@@ -86,15 +82,6 @@ export const useAddressBook = () => {
     });
     setIndexToId(indexToId.toSpliced(index, 1));
     setAddressBookSetting(addressBookSetting.toSpliced(index, 1));
-    setStateMachineAddresses((oldValue) => {
-      const newValue = new Map(oldValue);
-      oldValue.forEach((idx, smId) => {
-        if (idx === index) {
-          newValue.delete(smId);
-        }
-      });
-      return newValue;
-    });
   };
   const onSwapEntries = (index1: number, index2: number) => {
     if (addressBookSetting === null) {
@@ -123,14 +110,6 @@ export const useAddressBook = () => {
       }
       return v;
     });
-    const newStateMachineIds = new Map(stateMachineAddresses);
-    stateMachineAddresses.forEach((index, smId) => {
-      if (index === index1) {
-        newStateMachineIds.set(smId, index2);
-      } else if (index === index2) {
-        newStateMachineIds.set(smId, index1);
-      }
-    });
     if (index1 === selectedAddressIndex) {
       setSelectedAddressIndex(index2);
     } else if (index2 === selectedAddressIndex) {
@@ -139,7 +118,6 @@ export const useAddressBook = () => {
     setAddressBookSetting(newBook);
     setIdToIndex(newIdToIndex);
     setIndexToId(newIndexToId);
-    setStateMachineAddresses(newStateMachineIds);
   };
 
   const selectedAddress = () => {
@@ -177,13 +155,6 @@ export const useAddressBook = () => {
     return ManagerMS.displayAddressInfo(addressBookSetting[index]);
   };
 
-  const assignStateMachineToAddress = (stateMachineID: string, addressIndex: number) => {
-    setStateMachineAddresses((oldValue) => {
-      const newValue = new Map(oldValue);
-      newValue.set(stateMachineID, addressIndex);
-      return newValue;
-    });
-  };
   return {
     addressBookSetting,
     selectedAddress,
@@ -196,7 +167,5 @@ export const useAddressBook = () => {
     getID,
     getIndex,
     displayEntry,
-    stateMachineAddresses,
-    assignStateMachineToAddress,
   };
 };

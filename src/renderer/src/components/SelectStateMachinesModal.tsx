@@ -1,6 +1,4 @@
-import { useEffect, useLayoutEffect, useState } from 'react';
-
-import { twMerge } from 'tailwind-merge';
+import { useLayoutEffect, useState } from 'react';
 
 import { StateMachine } from '@renderer/types/diagram';
 import { getDefaultSmSelection } from '@renderer/utils';
@@ -33,7 +31,7 @@ export const SelectStateMachinesModal: React.FC<SelectStateMachinesModalProps> =
     setSelectedStateMachines(getDefaultSmSelection(stateMachines, selectedStateMachines));
   };
 
-  const handleCheckedChange = (e: React.MouseEvent, id: string) => {
+  const handleCheckedChange = (id: string) => {
     setSelectedStateMachines((selectedStateMachines) => {
       const isSelected = selectedStateMachines[id];
       if (isSelected === undefined) return selectedStateMachines;
@@ -48,7 +46,7 @@ export const SelectStateMachinesModal: React.FC<SelectStateMachinesModalProps> =
     }
   };
 
-  const unselectAll = (e: React.MouseEvent) => {
+  const unselectAll = () => {
     setIsAllSelected(false);
     changeValues(false);
   };
@@ -102,8 +100,8 @@ export const SelectStateMachinesModal: React.FC<SelectStateMachinesModalProps> =
               >
                 <div className="flex flex-row ">
                   <Checkbox
-                    onClick={(e) => {
-                      handleCheckedChange(e, id);
+                    onClick={() => {
+                      handleCheckedChange(id);
                     }}
                     checked={isSelected}
                   />

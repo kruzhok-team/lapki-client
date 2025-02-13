@@ -100,7 +100,6 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
     if (ID !== null) {
       onSubmit(ID);
     }
-    onClose();
   });
 
   return (

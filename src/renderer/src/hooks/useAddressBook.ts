@@ -138,28 +138,28 @@ export const useAddressBook = () => {
     return addressBookSetting[selectedAddressIndex].address;
   };
 
-  const addToAddressBook = (address: string) => {
-    if (addressBookSetting === null) return;
-    const index = addressBookSetting.findIndex((v) => {
-      return v.address === address;
-    });
-    if (index === -1) {
-      onAdd({ name: '', address: address, type: '', meta: undefined });
-    }
-  };
+  // const addToAddressBook = (address: string) => {
+  //   if (addressBookSetting === null) return;
+  //   const index = addressBookSetting.findIndex((v) => {
+  //     return v.address === address;
+  //   });
+  //   if (index === -1) {
+  //     onAdd({ name: '', address: address, type: '', meta: undefined });
+  //   }
+  // };
 
-  const setSelectedAddress = (address: string) => {
-    if (addressBookSetting === null) return;
-    const index = addressBookSetting.findIndex((v) => {
-      return v.address === address;
-    });
-    if (index === -1) {
-      onAdd({ name: '', address: address, type: '', meta: undefined });
-      setSelectedAddressIndex(addressBookSetting.length);
-    } else {
-      setSelectedAddressIndex(index);
-    }
-  };
+  // const setSelectedAddress = (address: string) => {
+  //   if (addressBookSetting === null) return;
+  //   const index = addressBookSetting.findIndex((v) => {
+  //     return v.address === address;
+  //   });
+  //   if (index === -1) {
+  //     onAdd({ name: '', address: address, type: '', meta: undefined });
+  //     setSelectedAddressIndex(addressBookSetting.length);
+  //   } else {
+  //     setSelectedAddressIndex(index);
+  //   }
+  // };
 
   const displayEntry = (index: number) => {
     if (
@@ -176,7 +176,7 @@ export const useAddressBook = () => {
     addressBookSetting,
     selectedAddress,
     selectedAddressIndex,
-    setSelectedAddress,
+    //setSelectedAddress,
     onAdd,
     onRemove,
     onEdit,
@@ -185,7 +185,6 @@ export const useAddressBook = () => {
     getIndex,
     getEntryById,
     displayEntry,
-    addToAddressBook,
     idCounter, // TODO: костыль!
   };
 };

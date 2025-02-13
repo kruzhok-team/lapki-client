@@ -83,7 +83,7 @@ export const SelectStateMachinesModal: React.FC<SelectStateMachinesModalProps> =
     >
       <div className="flex">
         <div className="ml-10 mr-10 flex h-96 w-full flex-col overflow-y-auto break-words rounded border border-border-primary bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
-          <div className="event flex cursor-pointer flex-col p-3 pb-0 text-center align-middle hover:bg-bg-hover">
+          <div className="event flex flex-col p-3 pb-0 text-center align-middle hover:bg-bg-hover">
             <div className="flex flex-row">
               <Checkbox onClick={isAllSelected ? unselectAll : selectAll} checked={isAllSelected} />
               <span className="ml-2">Выбрать все</span>
@@ -96,7 +96,7 @@ export const SelectStateMachinesModal: React.FC<SelectStateMachinesModalProps> =
             return (
               <div
                 key={id}
-                className="event flex cursor-pointer flex-col p-3 pb-0 text-center align-middle hover:bg-bg-hover"
+                className="event flex flex-col p-3 pb-0 text-center align-middle hover:bg-bg-hover"
               >
                 <div className="flex flex-row ">
                   <Checkbox

@@ -675,16 +675,16 @@ export class Flasher extends ClientWS {
         const result = response.payload as DeviceCommentCode;
         switch (result.code) {
           case 0:
-            ManagerMS.finishOperation(`Выполнена операция сброса.`);
+            ManagerMS.finishOperation(`Выполнена операция перезагрузки.`);
             break;
           case 1:
             ManagerMS.finishOperation(
-              'Не удалось выполнить сброс устройства, так как оно не подключено.'
+              'Не удалось выполнить перезагрузка устройства, так как оно не подключено.'
             );
             break;
           case 2: {
             const errorText = result.comment;
-            const errorLog = 'Возникла ошибка при попытке сбросить устройство';
+            const errorLog = 'Возникла ошибка при попытке перезагрузить устройство';
             if (errorText != '') {
               ManagerMS.finishOperation(`${errorLog}. Текст ошибки: ${result.comment}`);
             } else {
@@ -694,11 +694,11 @@ export class Flasher extends ClientWS {
             break;
           }
           case 3:
-            ManagerMS.finishOperation('Переданное устройство для сброса не является МС-ТЮК.');
+            ManagerMS.finishOperation('Переданное устройство для перезагрузки не является МС-ТЮК.');
             break;
           case 4: {
             const errorText = result.comment;
-            const errorLog = 'Не удалось сбросить устройство из-за ошибки обработки JSON.';
+            const errorLog = 'Не удалось перезагрузить устройство из-за ошибки обработки JSON';
             if (errorText != '') {
               ManagerMS.finishOperation(`${errorLog}. Текст ошибки: ${errorText}`);
             } else {
@@ -719,7 +719,7 @@ export class Flasher extends ClientWS {
         const comment = result.comment;
         switch (result.code) {
           case 1: {
-            const text = 'Не удалось получить метаданные из-за ошибки.';
+            const text = 'Не удалось получить метаданные из-за ошибки';
             if (comment) {
               ManagerMS.finishOperation(`${text}. Текст ошибки: ${comment}`);
             } else {
@@ -738,7 +738,7 @@ export class Flasher extends ClientWS {
             );
             break;
           case 4: {
-            const text = 'Не удалось получить метаданные из-за ошибки обработки JSON-сообщения.';
+            const text = 'Не удалось получить метаданные из-за ошибки обработки JSON-сообщения';
             if (comment) {
               ManagerMS.finishOperation(`${text}. Текст ошибки: ${comment}`);
             } else {

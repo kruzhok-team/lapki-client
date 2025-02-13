@@ -1,9 +1,25 @@
 export * from './MatrixActions';
 import { Point } from '@renderer/lib/types/graphics';
+import { StateMachine } from '@renderer/types/diagram';
 import { ArgType } from '@renderer/types/platform';
+
 export function isString(value: any): value is string {
   return typeof value === 'string';
 }
+
+export const getDefaultSmSelection = (
+  stateMachines: { [id: string]: StateMachine },
+  selectedStateMachines: { [id: string]: boolean }
+) => {
+  const defaultMap: { [id: string]: boolean } = {};
+  Object.keys(stateMachines).map((id) => {
+    if (id === '') return;
+
+    defaultMap[id] = selectedStateMachines[id] === undefined ? true : selectedStateMachines[id];
+  });
+
+  return defaultMap;
+};
 
 export const getVirtualElement = (position: Point) => {
   return {

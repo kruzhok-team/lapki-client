@@ -309,7 +309,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.emit('changeNoteBackgroundColor', args);
   }
 
-  initData(basename: string | null, filename: string, elements: Elements) {
+  initData(basename: string | null, filename: string, elements: Elements, isStale: boolean) {
     this.reset();
     this.model.init(basename, filename, elements);
     this.controllers[''].unwatch();
@@ -320,7 +320,9 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       headCanvas = canvasId;
     }
     this.model.changeHeadControllerId(headCanvas);
-    this.model.makeStale();
+    if (isStale) {
+      this.model.makeStale();
+    }
     this.createSchemeScreenController(elements.stateMachines);
     this.history.clear();
     this.initPlatform();

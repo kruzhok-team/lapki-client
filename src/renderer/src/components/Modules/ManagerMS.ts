@@ -1,3 +1,4 @@
+import { Binary } from '@renderer/types/CompilerTypes';
 import {
   AddressData,
   BinariesMsType,
@@ -46,7 +47,11 @@ export class ManagerMS {
   static binStart() {
     const binariesInfo = this.flashQueue.shift();
     if (!binariesInfo) return;
-    Flasher.setBinary(binariesInfo.binaries, binariesInfo.device);
+    if (binariesInfo.isFile) {
+      Flasher.setBinary(binariesInfo.binaries as Blob);
+    } else {
+      Flasher.setBinaryFromCompiler(binariesInfo.binaries as Array<Binary>, binariesInfo.device);
+    }
     Flasher.flashPreparation(binariesInfo.device);
     this.flashingAddress = binariesInfo.addressInfo;
     ManagerMS.flashingAddressLog('Начат процесс прошивки...');

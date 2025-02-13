@@ -7,7 +7,7 @@ import { Modal } from '@renderer/components/UI';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { State } from '@renderer/lib/drawable';
 import { useModelContext } from '@renderer/store/ModelContext';
-import { Action, Condition as ConditionData, Event, EventData } from '@renderer/types/diagram';
+import { Event, EventData } from '@renderer/types/diagram';
 
 import { Actions, Trigger, Condition } from './components';
 import { useTrigger, useActions, useCondition } from './hooks';
@@ -37,9 +37,9 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
   const modelController = useModelContext();
 
   // Данные формы
-  const trigger = useTrigger(smId, controller, true, event?.trigger as Event | null);
+  const trigger = useTrigger(smId, controller, true, event?.trigger);
   const condition = useCondition(smId, controller, event?.condition);
-  const actions = useActions(smId, controller, (event?.do as Action[] | undefined) ?? null);
+  const actions = useActions(smId, controller, event?.do ?? null);
   const [error, setError] = useState<string | undefined>(undefined);
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,7 +57,7 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
       return;
     }
 
-    if (selectedComponent === 'System') {
+    if (trigger.tabValue === 0 && selectedComponent === 'System') {
       const duplicated = state.data.events.findIndex(
         (val) =>
           (val.trigger as unknown as Event).component === 'System' &&
@@ -126,18 +126,24 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
       return condition.text.trim() || undefined;
     };
 
-    for (const eventIdx in state.data.events) {
-      if (currentEventIndex === Number(eventIdx)) continue;
-      const event = state.data.events[eventIdx];
-      const trigger = event.trigger as Event;
-      const condition = event.condition as ConditionData | undefined;
-      if (trigger.component === selectedComponent && trigger.method === selectedMethod) {
-        const newCondition = getCondition() as ConditionData | undefined;
-        if (isEqual(condition, newCondition)) {
-          setError(
-            `Событие ${selectedComponent}.${selectedMethod} с таким условием уже существует!`
-          );
-          return;
+    if (trigger.tabValue === 0) {
+      for (const eventIdx in state.data.events) {
+        if (currentEventIndex === Number(eventIdx)) continue;
+        const event = state.data.events[eventIdx];
+        const trigger = event.trigger;
+        const condition = event.condition;
+        if (
+          typeof trigger !== 'string' &&
+          trigger.component === selectedComponent &&
+          trigger.method === selectedMethod
+        ) {
+          const newCondition = getCondition();
+          if (isEqual(condition, newCondition)) {
+            setError(
+              `Событие ${selectedComponent}.${selectedMethod} с таким условием уже существует!`
+            );
+            return;
+          }
         }
       }
     }

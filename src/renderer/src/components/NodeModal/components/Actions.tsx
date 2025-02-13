@@ -7,13 +7,15 @@ import { ReactComponent as AddIcon } from '@renderer/assets/icons/add.svg';
 import { ReactComponent as SubtractIcon } from '@renderer/assets/icons/subtract.svg';
 import { ActionsModal } from '@renderer/components';
 import { TabPanel, Tabs } from '@renderer/components/UI';
-import { Action as ActionData, EventData } from '@renderer/types/diagram';
+import { EventData } from '@renderer/types/diagram';
 
 import { Action } from './Action';
 
 import { useActions } from '../hooks';
 
-type ActionsProps = ReturnType<typeof useActions> & { event: EventData | null | undefined };
+type ActionsProps = ReturnType<typeof useActions> & {
+  event: EventData | null | undefined;
+};
 
 /**
  * Блок действия в модалках редактирования нод
@@ -35,6 +37,7 @@ export const Actions: React.FC<ActionsProps> = (props) => {
     getComponentName,
     setActions,
     event,
+    parse,
   } = props;
   const visual = controller.useData('visual');
 
@@ -70,7 +73,8 @@ export const Actions: React.FC<ActionsProps> = (props) => {
   };
 
   useLayoutEffect(() => {
-    setActions(event ? (event.do as ActionData[]) : []);
+    event && parse(smId, event.do);
+    // setActions(event && typeof event.do !== 'string' ? event.do : []);
   }, [event, setActions]);
 
   const handleChangeText = useMemo(() => throttle(onChangeText, 500), [onChangeText]);

@@ -4,6 +4,7 @@ import { SingleValue } from 'react-select';
 
 import { SelectOption } from '@renderer/components/UI';
 import { serializeEvent } from '@renderer/lib/data/GraphmlBuilder';
+import { variableRegex } from '@renderer/lib/data/GraphmlParser';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { Component, Event } from '@renderer/types/diagram';
@@ -15,7 +16,7 @@ export const useTrigger = (
   smId: string,
   controller: CanvasController,
   addSystemComponents: boolean,
-  event: Event | null | undefined
+  event: string | Event | null | undefined
 ) => {
   const modelController = useModelContext();
   const componentsData = modelController.model.useData(smId, 'elements.components') as {
@@ -26,11 +27,11 @@ export const useTrigger = (
 
   const [tabValue, setTabValue] = useState(0);
   const [selectedComponent, setSelectedComponent] = useState<string | null>(
-    event ? (event as Event).component : null
+    typeof event !== 'string' && event ? event.component : null
   );
 
   const [selectedMethod, setSelectedMethod] = useState<string | null>(
-    event ? (event as Event).method : null
+    typeof event !== 'string' && event ? event.method : null
   );
 
   const [text, setText] = useState('');
@@ -56,7 +57,8 @@ export const useTrigger = (
         return;
       }
 
-      const name = componentsData[id] && componentsData[id].name ? componentsData[id].name : id;
+      const name =
+        componentsData[id] && visual && componentsData[id].name ? componentsData[id].name : id;
       return {
         value: id,
         label: name,
@@ -113,6 +115,14 @@ export const useTrigger = (
 
   const handleMethodChange = useCallback((value: SingleValue<SelectOption>) => {
     setSelectedMethod(value?.value ?? null);
+    // debugger;
+    // if (!visual && controller.platform[smId] && selectedComponent && value?.value)
+    //   setText(
+    //     serializeEvent(componentsData, controller.platform[smId].data, {
+    //       component: selectedComponent,
+    //       method: value?.value,
+    //     })
+    //   ); // для перехода в текст
   }, []);
 
   const clear = useCallback(() => {
@@ -134,9 +144,14 @@ export const useTrigger = (
           setText(serializeEvent(componentsData, controller.platform[smId].data, triggerToParse)); // для перехода в текст
         return setTabValue(0);
       }
-
+      const parsedTrigger = variableRegex.exec(triggerToParse)?.groups;
+      if (parsedTrigger) {
+        setSelectedComponent(parsedTrigger['component']);
+        setSelectedMethod(parsedTrigger['method']);
+      } else {
+        setTabValue(1);
+      }
       setText(triggerToParse);
-      setTabValue(1);
     },
     [clear, visual] // visual для того, чтобы при смене режима парсер работал корректно
   );

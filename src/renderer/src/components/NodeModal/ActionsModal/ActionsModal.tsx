@@ -66,7 +66,8 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
       return;
     }
 
-    const name = componentsData[id] && componentsData[id].name ? componentsData[id].name : id;
+    const name =
+      componentsData[id] && visual && componentsData[id].name ? componentsData[id].name : id;
     return {
       value: id,
       label: name,

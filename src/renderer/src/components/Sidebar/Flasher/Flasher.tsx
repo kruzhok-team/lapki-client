@@ -258,6 +258,7 @@ export const FlasherTab: React.FC = () => {
         </button>
       </div>
       <div className="m-2">
+        <label>Устройства на прошивку</label>
         <FlasherTable
           getEntryById={getEntryById}
           setTableData={setFlashTableData}

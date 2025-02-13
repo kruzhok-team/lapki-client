@@ -108,7 +108,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <Explorer />,
       <CompilerTab
         openData={openData}
-        openCompilerSettings={openCompilerSettings}
         compilerData={compilerData}
         setCompilerData={setCompilerData}
         compilerStatus={compilerStatus}

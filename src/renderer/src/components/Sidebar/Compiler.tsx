@@ -5,16 +5,16 @@ import { twMerge } from 'tailwind-merge';
 import { ReactComponent as ConnectionStatus } from '@renderer/assets/icons/circle.svg';
 import { ReactComponent as OkIcon } from '@renderer/assets/icons/mark-check.svg';
 import { ReactComponent as NotOkIcon } from '@renderer/assets/icons/mark-cross.svg';
-import { ReactComponent as Setting } from '@renderer/assets/icons/settings.svg';
 import { Compiler } from '@renderer/components/Modules/Compiler';
-import { useErrorModal, useFileOperations, useSettings } from '@renderer/hooks';
+import { useErrorModal, useFileOperations, useModal, useSettings } from '@renderer/hooks';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { useTabs } from '@renderer/store/useTabs';
 import { CompileCommandResult, CompilerResult } from '@renderer/types/CompilerTypes';
 import { Elements, StateMachine } from '@renderer/types/diagram';
-import { languageMappers } from '@renderer/utils';
+import { getDefaultSmSelection, languageMappers } from '@renderer/utils';
 
 import { CompilerStatus } from '../Modules/Websocket/ClientStatus';
+import { SelectStateMachinesModal } from '../SelectStateMachinesModal';
 
 export interface CompilerProps {
   openData: [boolean, string | null, string | null, string] | undefined;
@@ -23,12 +23,10 @@ export interface CompilerProps {
   compilerStatus: string;
   setCompilerStatus: React.Dispatch<React.SetStateAction<string>>;
   openImportError: (error: string) => void;
-  openCompilerSettings: () => void;
 }
 
 export const CompilerTab: React.FC<CompilerProps> = ({
   openData,
-  openCompilerSettings,
   compilerData,
   setCompilerData,
   compilerStatus,
@@ -43,6 +41,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
     openImportError,
   });
 
+  const [isOpen, open, close] = useModal(false);
   const [compilerSetting] = useSettings('compiler');
   const [importData, setImportData] = useState<Elements | undefined>(undefined);
   const stateMachines = modelController.model.useData('', 'elements.stateMachinesId') as {
@@ -56,6 +55,9 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   const [secondsUntilReconnect, setSecondsUntilReconnect] = useState<number | null>(null);
   const openTab = useTabs((state) => state.openTab);
 
+  const [selectedStateMachines, setSelectedStateMachines] = useState<{ [id: string]: boolean }>(
+    getDefaultSmSelection(stateMachines, {})
+  );
   const name = modelController.model.useData('', 'name');
   const isInitialized = modelController.model.useData('', 'isInitialized');
 
@@ -80,9 +82,17 @@ export const CompilerTab: React.FC<CompilerProps> = ({
 
   const handleCompile = async () => {
     if (!name) return;
+    const selectedElements: Elements = {
+      stateMachines: {},
+    };
 
+    for (const smId in selectedStateMachines) {
+      if (selectedStateMachines[smId]) {
+        selectedElements.stateMachines[smId] = stateMachines[smId];
+      }
+    }
     Compiler.filename = name;
-    modelController.files.compile();
+    modelController.files.compile(selectedElements);
   };
 
   const handleSaveSourceIntoFolder = async () => {
@@ -135,6 +145,10 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   };
 
   useEffect(() => {
+    setSelectedStateMachines(getDefaultSmSelection(stateMachines, selectedStateMachines));
+  }, [stateMachines]);
+
+  useEffect(() => {
     if (importData && openData) {
       initImportData(importData, openData);
       setImportData(undefined);
@@ -180,10 +194,16 @@ export const CompilerTab: React.FC<CompilerProps> = ({
     compilerStatus == CompilerStatus.COMPILATION || compilerStatus == CompilerStatus.CONNECTING;
   const canCompile = compilerStatus == CompilerStatus.CONNECTED && isInitialized;
   const disabled =
-    processing || (!processing && !canCompile && compilerStatus !== CompilerStatus.NO_CONNECTION);
+    processing ||
+    (!processing && !canCompile && compilerStatus !== CompilerStatus.NO_CONNECTION) ||
+    Object.values(selectedStateMachines).find((val) => val === true) === undefined;
   const showReconnectTime = () => {
     if (secondsUntilReconnect == null) return;
     return <p>До подключения: {secondsUntilReconnect} сек.</p>;
+  };
+
+  const saveRequestedSm = (selected: { [id: string]: boolean }) => {
+    setSelectedStateMachines(selected);
   };
 
   return (
@@ -212,8 +232,8 @@ export const CompilerTab: React.FC<CompilerProps> = ({
               ? 'Скомпилировать'
               : 'Переподключиться'}
           </button>
-          <button className="btn-primary px-2" onClick={openCompilerSettings}>
-            <Setting width="1.5rem" height="1.5rem" />
+          <button className="btn-primary px-2" onClick={open}>
+            <span className="size-[1.5rem]">...</span>
           </button>
         </div>
 
@@ -273,6 +293,12 @@ export const CompilerTab: React.FC<CompilerProps> = ({
           </button>
         ))}
       </div>
+      <SelectStateMachinesModal
+        onSubmit={saveRequestedSm}
+        stateMachines={stateMachines}
+        close={close}
+        isOpen={isOpen}
+      />
     </section>
   );
 };

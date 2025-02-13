@@ -265,6 +265,13 @@ export const FlasherTab: React.FC = () => {
         />
       </div>
       <div className="m-2 flex">
+        <WithHint hint={'Убрать отмеченные платы из таблицы.'}>
+          {(hintProps) => (
+            <button {...hintProps} className="btn-error mr-6" onClick={handleRemoveDevs}>
+              Убрать
+            </button>
+          )}
+        </WithHint>
         <button
           className="btn-primary mr-4"
           onClick={() => handleSendBin()}
@@ -294,13 +301,6 @@ export const FlasherTab: React.FC = () => {
           Получить метаданные
         </button>
       </div>
-      <WithHint hint={'Убрать отмеченные платы из таблицы.'}>
-        {(hintProps) => (
-          <button {...hintProps} className="btn-error m-2 max-w-[10vw]" onClick={handleRemoveDevs}>
-            Убрать платы
-          </button>
-        )}
-      </WithHint>
       <div className="m-2">Журнал действий</div>
       <div
         className="mx-2 h-72 overflow-y-auto whitespace-break-spaces bg-bg-primary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"

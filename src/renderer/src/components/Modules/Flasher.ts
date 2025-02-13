@@ -633,28 +633,25 @@ export class Flasher extends ClientWS {
         const getAddressStatus = response.payload as DeviceCommentCode;
         switch (getAddressStatus.code) {
           case 0:
-            ManagerMS.finishOperation(`Получен адрес устройства: ${getAddressStatus.comment}`);
+            ManagerMS.addLog(`Получен адрес устройства: ${getAddressStatus.comment}`);
             ManagerMS.setAddress(getAddressStatus.comment);
+            //(Roundabout1) TODO: ManagerMS.getMetaData(getAddressStatus.deviceID, getAddressStatus.comment);
             break;
           case 1:
-            ManagerMS.finishOperation(
-              'Не удалось получить адрес устройства, так как оно не подключено.'
-            );
-            ManagerMS.setAddress('');
+            ManagerMS.addLog('Не удалось получить адрес устройства, так как оно не подключено.');
             break;
           case 2: {
             const errorText = getAddressStatus.comment;
             const errorLog = 'Возникла ошибка при попытке узнать адрес';
             if (errorText != '') {
-              ManagerMS.finishOperation(`${errorLog}. Текст ошибки: ${getAddressStatus.comment}`);
+              ManagerMS.addLog(`${errorLog}. Текст ошибки: ${getAddressStatus.comment}`);
             } else {
-              ManagerMS.finishOperation(`${errorLog}.`);
+              ManagerMS.addLog(`${errorLog}.`);
             }
-            ManagerMS.setAddress('');
             break;
           }
           case 3:
-            ManagerMS.finishOperation(
+            ManagerMS.addLog(
               'Не удалось узнать адрес, так как переданное устройство не является МС-ТЮК.'
             );
             break;
@@ -662,9 +659,9 @@ export class Flasher extends ClientWS {
             const errorText = getAddressStatus.comment;
             const errorLog = 'Не удалось узнать адрес устройства из-за ошибки обработки JSON';
             if (errorText != '') {
-              ManagerMS.finishOperation(`${errorLog}. Текст ошибки: ${errorText}`);
+              ManagerMS.addLog(`${errorLog}. Текст ошибки: ${errorText}`);
             } else {
-              ManagerMS.finishOperation(`${errorLog}.`);
+              ManagerMS.addLog(`${errorLog}.`);
             }
             break;
           }

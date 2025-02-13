@@ -15,19 +15,22 @@ export const useAddressBook = () => {
   );
 
   const [indexToId, setIndexToId] = useState<number[]>([]);
-  //const [idToIndex, setIdToIndex] = useState<number[]>([]);
+  const [idToIndex, setIdToIndex] = useState<number[]>([]);
   const [idCounter, setIdCounter] = useState<number>(0);
 
   useEffect(() => {
     if (addressBookSetting === null || indexToId.length >= addressBookSetting.length) return;
     let id = idCounter;
-    const newIndexToId: number[] = [id];
-    for (let i = idCounter + 1; i < addressBookSetting.length; i++) {
-      newIndexToId.push(i);
-      id = i;
+    const newIndexToId: number[] = [];
+    const newIdToIndex: number[] = [];
+    for (let i = indexToId.length; i < addressBookSetting.length; i++) {
+      newIdToIndex.push(i);
+      newIndexToId.push(id);
+      id++;
     }
     setIndexToId(indexToId.concat(newIndexToId));
-    setIdCounter(id + 1);
+    setIdToIndex(idToIndex.concat(newIdToIndex));
+    setIdCounter(id);
   }, [addressBookSetting]);
 
   /**
@@ -36,8 +39,6 @@ export const useAddressBook = () => {
    * @returns ID, соответствующий элементу адресной книги, либо null, если индекс некорректный или адресная книга отсутствует (равняется null)
    */
   const getID = (index: number) => {
-    // эта функция динамически генерирует ID, если они отсутствуют
-
     if (addressBookSetting === null || index >= indexToId.length) {
       return null;
     }

@@ -3,6 +3,8 @@
 */
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
+import { toast } from 'sonner';
+
 import { useAddressBook } from '@renderer/hooks/useAddressBook';
 import { useModal } from '@renderer/hooks/useModal';
 import { useSettings } from '@renderer/hooks/useSettings';
@@ -317,6 +319,7 @@ export const FlasherTab: React.FC = () => {
               return v.targetId === entryId;
             }) !== undefined
           ) {
+            toast.info('Выбранная плата была добавлена в таблицу прошивок ранее');
             return;
           }
           const newItem: FlashTableItem = {
@@ -326,6 +329,7 @@ export const FlasherTab: React.FC = () => {
             targetType: FirmwareTargetType.tjc_ms,
           };
           setFlashTableData([...flashTableData, newItem]);
+          toast.info('Добавлена плата в таблицу прошивок!');
         }}
         addressBookSetting={addressBookSetting}
         getID={getID}

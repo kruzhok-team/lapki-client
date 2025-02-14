@@ -5,11 +5,9 @@ import { useForm } from 'react-hook-form';
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/add.svg';
 import { ReactComponent as SubtractIcon } from '@renderer/assets/icons/subtract.svg';
 import { Modal } from '@renderer/components/UI';
-import { useModal } from '@renderer/hooks/useModal';
 import { AddressData } from '@renderer/types/FlasherTypes';
 
 import { AddressBookRow } from './AddressBookRow';
-import { AddressEntryEditModal } from './AddressEntryModal';
 
 interface AddressBookModalProps {
   addressBookSetting: AddressData[] | null;
@@ -18,9 +16,9 @@ interface AddressBookModalProps {
   onSubmit: (entryId: number) => void;
   onRemove: (index: number) => void;
   onSwapEntries: (index1: number, index2: number) => void;
-  onAdd: (data: AddressData) => void;
-  onEdit: (data: AddressData, index: number) => void;
   getID: (index: number) => number | null;
+  addressEnrtyEdit: (data: AddressData) => void;
+  openAddressEnrtyAdd: () => void;
 }
 
 /**
@@ -30,18 +28,13 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
   addressBookSetting,
   onRemove,
   onSwapEntries,
-  onAdd,
-  onEdit,
   getID,
   onClose,
   onSubmit,
+  addressEnrtyEdit,
+  openAddressEnrtyAdd,
   ...props
 }) => {
-  const [isAddressEnrtyEditOpen, openAddressEnrtyEdit, closeAddressEnrtyEdit] = useModal(false); // для редактирования существующих записей в адресной книге
-  const addressEntryEditForm = useForm<AddressData>();
-  const [isAddressEnrtyAddOpen, openAddressEnrtyAdd, closeAddressEnrtyAdd] = useModal(false); // для добавления новых записей в адресную книгу
-  const addressEntryAddForm = useForm<AddressData>();
-
   // выбранная запись с адресом, undefined означает, что ни одна запись не выбрана;
   const [selectedEntry, setSelectedEntry] = useState<number | undefined>(undefined);
   // индекс записи для переноса при начале drag
@@ -58,28 +51,6 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
     }
     onSwapEntries(dragIndex, index);
     setDragIndex(undefined);
-  };
-
-  /**
-   * Открытие модального окна для редактирования существующей записи в адресной книге
-   * @param data данные, которые нужно отредактированть
-   */
-  const addressEnrtyEdit = (data: AddressData) => {
-    addressEntryEditForm.reset(data);
-    openAddressEnrtyEdit();
-  };
-
-  /**
-   * Обновление адресной книги после редактирования
-   */
-  const addressEntryEditSubmitHandle = (data: AddressData) => {
-    if (selectedEntry === undefined) return;
-    onEdit(data, selectedEntry);
-  };
-
-  const addressEntryAddSubmitHandle = (data: AddressData) => {
-    addressEntryAddForm.reset();
-    onAdd(data);
   };
 
   const handleEdit = (data: AddressData, index: number) => {
@@ -166,24 +137,6 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
           </div>
         </div>
       </Modal>
-      <AddressEntryEditModal
-        addressBookSetting={addressBookSetting}
-        form={addressEntryEditForm}
-        isOpen={isAddressEnrtyEditOpen}
-        onClose={closeAddressEnrtyEdit}
-        onSubmit={addressEntryEditSubmitHandle}
-        submitLabel="Сохранить"
-        allowAddressEdit={false}
-      />
-      <AddressEntryEditModal
-        addressBookSetting={addressBookSetting}
-        form={addressEntryAddForm}
-        isOpen={isAddressEnrtyAddOpen}
-        onClose={closeAddressEnrtyAdd}
-        onSubmit={addressEntryAddSubmitHandle}
-        submitLabel="Добавить"
-        allowAddressEdit={true}
-      />
     </div>
   );
 };

@@ -244,7 +244,9 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
         ) : (
           <Select
             options={
-              stateMachineOptions.get(platformWithoutVersion(addressData.type)) ?? allAddressOptions
+              addressData.type
+                ? stateMachineOptions.get(platformWithoutVersion(addressData.type))
+                : allAddressOptions
             }
             containerClassName={selectSmSubColumn}
             isSearchable={false}

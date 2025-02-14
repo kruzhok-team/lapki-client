@@ -5,6 +5,7 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { toast } from 'sonner';
 
+import { ClientStatus } from '@renderer/components/Modules/Websocket/ClientStatus';
 import { useAddressBook } from '@renderer/hooks/useAddressBook';
 import { useModal } from '@renderer/hooks/useModal';
 import { useSettings } from '@renderer/hooks/useSettings';
@@ -155,9 +156,11 @@ export const FlasherTab: React.FC = () => {
   }, [meta]);
 
   useEffect(() => {
-    if (addressBookSetting === null) return;
-    // TODO: переименование, удаление и т.д.
-  }, [addressBookSetting]);
+    if (device === undefined) {
+      ManagerMS.addLog('Потеряно соединение с устройством.');
+      return;
+    }
+  }, [device]);
 
   const handleGetAddress = () => {
     if (!device || !managerMSSetting) return;
@@ -189,7 +192,7 @@ export const FlasherTab: React.FC = () => {
   };
 
   const isFlashDisabled = () => {
-    if (flashTableData.length === 0) return true;
+    if (flashTableData.length === 0 || device === undefined) return true;
     return !flashTableData.every((item) => {
       if (item.source === undefined || !item.isSelected) return false;
       if (!item.isFile) {
@@ -277,17 +280,30 @@ export const FlasherTab: React.FC = () => {
     setFlashTableData(newTable);
   };
 
+  const handleCurrentDeviceDisplay = () => {
+    const prefix = 'Статус';
+    if (connectionStatus !== ClientStatus.CONNECTED) {
+      return `${prefix}: отсутствует подключение к загрузчику. Проверьте его статус на соответствующей вкладке`;
+    }
+    if (device === undefined) {
+      return `${prefix}: устройство отсутствует. Выберите МС-ТЮК во вкладке загрузчик`;
+    }
+    return `${prefix}: устройство ${device.displayName()} подключено`;
+  };
+
   if (!managerMSSetting) {
     return null;
   }
 
-  console.log(flashTableData);
-
   return (
     <section className="mr-3 flex h-full flex-col bg-bg-secondary">
-      <label className="m-2">Статус: {connectionStatus}</label>
+      <label className="m-2">{handleCurrentDeviceDisplay()}</label>
       <div className="m-2 flex">
-        <button className="btn-primary mr-4" onClick={handleGetAddress}>
+        <button
+          className="btn-primary mr-4"
+          onClick={handleGetAddress}
+          disabled={device === undefined}
+        >
           Подключить плату
         </button>
         <button className="btn-primary mr-4" onClick={handleOpenAddressBook}>
@@ -329,13 +345,25 @@ export const FlasherTab: React.FC = () => {
           />
           Верификация
         </div>
-        <button className="btn-primary mr-4" onClick={() => handleOperation(OperationType.ping)}>
+        <button
+          className="btn-primary mr-4"
+          onClick={() => handleOperation(OperationType.ping)}
+          disabled={device === undefined}
+        >
           Пинг
         </button>
-        <button className="btn-primary mr-4" onClick={() => handleOperation(OperationType.reset)}>
+        <button
+          className="btn-primary mr-4"
+          onClick={() => handleOperation(OperationType.reset)}
+          disabled={device === undefined}
+        >
           Перезагрузить
         </button>
-        <button className="btn-primary mr-4" onClick={() => handleOperation(OperationType.meta)}>
+        <button
+          className="btn-primary mr-4"
+          onClick={() => handleOperation(OperationType.meta)}
+          disabled={device === undefined}
+        >
           Получить метаданные
         </button>
       </div>

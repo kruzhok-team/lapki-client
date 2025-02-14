@@ -1,6 +1,7 @@
 {
   "name": "МС-ТЮК-1: Кнопочница",
   "id": "tjc-ms1-btn-a2",
+  "nameTag": "MS1Button",
   "description": "Платформа для программирования кнопочницы МС-ТЮК-1.",
   "icon": "",
   "staticComponents": false,

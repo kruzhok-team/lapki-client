@@ -240,6 +240,9 @@
         "name": {
           "type": "string"
         },
+        "nameTag": {
+          "type": "string"
+        },
         "parameters": {
           "additionalProperties": {
             "$ref": "#/definitions/ParameterProto"

@@ -2086,7 +2086,16 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const [componentMap, duplicatedComponents] = this.duplicateComponents(
       newStateMachine.components
     );
-    const newSmId = generateId();
+
+    const keys = Object.keys(this.model.data.elements.stateMachines);
+    const baseKey = smId + '_';
+    let n = 1;
+    let newSmId = baseKey + n;
+    while (keys.includes(newSmId)) {
+      n += 1;
+      newSmId = baseKey + n;
+    }
+
     for (const newComponentId in componentMap) {
       const oldComponentId = componentMap[newComponentId];
       this.model.renameComponentInEvents(newStateMachine, oldComponentId, newComponentId);

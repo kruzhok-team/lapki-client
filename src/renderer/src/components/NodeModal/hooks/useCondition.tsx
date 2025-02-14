@@ -50,7 +50,7 @@ export const useCondition = (
       if (!controller.platform[smId]) {
         return {
           value: id,
-          label: id,
+          label: componentsData[id]?.name ?? id,
           hint: undefined,
           icon: undefined,
         };
@@ -59,7 +59,7 @@ export const useCondition = (
 
       return {
         value: id,
-        label: id,
+        label: componentsData[id]?.name ?? id,
         hint: proto?.description,
         icon: controller.platform[smId].getFullComponentIcon(id, 'mr-1 h-7 w-7'),
       };
@@ -75,7 +75,7 @@ export const useCondition = (
       if (!controller.platform[smId]) {
         return {
           value: id,
-          label: id,
+          label: componentsData[id]?.name ?? id,
           hint: undefined,
           icon: undefined,
         };
@@ -84,7 +84,7 @@ export const useCondition = (
 
       return {
         value: id,
-        label: id,
+        label: componentsData[id]?.name ?? id,
         hint: proto?.description,
         icon: controller.platform[smId]!.getFullComponentIcon(id, 'mr-1 h-7 w-7'),
       };

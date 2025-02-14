@@ -203,7 +203,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   };
 
   const saveRequestedSm = (selected: { [id: string]: boolean }) => {
-    setSelectedStateMachines(selected);
+    setSelectedStateMachines({ ...selected });
   };
 
   return (
@@ -277,7 +277,9 @@ export const CompilerTab: React.FC<CompilerProps> = ({
                   ) : (
                     <NotOkIcon className="size-5 fill-error" />
                   )}
-                  <span className="ml-2 flex">{stateMachines[id].name ?? id}</span>
+                  <span className="ml-2 flex">
+                    {(stateMachines[id] && stateMachines[id].name) ?? id}
+                  </span>
                 </div>
                 <hr className="h-[1px] w-auto border-bg-hover opacity-70" />
               </div>
@@ -294,6 +296,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
         ))}
       </div>
       <SelectStateMachinesModal
+        defaultSelected={selectedStateMachines}
         onSubmit={saveRequestedSm}
         stateMachines={stateMachines}
         close={close}

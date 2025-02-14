@@ -48,6 +48,9 @@ export const FlasherTab: React.FC = () => {
 
   const [flashTableData, setFlashTableData] = useState<FlashTableItem[]>([]);
 
+  const noAccessToDevice = device === undefined || connectionStatus !== ClientStatus.CONNECTED;
+  const commonOperationDisabled = noAccessToDevice || flashTableData.length === 0;
+
   const logContainerRef = useRef<HTMLDivElement>(null);
 
   // При изменении log прокручиваем вниз, если включена автопрокрутка
@@ -192,7 +195,7 @@ export const FlasherTab: React.FC = () => {
   };
 
   const isFlashDisabled = () => {
-    if (flashTableData.length === 0 || device === undefined) return true;
+    if (commonOperationDisabled) return true;
     return !flashTableData.every((item) => {
       if (item.source === undefined || !item.isSelected) return false;
       if (!item.isFile) {
@@ -299,11 +302,7 @@ export const FlasherTab: React.FC = () => {
     <section className="mr-3 flex h-full flex-col bg-bg-secondary">
       <label className="m-2">{handleCurrentDeviceDisplay()}</label>
       <div className="m-2 flex">
-        <button
-          className="btn-primary mr-4"
-          onClick={handleGetAddress}
-          disabled={device === undefined}
-        >
+        <button className="btn-primary mr-4" onClick={handleGetAddress} disabled={noAccessToDevice}>
           Подключить плату
         </button>
         <button className="btn-primary mr-4" onClick={handleOpenAddressBook}>
@@ -348,21 +347,21 @@ export const FlasherTab: React.FC = () => {
         <button
           className="btn-primary mr-4"
           onClick={() => handleOperation(OperationType.ping)}
-          disabled={device === undefined}
+          disabled={commonOperationDisabled}
         >
           Пинг
         </button>
         <button
           className="btn-primary mr-4"
           onClick={() => handleOperation(OperationType.reset)}
-          disabled={device === undefined}
+          disabled={commonOperationDisabled}
         >
           Перезагрузить
         </button>
         <button
           className="btn-primary mr-4"
           onClick={() => handleOperation(OperationType.meta)}
-          disabled={device === undefined}
+          disabled={commonOperationDisabled}
         >
           Получить метаданные
         </button>

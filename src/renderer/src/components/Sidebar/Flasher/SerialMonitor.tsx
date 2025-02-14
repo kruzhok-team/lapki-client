@@ -77,9 +77,6 @@ export const SerialMonitorTab: React.FC = () => {
   }, [deviceMessages, log, monitorSetting]);
 
   useLayoutEffect(() => {
-    if (connectionStatus === SERIAL_MONITOR_CONNECTED && device !== undefined) {
-      SerialMonitor.closeMonitor(device.deviceID);
-    }
     if (deviceMessages !== '' && deviceMessages[deviceMessages.length - 1] !== '\n') {
       SerialMonitor.addDeviceMessage('\n');
     }

@@ -18,6 +18,7 @@ import { FlashResult } from '@renderer/types/FlasherTypes';
 import { ArduinoDevice, Device, MSDevice } from '../../Modules/Device';
 import { ManagerMS } from '../../Modules/ManagerMS';
 import {
+  SERIAL_MONITOR_CONNECTED,
   SERIAL_MONITOR_CONNECTING,
   SERIAL_MONITOR_NO_CONNECTION,
   SERIAL_MONITOR_NO_SERVER_CONNECTION,
@@ -220,9 +221,9 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData, openAvrdudeGuideM
   const handleAddSerialMonitorTab = () => {
     const curDevice = devices.get(currentDeviceID ?? '');
     if (
-      serialMonitorDevice != null &&
-      curDevice != serialMonitorDevice &&
-      devices.get(serialMonitorDevice.deviceID) != undefined
+      serialMonitorDevice !== undefined &&
+      curDevice !== serialMonitorDevice &&
+      devices.get(serialMonitorDevice.deviceID) !== undefined
     ) {
       SerialMonitor.closeMonitor(serialMonitorDevice.deviceID);
     }
@@ -448,6 +449,9 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData, openAvrdudeGuideM
     setCurrentDevice(deviceId);
     const dev = devices.get(deviceId);
     setSerialMonitorDevice(dev);
+    if (serialConnectionStatus === SERIAL_MONITOR_CONNECTED && serialMonitorDevice !== undefined) {
+      SerialMonitor.closeMonitor(serialMonitorDevice?.deviceID);
+    }
     if (dev?.isMSDevice()) {
       setDeviceMS(dev as MSDevice);
     }

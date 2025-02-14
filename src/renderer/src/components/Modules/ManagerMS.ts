@@ -154,8 +154,9 @@ export class ManagerMS {
   }
   static displayAddressInfo(addressInfo: AddressData) {
     const name = addressInfo.name ? addressInfo.name : addressInfo.address;
-    const type = addressInfo.type ? addressInfo.type : 'Неизвестный тип';
-    return `${name} (${type})`;
+    //const type = addressInfo.type ? addressInfo.type : 'Неизвестный тип';
+    //return `${name} (${type})`;
+    return `${name}`;
   }
   static clearLog() {
     this.logSize = 0;

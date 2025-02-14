@@ -17,11 +17,11 @@ interface FlasherTableProps {
 // tailwind почему-то не реагирует на название классов, в которые подставленны переменные (`w-[${v}vw]`),
 // поэтому при изменение стобцов приходится всё в ручную пересчитывать
 const checkColumn = 'w-[2vw]';
-const nameColumn = 'w-[18vw]';
-const typeColumn = 'w-[18vw]';
-const addressColumn = 'w-[18vw]';
-const firmwareSourceColumn = 'w-[20vw]';
-const selectSmSubColumn = 'w-[20vw]';
+const nameColumn = 'w-[24vw]';
+//const typeColumn = 'w-[18vw]';
+const addressColumn = 'w-[24vw]';
+const firmwareSourceColumn = 'w-[26vw]';
+const selectSmSubColumn = 'w-[26vw]';
 //const selectFileSubColumn = 'w-[2vw]';
 const allColumn = 'w-[76vw]';
 // высота клеток
@@ -161,7 +161,7 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
       <div className="flex">
         {cellRender(' ', checkColumn)}
         {cellRender('Наименование', nameColumn)}
-        {cellRender('Тип', typeColumn)}
+        {/* {cellRender('Тип', typeColumn)} */}
         {cellRender('Адрес', addressColumn)}
         {cellRender('Что прошиваем', firmwareSourceColumn)}
       </div>
@@ -183,10 +183,10 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
           <label>{addressData.name ? addressData.name : 'Не указано'}</label>,
           nameColumn
         )}
-        {cellRender(
+        {/* {cellRender(
           <label>{addressData.type ? addressData.type : 'Неизвестно'}</label>,
           typeColumn
-        )}
+        )} */}
         {cellRender(<label>{addressData.address}</label>, addressColumn)}
         <Select
           options={

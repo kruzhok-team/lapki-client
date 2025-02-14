@@ -25,21 +25,26 @@ export const AddressBookRow: React.FC<AddressBookRowProps> = (props) => {
       onDrop={onDrop}
     >
       <label className={labelClassName}>
-        <TextInput value={data.name ?? ''} disabled={true} placeholder="Название" />
+        <TextInput
+          className="max-w-[50vw]"
+          value={data.name ?? ''}
+          disabled={true}
+          placeholder="Название"
+        />
       </label>
 
       <label className={labelClassName}>
-        <TextInput value={data.address} disabled={true} />
+        <TextInput className="max-w-[50vw]" value={data.address} disabled={true} />
       </label>
 
-      <label className={labelClassName}>
+      {/* <label className={labelClassName}>
         <TextInput
           value={data.type ?? ''}
           placeholder="Тип"
           className="w-full max-w-full"
           disabled={true}
         />
-      </label>
+      </label> */}
     </div>
   );
 };

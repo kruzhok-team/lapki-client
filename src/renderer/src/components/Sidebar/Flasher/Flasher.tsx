@@ -20,7 +20,14 @@ import { ManagerMS } from '../../Modules/ManagerMS';
 import { Switch, WithHint } from '../../UI';
 
 export const FlasherTab: React.FC = () => {
-  const { device, log, address: serverAddress, meta, compilerData } = useManagerMS();
+  const {
+    device,
+    log,
+    address: serverAddress,
+    setAddress: setServerAddress,
+    meta,
+    compilerData,
+  } = useManagerMS();
   const {
     addressBookSetting,
     onEdit,
@@ -49,31 +56,51 @@ export const FlasherTab: React.FC = () => {
     }
   }, [log, managerMSSetting]);
 
+  const addToTable = (item: FlashTableItem) => {
+    if (
+      flashTableData.find((v) => {
+        return v.targetId === item.targetId;
+      }) !== undefined
+    ) {
+      return false;
+    }
+    setFlashTableData([...flashTableData, item]);
+    return true;
+  };
+
   useEffect(() => {
     if (serverAddress === '' || addressBookSetting === null) return;
-    //addToAddressBook(serverAddress);
+    setServerAddress('');
     const index = addressBookSetting.findIndex((v) => {
       return v.address === serverAddress;
     });
+    let ID: number | null;
     if (index === -1) {
       onAdd({ name: '', address: serverAddress, type: '', meta: undefined });
-      const newItem: FlashTableItem = {
-        isFile: false,
-        isSelected: true,
-        targetId: idCounter,
-        targetType: FirmwareTargetType.tjc_ms,
-      };
-      setFlashTableData([...flashTableData, newItem]);
+      ID = idCounter;
     } else {
-      const ID = getID(index);
-      if (ID === null) return;
-      const newItem: FlashTableItem = {
-        isFile: false,
-        isSelected: true,
-        targetId: ID,
-        targetType: FirmwareTargetType.tjc_ms,
-      };
-      setFlashTableData([...flashTableData, newItem]);
+      ID = getID(index);
+      if (ID === null) {
+        ManagerMS.addLog(
+          'Ошибка подключения платы! Индекс записи присутствует в таблице, но её ID не удалось определить!'
+        );
+        return;
+      }
+    }
+    const isAdded = addToTable({
+      isFile: false,
+      isSelected: true,
+      targetId: ID,
+      targetType: FirmwareTargetType.tjc_ms,
+    });
+    if (!isAdded) {
+      const entry = getEntryById(ID);
+      if (entry === undefined) {
+        return;
+      }
+      ManagerMS.addLog(
+        `Устройство ${ManagerMS.displayAddressInfo(entry)} уже было добавлено в таблицу ранее.`
+      );
     }
   }, [serverAddress]);
 
@@ -334,22 +361,17 @@ export const FlasherTab: React.FC = () => {
         isOpen={isAddressBookOpen}
         onClose={closeAddressBook}
         onSubmit={(entryId: number) => {
-          if (
-            flashTableData.find((v) => {
-              return v.targetId === entryId;
-            }) !== undefined
-          ) {
-            toast.info('Выбранная плата была добавлена в таблицу прошивок ранее');
-            return;
-          }
-          const newItem: FlashTableItem = {
+          const isAdded = addToTable({
             targetId: entryId,
             isFile: false,
             isSelected: true,
             targetType: FirmwareTargetType.tjc_ms,
-          };
-          setFlashTableData([...flashTableData, newItem]);
-          toast.info('Добавлена плата в таблицу прошивок!');
+          });
+          if (isAdded) {
+            toast.info('Добавлена плата в таблицу прошивок!');
+          } else {
+            toast.info('Выбранная плата была добавлена в таблицу прошивок ранее');
+          }
         }}
         addressBookSetting={addressBookSetting}
         getID={getID}

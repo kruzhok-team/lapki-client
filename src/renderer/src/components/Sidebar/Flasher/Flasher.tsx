@@ -49,7 +49,11 @@ export const FlasherTab: React.FC = () => {
   const [flashTableData, setFlashTableData] = useState<FlashTableItem[]>([]);
 
   const noAccessToDevice = device === undefined || connectionStatus !== ClientStatus.CONNECTED;
-  const commonOperationDisabled = noAccessToDevice || flashTableData.length === 0;
+  const commonOperationDisabled =
+    noAccessToDevice ||
+    flashTableData.find((item) => {
+      return item.isSelected;
+    }) === undefined;
 
   const logContainerRef = useRef<HTMLDivElement>(null);
 
@@ -194,19 +198,6 @@ export const FlasherTab: React.FC = () => {
     }
   };
 
-  const isFlashDisabled = () => {
-    if (commonOperationDisabled) return true;
-    return !flashTableData.every((item) => {
-      if (item.source === undefined || !item.isSelected) return false;
-      if (!item.isFile) {
-        if (!compilerData) return false;
-        const data = compilerData.state_machines[item.source];
-        return data && data.binary && data.binary.length !== 0;
-      }
-      return true;
-    });
-  };
-
   const handleSendBin = async () => {
     if (!addressBookSetting) {
       ManagerMS.addLog('Ошибка! Адресная книга не загрузилась!');
@@ -230,8 +221,16 @@ export const FlasherTab: React.FC = () => {
         );
         continue;
       }
+      if (!item.source) {
+        ManagerMS.addLog(
+          `Не удалось прошить ${ManagerMS.displayAddressInfo(
+            entry
+          )}, так как для неё не указана прошивка.`
+        );
+        continue;
+      }
       if (item.isFile) {
-        const [binData, errorMessage] = await window.api.fileHandlers.readFile(item.source!);
+        const [binData, errorMessage] = await window.api.fileHandlers.readFile(item.source);
         if (errorMessage !== null) {
           ManagerMS.addLog(
             `Ошибка! Не удалось извлечь данные из файла ${item.source}. Текст ошибки: ${errorMessage}`
@@ -249,7 +248,7 @@ export const FlasherTab: React.FC = () => {
         }
       } else {
         if (!compilerData) continue;
-        const smData = compilerData.state_machines[item.source!];
+        const smData = compilerData.state_machines[item.source];
         if (!smData || !smData.binary || smData.binary.length === 0) {
           // ManagerMS.addLog(
           //   `Ошибка! Загрузка по адресу ${displayEntry(
@@ -328,7 +327,7 @@ export const FlasherTab: React.FC = () => {
         <button
           className="btn-primary mr-4"
           onClick={() => handleSendBin()}
-          disabled={isFlashDisabled()}
+          disabled={commonOperationDisabled}
         >
           Прошить!
         </button>

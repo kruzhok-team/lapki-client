@@ -350,6 +350,7 @@ export const FlasherTab: React.FC = () => {
       <div className="m-2">
         <label>Устройства на прошивку</label>
         <FlasherTable
+          addressEnrtyEdit={addressEnrtyEdit}
           getEntryById={getEntryById}
           setTableData={setFlashTableData}
           tableData={flashTableData}
@@ -468,7 +469,7 @@ export const FlasherTab: React.FC = () => {
         onClose={closeAddressEnrtyEdit}
         onSubmit={addressEntryEditSubmitHandle}
         submitLabel="Сохранить"
-        allowAddressEdit={true}
+        allowAddressEdit={false}
       />
       <AddressEntryEditModal
         addressBookSetting={addressBookSetting}
@@ -477,7 +478,7 @@ export const FlasherTab: React.FC = () => {
         onClose={closeAddressEnrtyAdd}
         onSubmit={addressEntryAddSubmitHandle}
         submitLabel="Добавить"
-        allowAddressEdit={false}
+        allowAddressEdit={true}
       />
       <MsGetAddressModal
         isOpen={isMsGetAddressOpen}

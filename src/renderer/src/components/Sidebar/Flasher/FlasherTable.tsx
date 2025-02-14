@@ -11,6 +11,7 @@ interface FlasherTableProps {
   tableData: FlashTableItem[];
   setTableData: Dispatch<SetStateAction<FlashTableItem[]>>;
   getEntryById: (ID: number) => AddressData | undefined;
+  addressEnrtyEdit: (data: AddressData) => void;
 }
 
 // размеры столбцов
@@ -31,6 +32,7 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
   tableData,
   setTableData,
   getEntryById,
+  addressEnrtyEdit,
   ...props
 }) => {
   const modelController = useModelContext();
@@ -197,7 +199,13 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
           onCheckedChange={() => onCheckedChangeHandle(tableItem)}
         />
         {cellRender(
-          <label>{addressData.name ? addressData.name : 'Не указано'}</label>,
+          <label
+            onClick={() => {
+              addressEnrtyEdit(addressData);
+            }}
+          >
+            {addressData.name ? addressData.name : 'Не указано'}
+          </label>,
           nameColumn
         )}
         {cellRender(

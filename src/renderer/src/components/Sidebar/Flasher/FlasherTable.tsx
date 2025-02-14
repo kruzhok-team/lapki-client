@@ -212,6 +212,7 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
               : allAddressOptions
           }
           containerClassName={selectSmSubColumn}
+          menuPosition="fixed"
           isSearchable={false}
           placeholder="Выберите..."
           noOptionsMessage={() => 'Нет подходящих машин состояний'}
@@ -242,7 +243,7 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
   return (
     <div
       {...props}
-      className="flex max-h-60 min-h-60 flex-col overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
+      className="flex max-h-60 flex-col overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
     >
       {headerRender()}
       {tableData.length > 0

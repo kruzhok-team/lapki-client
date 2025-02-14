@@ -239,7 +239,7 @@ export const FlasherTab: React.FC = () => {
         }
         if (binData !== null) {
           ManagerMS.binAdd({
-            addressInfo: addressBookSetting[entry.address],
+            addressInfo: entry,
             device: device,
             verification: managerMSSetting ? managerMSSetting.verification : false,
             binaries: new Blob([binData]),

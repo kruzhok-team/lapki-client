@@ -265,6 +265,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
           {compilerData?.state_machines ? (
             Object.entries(compilerData.state_machines).map(([id, sm]) => (
               <div
+                key={id}
                 onClick={() => setSmId(id)}
                 className={twMerge(
                   'cursor-pointer hover:bg-bg-hover',

@@ -277,9 +277,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
                   ) : (
                     <NotOkIcon className="size-5 fill-error" />
                   )}
-                  <span className="ml-2 flex">
-                    {(stateMachines[id] && stateMachines[id].name) ?? id}
-                  </span>
+                  <span className="ml-2 flex">{stateMachines[id]?.name ?? id}</span>
                 </div>
                 <hr className="h-[1px] w-auto border-bg-hover opacity-70" />
               </div>

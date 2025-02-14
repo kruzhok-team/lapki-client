@@ -111,9 +111,7 @@ export const SelectStateMachinesModal: React.FC<SelectStateMachinesModalProps> =
                     checked={isSelected}
                   />
 
-                  <span className="ml-2">
-                    {stateMachines[id] && stateMachines[id].name ? stateMachines[id].name : id}
-                  </span>
+                  <span className="ml-2">{stateMachines[id]?.name ?? id}</span>
                 </div>
                 <hr className="ml-2 mr-2 mt-2 h-[1px] w-auto border-bg-hover opacity-70" />
               </div>

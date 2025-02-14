@@ -100,14 +100,14 @@
           "img": "arduino/blink.svg",
           "parameters": [
             {
+              "name": "interval",
+              "type": "unsigned int",
+              "description": "Длительность каждого мигания (мс)"
+            },
+            {
               "name": "times",
               "type": "byte",
               "description": "Количество миганий"
-            },
-            {
-              "name": "interval",
-              "type": "unsigned int",
-              "description": "Длительность мигания"
             }
           ],
           "description": "Мигает кнопкой определенное количество раз с определенной длительностью каждого мигания"

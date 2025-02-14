@@ -247,17 +247,16 @@ export const FlasherTab: React.FC = () => {
           });
         }
       } else {
-        if (!compilerData) continue;
+        const noBinary = `${ManagerMS.displayAddressInfo(
+          entry
+        )}: отсутствуют бинарные данные для выбранной машины состояния. Перейдите во вкладку компилятор, чтобы скомпилировать схему.`;
+        if (!compilerData) {
+          ManagerMS.addLog(noBinary);
+          continue;
+        }
         const smData = compilerData.state_machines[item.source];
         if (!smData || !smData.binary || smData.binary.length === 0) {
-          // ManagerMS.addLog(
-          //   `Ошибка! Загрузка по адресу ${displayEntry(
-          //     addressIndex
-          //   )} невозможна! Отсутствуют бинарные данные для машины состояния ${item.target}.`
-          // );
-          ManagerMS.addLog(
-            `Ошибка! Загрузка невозможна! Отсутствуют бинарные данные для машины состояния ${item.source}.`
-          );
+          ManagerMS.addLog(noBinary);
           continue;
         }
         ManagerMS.binAdd({

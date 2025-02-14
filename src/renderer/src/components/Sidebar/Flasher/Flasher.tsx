@@ -5,6 +5,7 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { toast } from 'sonner';
 
+import { ClientStatus } from '@renderer/components/Modules/Websocket/ClientStatus';
 import { useAddressBook } from '@renderer/hooks/useAddressBook';
 import { useModal } from '@renderer/hooks/useModal';
 import { useSettings } from '@renderer/hooks/useSettings';
@@ -20,7 +21,14 @@ import { ManagerMS } from '../../Modules/ManagerMS';
 import { Switch, WithHint } from '../../UI';
 
 export const FlasherTab: React.FC = () => {
-  const { device, log, address: serverAddress, meta, compilerData } = useManagerMS();
+  const {
+    device,
+    log,
+    address: serverAddress,
+    setAddress: setServerAddress,
+    meta,
+    compilerData,
+  } = useManagerMS();
   const {
     addressBookSetting,
     onEdit,
@@ -40,6 +48,13 @@ export const FlasherTab: React.FC = () => {
 
   const [flashTableData, setFlashTableData] = useState<FlashTableItem[]>([]);
 
+  const noAccessToDevice = device === undefined || connectionStatus !== ClientStatus.CONNECTED;
+  const commonOperationDisabled =
+    noAccessToDevice ||
+    flashTableData.find((item) => {
+      return item.isSelected;
+    }) === undefined;
+
   const logContainerRef = useRef<HTMLDivElement>(null);
 
   // При изменении log прокручиваем вниз, если включена автопрокрутка
@@ -49,31 +64,59 @@ export const FlasherTab: React.FC = () => {
     }
   }, [log, managerMSSetting]);
 
+  const addToTable = (item: FlashTableItem) => {
+    if (
+      flashTableData.find((v) => {
+        return v.targetId === item.targetId;
+      }) !== undefined
+    ) {
+      return false;
+    }
+    setFlashTableData([...flashTableData, item]);
+    return true;
+  };
+
+  const removeFromTable = (ID: number) => {
+    const tableIndex = flashTableData.findIndex((v) => {
+      return v.targetId === ID;
+    });
+    if (tableIndex === -1) return;
+    setFlashTableData(flashTableData.toSpliced(tableIndex, 1));
+  };
+
   useEffect(() => {
     if (serverAddress === '' || addressBookSetting === null) return;
-    //addToAddressBook(serverAddress);
+    setServerAddress('');
     const index = addressBookSetting.findIndex((v) => {
       return v.address === serverAddress;
     });
+    let ID: number | null;
     if (index === -1) {
       onAdd({ name: '', address: serverAddress, type: '', meta: undefined });
-      const newItem: FlashTableItem = {
-        isFile: false,
-        isSelected: true,
-        targetId: idCounter,
-        targetType: FirmwareTargetType.tjc_ms,
-      };
-      setFlashTableData([...flashTableData, newItem]);
+      ID = idCounter;
     } else {
-      const ID = getID(index);
-      if (ID === null) return;
-      const newItem: FlashTableItem = {
-        isFile: false,
-        isSelected: true,
-        targetId: ID,
-        targetType: FirmwareTargetType.tjc_ms,
-      };
-      setFlashTableData([...flashTableData, newItem]);
+      ID = getID(index);
+      if (ID === null) {
+        ManagerMS.addLog(
+          'Ошибка подключения платы! Индекс записи присутствует в таблице, но её ID не удалось определить!'
+        );
+        return;
+      }
+    }
+    const isAdded = addToTable({
+      isFile: false,
+      isSelected: true,
+      targetId: ID,
+      targetType: FirmwareTargetType.tjc_ms,
+    });
+    if (!isAdded) {
+      const entry = getEntryById(ID);
+      if (entry === undefined) {
+        return;
+      }
+      ManagerMS.addLog(
+        `Устройство ${ManagerMS.displayAddressInfo(entry)} уже было добавлено в таблицу ранее.`
+      );
     }
   }, [serverAddress]);
 
@@ -120,9 +163,11 @@ export const FlasherTab: React.FC = () => {
   }, [meta]);
 
   useEffect(() => {
-    if (addressBookSetting === null) return;
-    // TODO: переименование, удаление и т.д.
-  }, [addressBookSetting]);
+    if (device === undefined) {
+      ManagerMS.addLog('Потеряно соединение с устройством.');
+      return;
+    }
+  }, [device]);
 
   const handleGetAddress = () => {
     if (!device || !managerMSSetting) return;
@@ -153,19 +198,6 @@ export const FlasherTab: React.FC = () => {
     }
   };
 
-  const isFlashDisabled = () => {
-    if (flashTableData.length === 0) return true;
-    return !flashTableData.every((item) => {
-      if (item.source === undefined || !item.isSelected) return false;
-      if (!item.isFile) {
-        if (!compilerData) return false;
-        const data = compilerData.state_machines[item.source];
-        return data && data.binary && data.binary.length !== 0;
-      }
-      return true;
-    });
-  };
-
   const handleSendBin = async () => {
     if (!addressBookSetting) {
       ManagerMS.addLog('Ошибка! Адресная книга не загрузилась!');
@@ -189,8 +221,16 @@ export const FlasherTab: React.FC = () => {
         );
         continue;
       }
+      if (!item.source) {
+        ManagerMS.addLog(
+          `Не удалось прошить ${ManagerMS.displayAddressInfo(
+            entry
+          )}, так как для неё не указана прошивка.`
+        );
+        continue;
+      }
       if (item.isFile) {
-        const [binData, errorMessage] = await window.api.fileHandlers.readFile(item.source!);
+        const [binData, errorMessage] = await window.api.fileHandlers.readFile(item.source);
         if (errorMessage !== null) {
           ManagerMS.addLog(
             `Ошибка! Не удалось извлечь данные из файла ${item.source}. Текст ошибки: ${errorMessage}`
@@ -208,7 +248,7 @@ export const FlasherTab: React.FC = () => {
         }
       } else {
         if (!compilerData) continue;
-        const smData = compilerData.state_machines[item.source!];
+        const smData = compilerData.state_machines[item.source];
         if (!smData || !smData.binary || smData.binary.length === 0) {
           // ManagerMS.addLog(
           //   `Ошибка! Загрузка по адресу ${displayEntry(
@@ -242,15 +282,26 @@ export const FlasherTab: React.FC = () => {
     setFlashTableData(newTable);
   };
 
+  const handleCurrentDeviceDisplay = () => {
+    const prefix = 'Статус';
+    if (connectionStatus !== ClientStatus.CONNECTED) {
+      return `${prefix}: отсутствует подключение к загрузчику. Проверьте его статус на соответствующей вкладке`;
+    }
+    if (device === undefined) {
+      return `${prefix}: устройство отсутствует. Выберите МС-ТЮК во вкладке загрузчик`;
+    }
+    return `${prefix}: устройство ${device.displayName()} подключено`;
+  };
+
   if (!managerMSSetting) {
     return null;
   }
 
   return (
     <section className="mr-3 flex h-full flex-col bg-bg-secondary">
-      <label className="m-2">Статус: {connectionStatus}</label>
+      <label className="m-2">{handleCurrentDeviceDisplay()}</label>
       <div className="m-2 flex">
-        <button className="btn-primary mr-4" onClick={handleGetAddress}>
+        <button className="btn-primary mr-4" onClick={handleGetAddress} disabled={noAccessToDevice}>
           Подключить плату
         </button>
         <button className="btn-primary mr-4" onClick={handleOpenAddressBook}>
@@ -276,7 +327,7 @@ export const FlasherTab: React.FC = () => {
         <button
           className="btn-primary mr-4"
           onClick={() => handleSendBin()}
-          disabled={isFlashDisabled()}
+          disabled={commonOperationDisabled}
         >
           Прошить!
         </button>
@@ -292,13 +343,25 @@ export const FlasherTab: React.FC = () => {
           />
           Верификация
         </div>
-        <button className="btn-primary mr-4" onClick={() => handleOperation(OperationType.ping)}>
+        <button
+          className="btn-primary mr-4"
+          onClick={() => handleOperation(OperationType.ping)}
+          disabled={commonOperationDisabled}
+        >
           Пинг
         </button>
-        <button className="btn-primary mr-4" onClick={() => handleOperation(OperationType.reset)}>
+        <button
+          className="btn-primary mr-4"
+          onClick={() => handleOperation(OperationType.reset)}
+          disabled={commonOperationDisabled}
+        >
           Перезагрузить
         </button>
-        <button className="btn-primary mr-4" onClick={() => handleOperation(OperationType.meta)}>
+        <button
+          className="btn-primary mr-4"
+          onClick={() => handleOperation(OperationType.meta)}
+          disabled={commonOperationDisabled}
+        >
           Получить метаданные
         </button>
       </div>
@@ -334,36 +397,28 @@ export const FlasherTab: React.FC = () => {
         isOpen={isAddressBookOpen}
         onClose={closeAddressBook}
         onSubmit={(entryId: number) => {
-          if (
-            flashTableData.find((v) => {
-              return v.targetId === entryId;
-            }) !== undefined
-          ) {
-            toast.info('Выбранная плата была добавлена в таблицу прошивок ранее');
-            return;
-          }
-          const newItem: FlashTableItem = {
+          const isAdded = addToTable({
             targetId: entryId,
             isFile: false,
             isSelected: true,
             targetType: FirmwareTargetType.tjc_ms,
-          };
-          setFlashTableData([...flashTableData, newItem]);
-          toast.info('Добавлена плата в таблицу прошивок!');
+          });
+          if (isAdded) {
+            toast.info('Добавлена плата в таблицу прошивок!');
+          } else {
+            toast.info('Выбранная плата была добавлена в таблицу прошивок ранее');
+          }
         }}
         addressBookSetting={addressBookSetting}
         getID={getID}
         onAdd={onAdd}
         onEdit={onEdit}
         onRemove={(index) => {
-          onRemove(index);
           const id = getID(index);
-          if (id === null) return;
-          const tableIndex = flashTableData.findIndex((v) => {
-            v.targetId === id;
-          });
-          if (tableIndex === -1) return;
-          setFlashTableData(flashTableData.toSpliced(tableIndex, 1));
+          if (id !== null) {
+            removeFromTable(id);
+          }
+          onRemove(index);
         }}
         onSwapEntries={onSwapEntries}
       />

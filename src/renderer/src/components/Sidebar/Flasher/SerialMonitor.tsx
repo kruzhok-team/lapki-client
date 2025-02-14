@@ -77,13 +77,13 @@ export const SerialMonitorTab: React.FC = () => {
   }, [deviceMessages, log, monitorSetting]);
 
   useLayoutEffect(() => {
-    if (deviceMessages != '' && deviceMessages[deviceMessages.length - 1] != '\n') {
+    if (deviceMessages !== '' && deviceMessages[deviceMessages.length - 1] !== '\n') {
       SerialMonitor.addDeviceMessage('\n');
     }
   }, [device]);
 
   const handleSend = () => {
-    if (inputValue.trim() && device != undefined && monitorSetting != null) {
+    if (inputValue.trim() && device !== undefined && monitorSetting !== null) {
       // Отправляем сообщение через SerialMonitor
       SerialMonitor.sendMessage(
         device?.deviceID,

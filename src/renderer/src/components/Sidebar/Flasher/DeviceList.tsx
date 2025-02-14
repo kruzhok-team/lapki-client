@@ -18,6 +18,7 @@ import { FlashResult } from '@renderer/types/FlasherTypes';
 import { ArduinoDevice, Device, MSDevice } from '../../Modules/Device';
 import { ManagerMS } from '../../Modules/ManagerMS';
 import {
+  SERIAL_MONITOR_CONNECTED,
   SERIAL_MONITOR_CONNECTING,
   SERIAL_MONITOR_NO_CONNECTION,
   SERIAL_MONITOR_NO_SERVER_CONNECTION,
@@ -220,9 +221,9 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData, openAvrdudeGuideM
   const handleAddSerialMonitorTab = () => {
     const curDevice = devices.get(currentDeviceID ?? '');
     if (
-      serialMonitorDevice != null &&
-      curDevice != serialMonitorDevice &&
-      devices.get(serialMonitorDevice.deviceID) != undefined
+      serialMonitorDevice !== undefined &&
+      curDevice !== serialMonitorDevice &&
+      devices.get(serialMonitorDevice.deviceID) !== undefined
     ) {
       SerialMonitor.closeMonitor(serialMonitorDevice.deviceID);
     }
@@ -308,6 +309,9 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData, openAvrdudeGuideM
     }
     if (deviceMS && !devices.get(deviceMS.deviceID)) {
       setDeviceMS(undefined);
+    }
+    if (currentDeviceID && !devices.get(currentDeviceID)) {
+      setCurrentDevice(undefined);
     }
   }, [devices]);
 
@@ -439,6 +443,18 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData, openAvrdudeGuideM
       newValue.set(currentDeviceID, smId);
       return newValue;
     });
+  };
+
+  const onSelectDevice = (deviceId: string) => {
+    setCurrentDevice(deviceId);
+    const dev = devices.get(deviceId);
+    setSerialMonitorDevice(dev);
+    if (serialConnectionStatus === SERIAL_MONITOR_CONNECTED && serialMonitorDevice !== undefined) {
+      SerialMonitor.closeMonitor(serialMonitorDevice?.deviceID);
+    }
+    if (dev?.isMSDevice()) {
+      setDeviceMS(dev as MSDevice);
+    }
   };
 
   const showReconnectTime = () => {
@@ -579,7 +595,7 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData, openAvrdudeGuideM
                 'my-1 flex w-full items-center rounded border-2 border-[#557b91] p-1 hover:bg-[#557b91] hover:text-white',
                 isActive(key) && 'bg-[#557b91] text-white'
               )}
-              onClick={() => setCurrentDevice(key)}
+              onClick={() => onSelectDevice(key)}
             >
               {devices.get(key)?.displayName()}
             </button>

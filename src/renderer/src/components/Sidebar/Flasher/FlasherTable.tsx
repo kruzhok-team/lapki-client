@@ -16,7 +16,7 @@ interface FlasherTableProps {
 // размеры столбцов
 // tailwind почему-то не реагирует на название классов, в которые подставленны переменные (`w-[${v}vw]`),
 // поэтому при изменение стобцов приходится всё в ручную пересчитывать
-const checkColumn = 'w-[2vw]';
+const checkColumn = twMerge('w-[2vw]', 'rounded border border-border-primary');
 const nameColumn = 'w-[18vw]';
 const typeColumn = 'w-[18vw]';
 const addressColumn = 'w-[18vw]';
@@ -142,6 +142,19 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
     );
   };
 
+  const changeCheckedAll = (newChecked: boolean) => {
+    setCheckedAll(newChecked);
+    setTableData(
+      tableData.map((item) => {
+        const newItem: FlashTableItem = {
+          ...item,
+          isSelected: newChecked,
+        };
+        return newItem;
+      })
+    );
+  };
+
   const cellRender = (content: string | JSX.Element, mergeClassName: string) => {
     return (
       <div
@@ -159,7 +172,11 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
   const headerRender = () => {
     return (
       <div className="flex">
-        {cellRender(' ', checkColumn)}
+        <Checkbox
+          className={twMerge(checkColumn, cellHeight)}
+          checked={checkedAll}
+          onCheckedChange={() => changeCheckedAll(!checkedAll)}
+        />
         {cellRender('Наименование', nameColumn)}
         {cellRender('Тип', typeColumn)}
         {cellRender('Адрес', addressColumn)}
@@ -175,7 +192,7 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
     return (
       <div key={tableItem.targetId} className="flex items-start">
         <Checkbox
-          className={twMerge('rounded border border-border-primary', checkColumn, cellHeight)}
+          className={twMerge(checkColumn, cellHeight)}
           checked={checked}
           onCheckedChange={() => onCheckedChangeHandle(tableItem)}
         />

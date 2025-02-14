@@ -20,7 +20,7 @@ const combination = [
     },
   },
   {
-    name: 'Импорт схемы из другого формата',
+    name: 'Импорт схемы из Защиты пасеки',
     command: {
       button1: 'Ctrl',
       button2: 'I',

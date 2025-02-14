@@ -207,7 +207,9 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
         {cellRender(<label>{addressData.address}</label>, addressColumn)}
         <Select
           options={
-            stateMachineOptions.get(platformWithoutVersion(addressData.type)) ?? allAddressOptions
+            addressData.type
+              ? stateMachineOptions.get(platformWithoutVersion(addressData.type))
+              : allAddressOptions
           }
           containerClassName={selectSmSubColumn}
           isSearchable={false}

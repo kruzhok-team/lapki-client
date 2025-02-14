@@ -73,7 +73,7 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
     <>
       <div className="flex">
         <div className="flex w-full justify-start">{smName ?? smId}</div>
-        <div className="flex w-full justify-end">
+        <div className="ml-auto flex w-6 justify-end">
           <button
             type="button"
             className={'h-5 w-5 opacity-70 disabled:opacity-40'}

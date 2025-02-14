@@ -309,6 +309,9 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData, openAvrdudeGuideM
     if (deviceMS && !devices.get(deviceMS.deviceID)) {
       setDeviceMS(undefined);
     }
+    if (currentDeviceID && !devices.get(currentDeviceID)) {
+      setCurrentDevice(undefined);
+    }
   }, [devices]);
 
   const display = () => {
@@ -439,6 +442,15 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData, openAvrdudeGuideM
       newValue.set(currentDeviceID, smId);
       return newValue;
     });
+  };
+
+  const onSelectDevice = (deviceId: string) => {
+    setCurrentDevice(deviceId);
+    const dev = devices.get(deviceId);
+    setSerialMonitorDevice(dev);
+    if (dev?.isMSDevice()) {
+      setDeviceMS(dev as MSDevice);
+    }
   };
 
   const showReconnectTime = () => {
@@ -579,7 +591,7 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData, openAvrdudeGuideM
                 'my-1 flex w-full items-center rounded border-2 border-[#557b91] p-1 hover:bg-[#557b91] hover:text-white',
                 isActive(key) && 'bg-[#557b91] text-white'
               )}
-              onClick={() => setCurrentDevice(key)}
+              onClick={() => onSelectDevice(key)}
             >
               {devices.get(key)?.displayName()}
             </button>

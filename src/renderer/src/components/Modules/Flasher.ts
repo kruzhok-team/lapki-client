@@ -91,17 +91,14 @@ export class Flasher extends ClientWS {
     @returns {isNew} true, если устройство новое, иначе false
   */
   static addDevice(device: Device): boolean {
-    let isNew: boolean = false;
+    const isNew: boolean = false;
     this.setFlasherDevices((oldValue) => {
-      if (!oldValue.has(device.deviceID)) {
-        isNew = true;
-      }
       const newValue = new Map(oldValue);
       newValue.set(device.deviceID, device);
       return newValue;
     });
     if (isNew) {
-      this.setFlasherLog('Добавлено устройство!');
+      this.setFlasherLog('Найдено новое устройство!');
     }
     return isNew;
   }
@@ -131,7 +128,7 @@ export class Flasher extends ClientWS {
 
   static getList(): void {
     this.send('get-list', undefined);
-    this.setFlasherLog('Запрос на обновление списка отправлен!');
+    //this.setFlasherLog('Запрос на обновление списка отправлен!');
   }
 
   /**

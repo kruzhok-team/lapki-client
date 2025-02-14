@@ -98,7 +98,7 @@
             {
               "name": "interval",
               "type": "unsigned int",
-              "description": "Длительность мигания"
+              "description": "Длительность каждого мигания (мс)"
             },
             {
               "name": "times",

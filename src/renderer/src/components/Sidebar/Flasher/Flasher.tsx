@@ -68,6 +68,14 @@ export const FlasherTab: React.FC = () => {
     return true;
   };
 
+  const removeFromTable = (ID: number) => {
+    const tableIndex = flashTableData.findIndex((v) => {
+      return v.targetId === ID;
+    });
+    if (tableIndex === -1) return;
+    setFlashTableData(flashTableData.toSpliced(tableIndex, 1));
+  };
+
   useEffect(() => {
     if (serverAddress === '' || addressBookSetting === null) return;
     setServerAddress('');
@@ -273,6 +281,8 @@ export const FlasherTab: React.FC = () => {
     return null;
   }
 
+  console.log(flashTableData);
+
   return (
     <section className="mr-3 flex h-full flex-col bg-bg-secondary">
       <label className="m-2">Статус: {connectionStatus}</label>
@@ -378,14 +388,11 @@ export const FlasherTab: React.FC = () => {
         onAdd={onAdd}
         onEdit={onEdit}
         onRemove={(index) => {
-          onRemove(index);
           const id = getID(index);
-          if (id === null) return;
-          const tableIndex = flashTableData.findIndex((v) => {
-            v.targetId === id;
-          });
-          if (tableIndex === -1) return;
-          setFlashTableData(flashTableData.toSpliced(tableIndex, 1));
+          if (id !== null) {
+            removeFromTable(id);
+          }
+          onRemove(index);
         }}
         onSwapEntries={onSwapEntries}
       />

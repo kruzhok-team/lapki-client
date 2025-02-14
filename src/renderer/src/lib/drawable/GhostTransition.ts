@@ -27,7 +27,7 @@ export class GhostTransition {
     const sourceBounds = this.source.drawBounds;
 
     const line = getLine({
-      rect1: { ...sourceBounds, height: sourceBounds.height + sourceBounds.childrenHeight },
+      rect1: { ...sourceBounds, height: sourceBounds.childrenHeight },
       rect2: {
         ...this.target,
         width: 1,

@@ -8,28 +8,32 @@ import { Checkbox, Modal } from './UI';
 interface SelectStateMachinesModalProps {
   isOpen: boolean;
   stateMachines: { [id: string]: StateMachine };
+  defaultSelected: { [id: string]: boolean };
   onSubmit: (selectedSms: { [id: string]: boolean }) => void;
   close: () => void;
 }
 
 export const SelectStateMachinesModal: React.FC<SelectStateMachinesModalProps> = ({
-  stateMachines,
   isOpen,
   onSubmit,
   close,
+  defaultSelected,
+  stateMachines,
 }) => {
-  const [selectedStateMachines, setSelectedStateMachines] = useState<{ [id: string]: boolean }>(
-    getDefaultSmSelection(stateMachines, {})
-  );
+  const [selectedStateMachines, setSelectedStateMachines] = useState<{ [id: string]: boolean }>({});
   const [isAllSelected, setIsAllSelected] = useState<boolean>(true);
 
-  useLayoutEffect(() => {
-    handleAfterClose();
-  }, [stateMachines]);
-
   const handleAfterClose = () => {
-    setSelectedStateMachines(getDefaultSmSelection(stateMachines, selectedStateMachines));
+    setSelectedStateMachines({ ...defaultSelected });
+    setIsAllSelected(Object.values(defaultSelected).every((value) => value));
   };
+
+  useLayoutEffect(() => {
+    setSelectedStateMachines((selectedStateMachines) => {
+      return { ...getDefaultSmSelection(stateMachines, selectedStateMachines) };
+    });
+    setIsAllSelected(Object.values(selectedStateMachines).every((value) => value));
+  }, [stateMachines, setSelectedStateMachines]);
 
   const handleCheckedChange = (id: string) => {
     setSelectedStateMachines((selectedStateMachines) => {
@@ -76,6 +80,7 @@ export const SelectStateMachinesModal: React.FC<SelectStateMachinesModalProps> =
 
   return (
     <Modal
+      onAfterClose={handleAfterClose}
       onRequestClose={close}
       title="Выбор машин состояний для компиляции"
       isOpen={isOpen}
@@ -106,7 +111,7 @@ export const SelectStateMachinesModal: React.FC<SelectStateMachinesModalProps> =
                     checked={isSelected}
                   />
 
-                  <span className="ml-2">{stateMachines[id].name ?? id}</span>
+                  <span className="ml-2">{stateMachines[id]?.name ?? id}</span>
                 </div>
                 <hr className="ml-2 mr-2 mt-2 h-[1px] w-auto border-bg-hover opacity-70" />
               </div>

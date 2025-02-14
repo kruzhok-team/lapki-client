@@ -21,8 +21,8 @@ const nameColumn = 'w-[18vw]';
 const typeColumn = 'w-[18vw]';
 const addressColumn = 'w-[18vw]';
 const firmwareSourceColumn = 'w-[20vw]';
-const selectSmSubColumn = 'w-[20vw]';
-//const selectFileSubColumn = 'w-[2vw]';
+const selectSmSubColumn = 'w-[18vw]';
+const selectFileSubColumn = 'w-[2vw]';
 const allColumn = 'w-[76vw]';
 // высота клеток
 const cellHeight = 'h-[38px]';
@@ -44,8 +44,8 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
     return sm.platform.startsWith('tjc');
   });
 
-  //const [stateMachineAddresses, setStateMachineAddresses] = useState<Map<<>>(new Map());
   const [checkedAll, setCheckedAll] = useState<boolean>(true);
+  const [fileBaseName, setFileBaseName] = useState<Map<number, string>>(new Map());
 
   const stateMachineOption = (sm: StateMachine | null | undefined, smId: string) => {
     if (!sm) return null;
@@ -89,26 +89,51 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
     }
   }
 
-  // const handleAddFile = async () => {
-  //   // const [cancleld, filePath, basename] = await window.api.fileHandlers.selectFile('bin файлы', [
-  //   //   'bin',
-  //   // ]);
-  //   // if (!cancleld) {
-  //   //   if (
-  //   //     fileList.find((v) => {
-  //   //       return v.ID === filePath;
-  //   //     }) !== undefined
-  //   //   ) {
-  //   //     return;
-  //   //   }
-  //   //   const newFile: FirmwareItem = {
-  //   //     ID: filePath,
-  //   //     isFile: true,
-  //   //     name: basename.substring(0, basename.lastIndexOf('.')),
-  //   //   };
-  //   //   setFileList([...fileList, newFile]);
-  //   // }
-  // };
+  const handleSelectFile = async (tableItem: FlashTableItem) => {
+    const [canceled, filePath, basename] = await window.api.fileHandlers.selectFile('bin файлы', [
+      'bin',
+    ]);
+    if (canceled) return;
+    setTableData(
+      tableData.map((item) => {
+        if (item.targetId === tableItem.targetId) {
+          return {
+            ...item,
+            source: filePath,
+            isFile: true,
+          };
+        }
+        return item;
+      })
+    );
+    setFileBaseName((oldMap) => {
+      const newMap = new Map(oldMap);
+      newMap.set(tableItem.targetId, basename);
+      return newMap;
+    });
+  };
+
+  const removeSource = (tableItem: FlashTableItem) => {
+    setTableData(
+      tableData.map((item) => {
+        if (item.targetId === tableItem.targetId) {
+          return {
+            ...item,
+            source: undefined,
+            isFile: false,
+          };
+        }
+        return item;
+      })
+    );
+    if (tableItem.isFile) {
+      setFileBaseName((oldMap) => {
+        const newMap = new Map(oldMap);
+        newMap.delete(tableItem.targetId);
+        return newMap;
+      });
+    }
+  };
 
   const onCheckedChangeHandle = (tableItem: FlashTableItem) => {
     if (checkedAll) {
@@ -205,37 +230,39 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
           typeColumn
         )}
         {cellRender(<label>{addressData.address}</label>, addressColumn)}
-        <Select
-          options={
-            stateMachineOptions.get(platformWithoutVersion(addressData.type)) ?? allAddressOptions
-          }
-          containerClassName={selectSmSubColumn}
-          isSearchable={false}
-          placeholder="Выберите..."
-          noOptionsMessage={() => 'Нет подходящих машин состояний'}
-          value={getAssignedStateMachineOption(tableItem) as SelectOption}
-          onChange={(opt) => {
-            if (opt?.value === undefined) return;
-            onSelectChangeHandle(tableItem, opt.value);
-          }}
-          menuPlacement="auto"
-        />
+        {tableItem.isFile ? (
+          cellRender(fileBaseName.get(tableItem.targetId) ?? 'Ошибка!', selectSmSubColumn)
+        ) : (
+          <Select
+            options={
+              stateMachineOptions.get(platformWithoutVersion(addressData.type)) ?? allAddressOptions
+            }
+            containerClassName={selectSmSubColumn}
+            isSearchable={false}
+            placeholder="Выберите..."
+            noOptionsMessage={() => 'Нет подходящих машин состояний'}
+            value={getAssignedStateMachineOption(tableItem) as SelectOption}
+            onChange={(opt) => {
+              if (opt?.value === undefined) return;
+              onSelectChangeHandle(tableItem, opt.value);
+            }}
+            menuPlacement="auto"
+          />
+        )}
+        <button
+          type="button"
+          className={twMerge(
+            'rounded border border-border-primary',
+            selectFileSubColumn,
+            cellHeight
+          )}
+          onClick={() => (tableItem.source ? removeSource(tableItem) : handleSelectFile(tableItem))}
+        >
+          {tableItem.source ? '✖' : '…'}
+        </button>
       </div>
     );
   };
-
-  /*
-    <button
-      type="button"
-      className={twMerge(
-        'rounded border border-border-primary',
-        selectFileSubColumn,
-        cellHeight
-      )}
-    >
-      …
-    </button>
-  */
 
   return (
     <div

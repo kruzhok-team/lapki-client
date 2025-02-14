@@ -230,8 +230,17 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
           typeColumn
         )}
         {cellRender(<label>{addressData.address}</label>, addressColumn)}
+        {/* (Roundabout1) TODO: центрировать текст опций в выпадающем списке и текстовом поле */}
         {tableItem.isFile ? (
-          cellRender(fileBaseName.get(tableItem.targetId) ?? 'Ошибка!', selectSmSubColumn)
+          <div
+            className={twMerge(
+              selectSmSubColumn,
+              cellHeight,
+              'rounded border border-border-primary bg-transparent px-[9px] py-[6px] text-text-primary outline-none transition-colors'
+            )}
+          >
+            {fileBaseName.get(tableItem.targetId) ?? 'Ошибка!'}
+          </div>
         ) : (
           <Select
             options={

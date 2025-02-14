@@ -2081,7 +2081,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   duplicateStateMachine(smId: string) {
     const stateMachine = this.model.data.elements.stateMachines[smId];
 
-    if (!stateMachine) throw new Error('Dublicated sm doesnot exist!');
+    if (!stateMachine) throw new Error('Duplicated state machine does not exist!');
     const newStateMachine = structuredClone(stateMachine);
     const [componentMap, duplicatedComponents] = this.duplicateComponents(
       newStateMachine.components

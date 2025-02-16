@@ -1,6 +1,7 @@
 {
   "name": "МС-ТЮК-1: Лампочница",
   "id": "tjc-ms1-lmp-a3",
+  "nameTag": "MS1Lamp",
   "description": "Платформа для программирования лампочницы МС-ТЮК-1.",
   "icon": "",
   "staticComponents": false,

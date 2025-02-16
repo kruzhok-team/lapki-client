@@ -12,13 +12,15 @@ interface AddressEntryEditModalProps {
   onSubmit: (data: AddressData) => void;
   submitLabel: string;
   form: UseFormReturn<AddressData>;
+  allowAddressEdit: boolean;
 }
 
 /**
  * Модальное окно для добавления или редактирования записи в адресной книге МС-ТЮК
  */
 export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (props) => {
-  const { addressBookSetting, isOpen, onClose, onSubmit, submitLabel, form } = props;
+  const { addressBookSetting, isOpen, onClose, onSubmit, submitLabel, form, allowAddressEdit } =
+    props;
   const {
     handleSubmit: hookHandleSubmit,
     register,
@@ -93,6 +95,7 @@ export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (prop
             maxLength={16}
             placeholder="Адрес"
             className="w-full max-w-full"
+            disabled={!allowAddressEdit}
             {...register('address')}
           />
           <p className="text-sm text-error">{errors.address?.message}</p>

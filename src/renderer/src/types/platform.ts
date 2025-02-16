@@ -60,6 +60,7 @@ export type CompilingSettings = {
 export type Platform = {
   id: string;
   name?: string;
+  nameTag?: string;
   description?: string;
   compile: boolean;
   author: string;

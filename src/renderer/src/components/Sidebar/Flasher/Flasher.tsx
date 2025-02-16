@@ -299,7 +299,7 @@ export const FlasherTab: React.FC = () => {
   return (
     <section className="mr-3 flex h-full flex-col bg-bg-secondary">
       <label className="m-2">{handleCurrentDeviceDisplay()}</label>
-      <div className="m-2 flex">
+      <div className="m-2">
         <button className="btn-primary mr-4" onClick={handleGetAddress} disabled={noAccessToDevice}>
           Подключить плату
         </button>
@@ -315,7 +315,7 @@ export const FlasherTab: React.FC = () => {
           tableData={flashTableData}
         />
       </div>
-      <div className="m-2 flex">
+      <div className="m-2 flex overflow-y-auto">
         <WithHint hint={'Убрать отмеченные платы из таблицы.'}>
           {(hintProps) => (
             <button {...hintProps} className="btn-error mr-6" onClick={handleRemoveDevs}>

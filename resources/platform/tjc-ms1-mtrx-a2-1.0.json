@@ -1,6 +1,7 @@
 {
   "name": "МС-ТЮК-1: Матрица",
   "id": "tjc-ms1-mtrx-a2",
+  "nameTag": "MS1Matrix",
   "description": "Платформа для программирования матрицы МС-ТЮК-1.",
   "icon": "",
   "staticComponents": false,

@@ -1073,27 +1073,19 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   };
 
   createInitialState(params: CCreateInitialStateParams, canUndo = true) {
-    const { id: prevId, targetId, smId } = params;
+    const { id: prevId, targetId, smId, position } = params;
     const target = this.model.data.elements.stateMachines[smId].states[targetId];
     if (!target) return;
     const siblings = this.getSiblings(smId, prevId, target.parentId, 'initialStates')[1];
     if (siblings.length) return;
-    const position = {
+    const newPosition = {
       x: target.position.x - INITIAL_STATE_OFFSET.x,
       y: target.position.y - INITIAL_STATE_OFFSET.y,
     };
 
-    if (target.parentId) {
-      const parent = this.model.data.elements.stateMachines[smId].states[target.parentId];
-      if (parent) {
-        position.x += 2 * INITIAL_STATE_OFFSET.x;
-        position.y = Math.max(0, position.y);
-      }
-    }
-
     const id = this.model.createInitialState({
       smId,
-      position,
+      position: position ?? newPosition,
       parentId: target.parentId,
       dimensions: { width: 50, height: 50 },
       id: prevId,
@@ -1102,7 +1094,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (canUndo) {
       this.history.do({
         type: 'createInitialState',
-        args: { smId, id, targetId },
+        args: { smId, id, targetId, position },
       });
     }
     this.emit('createInitial', {
@@ -1113,8 +1105,13 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     return id;
   }
 
-  createInitialStateWithTransition(smId: string, targetId: string, canUndo = true) {
-    const stateId = this.createInitialState({ smId, targetId }, false);
+  createInitialStateWithTransition(
+    smId: string,
+    targetId: string,
+    canUndo = true,
+    position?: Point
+  ) {
+    const stateId = this.createInitialState({ smId, targetId, position }, false);
     if (!stateId) return;
 
     this.createTransition(
@@ -1130,7 +1127,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (canUndo) {
       this.history.do({
         type: 'createInitialState',
-        args: { smId, id: stateId, targetId: targetId },
+        args: { smId, id: stateId, targetId: targetId, position: position },
       });
     }
   }
@@ -1173,7 +1170,11 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const { smId, parentId, canBeInitial = true } = args;
     let numberOfConnectedActions = 0;
     const newStateId = this.model.createState(args);
-    this.emit('createState', { ...args, id: newStateId });
+    this.emit('createState', {
+      ...args,
+      position: { ...this.model.data.elements.stateMachines[smId].states[newStateId].position },
+      id: newStateId,
+    });
 
     const siblings = this.getSiblings(smId, newStateId, parentId)[0];
     if (!siblings.length && !parentId) {

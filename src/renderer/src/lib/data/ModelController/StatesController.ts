@@ -224,16 +224,15 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     const { smId, id, targetId } = params;
 
     const target = this.data.states.get(targetId);
-    if (!target || !id) return;
+    if (!id) return;
 
     const state = new InitialState(this.app, id, smId, { ...params });
-
     this.data.initialStates.set(id, state);
 
-    (target.parent || this.view).children.add(state, Layer.InitialStates);
+    (target?.parent || this.view).children.add(state, Layer.InitialStates);
 
-    if (target.parent) {
-      state.parent = target.parent;
+    if (target?.parent) {
+      state.parent = target?.parent;
     }
 
     this.watch(state);

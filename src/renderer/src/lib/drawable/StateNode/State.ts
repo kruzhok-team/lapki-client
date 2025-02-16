@@ -204,18 +204,15 @@ export class State extends Shape {
 
   private drawHighlight(ctx: CanvasRenderingContext2D) {
     const { x, y, width, height, childrenHeight } = this.drawBounds;
-    ctx.canvas.hidden;
 
-    ctx.save();
     ctx.globalAlpha = 0.6;
-    ctx.lineWidth = 2;
     ctx.fillStyle = getColor('primaryActive');
 
     ctx.beginPath();
     ctx.roundRect(x, y, width, childrenHeight !== 0 ? childrenHeight : height, 6 / this.scale);
     ctx.fill();
     ctx.closePath();
-    ctx.restore();
+    ctx.globalAlpha = 1;
   }
 
   private drawPen(ctx: CanvasRenderingContext2D) {

@@ -1,12 +1,5 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
-import {
-  Note,
-  Transition,
-  InitialState,
-  FinalState,
-  ChoiceState,
-  GhostTransition,
-} from '@renderer/lib/drawable';
+import { Note, Transition, FinalState, ChoiceState, GhostTransition } from '@renderer/lib/drawable';
 import { Layer } from '@renderer/lib/types';
 import {
   State as DataState,
@@ -197,10 +190,6 @@ export class Initializer {
       targetId: '',
       ...initialStateData,
     });
-    // const state = new InitialState(this.app, id, smId, initialStateData);
-    // this.states.data.initialStates.set(state.id, state);
-    // this.states.watch(state);
-    // this.app.view.children.add(state, Layer.InitialStates);
   }
 
   private linkInitialStateView(parentId: string, childId: string) {

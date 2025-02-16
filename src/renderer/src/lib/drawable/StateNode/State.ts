@@ -53,7 +53,7 @@ export class State extends Shape {
     };
   }
 
-  draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
+  draw(ctx: CanvasRenderingContext2D) {
     this.drawBody(ctx);
     this.drawTitle(ctx);
     this.drawPen(ctx);

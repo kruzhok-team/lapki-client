@@ -251,7 +251,7 @@ export const FlasherTab: React.FC = () => {
         }
         if (binData !== null) {
           ManagerMS.binAdd({
-            addressInfo: addressBookSetting[entry.address],
+            addressInfo: entry,
             device: device,
             verification: managerMSSetting ? managerMSSetting.verification : false,
             binaries: new Blob([binData]),
@@ -259,17 +259,16 @@ export const FlasherTab: React.FC = () => {
           });
         }
       } else {
-        if (!compilerData) continue;
+        const noBinary = `${ManagerMS.displayAddressInfo(
+          entry
+        )}: отсутствуют бинарные данные для выбранной машины состояния. Перейдите во вкладку компилятор, чтобы скомпилировать схему.`;
+        if (!compilerData) {
+          ManagerMS.addLog(noBinary);
+          continue;
+        }
         const smData = compilerData.state_machines[item.source];
         if (!smData || !smData.binary || smData.binary.length === 0) {
-          // ManagerMS.addLog(
-          //   `Ошибка! Загрузка по адресу ${displayEntry(
-          //     addressIndex
-          //   )} невозможна! Отсутствуют бинарные данные для машины состояния ${item.target}.`
-          // );
-          ManagerMS.addLog(
-            `Ошибка! Загрузка невозможна! Отсутствуют бинарные данные для машины состояния ${item.source}.`
-          );
+          ManagerMS.addLog(noBinary);
           continue;
         }
         ManagerMS.binAdd({
@@ -339,7 +338,7 @@ export const FlasherTab: React.FC = () => {
   return (
     <section className="mr-3 flex h-full flex-col bg-bg-secondary">
       <label className="m-2">{handleCurrentDeviceDisplay()}</label>
-      <div className="m-2 flex">
+      <div className="m-2">
         <button className="btn-primary mr-4" onClick={handleGetAddress} disabled={noAccessToDevice}>
           Подключить плату
         </button>
@@ -356,7 +355,7 @@ export const FlasherTab: React.FC = () => {
           tableData={flashTableData}
         />
       </div>
-      <div className="m-2 flex">
+      <div className="m-2 flex overflow-y-auto">
         <WithHint hint={'Убрать отмеченные платы из таблицы.'}>
           {(hintProps) => (
             <button {...hintProps} className="btn-error mr-6" onClick={handleRemoveDevs}>

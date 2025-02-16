@@ -104,6 +104,7 @@ export type CCreateInitialStateParams = {
   id?: string;
   smId: string;
   targetId: string;
+  position?: Point;
 };
 
 export type CreateInitialStateControllerParams = CCreateInitialStateParams & InitialStateData;

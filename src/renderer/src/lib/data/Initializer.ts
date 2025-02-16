@@ -191,10 +191,16 @@ export class Initializer {
   }
 
   private createInitialStateView(smId: string, id: string, initialStateData: DataInitialState) {
-    const state = new InitialState(this.app, id, smId, initialStateData);
-    this.states.data.initialStates.set(state.id, state);
-    this.states.watch(state);
-    this.app.view.children.add(state, Layer.InitialStates);
+    this.controller.states.createInitialState({
+      smId,
+      id,
+      targetId: '',
+      ...initialStateData,
+    });
+    // const state = new InitialState(this.app, id, smId, initialStateData);
+    // this.states.data.initialStates.set(state.id, state);
+    // this.states.watch(state);
+    // this.app.view.children.add(state, Layer.InitialStates);
   }
 
   private linkInitialStateView(parentId: string, childId: string) {

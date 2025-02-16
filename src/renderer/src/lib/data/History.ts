@@ -54,8 +54,8 @@ export type PossibleActions = {
   };
   unlinkState: { smId: string; parentId: string; params: UnlinkStateParams };
 
-  createInitialState: { smId: string; targetId: string; id: string };
-  deleteInitialState: { smId: string; targetId: string; id: string };
+  createInitialState: { smId: string; targetId: string; id: string; position?: Point };
+  deleteInitialState: { smId: string; targetId: string; id: string; position?: Point };
   changeInitialStatePosition: {
     smId: string;
     id: string;
@@ -230,7 +230,13 @@ export const actionFunctions: ActionFunctions = {
   }),
 
   createInitialState: (sM, args) => ({
-    redo: sM.createInitialStateWithTransition.bind(sM, args.smId, args.targetId, false),
+    redo: sM.createInitialStateWithTransition.bind(
+      sM,
+      args.smId,
+      args.targetId,
+      false,
+      args.position
+    ),
     undo: sM.deleteInitialStateWithTransition.bind(sM, args.smId, args.targetId, false),
   }),
   deleteInitialState: (sM, args) => ({

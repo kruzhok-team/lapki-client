@@ -286,6 +286,7 @@ export class EditorModel {
       color,
       smId,
     } = args;
+
     let position = args.position;
     const { width, height } = stateStyle;
 

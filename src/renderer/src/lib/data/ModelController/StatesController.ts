@@ -140,6 +140,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
     if (!id) return;
     const state = new State(this.app, id, smId, { ...args }); // Создание вьюшки
+    state.position = { ...args.position };
 
     this.data.states.set(state.id, state);
 
@@ -221,26 +222,26 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   };
 
   createInitialState = (params: CreateInitialStateControllerParams) => {
-    const { smId, id, targetId } = params;
+    const { smId, id, targetId, position } = params;
 
     const target = this.data.states.get(targetId);
-    if (!target || !id) return;
+    if (!id) return;
 
     const state = new InitialState(this.app, id, smId, { ...params });
-
+    state.position = position;
     this.data.initialStates.set(id, state);
 
-    (target.parent || this.view).children.add(state, Layer.InitialStates);
+    (target?.parent || this.view).children.add(state, Layer.InitialStates);
 
-    if (target.parent) {
-      state.parent = target.parent;
+    if (target?.parent) {
+      state.parent = target?.parent;
     }
 
     this.watch(state);
     // Потому что начальное состояние всегда создается после таргет-состояния
-    if (this.getElementsCount() === 2) {
-      this.view.viewCentering();
-    }
+    // if (this.getElementsCount() === 2) {
+    //   this.view.viewCentering();
+    // }
 
     return state;
   };

@@ -45,14 +45,20 @@ export type PossibleActions = {
     prevColor: StateData['color'];
   };
   changeStatePosition: { smId: string; id: string; startPosition: Point; endPosition: Point };
-  linkState: { smId: string; parentId: string; childId: string };
+  linkState: { smId: string; parentId: string; childId: string; dragEndPos: Point };
   linkStateToAnotherParent: {
     smId: string;
     prevParentId: string;
     parentId: string;
     childId: string;
+    dragEndPos: Point;
   };
-  unlinkState: { smId: string; parentId: string; params: UnlinkStateParams };
+  unlinkState: {
+    smId: string;
+    parentId: string;
+    params: UnlinkStateParams;
+    dragEndPos: Point;
+  };
 
   createInitialState: { smId: string; targetId: string; id: string; position?: Point };
   deleteInitialState: { smId: string; targetId: string; id: string; position?: Point };
@@ -207,18 +213,33 @@ export const actionFunctions: ActionFunctions = {
     ),
   }),
 
-  linkStateToAnotherParent: (sM, { smId, prevParentId, parentId, childId }) => ({
-    redo: sM.linkState.bind(sM, { smId, parentId, childId, canBeInitial: false }, false),
+  linkStateToAnotherParent: (sM, { smId, prevParentId, parentId, childId, dragEndPos }) => ({
+    redo: sM.linkState.bind(
+      sM,
+      { smId, parentId, childId, canBeInitial: false, dragEndPos },
+      false,
+      true
+    ),
     undo: sM.linkState.bind(sM, { smId, parentId: prevParentId, childId }, false),
   }),
 
-  linkState: (sM, { smId, parentId, childId }) => ({
-    redo: sM.linkState.bind(sM, { smId, parentId, childId, canBeInitial: false }, false),
+  linkState: (sM, { smId, parentId, childId, dragEndPos }) => ({
+    redo: sM.linkState.bind(
+      sM,
+      { smId, parentId, childId, canBeInitial: false, dragEndPos },
+      false,
+      true
+    ),
     undo: sM.unlinkState.bind(sM, { smId, id: childId, canUndo: false }),
   }),
-  unlinkState: (sM, { smId, parentId, params }) => ({
+  unlinkState: (sM, { smId, parentId, params, dragEndPos }) => ({
     redo: sM.unlinkState.bind(sM, { ...params, parentId, childId: params.id, canUndo: false }),
-    undo: sM.linkState.bind(sM, { smId, parentId, childId: params.id, canBeInitial: false }, false),
+    undo: sM.linkState.bind(
+      sM,
+      { smId, parentId, childId: params.id, canBeInitial: false, dragEndPos },
+      false,
+      true
+    ),
   }),
   changeStatePosition: (sM, { smId, id, startPosition, endPosition }) => ({
     redo: sM.changeStatePosition.bind(sM, { smId, id, startPosition, endPosition }, false),
@@ -241,7 +262,13 @@ export const actionFunctions: ActionFunctions = {
   }),
   deleteInitialState: (sM, args) => ({
     redo: sM.deleteInitialStateWithTransition.bind(sM, args.smId, args.targetId, false),
-    undo: sM.createInitialStateWithTransition.bind(sM, args.smId, args.targetId, false),
+    undo: sM.createInitialStateWithTransition.bind(
+      sM,
+      args.smId,
+      args.targetId,
+      false,
+      args.position
+    ),
   }),
   changeInitialStatePosition: (sM, { smId, id, startPosition, endPosition }) => ({
     redo: sM.changeInitialStatePosition.bind(sM, { smId, id, startPosition, endPosition }, false),

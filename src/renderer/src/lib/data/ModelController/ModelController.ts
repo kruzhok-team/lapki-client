@@ -956,6 +956,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
     // Вычисляем новую координату, потому что после отсоединения родителя не сможем.
     const newPosition = { ...this.compoundStatePosition(smId, id, 'states') }; // ??
+    const prevPosition = { ...state.position };
     this.changeStatePosition(
       { smId, id, startPosition: state.position, endPosition: newPosition },
       canUndo
@@ -977,14 +978,14 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (canUndo) {
       this.history.do({
         type: 'unlinkState',
-        args: { smId, parentId, params },
+        args: { smId, parentId, params, dragEndPos: prevPosition },
         numberOfConnectedActions,
       });
     }
     this.emit('unlinkState', params);
   };
 
-  linkState = (args: LinkStateParams, canUndo = true) => {
+  linkState = (args: LinkStateParams, canUndo = true, absolute = false) => {
     const {
       smId,
       parentId,
@@ -1020,8 +1021,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         id: childId,
         startPosition: child.position,
         endPosition: {
-          x: dragEndPos.x - parent.position.x,
-          y: Math.max(0, dragEndPos.y - parent.position.y),
+          x: absolute ? dragEndPos.x : dragEndPos.x - parent.position.x,
+          y: absolute ? dragEndPos.y : Math.max(0, dragEndPos.y - parent.position.y),
         },
       },
       false
@@ -1049,18 +1050,17 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       this.createInitialStateWithTransition(smId, childId, canUndo);
       numberOfConnectedActions += 1;
     }
-
     if (canUndo) {
       if (!prevParentId) {
         this.history.do({
           type: 'linkState',
-          args: { smId, parentId, childId },
+          args: { smId, parentId, childId, dragEndPos: child.position },
           numberOfConnectedActions,
         });
       } else {
         this.history.do({
           type: 'linkStateToAnotherParent',
-          args: { smId, parentId, prevParentId, childId },
+          args: { smId, parentId, prevParentId, childId, dragEndPos: child.position },
           numberOfConnectedActions,
         });
       }
@@ -1127,7 +1127,12 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (canUndo) {
       this.history.do({
         type: 'createInitialState',
-        args: { smId, id: stateId, targetId: targetId, position: position },
+        args: {
+          smId,
+          id: stateId,
+          targetId: targetId,
+          position: this.model.data.elements.stateMachines[smId].initialStates[stateId].position,
+        },
       });
     }
   }
@@ -1167,7 +1172,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   };
 
   createState(args: CreateStateParams, canUndo = true) {
-    const { smId, parentId, canBeInitial = true } = args;
+    const { smId, parentId, canBeInitial = true, position } = args;
     let numberOfConnectedActions = 0;
     const newStateId = this.model.createState(args);
     this.emit('createState', {
@@ -1183,7 +1188,11 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     }
 
     if (parentId) {
-      this.linkState({ smId, parentId, childId: newStateId, canBeInitial }, canUndo);
+      this.linkState(
+        { smId, parentId, childId: newStateId, canBeInitial, dragEndPos: position },
+        canUndo,
+        true
+      );
       numberOfConnectedActions += 1;
       this.emit('linkState', { smId, parentId, childId: newStateId, canBeInitial });
     }

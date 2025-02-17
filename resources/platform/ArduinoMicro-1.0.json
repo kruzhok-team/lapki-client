@@ -358,7 +358,7 @@
         },
         "isHigh": {
           "img": "arduino/isHigh.svg",
-          "description": "Сигнал вызывается, когда значение на пине меняется на LOW",
+          "description": "Сигнал вызывается, когда значение на пине меняется на HIGH",
           "checkMethod": "isHigh"
         }
       },

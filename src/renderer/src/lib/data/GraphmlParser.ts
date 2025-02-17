@@ -609,10 +609,11 @@ export function importGraphml(
     const platforms: { [id: string]: Platform } = {};
     for (const smId in rawElements.stateMachines) {
       const rawSm = rawElements.stateMachines[smId];
-      if (!isPlatformAvailable(rawSm.platform)) {
-        throw new Error(`Неизвестная платформа ${rawSm.platform}.`);
+      const platformName = rawSm.platform ?? 'empty';
+      if (!isPlatformAvailable(platformName)) {
+        throw new Error(`Неизвестная платформа ${platformName}.`);
       }
-      const platform: Platform | undefined = getPlatform(rawSm.platform);
+      const platform: Platform | undefined = getPlatform(platformName);
       if (platform === undefined) {
         throw new Error('Internal error: undefined getPlatform result, but platform is avaialble.');
       }
@@ -640,7 +641,7 @@ export function importGraphml(
           sm.components
         );
       }
-      sm.platform = rawSm.platform;
+      sm.platform = platformName;
       sm.choiceStates = getChoices(rawSm.choices);
       sm.name = rawSm.name;
       sm.position = rawSm.position ?? { x: 0, y: 0 };

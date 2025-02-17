@@ -80,12 +80,6 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
     if (!note) return;
 
     note.data.backgroundColor = args.backgroundColor;
-    // if (canUndo) {
-    //   this.history.do({
-    //     type: 'changeNoteBackgroundColor',
-    //     args: { id, color, prevColor: note.data?.backgroundColor },
-    //   });
-    // }
 
     this.view.isDirty = true;
   };
@@ -95,12 +89,6 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
     if (!note) return;
 
     note.data.textColor = args.textColor;
-    // if (canUndo) {
-    //   this.history.do({
-    //     type: 'changeNoteTextColor',
-    //     args: { id, color, prevColor: note.data?.textColor },
-    //   });
-    // }
 
     this.view.isDirty = true;
   };
@@ -110,27 +98,19 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
     if (!note) return;
 
     note.data.fontSize = args.fontSize;
-    // if (canUndo) {
-    //   this.history.do({
-    //     type: 'changeNoteFontSize',
-    //     args: { id, fontSize, prevFontSize: note.data?.fontSize },
-    //   });
-    // }
-
-    // this.app.model.changeNoteFontSize(id, fontSize);
     note.prepareText();
 
     this.view.isDirty = true;
   };
 
-  changeNotePosition(args: { id: string; endPosition: Point }) {
+  changeNotePosition = (args: { id: string; endPosition: Point }) => {
     const note = this.items.get(args.id);
     if (!note) return;
 
     note.position = args.endPosition;
 
     this.view.isDirty = true;
-  }
+  };
 
   deleteNote = (args: DeleteDrawableParams) => {
     const { id } = args;
@@ -189,6 +169,12 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
 
   handleDragEnd = (note: Note, e: { dragStartPosition: Point; dragEndPosition: Point }) => {
     this.changeNotePosition({ id: note.id, endPosition: e.dragEndPosition });
+    this.controller.emit('changeNotePositionFromController', {
+      id: note.id,
+      smId: note.smId,
+      endPosition: e.dragEndPosition,
+      startPosition: e.dragStartPosition,
+    });
   };
 
   /*
@@ -222,11 +208,12 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
   }
 
   unwatch(note: Note) {
-    note.off('mousedown', this.handleMouseDown.bind(this, note));
-    note.off('dblclick', this.handleDoubleClick.bind(this, note));
-    note.off('mouseup', this.handleMouseUpOnNote.bind(this, note));
-    note.off('contextmenu', this.handleContextMenu.bind(this, note.id));
-    note.off('dragend', this.handleDragEnd.bind(this, note));
+    note.handlers.clear();
+    // note.off('mousedown', this.handleMouseDown.bind(this, note));
+    // note.off('dblclick', this.handleDoubleClick.bind(this, note));
+    // note.off('mouseup', this.handleMouseUpOnNote.bind(this, note));
+    // note.off('contextmenu', this.handleContextMenu.bind(this, note.id));
+    // note.off('dragend', this.handleDragEnd.bind(this, note));
 
     note.edgeHandlers.unbindEvents();
   }

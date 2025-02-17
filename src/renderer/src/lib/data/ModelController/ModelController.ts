@@ -209,9 +209,11 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     controller.on('selectComponent', this.selectComponent);
     controller.on('changeStatePosition', this.changeStatePosition);
     controller.on('changeInitialPosition', this.changeInitialStatePosition);
-    controller.on('changeFinalStatePosition', this.changeFinalStatePosition);
-    controller.on('changeChoicePosition', this.changeChoiceStatePosition);
+    controller.on('changeFinalPositionFromController', this.changeFinalStatePosition);
+    controller.on('changeNotePositionFromController', this.changeNotePosition);
+    controller.on('changeChoicePositionFromController', this.changeChoiceStatePosition);
     controller.on('changeComponentPosition', this.changeComponentPosition);
+    controller.on('changeTransitionPositionFromController', this.changeTransitionPosition);
     controller.on('changeStateMachinePosition', this.changeStateMachinePosition);
   }
 
@@ -233,10 +235,12 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     controller.off('openChangeTransitionModalFromController', this.openChangeTransitionModal);
     controller.off('changeStatePosition', this.changeStatePosition);
     controller.off('changeInitialPosition', this.changeInitialStatePosition);
-    controller.off('changeFinalStatePosition', this.changeFinalStatePosition);
-    controller.off('changeChoicePosition', this.changeChoiceStatePosition);
+    controller.off('changeFinalPositionFromController', this.changeFinalStatePosition);
+    controller.off('changeChoicePositionFromController', this.changeChoiceStatePosition);
     controller.off('changeComponentPosition', this.changeComponentPosition);
     controller.off('changeStateMachinePosition', this.changeStateMachinePosition);
+    controller.off('changeTransitionPositionFromController', this.changeTransitionPosition);
+    controller.off('changeNotePositionFromController', this.changeNotePosition);
     controller.unwatch();
   }
 
@@ -422,11 +426,12 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.model.changeStateMachinePosition(id, endPosition);
   };
 
-  changeTransitionPosition(args: ChangePosition, canUndo = true) {
+  changeTransitionPosition = (args: ChangePosition, canUndo = true) => {
     const { smId, id, startPosition, endPosition } = args;
-
-    const transition = this.model.data.elements.stateMachines[args.smId][args.id];
+    const transition = this.model.data.elements.stateMachines[args.smId].transitions[args.id];
     if (!transition) return;
+
+    this.model.changeTransitionPosition(smId, id, endPosition);
 
     if (canUndo) {
       this.history.do({
@@ -435,10 +440,9 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       });
     }
 
-    this.model.changeTransitionPosition(smId, id, endPosition);
-
     this.emit('changeTransitionPosition', args);
-  }
+  };
+
   // Флаг withInitial нужен, когда мы автоматически создаем переход из начального состояния
   createTransition(params: CreateTransitionParams, withInitial: boolean = false, canUndo = true) {
     const { sourceId, targetId, color, id: prevId, label, smId } = params;
@@ -775,10 +779,12 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.emit('changeNoteText', args);
   };
 
-  changeNotePosition(args: ChangePosition, canUndo = true) {
+  changeNotePosition = (args: ChangePosition, canUndo = true) => {
     const { id, smId, startPosition, endPosition } = args;
-    const note = this.model.data.elements.stateMachines[smId].notes[smId];
+    const note = this.model.data.elements.stateMachines[smId].notes[id];
     if (!note) return;
+
+    this.model.changeNotePosition(smId, id, endPosition);
 
     if (canUndo) {
       this.history.do({
@@ -787,10 +793,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       });
     }
 
-    this.model.changeNotePosition(smId, id, endPosition);
-
     this.emit('changeNotePosition', args);
-  }
+  };
 
   deleteNote(args: DeleteDrawableParams, canUndo = true) {
     const { id, smId } = args;
@@ -1183,7 +1187,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
     const siblings = this.getSiblings(smId, newStateId, parentId)[0];
     if (!siblings.length && !parentId) {
-      this.createInitialStateWithTransition(smId, newStateId, canUndo);
+      this.createInitialStateWithTransition(smId, newStateId, false);
       numberOfConnectedActions += 1;
     }
 
@@ -1634,7 +1638,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (canUndo) {
       this.history.do({
         type: 'createChoiceState',
-        args: { ...params, ...state, newStateId: id },
+        args: { ...params, ...state, id: id },
         numberOfConnectedActions: 0,
       });
     }
@@ -1671,7 +1675,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   changeFinalStatePosition = (args: ChangePosition, canUndo = true) => {
     this.model.changeFinalStatePosition(args.smId, args.id, args.endPosition);
-    this.emit('changeFinalStatePosition', args);
     const { startPosition } = args;
     if (canUndo && startPosition !== undefined) {
       this.history.do({
@@ -1679,6 +1682,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         args: { ...args, startPosition: startPosition },
       });
     }
+    this.emit('changeFinalStatePosition', args);
   };
 
   changeChoiceStatePosition = (args: ChangePosition, canUndo = true) => {
@@ -1729,7 +1733,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (canUndo) {
       this.history.do({
         type: 'createFinalState',
-        args: { ...params, ...state, newStateId: id },
+        args: { ...params, ...state, id: id },
         numberOfConnectedActions: 0,
       });
     }

@@ -564,7 +564,7 @@
       "importFiles": ["CalcInt.hpp"],
       "singletone": false
     },
-    
+
     "CalcFloat": {
       "description": "Компонент для вычислений c плавающей точкой. Хранит счётчик (вещественное число), над которым можно совершать арифметические операции.",
       "img": "math/calcFloat.svg",
@@ -662,7 +662,7 @@
           "description": "Возвести значение счетчика в степень.",
           "parameters": [
             {
-              "name": "power",  
+              "name": "power",
               "type": "float",
               "description": "Значение для операции (возводимая степень)."
             }
@@ -706,36 +706,39 @@
         "size": {
           "type": "uint16_t",
           "description": "Размер массива (должен быть не более, чем 65535 элементов)",
-          "optional" : false
+          "optional": false
         }
       },
       "methods": {
         "set": {
           "img": "common/set-value.svg",
           "description": "Установить значение элементу с заданным индексом",
-          "variables": {
-            "index": {
+          "parameters": [
+            {
+              "name": "index",
               "img": "common/arrayIndex.svg",
               "description": "Индекс элемента",
               "type": "uint16_t"
             },
-            "value": {
+            {
+              "name": "value",
               "img": "common/value.svg",
               "description": "Новое значение для элемента",
               "type": "int16_t"
             }
-          }
+          ]
         },
         "peek": {
           "img": "common/arrayPeek.svg",
           "description": "Переместиться на элемент с заданным индексом",
-          "variables": {
-            "index": {
+          "parameters": [
+            {
+              "name": "index",
               "img": "common/arrayIndex.svg",
               "description": "Индекс элемента",
               "type": "uint16_t"
             }
-          }
+          ]
         },
         "next": {
           "img": "common/arrayNext.svg",

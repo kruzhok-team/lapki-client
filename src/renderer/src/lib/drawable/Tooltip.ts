@@ -1,6 +1,6 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { Shape } from '@renderer/lib/drawable/Shape';
-import theme, { getColor } from '@renderer/theme';
+import { getColor } from '@renderer/theme';
 
 import { Point } from '../types';
 import { drawText, getTextWidth } from '../utils/text';

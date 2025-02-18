@@ -199,10 +199,6 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
     }
   }
 
-  handleShowTooltip = (e: MyMouseEvent) => {
-    // this.emit('showTooltip', { event: e });
-  };
-
   handleMouseDown = (e: MyMouseEvent) => {
     this.isMouseDown = true;
     this.dragStartPosition = { ...this.position };

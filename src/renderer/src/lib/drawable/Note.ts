@@ -29,6 +29,10 @@ export class Note extends Shape {
     this.edgeHandlers = new EdgeHandlers(this.app as CanvasEditor, this);
   }
 
+  get tooltipText() {
+    return undefined;
+  }
+
   get bounds() {
     return { ...this.data.position, width: 200, height: 10 * 2 + this.textData.height };
   }

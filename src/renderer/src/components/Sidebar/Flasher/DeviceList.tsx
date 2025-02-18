@@ -403,8 +403,8 @@ export const DeviceList: React.FC = () => {
             onClick={() => handleErrorMessageDisplay()}
             style={{
               display:
-                connectionStatus == ClientStatus.NO_CONNECTION ||
-                connectionStatus == ClientStatus.CONNECTION_ERROR
+                connectionStatus === ClientStatus.NO_CONNECTION ||
+                connectionStatus === ClientStatus.CONNECTION_ERROR
                   ? 'inline-block'
                   : 'none',
             }}

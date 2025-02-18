@@ -157,6 +157,10 @@ export type CanvasControllerEvents = {
   setTextMode: boolean;
   editStateMachine: EditStateMachine;
   changeStateMachinePosition: ChangePosition;
+  changeTransitionPositionFromController: ChangePosition;
+  changeNotePositionFromController: ChangePosition;
+  changeChoicePositionFromController: ChangePosition;
+  changeFinalPositionFromController: ChangePosition;
 };
 
 export type CanvasData = {

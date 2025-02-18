@@ -4,13 +4,14 @@ import { Device } from '@renderer/components/Modules/Device';
 import { ClientStatus } from '@renderer/components/Modules/Websocket/ClientStatus';
 import { FlasherMessage, FlashResult } from '@renderer/types/FlasherTypes';
 
+// TODO: объединить с useManagerMS
 interface FlasherState {
   isFlashing: boolean;
   setIsFlashing: (flashing: boolean) => void;
   connectionStatus: string;
   setConnectionStatus: (newConnectionStatus: string) => void;
-  log: string[];
-  setLog: (update: (prevMessages: string[]) => string[]) => void;
+  // log: string[];
+  // setLog: (update: (prevMessages: string[]) => string[]) => void;
   devices: Map<string, Device>;
   setDevices: (newDevices: Map<string, Device>) => void;
   /**
@@ -35,8 +36,8 @@ export const useFlasher = create<FlasherState>((set) => ({
   setIsFlashing: (newFlashing) => set({ isFlashing: newFlashing }),
   connectionStatus: ClientStatus.NO_CONNECTION,
   setConnectionStatus: (newConnectionStatus) => set({ connectionStatus: newConnectionStatus }),
-  log: [],
-  setLog: (update) => set((value) => ({ log: update(value.log) })),
+  // log: [],
+  // setLog: (update) => set((value) => ({ log: update(value.log) })),
   devices: new Map(),
   setDevices: (newDevices: Map<string, Device>) => set({ devices: newDevices }),
   secondsUntilReconnect: null,

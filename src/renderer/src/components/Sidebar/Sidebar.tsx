@@ -13,6 +13,7 @@ import { useFlasherHooks } from '@renderer/hooks/useFlasherHooks';
 import { useModal } from '@renderer/hooks/useModal';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { useDoc } from '@renderer/store/useDoc';
+import { useManagerMS } from '@renderer/store/useManagerMS';
 import { useTabs } from '@renderer/store/useTabs';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
 
@@ -72,6 +73,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   >(undefined);
   const [compilerData, setCompilerData] = useState<CompilerResult | undefined>(undefined);
   const [compilerStatus, setCompilerStatus] = useState('Не подключен.');
+  const { setCompilerData: setCompilerDataMS } = useManagerMS();
   const [onDocumentationToggle, isDocOpen] = useDoc((state) => [
     state.onDocumentationToggle,
     state.isOpen,
@@ -84,6 +86,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const isFlasherTabOpen = tabs.find((tab) => tab.name === flasherTabName) !== undefined;
 
   const isEditorDataStale = modelController.model.useData('', 'isStale');
+
+  // TODO: костыль
+  useEffect(() => {
+    setCompilerDataMS(compilerData);
+  }, [compilerData, setCompilerDataMS]);
 
   const closeFlasherModal = () => {
     Flasher.freezeReconnectTimer(false);

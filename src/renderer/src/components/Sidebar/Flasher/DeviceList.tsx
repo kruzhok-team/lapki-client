@@ -11,28 +11,19 @@ import { useFlasher } from '@renderer/store/useFlasher';
 import { useManagerMS } from '@renderer/store/useManagerMS';
 import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
 import { useTabs } from '@renderer/store/useTabs';
-import { CompilerResult } from '@renderer/types/CompilerTypes';
 import { StateMachine } from '@renderer/types/diagram';
 import { FlashResult } from '@renderer/types/FlasherTypes';
 
 import { ArduinoDevice, Device, MSDevice } from '../../Modules/Device';
-import { ManagerMS } from '../../Modules/ManagerMS';
 import {
   SERIAL_MONITOR_CONNECTED,
-  SERIAL_MONITOR_CONNECTING,
   SERIAL_MONITOR_NO_CONNECTION,
   SERIAL_MONITOR_NO_SERVER_CONNECTION,
   SerialMonitor,
 } from '../../Modules/SerialMonitor';
 import { ClientStatus } from '../../Modules/Websocket/ClientStatus';
-import { Select } from '../../UI/Select';
 
-export interface FlasherProps {
-  compilerData: CompilerResult | undefined;
-  openAvrdudeGuideModal: () => void;
-}
-
-export const Loader: React.FC<FlasherProps> = ({ compilerData, openAvrdudeGuideModal }) => {
+export const DeviceList: React.FC = () => {
   const modelController = useModelContext();
   const stateMachinesId = modelController.model.useData('', 'elements.stateMachinesId') as {
     [ID: string]: StateMachine;
@@ -90,48 +81,6 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData, openAvrdudeGuideM
 
   const handleGetList = async () => {
     Flasher.getList();
-  };
-
-  const handleFlash = async () => {
-    if (currentDeviceID === null || currentDeviceID === undefined) {
-      console.log('Не удаётся начать прошивку, currentDeviceID =', currentDeviceID);
-      return;
-    }
-    const currentDevice = devices.get(currentDeviceID);
-    if (currentDevice === null || currentDevice === undefined) {
-      console.log('Не удаётся начать прошивку, currentDevice =', currentDevice);
-      return;
-    }
-    if (
-      serialMonitorDevice &&
-      serialMonitorDevice.deviceID == currentDeviceID &&
-      serialConnectionStatus == SERIAL_MONITOR_CONNECTING //SERIAL_MONITOR_CONNECTED
-    ) {
-      /*
-      см. 'flash-open-serial-monitor' в Flasher.ts обработку случая, 
-      когда монитор порта не успевает закрыться перед отправкой запроса на прошивку
-      */
-      SerialMonitor.closeMonitor(serialMonitorDevice.deviceID);
-    }
-    if (flasherFile) {
-      Flasher.flash(currentDevice, serialMonitorDevice, serialConnectionStatus);
-    } else {
-      Flasher.flashCompiler(
-        // проверка на undefined осуществляется в flashButtonDisabled
-        compilerData!.state_machines[deviceStateMachine.get(currentDeviceID)!].binary!,
-        currentDevice,
-        serialMonitorDevice,
-        serialConnectionStatus
-      );
-    }
-  };
-
-  const handleFileChoose = () => {
-    if (flasherFile) {
-      setFlasherFile(undefined);
-    } else {
-      Flasher.openAndSetFile();
-    }
   };
 
   const avrdudeBlock = flasherIsLocal && !hasAvrdude;
@@ -335,13 +284,6 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData, openAvrdudeGuideM
     }
   };
 
-  useEffect(() => {
-    setCompilerDataMS(compilerData);
-    if (compilerData === undefined) {
-      setDeviceStateMachine(new Map());
-    }
-  }, [compilerData, setCompilerDataMS]);
-
   const handleReconnect = async () => {
     if (flasherIsLocal) {
       await window.electron.ipcRenderer.invoke('Module:reboot', 'lapki-flasher');
@@ -349,52 +291,20 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData, openAvrdudeGuideM
       Flasher.reconnect();
     }
   };
-  // условия отключения кнопки для загрузки прошивки
-  const flashButtonDisabled = () => {
-    if (isFlashing || connectionStatus !== ClientStatus.CONNECTED) {
-      return true;
-    }
-    if (avrdudeBlock) {
-      return true;
-    }
-    if (!currentDeviceID) {
-      return true;
-    }
-    if (!devices.has(currentDeviceID)) {
-      setCurrentDevice(undefined);
-      return true;
-    }
-    if (flasherFile) {
-      return false;
-    }
-    const smId = deviceStateMachine.get(currentDeviceID);
-    if (smId === undefined) {
-      return true;
-    }
-    const stateData = compilerData?.state_machines[smId];
-    if (stateData === undefined || stateData.binary.length === 0) {
-      return true;
-    }
-    // для безопасности, лучше всего блокировать кнопку загрузки, пока не произойдёт подключения к монитору порта,
-    // чтобы гарантированно избежать ситуации одновремнной прошивки и подключения к порту
-    if (serialConnectionStatus == SERIAL_MONITOR_CONNECTING) {
-      return true;
-    }
-    return false;
-  };
-  // вывод сообщения об отсутствии avrdude и кнопка с подсказкой для пользователя
-  const avrdudeCheck = () => {
-    if (!avrdudeBlock) return;
-    return (
-      <button
-        type="button"
-        className="btn-primary mb-2 w-full border-warning bg-warning"
-        onClick={openAvrdudeGuideModal}
-      >
-        Программа avrdude не найдена!
-      </button>
-    );
-  };
+  // TODO: перенести во flasher
+  // // вывод сообщения об отсутствии avrdude и кнопка с подсказкой для пользователя
+  // const avrdudeCheck = () => {
+  //   if (!avrdudeBlock) return;
+  //   return (
+  //     <button
+  //       type="button"
+  //       className="btn-primary mb-2 w-full border-warning bg-warning"
+  //       onClick={openAvrdudeGuideModal}
+  //     >
+  //       Программа avrdude не найдена!
+  //     </button>
+  //   );
+  // };
 
   const getDevicePlatform = (device: Device) => {
     // TODO: подумать, можно ли найти более надёжный способ сверки платформ на клиенте и сервере
@@ -408,46 +318,6 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData, openAvrdudeGuideM
         return 'ArduinoUno';
     }
     return undefined;
-  };
-
-  const stateMachineOptions = () => {
-    if (currentDeviceID == undefined) return undefined;
-    const currentDevice = devices.get(currentDeviceID);
-    if (currentDevice == undefined) return undefined;
-    const platform = getDevicePlatform(currentDevice);
-    return [...Object.entries(stateMachinesId)]
-      .filter(([, sm]) => sm.platform == platform)
-      .map(([id, sm]) => {
-        return { value: id, label: sm.name ?? id };
-      });
-  };
-  const getSelectMachineStateOption = () => {
-    const emptyValue = null;
-    if (currentDeviceID == undefined) return emptyValue;
-    const smId = deviceStateMachine.get(currentDeviceID);
-    if (smId == undefined) return emptyValue;
-    const sm = stateMachinesId[smId];
-    if (!sm) {
-      setDeviceStateMachine((oldValue) => {
-        const newValue = new Map(oldValue);
-        newValue.delete(currentDeviceID);
-        return newValue;
-      });
-      return emptyValue;
-    }
-    return { value: smId, label: sm.name ?? smId };
-  };
-  /**
-   * Изменение выбранной машины состояний для текущего устройства
-   * @param smId ID машины состояний
-   */
-  const onSelectMachineState = (smId: string | undefined) => {
-    if (currentDeviceID == undefined || smId == undefined) return;
-    setDeviceStateMachine((oldValue) => {
-      const newValue = new Map(oldValue);
-      newValue.set(currentDeviceID, smId);
-      return newValue;
-    });
   };
 
   const onSelectDevice = (deviceId: string) => {
@@ -493,63 +363,11 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData, openAvrdudeGuideM
       );
     }
   };
-  const buttonsDisplay = () => {
-    const curDevice = devices.get(currentDeviceID ?? '');
-    if (curDevice) {
-      if (!curDevice.isMSDevice()) {
-        return (
-          <div>
-            {avrdudeCheck()}
-            <div className="flex justify-between gap-2">
-              <button
-                className="btn-primary mb-2 w-full"
-                onClick={handleFlash}
-                disabled={flashButtonDisabled()}
-              >
-                Загрузить
-              </button>
-              <button
-                className={twMerge('btn-primary mb-2 px-4', flasherFile && 'opacity-70')}
-                onClick={handleFileChoose}
-                disabled={isFlashing || avrdudeBlock}
-              >
-                {flasherFile ? '✖' : '…'}
-              </button>
-            </div>
-            {flasherFile ? (
-              <p className="mb-2 rounded bg-primaryActive text-white">
-                из файла <span className="font-medium">{flasherFile}</span>
-              </p>
-            ) : (
-              <Select
-                className="mb-2"
-                isSearchable={false}
-                placeholder="Выберите машину состояний..."
-                options={stateMachineOptions()}
-                value={getSelectMachineStateOption()}
-                onChange={(opt) => onSelectMachineState(opt?.value)}
-                isDisabled={currentDeviceID === undefined}
-                noOptionsMessage={() => 'Нет подходящих машин состояний'}
-              />
-            )}
-          </div>
-        );
-      } else {
-        return (
-          <div>
-            <button className="btn-primary mb-2 w-full" onClick={handleAddManagerMSTab}>
-              Менеджер МС-ТЮК
-            </button>
-          </div>
-        );
-      }
-    }
-    return null;
-  };
+
   return (
     <section className="flex h-full flex-col text-center">
       <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
-        Загрузчик
+        Список устройств
       </h3>
 
       <div className="px-4">
@@ -613,7 +431,6 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData, openAvrdudeGuideM
             </div>
           ))}
         </div>
-        {buttonsDisplay()}
         <button
           className="btn-primary mb-2 w-full"
           onClick={handleAddAvrdudeTab}

@@ -212,6 +212,18 @@ export const FlasherTab: React.FC = () => {
   };
 
   const handleSendBin = async () => {
+    // TODO: авто-закрытие монитора порта
+    // if (
+    //   serialMonitorDevice &&
+    //   serialMonitorDevice.deviceID == currentDeviceID &&
+    //   serialConnectionStatus == SERIAL_MONITOR_CONNECTING //SERIAL_MONITOR_CONNECTED
+    // ) {
+    //   /*
+    //   см. 'flash-open-serial-monitor' в Flasher.ts обработку случая,
+    //   когда монитор порта не успевает закрыться перед отправкой запроса на прошивку
+    //   */
+    //   SerialMonitor.closeMonitor(serialMonitorDevice.deviceID);
+    // }
     if (!addressBookSetting) {
       ManagerMS.addLog('Ошибка! Адресная книга не загрузилась!');
       return;

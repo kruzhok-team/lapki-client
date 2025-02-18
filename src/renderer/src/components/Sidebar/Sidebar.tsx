@@ -1,4 +1,4 @@
-import React, { Dispatch, useMemo, useState } from 'react';
+import React, { Dispatch, useEffect, useMemo, useState } from 'react';
 
 import { ReactComponent as CompilerIcon } from '@renderer/assets/icons/compiler.svg';
 import { ReactComponent as ComponentsIcon } from '@renderer/assets/icons/components.svg';
@@ -9,6 +9,7 @@ import { ReactComponent as HistoryIcon } from '@renderer/assets/icons/history.sv
 import { ReactComponent as SettingsIcon } from '@renderer/assets/icons/settings.svg';
 import { ReactComponent as StateIcon } from '@renderer/assets/icons/state_machine.svg';
 import { useSettings } from '@renderer/hooks';
+import { useFlasherHooks } from '@renderer/hooks/useFlasherHooks';
 import { useModal } from '@renderer/hooks/useModal';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { useDoc } from '@renderer/store/useDoc';
@@ -60,6 +61,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   openImportError,
 }) => {
   const modelController = useModelContext();
+
+  useFlasherHooks();
 
   const [isCompilerOpen, openCompilerSettings, closeCompilerSettings] = useModal(false);
   const [flasherSetting, setFlasherSetting] = useSettings('flasher');

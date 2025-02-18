@@ -41,7 +41,12 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData, openAvrdudeGuideM
   const [deviceStateMachine, setDeviceStateMachine] = useState<Map<string, string>>(new Map());
   const [flasherSetting, setFlasherSetting] = useSettings('flasher');
   const flasherIsLocal = flasherSetting?.type === 'local';
-  const { connectionStatus, setFlasherConnectionStatus, isFlashing, setIsFlashing } = useFlasher();
+  const {
+    connectionStatus,
+    setConnectionStatus: setFlasherConnectionStatus,
+    isFlashing,
+    setIsFlashing,
+  } = useFlasher();
   const {
     device: serialMonitorDevice,
     setDevice: setSerialMonitorDevice,
@@ -245,30 +250,30 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData, openAvrdudeGuideM
     });
   };
 
-  useEffect(() => {
-    window.electron.ipcRenderer.invoke('hasAvrdude').then(function (has: boolean) {
-      //console.log('hasAvrdude', has);
-      setHasAvrdude(has);
-    });
-    Flasher.bindReact(
-      setFlasherDevices,
-      setFlasherConnectionStatus,
-      setFlasherLog,
-      setFlasherFile,
-      setIsFlashing,
-      setFlasherError,
-      setFlashResult,
-      setSecondsUntilReconnect
-    );
-    SerialMonitor.bindReact(
-      addDeviceMessage,
-      setSerialMonitorDevice,
-      setSerialConnectionStatus,
-      setSerialLog
-    );
-    ManagerMS.bindReact(setDeviceMS, setLogMS, setAddressMS, setMetaMS);
-    Flasher.initReader(new FileReader());
-  }, []);
+  // useEffect(() => {
+  //   window.electron.ipcRenderer.invoke('hasAvrdude').then(function (has: boolean) {
+  //     //console.log('hasAvrdude', has);
+  //     setHasAvrdude(has);
+  //   });
+  //   Flasher.bindReact(
+  //     setFlasherDevices,
+  //     setFlasherConnectionStatus,
+  //     setFlasherLog,
+  //     setFlasherFile,
+  //     setIsFlashing,
+  //     setFlasherError,
+  //     setFlashResult,
+  //     setSecondsUntilReconnect
+  //   );
+  //   SerialMonitor.bindReact(
+  //     addDeviceMessage,
+  //     setSerialMonitorDevice,
+  //     setSerialConnectionStatus,
+  //     setSerialLog
+  //   );
+  //   ManagerMS.bindReact(setDeviceMS, setLogMS, setAddressMS, setMetaMS);
+  //   Flasher.initReader(new FileReader());
+  // }, []);
 
   useEffect(() => {
     if (!flasherSetting) return;

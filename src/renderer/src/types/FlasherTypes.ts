@@ -60,7 +60,9 @@ export type FlasherType =
   | 'ms-reset-result'
   | 'ms-get-meta-data'
   | 'ms-meta-data'
-  | 'ms-meta-data-error';
+  | 'ms-meta-data-error'
+  | 'ms-get-address-and-meta'
+  | 'ms-address-and-meta';
 export type FlasherPayload =
   | string
   | Device
@@ -77,7 +79,8 @@ export type FlasherPayload =
   | MSGetAddress
   | MSAddressAction
   | MetaData
-  | FlashBacktrackMs;
+  | FlashBacktrackMs
+  | MSAddressAndMeta;
 export type FlasherMessage = {
   type: FlasherType;
   payload: FlasherPayload;
@@ -255,4 +258,13 @@ export type OperationInfo = {
   type: OperationType;
   addressInfo: AddressData;
   deviceId: string;
+};
+
+export type MSAddressAndMeta = {
+  deviceID: string;
+  address: string;
+  type: string;
+  errorMsg: string;
+  errorCode: number;
+  meta: MetaData;
 };

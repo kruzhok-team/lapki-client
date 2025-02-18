@@ -72,8 +72,8 @@ export class ManagerMS {
       address: address,
     });
   }
-  static getAddress(deviceID: string) {
-    Flasher.send('ms-get-address', {
+  static getAddressAndMeta(deviceID: string) {
+    Flasher.send('ms-get-address-and-meta', {
       deviceID: deviceID,
     });
   }

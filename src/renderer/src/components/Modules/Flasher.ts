@@ -16,6 +16,7 @@ import {
   MetaDataID,
   FlashBacktrackMs,
   AddressData,
+  MSAddressAndMeta,
 } from '@renderer/types/FlasherTypes';
 
 import { ManagerMS } from './ManagerMS';
@@ -632,7 +633,6 @@ export class Flasher extends ClientWS {
           case 0:
             ManagerMS.addLog(`Получен адрес устройства: ${getAddressStatus.comment}`);
             ManagerMS.setAddress(getAddressStatus.comment);
-            //(Roundabout1) TODO: ManagerMS.getMetaData(getAddressStatus.deviceID, getAddressStatus.comment);
             break;
           case 1:
             ManagerMS.addLog('Не удалось получить адрес устройства, так как оно не подключено.');
@@ -745,6 +745,68 @@ export class Flasher extends ClientWS {
               `Не удалось получить метаданные из-за незизвестной ошибки с кодом ${result.code}. ${comment}`
             );
         }
+        break;
+      }
+      case 'ms-address-and-meta': {
+        const result = response.payload as MSAddressAndMeta;
+        switch (result.errorCode) {
+          case 0: {
+            ManagerMS.addLog(`Получен адрес устройства: ${result.address}`);
+            ManagerMS.setAddress(result.address);
+            ManagerMS.setMeta({
+              deviceID: result.deviceID,
+              RefBlChip: result.meta.RefBlChip,
+              RefBlFw: result.meta.RefBlFw,
+              RefBlHw: result.meta.RefBlHw,
+              RefBlProtocol: result.meta.RefBlProtocol,
+              RefBlUserCode: result.meta.RefBlUserCode,
+              RefCgFw: result.meta.RefCgFw,
+              RefCgHw: result.meta.RefCgHw,
+              RefCgProtocol: result.meta.RefCgProtocol,
+              type: result.type,
+            });
+            break;
+          }
+          case 1: {
+            const errorLog = 'Возникла ошибка при попытке узнать адрес';
+            if (result.errorMsg != '') {
+              ManagerMS.addLog(`${errorLog}. Текст ошибки: ${result.errorMsg}`);
+            } else {
+              ManagerMS.addLog(`${errorLog}.`);
+            }
+            break;
+          }
+          case 2: {
+            const prefix = `Получен адрес устройства: ${result.address}. Однако возникла ошибка при попытке узнать тип.`;
+            if (result.errorMsg != '') {
+              ManagerMS.addLog(`${prefix}. Текст ошибки: ${result.errorMsg}`);
+            } else {
+              ManagerMS.addLog(`${prefix}.`);
+            }
+            ManagerMS.setAddress(result.address);
+            break;
+          }
+          case 3: {
+            ManagerMS.addLog(`Не удалось получить адрес устройства, так как оно не подключено.`);
+            break;
+          }
+          case 4: {
+            ManagerMS.addLog(
+              `Не удалось получить адрес устройства, так как запрашиваемое устройство не является МС-ТЮК.`
+            );
+            break;
+          }
+          default: {
+            const prefix = `Получена неизвестная ошибка с кодом ${result.errorCode} при попытке узнать адрес устройства`;
+            if (result.errorMsg != '') {
+              ManagerMS.addLog(`${prefix}. Текст ошибки: ${result.errorMsg}`);
+            } else {
+              ManagerMS.addLog(`${prefix}.`);
+            }
+            break;
+          }
+        }
+        break;
       }
     }
   }

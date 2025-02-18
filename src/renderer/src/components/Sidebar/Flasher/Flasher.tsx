@@ -181,12 +181,12 @@ export const FlasherTab: React.FC = () => {
     }
   }, [device]);
 
-  const handleGetAddress = () => {
+  const handleGetAddressAndMeta = () => {
     if (!device || !managerMSSetting) return;
     if (!managerMSSetting.hideGetAddressModal) {
       openMsGetAddressModal();
     } else {
-      ManagerMS.getAddress(device.deviceID);
+      ManagerMS.getAddressAndMeta(device.deviceID);
     }
   };
   const handleOpenAddressBook = () => {
@@ -339,7 +339,11 @@ export const FlasherTab: React.FC = () => {
     <section className="mr-3 flex h-full flex-col bg-bg-secondary">
       <label className="m-2">{handleCurrentDeviceDisplay()}</label>
       <div className="m-2">
-        <button className="btn-primary mr-4" onClick={handleGetAddress} disabled={noAccessToDevice}>
+        <button
+          className="btn-primary mr-4"
+          onClick={handleGetAddressAndMeta}
+          disabled={noAccessToDevice}
+        >
           Подключить плату
         </button>
         <button className="btn-primary mr-4" onClick={handleOpenAddressBook}>
@@ -484,7 +488,7 @@ export const FlasherTab: React.FC = () => {
         onClose={closeMsGetAddressModal}
         onSubmit={() => {
           if (!device) return;
-          ManagerMS.getAddress(device.deviceID);
+          ManagerMS.getAddressAndMeta(device.deviceID);
         }}
         onNoRemind={() => {
           setManagerMSSetting({

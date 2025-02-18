@@ -294,17 +294,6 @@ export const FlasherTab: React.FC = () => {
     setFlashTableData(newTable);
   };
 
-  const handleCurrentDeviceDisplay = () => {
-    const prefix = 'Статус';
-    if (connectionStatus !== ClientStatus.CONNECTED) {
-      return `${prefix}: отсутствует подключение к загрузчику. Проверьте его статус на соответствующей вкладке`;
-    }
-    if (device === undefined) {
-      return `${prefix}: устройство отсутствует. Выберите МС-ТЮК во вкладке загрузчик`;
-    }
-    return `${prefix}: устройство ${device.displayName()} подключено`;
-  };
-
   /**
    * Обновление адресной книги после редактирования
    */
@@ -338,7 +327,7 @@ export const FlasherTab: React.FC = () => {
 
   return (
     <section className="mr-3 flex h-full flex-col bg-bg-secondary">
-      <label className="m-2">{handleCurrentDeviceDisplay()}</label>
+      <label className="m-2">{`Статус: ${connectionStatus}`}</label>
       <div className="m-2">
         <button
           className="btn-primary mr-4"

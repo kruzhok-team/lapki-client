@@ -11,8 +11,8 @@ interface ManagerMSState {
   setLog: (update: (prevMessages: string[]) => string[]) => void;
   address: string;
   setAddress: (curAddress: string) => void;
-  meta: MetaDataID | undefined;
-  setMeta: (curMeta: MetaDataID | undefined) => void;
+  metaID: MetaDataID | undefined;
+  setMetaID: (curMeta: MetaDataID | undefined) => void;
   compilerData: CompilerResult | undefined;
   setCompilerData: (data: CompilerResult | undefined) => void;
 }
@@ -24,8 +24,8 @@ export const useManagerMS = create<ManagerMSState>((set) => ({
   setLog: (update) => set((value) => ({ log: update(value.log) })),
   address: '',
   setAddress: (newAddress) => set({ address: newAddress }),
-  meta: undefined,
-  setMeta: (newMeta) => set({ meta: newMeta }),
+  metaID: undefined,
+  setMetaID: (newMeta) => set({ metaID: newMeta }),
   compilerData: undefined,
   setCompilerData: (newCompilerData) => set({ compilerData: newCompilerData }),
 }));

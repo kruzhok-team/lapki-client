@@ -208,10 +208,11 @@ export type AddressData = {
 };
 
 // метаданные с deviceID
-export interface MetaDataID extends MetaData {
+export type MetaDataID = {
   deviceID: string;
+  meta: MetaData;
   type: string; // тип устройства (определяется по RefBlHw)
-}
+};
 
 export enum FirmwareTargetType {
   tjc_ms,

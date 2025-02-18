@@ -55,7 +55,7 @@ export const Loader: React.FC<FlasherProps> = ({ compilerData, openAvrdudeGuideM
     setDevice: setDeviceMS,
     setLog: setLogMS,
     setAddress: setAddressMS,
-    setMeta: setMetaMS,
+    setMetaID: setMetaMS,
     setCompilerData: setCompilerDataMS,
   } = useManagerMS();
   const [currentDeviceID, setCurrentDevice] = useState<string | undefined>(undefined);

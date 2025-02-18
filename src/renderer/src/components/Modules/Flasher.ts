@@ -755,14 +755,7 @@ export class Flasher extends ClientWS {
             ManagerMS.setAddress(result.address);
             ManagerMS.setMeta({
               deviceID: result.deviceID,
-              RefBlChip: result.meta.RefBlChip,
-              RefBlFw: result.meta.RefBlFw,
-              RefBlHw: result.meta.RefBlHw,
-              RefBlProtocol: result.meta.RefBlProtocol,
-              RefBlUserCode: result.meta.RefBlUserCode,
-              RefCgFw: result.meta.RefCgFw,
-              RefCgHw: result.meta.RefCgHw,
-              RefCgProtocol: result.meta.RefCgProtocol,
+              meta: result.meta,
               type: result.type,
             });
             break;

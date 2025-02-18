@@ -33,7 +33,7 @@ export const FlasherTab: React.FC = () => {
     log,
     address: serverAddress,
     setAddress: setServerAddress,
-    meta,
+    metaID,
     compilerData,
   } = useManagerMS();
   const {
@@ -133,9 +133,10 @@ export const FlasherTab: React.FC = () => {
   }, [serverAddress]);
 
   useEffect(() => {
-    if (!meta || addressBookSetting === null) return;
+    if (!metaID || addressBookSetting === null) return;
+    const meta = metaID.meta;
     const metaStr = `
-- bootloader REF_HW: ${meta.RefBlHw} (${meta.type})
+- bootloader REF_HW: ${meta.RefBlHw} (${metaID.type})
 - bootloader REF_FW: ${meta.RefBlFw}
 - bootloader REF_CHIP: ${meta.RefBlChip}
 - booloader REF_PROTOCOL: ${meta.RefBlProtocol}
@@ -158,7 +159,7 @@ export const FlasherTab: React.FC = () => {
       {
         name: entry.name,
         address: entry.address,
-        type: meta.type,
+        type: metaID.type,
         meta: {
           RefBlHw: meta.RefBlHw,
           RefBlFw: meta.RefBlFw,
@@ -172,7 +173,7 @@ export const FlasherTab: React.FC = () => {
       },
       index
     );
-  }, [meta]);
+  }, [metaID]);
 
   useEffect(() => {
     if (device === undefined) {

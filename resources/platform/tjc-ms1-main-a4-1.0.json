@@ -312,6 +312,466 @@
       "buildFiles": ["Counter.h", "Counter.cpp"],
       "importFiles": ["Counter.h"],
       "singletone": false
+    },
+
+    "Random": {
+      "description": "Генерация псевдо-случайного числа",
+      "img": "common/random.svg",
+      "constructorParameters": {},
+      "signals": {},
+      "methods": {
+        "setSeed": {
+          "img": "common/randomSeed.svg",
+          "parameters": [
+            {
+              "name": "seed",
+              "type": "unsigned long"
+            }
+          ],
+          "description": "Сбросить состояние генератора и установить новый seed"
+        },
+        "doRandom": {
+          "img": "common/randomRoll.svg",
+          "description": "Сгенерировать случайное число"
+        },
+        "doRangeRandom": {
+          "img": "common/randomRange.svg",
+          "parameters": [
+            {
+              "name": "begin",
+              "type": "signed long long"
+            },
+            {
+              "name": "end",
+              "type": "signed long long"
+            }
+          ],
+          "description": "Сгенерировать случайное число в заданном диапазоне [begin; end)"
+        }
+      },
+      "buildFiles": ["Random.hpp"],
+      "importFiles": ["Random.hpp"],
+      "singletone": false,
+      "variables": {
+        "value": {
+          "img": "common/valueSigned.svg",
+          "type": "signed long",
+          "description": "Сгенерированное целое число со знаком"
+        },
+        "uValue": {
+          "img": "common/valueUnsigned.svg",
+          "type": "unsigned long",
+          "description": "Сгенерированное безнаковое целое число"
+        }
+      }
+    },
+
+    "CalcInt": {
+      "description": "Компонент для целочисленных вычислений. Хранит счётчик (32-разрядное знаковое число), над которым можно совершать арифметические и битовые операции.",
+      "img": "math/calcInt.svg",
+      "signals": {
+        "isOverflow": {
+          "img": "math/overflow.svg",
+          "description": "Переполнение счетчика.",
+          "checkMethod": "isOverflow"
+        },
+        "isZeroDivision": {
+          "img": "math/divZero.svg",
+          "description": "Деление на ноль.",
+          "checkMethod": "isZeroDivision"
+        }
+      },
+      "methods": {
+        "set": {
+          "img": "common/set-value.svg",
+          "description": "Установить значение счетчика.",
+          "parameters": [
+            {
+              "name": "value",
+              "type": "int32_t",
+              "description": "Новое значение для счетчика."
+            }
+          ]
+        },
+        "add": {
+          "img": "math/add.svg",
+          "description": "Прибавить значение к счетчику.",
+          "parameters": [
+            {
+              "name": "value",
+              "type": "int32_t",
+              "description": "Слагаемое для операции."
+            }
+          ]
+        },
+        "sub": {
+          "img": "math/sub.svg",
+          "description": "Вычесть значение из счетчика.",
+          "parameters": [
+            {
+              "name": "value",
+              "type": "int32_t",
+              "description": "Вычитаемое для операции."
+            }
+          ]
+        },
+        "mul": {
+          "img": "math/mul.svg",
+          "description": "Умножить значение счетчика.",
+          "parameters": [
+            {
+              "name": "value",
+              "type": "int32_t",
+              "description": "Множитель для операции."
+            }
+          ]
+        },
+        "div": {
+          "img": "math/div.svg",
+          "description": "Целочисленное деление значения счетчика. При делении на ноль значение не изменяется и возникает сигнал.",
+          "parameters": [
+            {
+              "name": "value",
+              "type": "int32_t",
+              "description": "Делитель для операции."
+            }
+          ]
+        },
+        "mod": {
+          "img": "math/mod.svg",
+          "description": "Остаток от деления счетчика. При делении на ноль значение не изменяется и возникает сигнал.",
+          "parameters": [
+            {
+              "name": "value",
+              "type": "int32_t",
+              "description": "Делитель для операции."
+            }
+          ]
+        },
+        "neg": {
+          "img": "math/neg.svg",
+          "description": "Поменять знак у счетчика.",
+          "parameters": []
+        },
+        "abs": {
+          "img": "math/abs.svg",
+          "description": "Установить абсолютное значение для счетчика.",
+          "parameters": []
+        },
+        "bitAnd": {
+          "img": "math/bitAnd.svg",
+          "description": "Побитовое И для значения счетчика.",
+          "parameters": [
+            {
+              "name": "value",
+              "type": "int32_t",
+              "description": "Значение для операции."
+            }
+          ]
+        },
+        "bitOr": {
+          "img": "math/bitOr.svg",
+          "description": "Побитовое ИЛИ для значения счетчика.",
+          "parameters": [
+            {
+              "name": "value",
+              "type": "int32_t",
+              "description": "Значение для операции."
+            }
+          ]
+        },
+        "bitXor": {
+          "img": "math/bitXor.svg",
+          "description": "Побитовая операция XOR для значения счетчика.",
+          "parameters": [
+            {
+              "name": "value",
+              "type": "int32_t",
+              "description": "Значение для операции."
+            }
+          ]
+        },
+        "bitNot": {
+          "img": "math/bitNot.svg",
+          "description": "Побитовое отрицание для значения счетчика.",
+          "parameters": []
+        },
+        "shiftLeft": {
+          "img": "math/shiftLeft.svg",
+          "description": "Побитовый сдвиг влево для значения счетчика.",
+          "parameters": [
+            {
+              "name": "value",
+              "type": "int32_t",
+              "description": "Количество бит для сдвига."
+            }
+          ]
+        },
+        "shiftRight": {
+          "img": "math/shiftRight.svg",
+          "description": "Побитовый сдвиг вправо для значения счетчика.",
+          "parameters": [
+            {
+              "name": "value",
+              "type": "int32_t",
+              "description": "Количество бит для сдвига."
+            }
+          ]
+        }
+      },
+      "variables": {
+        "value": {
+          "img": "common/value.svg",
+          "type": "int32_t",
+          "description": "Значение счетчика."
+        }
+      },
+      "constructorParameters": {},
+      "buildFiles": ["CalcInt.hpp", "OverflowHelpers.hpp"],
+      "importFiles": ["CalcInt.hpp"],
+      "singletone": false
+    },
+    
+    "CalcFloat": {
+      "description": "Компонент для вычислений c плавающей точкой. Хранит счётчик (вещественное число), над которым можно совершать арифметические операции.",
+      "img": "math/calcFloat.svg",
+      "signals": {
+        "isOverflow": {
+          "img": "math/overflow.svg",
+          "description": "Переполнение счетчика.",
+          "checkMethod": "isOverflow"
+        },
+        "isZeroDivision": {
+          "img": "math/divZero.svg",
+          "description": "Деление на ноль.",
+          "checkMethod": "isZeroDivision"
+        }
+      },
+      "methods": {
+        "set": {
+          "img": "common/set-value.svg",
+          "description": "Установить значение счетчика.",
+          "parameters": [
+            {
+              "name": "value",
+              "type": "float",
+              "description": "Новое значение для счетчика."
+            }
+          ]
+        },
+        "add": {
+          "img": "math/add.svg",
+          "description": "Прибавить значение к счетчику.",
+          "parameters": [
+            {
+              "name": "value",
+              "type": "float",
+              "description": "Слагаемое для операции."
+            }
+          ]
+        },
+        "sub": {
+          "img": "math/sub.svg",
+          "description": "Вычесть значение из счетчика.",
+          "parameters": [
+            {
+              "name": "value",
+              "type": "float",
+              "description": "Вычитаемое для операции."
+            }
+          ]
+        },
+        "mul": {
+          "img": "math/mul.svg",
+          "description": "Умножить значение счетчика.",
+          "parameters": [
+            {
+              "name": "value",
+              "type": "float",
+              "description": "Множитель для операции."
+            }
+          ]
+        },
+        "div": {
+          "img": "math/div.svg",
+          "description": "Деление значения счетчика. При делении на ноль значение не изменяется и возникает сигнал.",
+          "parameters": [
+            {
+              "name": "value",
+              "type": "float",
+              "description": "Делитель для операции."
+            }
+          ]
+        },
+        "mod": {
+          "img": "math/mod.svg",
+          "description": "Остаток от деления счетчика. При делении на ноль значение не изменяется и возникает сигнал.",
+          "parameters": [
+            {
+              "name": "value",
+              "type": "float",
+              "description": "Делитель для операции."
+            }
+          ]
+        },
+        "neg": {
+          "img": "math/neg.svg",
+          "description": "Поменять знак у счетчика.",
+          "parameters": []
+        },
+        "abs": {
+          "img": "math/abs.svg",
+          "description": "Установить абсолютное значение для счетчика.",
+          "parameters": []
+        },
+        "pow": {
+          "img": "math/pow.svg",
+          "description": "Возвести значение счетчика в степень.",
+          "parameters": [
+            {
+              "name": "power",  
+              "type": "float",
+              "description": "Значение для операции (возводимая степень)."
+            }
+          ]
+        },
+        "sqrt": {
+          "img": "math/sqrt.svg",
+          "description": "Взять квадратный корень от значения счетчика.",
+          "parameters": []
+        },
+        "log": {
+          "img": "math/log.svg",
+          "description": "Логарифм от счетчика с задаваемым основанием.",
+          "parameters": [
+            {
+              "name": "base",
+              "type": "float",
+              "description": "Значение для операции (основание логарифма)."
+            }
+          ]
+        }
+      },
+      "variables": {
+        "value": {
+          "img": "common/value.svg",
+          "type": "float",
+          "description": "Значение счетчика."
+        }
+      },
+      "constructorParameters": {},
+      "buildFiles": ["CalFloat.hpp", "OverflowHelpers.hpp"],
+      "importFiles": ["CalcFloat.hpp"],
+      "singletone": false
+    },
+
+    "Array": {
+      "description": "Статический массив",
+      "img": "arduino/timer.svg",
+      "signals": {},
+      "constructorParameters": {
+        "size": {
+          "type": "uint16_t",
+          "description": "Размер массива (должен быть не более, чем 65535 элементов)",
+          "optional" : false
+        }
+      },
+      "methods": {
+        "set": {
+          "img": "common/set-value.svg",
+          "description": "Установить значение элементу с заданным индексом",
+          "variables": {
+            "index": {
+              "img": "common/arrayIndex.svg",
+              "description": "Индекс элемента",
+              "type": "uint16_t"
+            },
+            "value": {
+              "img": "common/value.svg",
+              "description": "Новое значение для элемента",
+              "type": "int16_t"
+            }
+          }
+        },
+        "peek": {
+          "img": "common/arrayPeek.svg",
+          "description": "Переместиться на элемент с заданным индексом",
+          "variables": {
+            "index": {
+              "img": "common/arrayIndex.svg",
+              "description": "Индекс элемента",
+              "type": "uint16_t"
+            }
+          }
+        },
+        "next": {
+          "img": "common/arrayNext.svg",
+          "description": "Переместиться на элемент со следующим индексом"
+        },
+        "prev": {
+          "img": "common/arrayPrev.svg",
+          "description": "Переместиться на элемент с предыдущим индексом"
+        }
+      },
+      "buildFiles": ["Array.hpp"],
+      "importFiles": ["Array.hpp"],
+      "singletone": false,
+      "variables": {
+        "value": {
+          "img": "common/value.svg",
+          "type": "int16_t",
+          "description": "Значение элемента с текущим индексом."
+        },
+        "index": {
+          "img": "common/arrayIndex.svg",
+          "type": "uint16_t",
+          "description": "Текущий индекс."
+        },
+        "size": {
+          "img": "common/arraySize.svg",
+          "type": "uint16_t",
+          "description": "Размер массива."
+        }
+      }
+    },
+
+    "Alarm": {
+      "description": "Компонент для взаимодействия с общей сигнальной линией (писатель)",
+      "img": "tjc-ms/alarm.svg",
+      "signals": {},
+      "constructorParameters": {},
+      "methods": {
+        "call": {
+          "img": "tjc-ms/alarmSet.svg",
+          "description": "Поднять сигнальную линию"
+        },
+        "release": {
+          "img": "tjc-ms/alarmStop.svg",
+          "description": "Отпустить сигнальную линию"
+        }
+      },
+      "buildFiles": ["Alarm.hpp"],
+      "importFiles": ["Alarm.hpp"],
+      "singletone": false,
+      "variables": {}
+    },
+
+    "AlarmListener": {
+      "description": "Компонент для взаимодействия с общей сигнальной линией (читатель)",
+      "img": "tjc-ms/alarmGet.svg",
+      "signals": {
+        "onAlarm": {
+          "img": "tjc-ms/alarmSet.svg",
+          "description": "Сигнал на линии",
+          "checkMethod": "onAlarm"
+        }
+      },
+      "constructorParameters": {},
+      "methods": {},
+      "buildFiles": ["AlarmListener.hpp"],
+      "importFiles": ["AlarmListener.hpp"],
+      "singletone": false,
+      "variables": {}
     }
   }
 }

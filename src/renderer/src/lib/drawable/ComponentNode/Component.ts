@@ -30,6 +30,10 @@ export class DrawableComponent extends Shape {
     };
   }
 
+  get tooltipText() {
+    return undefined;
+  }
+
   get computedStyles() {
     const scale = this.app.controller.scale;
 

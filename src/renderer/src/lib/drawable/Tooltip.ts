@@ -40,8 +40,8 @@ export class Tooltip extends Shape {
     const fontSize = 16 / this.app.controller.scale;
     const lineHeight = 1.2;
     const fontFamily = 'Fira Sans';
-    ctx.fillStyle = getColor('bg-primary');
-    ctx.globalAlpha = 0.9;
+    ctx.fillStyle = getColor('bg-hover');
+    ctx.globalAlpha = 0.95;
     ctx.beginPath();
     ctx.roundRect(
       x,
@@ -57,7 +57,7 @@ export class Tooltip extends Shape {
       x: x + p,
       y: y + p,
       textAlign: 'left',
-      color: theme.colors.diagram.transition.color,
+      color: getColor('text-primary'),
       font: {
         fontSize,
         fontFamily,

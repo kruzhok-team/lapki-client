@@ -7,3 +7,4 @@ export * from './Picto';
 export * from './Shape';
 export * from './ComponentNode';
 export * from './TransitionNode';
+export * from './Tooltip';

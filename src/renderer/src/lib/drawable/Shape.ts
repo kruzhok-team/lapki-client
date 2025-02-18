@@ -18,6 +18,7 @@ interface ShapeEvents {
   longpress: { event: MyMouseEvent };
   drag: { event: MyMouseEvent };
   dragend: { dragStartPosition: Point; dragEndPosition: Point };
+  showTooltip: { event: MyMouseEvent };
 }
 
 /**
@@ -48,6 +49,8 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
   constructor(protected app: CanvasEditor, public id: string, public parent?: Shape) {
     super();
   }
+
+  abstract get tooltipText(): string | undefined;
 
   abstract get position(): Point;
   abstract set position(value: Point);
@@ -195,6 +198,10 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
       });
     }
   }
+
+  handleShowTooltip = (e: MyMouseEvent) => {
+    // this.emit('showTooltip', { event: e });
+  };
 
   handleMouseDown = (e: MyMouseEvent) => {
     this.isMouseDown = true;

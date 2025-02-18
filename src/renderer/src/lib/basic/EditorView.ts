@@ -1,9 +1,10 @@
 import * as TWEEN from '@tweenjs/tween.js';
+import throttle from 'lodash.throttle';
 
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
 import { MAX_SCALE, MIN_SCALE } from '@renderer/lib/constants';
-import { Children, Picto, Shape } from '@renderer/lib/drawable';
+import { Children, Picto, Shape, Tooltip } from '@renderer/lib/drawable';
 import { Drawable } from '@renderer/lib/types';
 import { GetCapturedNodeParams } from '@renderer/lib/types/drawable';
 import { Point } from '@renderer/lib/types/graphics';
@@ -18,6 +19,7 @@ import { getColor } from '@renderer/theme';
 interface EditorViewEvents {
   dblclick: Point;
   contextMenu: Point;
+  showTooltip: Point;
 }
 
 export class EditorView extends EventEmitter<EditorViewEvents> implements Drawable {
@@ -25,10 +27,15 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
 
   children = new Children();
   picto = new Picto();
+  private tooltip: Tooltip | null = null;
+  private showTooltipTimer: NodeJS.Timeout | undefined = undefined;
+  private mouseOnNode: Shape | null = null;
   private mouseDownNode: Shape | null = null; // Для оптимизации чтобы на каждый mousemove не искать
+
   constructor(public app: CanvasEditor) {
     super();
   }
+  lastMousePov: Point = { x: 0, y: 0 };
 
   initEvents() {
     if (!this.app) return;
@@ -41,7 +48,6 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
     this.app.keyboard.on('ctrlc', this.app.controller.model.copySelected);
     this.app.keyboard.on('ctrlv', this.app.controller.model.pasteSelected);
     this.app.keyboard.on('ctrld', this.app.controller.model.duplicateSelected);
-
     this.app.mouse.on('mouseout', this.handleMouseUp);
     this.app.mouse.on('mousedown', this.handleMouseDown);
     this.app.mouse.on('mouseup', this.handleMouseUp);
@@ -89,6 +95,9 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
     };
 
     drawChildren(this);
+    if (this.tooltip) {
+      this.tooltip.draw(ctx);
+    }
   }
 
   private drawGrid(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
@@ -205,6 +214,44 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
   };
 
   handleMouseMove = (e: MyMouseEvent) => {
+    const clear = () => {
+      clearTimeout(this.showTooltipTimer);
+      this.tooltip = null;
+      this.mouseOnNode = null;
+      setTimeout(() => {
+        this.isDirty = true;
+      }, 70);
+    };
+
+    if (this.showTooltipTimer) {
+      clear();
+    }
+
+    const checkTooltip = throttle((e: MyMouseEvent) => {
+      const node = this.getCapturedNode({ position: e });
+      if (!node) {
+        clear();
+        return;
+      }
+      if (!e.left && !e.right && node !== this.mouseOnNode) {
+        clearTimeout(this.showTooltipTimer);
+        this.tooltip = null;
+        this.mouseOnNode = node;
+        this.showTooltipTimer = setTimeout(() => {
+          if (node?.tooltipText) {
+            this.tooltip = new Tooltip(this.app, node.tooltipText);
+            this.tooltip.position = this.windowToWorldCoords({
+              x: this.app.mouse.px,
+              y: this.app.mouse.py,
+            });
+            this.isDirty = true;
+          }
+        }, 700);
+      }
+    }, 20);
+
+    checkTooltip(e);
+
     if (e.left) this.handleLeftMouseMove(e);
     if (e.right) this.handleRightMouseMove(e);
 

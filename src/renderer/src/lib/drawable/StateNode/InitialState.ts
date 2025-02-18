@@ -17,6 +17,10 @@ export class InitialState extends Shape {
     this.data = data;
   }
 
+  get tooltipText() {
+    return 'Начальное псевдосостояние';
+  }
+
   get position() {
     return this.data.position;
   }

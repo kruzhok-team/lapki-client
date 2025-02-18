@@ -28,7 +28,7 @@ export class State extends Shape {
   }
 
   get tooltipText() {
-    return `Состояние ${this.data.name ?? this.id}`;
+    return undefined;
   }
 
   get scale() {

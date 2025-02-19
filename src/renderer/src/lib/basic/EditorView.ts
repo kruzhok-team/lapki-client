@@ -4,7 +4,7 @@ import throttle from 'lodash.throttle';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
 import { MAX_SCALE, MIN_SCALE } from '@renderer/lib/constants';
-import { Children, Picto, Shape, Tooltip } from '@renderer/lib/drawable';
+import { Children, Picto, Shape } from '@renderer/lib/drawable';
 import { Drawable } from '@renderer/lib/types';
 import { GetCapturedNodeParams } from '@renderer/lib/types/drawable';
 import { Point } from '@renderer/lib/types/graphics';
@@ -19,7 +19,8 @@ import { getColor } from '@renderer/theme';
 interface EditorViewEvents {
   dblclick: Point;
   contextMenu: Point;
-  showTooltip: Point;
+  showToolTip: { position: Point; text: string };
+  closeToolTip: undefined;
 }
 
 export class EditorView extends EventEmitter<EditorViewEvents> implements Drawable {
@@ -27,7 +28,6 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
 
   children = new Children();
   picto = new Picto();
-  private tooltip: Tooltip | null = null;
   private showTooltipTimer: NodeJS.Timeout | undefined = undefined;
   private mouseOnNode: Shape | null = null;
   private mouseDownNode: Shape | null = null; // Для оптимизации чтобы на каждый mousemove не искать
@@ -95,9 +95,6 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
     };
 
     drawChildren(this);
-    if (this.tooltip) {
-      this.tooltip.draw(ctx);
-    }
   }
 
   private drawGrid(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
@@ -216,10 +213,11 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
   handleMouseMove = (e: MyMouseEvent) => {
     const clear = () => {
       clearTimeout(this.showTooltipTimer);
-      this.tooltip = null;
-      this.mouseOnNode = null;
       setTimeout(() => {
-        this.isDirty = true;
+        // this.mouseOnNode?.handleCloseTooltip();
+        // this.isDirty = true;
+        this.emit('closeToolTip', undefined);
+        this.mouseOnNode = null;
       }, 70);
     };
 
@@ -235,18 +233,19 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
       }
       if (!e.left && !e.right && node !== this.mouseOnNode) {
         clearTimeout(this.showTooltipTimer);
-        this.tooltip = null;
         this.mouseOnNode = node;
         this.showTooltipTimer = setTimeout(() => {
+          const offset = this.app.mouse.getOffset();
           if (node?.tooltipText) {
-            this.tooltip = new Tooltip(this.app, node.tooltipText);
-            this.tooltip.position = this.windowToWorldCoords({
-              x: this.app.mouse.px,
-              y: this.app.mouse.py,
+            this.emit('showToolTip', {
+              position: {
+                x: this.app.mouse.px + offset.x,
+                y: this.app.mouse.py + offset.y,
+              },
+              text: node.tooltipText,
             });
-            this.isDirty = true;
           }
-        }, 700);
+        }, 400);
       }
     }, 20);
 

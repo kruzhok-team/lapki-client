@@ -18,7 +18,6 @@ interface ShapeEvents {
   longpress: { event: MyMouseEvent };
   drag: { event: MyMouseEvent };
   dragend: { dragStartPosition: Point; dragEndPosition: Point };
-  showTooltip: { event: MyMouseEvent };
 }
 
 /**

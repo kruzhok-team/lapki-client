@@ -8,6 +8,7 @@ import {
   PASTE_POSITION_OFFSET_STEP,
 } from '@renderer/lib/constants';
 import { History } from '@renderer/lib/data/History';
+import { MyMouseEvent } from '@renderer/lib/types';
 import {
   CCreateInitialStateParams,
   CopyData,
@@ -80,6 +81,8 @@ import { FilesManager } from '../EditorModel/FilesManager';
 type ModelControllerEvents = CanvasControllerEvents & {
   openCreateTransitionModal: { smId: string; sourceId: string; targetId: string };
   openChangeTransitionModal: ChangeTransitionParams;
+  showToolTip: { text: string };
+  closeToolTip: undefined;
 };
 
 const StateTypes = ['states', 'finalStates', 'choiceStates', 'initialStates'] as const;

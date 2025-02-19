@@ -35,6 +35,7 @@ import {
   Layer,
   LinkStateParams,
   LinkTransitionParams,
+  MyMouseEvent,
   RenameComponentParams,
   SelectDrawable,
   UnlinkStateParams,

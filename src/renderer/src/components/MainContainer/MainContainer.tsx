@@ -13,6 +13,7 @@ import {
   UpdateModal,
   DiagramContextMenu,
   EditorSettings,
+  Tooltip,
 } from '@renderer/components';
 import { hideLoadingOverlay } from '@renderer/components/utils/OverlayControl';
 import { useErrorModal, useFileOperations, useSettings } from '@renderer/hooks';
@@ -184,7 +185,11 @@ export const MainContainer: React.FC = () => {
           </div>
         </div>
 
-        {isMounted && <DiagramContextMenu />}
+        {isMounted && (
+          <>
+            <DiagramContextMenu /> <Tooltip controller={controller} />
+          </>
+        )}
       </div>
 
       <SaveRemindModal {...saveModalProps} />

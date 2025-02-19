@@ -15,6 +15,10 @@ export class FinalState extends Shape {
     this.smId = smId;
   }
 
+  get tooltipText() {
+    return 'Конечное состояние';
+  }
+
   get position() {
     return this.data.position;
   }

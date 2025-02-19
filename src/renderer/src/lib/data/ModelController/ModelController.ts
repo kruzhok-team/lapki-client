@@ -80,6 +80,8 @@ import { FilesManager } from '../EditorModel/FilesManager';
 type ModelControllerEvents = CanvasControllerEvents & {
   openCreateTransitionModal: { smId: string; sourceId: string; targetId: string };
   openChangeTransitionModal: ChangeTransitionParams;
+  showToolTip: { text: string };
+  closeToolTip: undefined;
 };
 
 const StateTypes = ['states', 'finalStates', 'choiceStates', 'initialStates'] as const;

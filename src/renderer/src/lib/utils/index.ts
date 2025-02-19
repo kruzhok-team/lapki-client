@@ -85,6 +85,8 @@ interface GetLineParams {
   rect1Padding?: number;
   rect2Padding?: number;
   rectPadding: number;
+  start?: Point;
+  end?: Point;
 }
 
 export const getLine = (params: GetLineParams) => {
@@ -114,92 +116,96 @@ export const getLine = (params: GetLineParams) => {
 
   const result: TransitionLine = {
     start: {
-      x: 0,
-      y: 0,
+      x: params.start?.x ?? 0,
+      y: params.start?.y ?? 0,
     },
     mid: null,
     end: {
-      x: 0,
-      y: 0,
+      x: params.end?.x ?? 0,
+      y: params.end?.y ?? 0,
     },
     se: 0,
     ee: 0,
   };
 
-  // get straight lines
-  if (sectorV === 'center') {
-    result.start.x = sectorH === 'left' ? rect1Right : rect1Left;
-    result.start.y = rect2YCenter;
-    result.end.x = sectorH === 'left' ? rect2Left : rect2Right;
-    result.end.y = result.start.y;
+  if (!params.end || !params.start) {
+    debugger;
+    if (sectorV === 'center') {
+      // get straight lines
+      result.start.x = sectorH === 'left' ? rect1Right : rect1Left;
+      result.start.y = rect2YCenter;
 
-    result.se = getArrowAngle(result.start, result.end);
-    result.ee = getArrowAngle(result.end, result.start);
+      result.end.x = sectorH === 'left' ? rect2Left : rect2Right;
+      result.end.y = result.start.y;
 
-    return result;
-  }
+      result.se = getArrowAngle(result.start, result.end);
+      result.ee = getArrowAngle(result.end, result.start);
 
-  if (sectorH === 'center') {
-    result.start.x = rect2XCenter;
-    result.start.y = sectorV === 'top' ? rect1Bottom : rect1Top;
-    result.end.x = result.start.x;
-    result.end.y = sectorV === 'top' ? rect2Top : rect2Bottom;
+      return result;
+    }
 
-    result.se = getArrowAngle(result.start, result.end);
-    result.ee = getArrowAngle(result.end, result.start);
+    if (sectorH === 'center') {
+      result.start.x = rect2XCenter;
+      result.start.y = sectorV === 'top' ? rect1Bottom : rect1Top;
+      result.end.x = result.start.x;
+      result.end.y = sectorV === 'top' ? rect2Top : rect2Bottom;
 
-    return result;
-  }
+      result.se = getArrowAngle(result.start, result.end);
+      result.ee = getArrowAngle(result.end, result.start);
 
-  // get curve lines
-  if (sectorV === 'top') {
-    result.start.y = rect1Bottom - rectPadding;
-    result.end.x = rect2XCenter;
-    result.end.y = rect2Top;
+      return result;
+    }
 
-    if (sectorH === 'left') {
-      result.start.x = rect1Right;
+    // get curve lines
+    if (sectorV === 'top') {
+      result.start.y = rect1Bottom - rectPadding;
+      result.end.x = rect2XCenter;
+      result.end.y = rect2Top;
+
+      if (sectorH === 'left') {
+        result.start.x = rect1Right;
+
+        // line in rect restriction
+        if (result.end.x < rect1Right + rectPadding) {
+          result.end.x = rect1Right + rectPadding;
+        }
+      } else {
+        result.start.x = rect1Left;
+
+        // line in rect restriction
+        if (result.end.x > rect1Left - rectPadding) {
+          result.end.x = rect1Left - rectPadding;
+        }
+      }
 
       // line in rect restriction
-      if (result.end.x < rect1Right + rectPadding) {
-        result.end.x = rect1Right + rectPadding;
+      if (result.start.y + rectPadding > rect2Top) {
+        result.start.y = rect2Top - rectPadding;
       }
     } else {
-      result.start.x = rect1Left;
+      result.start.y = rect1Top + rectPadding;
+      result.end.x = rect2XCenter;
+      result.end.y = rect2Bottom;
+
+      if (sectorH === 'left') {
+        result.start.x = rect1Right;
+      } else {
+        result.start.x = rect1Left;
+      }
 
       // line in rect restriction
-      if (result.end.x > rect1Left - rectPadding) {
-        result.end.x = rect1Left - rectPadding;
+      if (result.start.y - rectPadding < rect2Bottom) {
+        result.start.y = rect2Bottom + rectPadding;
       }
     }
 
     // line in rect restriction
-    if (result.start.y + rectPadding > rect2Top) {
-      result.start.y = rect2Top - rectPadding;
+    if (sectorH === 'left' && result.end.x < rect1Right + rectPadding) {
+      result.end.x = rect1Right + rectPadding;
     }
-  } else {
-    result.start.y = rect1Top + rectPadding;
-    result.end.x = rect2XCenter;
-    result.end.y = rect2Bottom;
-
-    if (sectorH === 'left') {
-      result.start.x = rect1Right;
-    } else {
-      result.start.x = rect1Left;
+    if (sectorH === 'right' && result.end.x > rect1Left - rectPadding) {
+      result.end.x = rect1Left - rectPadding;
     }
-
-    // line in rect restriction
-    if (result.start.y - rectPadding < rect2Bottom) {
-      result.start.y = rect2Bottom + rectPadding;
-    }
-  }
-
-  // line in rect restriction
-  if (sectorH === 'left' && result.end.x < rect1Right + rectPadding) {
-    result.end.x = rect1Right + rectPadding;
-  }
-  if (sectorH === 'right' && result.end.x > rect1Left - rectPadding) {
-    result.end.x = rect1Left - rectPadding;
   }
 
   result.mid = {

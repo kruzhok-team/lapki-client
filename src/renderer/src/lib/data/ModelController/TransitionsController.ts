@@ -361,6 +361,19 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     this.view.isDirty = true;
   };
 
+  recalculateArrowPosition = (point?: Point) => {
+    if (!point) return;
+
+    return {
+      x:
+        (point.x - this.controller.offset.x / this.app.controller.scale) *
+        this.app.controller.scale,
+      y:
+        (point.y - this.controller.offset.y / this.app.controller.scale) *
+        this.app.controller.scale,
+    };
+  };
+
   handleDragEnd = (
     transition: Transition,
     e: { dragStartPosition: Point; dragEndPosition: Point }
@@ -375,6 +388,8 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
       startPosition: e.dragStartPosition,
       smId: transition.smId,
       id: transition.id,
+      sourcePoint: this.recalculateArrowPosition(transition.arrow.start),
+      endPoint: this.recalculateArrowPosition(transition.arrow.end),
     });
   };
 

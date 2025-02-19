@@ -78,6 +78,8 @@ export interface Transition {
     condition?: Condition | null | string;
     do?: Action[] | string;
   };
+  targetPoint?: Point;
+  sourcePoint?: Point;
   //TODO: В дальнейшем планируется убрать
   selection?: boolean;
 }

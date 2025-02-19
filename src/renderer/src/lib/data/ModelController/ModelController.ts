@@ -8,7 +8,6 @@ import {
   PASTE_POSITION_OFFSET_STEP,
 } from '@renderer/lib/constants';
 import { History } from '@renderer/lib/data/History';
-import { MyMouseEvent } from '@renderer/lib/types';
 import {
   CCreateInitialStateParams,
   CopyData,

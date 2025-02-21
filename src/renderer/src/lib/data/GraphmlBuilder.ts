@@ -192,11 +192,13 @@ function serializeTransitionEvents(
   components: { [id: string]: Component },
   platform: Platform
 ): CGMLTransitionAction[] {
+  const serializedTrigger = getTrigger(components, platform, trigger);
+  const serializedCondition = getCondition(condition, platform, components);
   return [
     {
       trigger: {
-        event: getTrigger(components, platform, trigger),
-        condition: getCondition(condition, platform, components),
+        event: serializedTrigger,
+        condition: serializedTrigger ? serializedCondition : serializedCondition ?? 'else',
       },
       action: getActions(doActions, components, platform),
     },

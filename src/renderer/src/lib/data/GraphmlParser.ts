@@ -336,7 +336,7 @@ function actionsToEventData(
         eventData.trigger = trigger;
       }
     }
-    if (action.trigger?.condition) {
+    if (action.trigger?.condition && action.trigger?.condition !== 'else') {
       eventData.condition = parseCondition(action.trigger.condition);
     }
     eventDataArr.push(eventData);

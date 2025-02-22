@@ -8,11 +8,13 @@ import { TemplatesList } from '@renderer/types/templates';
 interface TemplateSelectionProps {
   selectedTemplate: { type: string; name: string } | null;
   setSelectedTemplate: (value: { type: string; name: string }) => void;
+  onDoubleClick?: () => void;
 }
 
 export const TemplateSelection: React.FC<TemplateSelectionProps> = ({
   selectedTemplate,
   setSelectedTemplate,
+  onDoubleClick,
 }) => {
   const modelController = useModelContext();
 
@@ -34,12 +36,12 @@ export const TemplateSelection: React.FC<TemplateSelectionProps> = ({
   }, [modelController.files]);
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <div>Загружаю...</div>;
   }
 
   return Object.entries(templates).map(([type, names]) => (
     <div key={type}>
-      <h3 className="mb-1 text-lg capitalize">{type}</h3>
+      <h3 className="mb-1 text-lg capitalize opacity-70">{type}</h3>
       <div className="flex flex-col">
         {names.map((name) => (
           <button
@@ -50,6 +52,7 @@ export const TemplateSelection: React.FC<TemplateSelectionProps> = ({
               isSelected(type, name) && 'bg-bg-active'
             )}
             onClick={() => setSelectedTemplate({ type, name })}
+            onDoubleClick={onDoubleClick}
           >
             {name}
           </button>

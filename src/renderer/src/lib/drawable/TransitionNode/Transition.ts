@@ -25,6 +25,10 @@ export class Transition extends Shape {
       : new ArrowsWithoutLabel(this, this.app);
   }
 
+  get tooltipText() {
+    return undefined;
+  }
+
   get source() {
     const node =
       this.app.controller.states.get(this.data.sourceId) ||
@@ -81,8 +85,8 @@ export class Transition extends Shape {
   }
 
   draw(ctx: CanvasRenderingContext2D) {
-    this.label.draw(ctx);
     this.arrow.draw(ctx);
+    this.label.draw(ctx);
 
     if (this.isSelected) {
       this.drawSelection(ctx);

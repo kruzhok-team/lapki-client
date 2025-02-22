@@ -80,6 +80,7 @@ function actualizeComponents(oldComponents: { [id: string]: CompilerComponent })
     const oldComponent = oldComponents[oldComponentId];
     components[oldComponentId] = {
       ...oldComponent,
+      name: oldComponentId,
       order: orderComponent,
     };
     orderComponent += 1;

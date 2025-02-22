@@ -68,6 +68,7 @@ function serializeArgs(
   }
   for (const argId in serializedArgs) {
     const arg = serializedArgs[argId];
+    if (arg === undefined) continue;
     if (isVariable(arg)) {
       const trimmedComponentName = arg.component.trim();
       const component = components[trimmedComponentName];
@@ -93,16 +94,22 @@ function serializeArgs(
 export function serializeEvent(
   components: { [id: string]: Component },
   platform: Platform,
-  trigger: Event
+  trigger: Event,
+  useName: boolean = false
 ): string {
   if (isDefaultComponent(trigger)) {
     return convertDefaultComponent(trigger.component, trigger.method);
   }
 
+  const componentName =
+    useName && components[trigger.component].name
+      ? components[trigger.component].name
+      : trigger.component;
+
   if (trigger.args === undefined || Object.keys(trigger.args).length === 0) {
-    return `${trigger.component}.${trigger.method}`;
+    return `${componentName}.${trigger.method}`;
   } else {
-    return `${trigger.component}.${trigger.method}(${serializeArgs(
+    return `${componentName}.${trigger.method}(${serializeArgs(
       components,
       platform,
       trigger.args
@@ -185,11 +192,13 @@ function serializeTransitionEvents(
   components: { [id: string]: Component },
   platform: Platform
 ): CGMLTransitionAction[] {
+  const serializedTrigger = getTrigger(components, platform, trigger);
+  const serializedCondition = getCondition(condition, platform, components);
   return [
     {
       trigger: {
-        event: getTrigger(components, platform, trigger),
-        condition: getCondition(condition, platform, components),
+        event: serializedTrigger,
+        condition: serializedTrigger ? serializedCondition : serializedCondition ?? 'else',
       },
       action: getActions(doActions, components, platform),
     },
@@ -247,7 +256,7 @@ const invertOperatorAlias = {
 };
 
 function isVariable(operand: any): operand is Variable {
-  return operand.component !== undefined;
+  return operand['component'] !== undefined;
 }
 
 function isConditionArray(value: unknown): value is Condition[] {
@@ -420,7 +429,7 @@ function getNoteFormatNode(note: Note): CGMLDataNode[] {
   }
 
   if (note.textColor) {
-    content += `textColor/ ${note.fontSize}\n\n`;
+    content += `textColor/ ${note.textColor}\n\n`;
   }
 
   if (!content) return [];
@@ -459,10 +468,18 @@ function serializeComponents(components: { [id: string]: Component }): {
     cgmlComponents[`c${id}`] = {
       id: id,
       type: component.type,
-      parameters: component.parameters,
+      parameters: {
+        ...component.parameters,
+      },
       order: component.order,
       unsupportedDataNodes: [getPointNode(component.position)],
     };
+    if (component.name) {
+      cgmlComponents[`c${id}`].parameters = {
+        ...cgmlComponents[`c${id}`].parameters,
+        name: component.name,
+      };
+    }
   }
   return cgmlComponents;
 }

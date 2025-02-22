@@ -60,7 +60,7 @@ export class EdgeHandlers {
     const offset = 4 / this.app.controller.scale;
     let { x, y, width, height, childrenHeight } = this.shape.drawBounds;
 
-    height += childrenHeight ?? 0;
+    height = childrenHeight !== 0 ? childrenHeight : height;
 
     return [
       {

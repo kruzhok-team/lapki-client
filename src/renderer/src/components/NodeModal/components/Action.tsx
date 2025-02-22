@@ -8,6 +8,8 @@ import { useModelContext } from '@renderer/store/ModelContext';
 import { Action as ActionData, Component, Variable } from '@renderer/types/diagram';
 import { getMatrixDimensions } from '@renderer/utils';
 
+import { Picto } from './Picto';
+
 import { MatrixWidget } from '../ActionsModal/MatrixWidget';
 
 interface ActionProps {
@@ -17,7 +19,7 @@ interface ActionProps {
   onChange: () => void;
   onDragStart: () => void;
   onDrop: () => void;
-  data: ActionData;
+  data: ActionData & { componentName: string };
 }
 
 /**
@@ -35,14 +37,19 @@ export const Action: React.FC<ActionProps> = (props) => {
   const platforms = controller.useData('platform') as { [id: string]: PlatformManager };
   const platform = platforms[smId];
 
-  const serializeParameter = (param: string | Variable | number[][]) => {
+  const serializeParameter = (index: number, param: undefined | string | Variable | number[][]) => {
+    if (param === undefined) return '';
     if (Array.isArray(param)) return '[...]';
-    if (typeof param === 'string') return param;
-
-    return `${param.component}${getActionDelimeter(
+    if (typeof param === 'string') return `${index !== 0 ? ', ' : ''}${param}`;
+    return `${index !== 0 && ', '}${components[param.component].name ?? param.component}${getActionDelimeter(
       platform.data,
       components[param.component].type
     )}${param.method}`;
+  };
+
+  const handleDoubleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onChange();
   };
 
   return (
@@ -53,23 +60,15 @@ export const Action: React.FC<ActionProps> = (props) => {
       onDragOver={(event) => event.preventDefault()}
       onDragStart={onDragStart}
       onDrop={onDrop}
-      onDoubleClick={onChange}
+      onDoubleClick={handleDoubleClick}
     >
-      <div className="flex items-center gap-[2px] overflow-hidden rounded-md bg-border-primary">
-        <div className="bg-bg-primary px-4 py-2">
-          {platform.getFullComponentIcon(data.component)}
-        </div>
-
-        <div className="bg-bg-primary px-4 py-2">
-          <img
-            className="size-8 object-contain"
-            src={platform.getActionIconUrl(data.component, data.method, true)}
-          />
-        </div>
-      </div>
+      <Picto
+        leftIcon={platform.getFullComponentIcon(data.component)}
+        rightIcon={platform.getActionIconUrl(data.component, data.method, true)}
+      />
 
       <div className="flex flex-row items-center">
-        <div>{data.component}.</div>
+        <div>{data.componentName}.</div>
         <div>{data.method}</div>
         <div>(</div>
         <div className="flex items-center gap-[2px]">
@@ -77,26 +76,17 @@ export const Action: React.FC<ActionProps> = (props) => {
             Object.entries(data.args).map(([id, value], index) => {
               const protoComponent =
                 platform.data.components[platform.resolveComponentType(data.component)];
+              if (!protoComponent) {
+                return <>{serializeParameter(index, value)}</>;
+              }
               const protoMethod = protoComponent.methods[data.method];
               const protoParameters = protoMethod.parameters;
 
-              if (!protoParameters)
-                return (
-                  <>
-                    {serializeParameter(value)}
-                    {index !== 0 && ', '}
-                  </>
-                );
+              if (!protoParameters) return <>{serializeParameter(index, value)}</>;
 
               const parameter = protoParameters.find((param) => param.name === id);
 
-              if (!parameter || !parameter.type)
-                return (
-                  <>
-                    {serializeParameter(value)}
-                    {index !== 0 && ', '}
-                  </>
-                );
+              if (!parameter || !parameter.type) return <>{serializeParameter(index, value)}</>;
 
               if (typeof parameter.type === 'string' && parameter.type.startsWith('Matrix')) {
                 const dimensions = getMatrixDimensions(parameter.type);
@@ -125,12 +115,7 @@ export const Action: React.FC<ActionProps> = (props) => {
                 }
               }
 
-              return (
-                <>
-                  {index !== 0 && ', '}
-                  {serializeParameter(value)}
-                </>
-              );
+              return <>{serializeParameter(index, value)}</>;
             })}
         </div>
         <div>)</div>

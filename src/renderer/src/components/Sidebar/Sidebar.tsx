@@ -2,21 +2,23 @@ import React, { Dispatch, useMemo, useState } from 'react';
 
 import { ReactComponent as CompilerIcon } from '@renderer/assets/icons/compiler.svg';
 import { ReactComponent as ComponentsIcon } from '@renderer/assets/icons/components.svg';
+import { ReactComponent as MenuIcon } from '@renderer/assets/icons/document.svg';
+import { ReactComponent as DocumentationIcon } from '@renderer/assets/icons/documentation.svg';
 import { ReactComponent as FlasherIcon } from '@renderer/assets/icons/flasher.svg';
 import { ReactComponent as HistoryIcon } from '@renderer/assets/icons/history.svg';
-import { ReactComponent as MenuIcon } from '@renderer/assets/icons/menu.svg';
 import { ReactComponent as SettingsIcon } from '@renderer/assets/icons/settings.svg';
-import { ReactComponent as StateIcon } from '@renderer/assets/icons/state_add.svg';
+import { ReactComponent as StateIcon } from '@renderer/assets/icons/state_machine.svg';
 import { useSettings } from '@renderer/hooks';
 import { useModal } from '@renderer/hooks/useModal';
 import { useModelContext } from '@renderer/store/ModelContext';
+import { useDoc } from '@renderer/store/useDoc';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
 
 import { CompilerTab } from './Compiler';
 import { Explorer } from './Explorer';
+import { Loader } from './Flasher/DeviceList';
 import { History } from './History';
 import { Labels } from './Labels';
-import { Loader } from './Loader';
 import { Menu } from './Menu';
 import { Menus } from './Menus';
 import { Setting } from './Setting';
@@ -67,6 +69,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
   >(undefined);
   const [compilerData, setCompilerData] = useState<CompilerResult | undefined>(undefined);
   const [compilerStatus, setCompilerStatus] = useState('Не подключен.');
+  const [onDocumentationToggle, isDocOpen] = useDoc((state) => [
+    state.onDocumentationToggle,
+    state.isOpen,
+  ]);
 
   const isEditorDataStale = modelController.model.useData('', 'isStale');
 
@@ -98,23 +104,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
         compilerStatus={compilerStatus}
         setOpenData={setOpenData}
       />,
-      <Explorer />,
       <StateMachinesList />,
+      <Explorer />,
       <CompilerTab
         openData={openData}
-        openCompilerSettings={openCompilerSettings}
         compilerData={compilerData}
         setCompilerData={setCompilerData}
         compilerStatus={compilerStatus}
         setCompilerStatus={setCompilerStatus}
         openImportError={openImportError}
       />,
-      <Loader
-        compilerData={compilerData}
-        openLoaderSettings={openLoaderSettings}
-        openAvrdudeGuideModal={openAvrdudeGuideModal}
-      />,
+      <Loader compilerData={compilerData} openAvrdudeGuideModal={openAvrdudeGuideModal} />,
       <History />,
+      undefined,
       <Setting
         openCompilerSettings={openCompilerSettings}
         openLoaderSettings={openLoaderSettings}
@@ -140,15 +142,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <MenuIcon />
           </Badge>
         ),
-        hint: 'Документ',
-      },
-      {
-        Icon: <ComponentsIcon />,
-        hint: 'Проводник',
+        hint: isEditorDataStale ? 'Документ (не сохранён)' : 'Документ',
       },
       {
         Icon: <StateIcon />,
         hint: 'Машины состояний',
+      },
+      {
+        Icon: <ComponentsIcon />,
+        hint: 'Диаграмма',
       },
       {
         Icon: <CompilerIcon />,
@@ -164,11 +166,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
         bottom: true,
       },
       {
+        Icon: <DocumentationIcon />,
+        hint: 'Документация',
+        action: () => onDocumentationToggle(),
+        isActive: isDocOpen,
+      },
+      {
         Icon: <SettingsIcon />,
         hint: 'Настройки',
       },
     ],
-    [isEditorDataStale]
+    [isEditorDataStale, isDocOpen]
   );
 
   return (

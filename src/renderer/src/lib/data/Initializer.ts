@@ -1,12 +1,5 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
-import {
-  Note,
-  Transition,
-  InitialState,
-  FinalState,
-  ChoiceState,
-  GhostTransition,
-} from '@renderer/lib/drawable';
+import { Note, Transition, FinalState, ChoiceState, GhostTransition } from '@renderer/lib/drawable';
 import { Layer } from '@renderer/lib/types';
 import {
   State as DataState,
@@ -54,7 +47,7 @@ export class Initializer {
    */
   initStates(smId: string, states: { [id: string]: DataState }) {
     for (const id in states) {
-      this.states.initState({ smId, id: id, ...states[id] });
+      this.states.initState({ smId, id: id, ...states[id] }, false);
     }
 
     for (const id in states) {
@@ -141,7 +134,7 @@ export class Initializer {
         const component = dataSm.components[componentId];
         const drawableComponent = this.controller.components.createComponent({
           smId,
-          name: componentId,
+          id: componentId,
           ...component,
         });
 
@@ -191,10 +184,12 @@ export class Initializer {
   }
 
   private createInitialStateView(smId: string, id: string, initialStateData: DataInitialState) {
-    const state = new InitialState(this.app, id, smId, initialStateData);
-    this.states.data.initialStates.set(state.id, state);
-    this.states.watch(state);
-    this.app.view.children.add(state, Layer.InitialStates);
+    this.controller.states.createInitialState({
+      smId,
+      id,
+      targetId: '',
+      ...initialStateData,
+    });
   }
 
   private linkInitialStateView(parentId: string, childId: string) {

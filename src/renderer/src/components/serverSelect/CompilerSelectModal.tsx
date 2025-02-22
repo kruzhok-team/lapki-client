@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 
 import { Modal, TextField } from '@renderer/components/UI';
 import { useSettings } from '@renderer/hooks';
+import { removeNonNumbers } from '@renderer/utils';
 
 type FormValues = Main['settings']['compiler'];
 
@@ -57,9 +58,8 @@ export const CompilerSelectModal: React.FC<CompilerSelectModalProps> = ({ onClos
           onInput={(event) => {
             const { target } = event;
             if (target) {
-              (target as HTMLInputElement).value = (target as HTMLInputElement).value.replace(
-                /[^0-9]/g,
-                ''
+              (target as HTMLInputElement).value = removeNonNumbers(
+                (target as HTMLInputElement).value
               );
             }
           }}

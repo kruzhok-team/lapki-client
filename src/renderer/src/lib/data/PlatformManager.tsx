@@ -260,7 +260,7 @@ export class PlatformManager {
   drawEvent(ctx: CanvasRenderingContext2D, ev: Event, x: number, y: number) {
     let leftIcon: string | MarkedIconData | undefined = undefined;
     let rightIcon = 'unknown';
-    const bgColor = '#3a426b';
+    const bgColor = '#494949';
     const fgColor = '#fff';
     let argQuery: string = '';
     const compoData = this.resolveComponent(ev.component);
@@ -322,7 +322,7 @@ export class PlatformManager {
   drawAction(ctx: CanvasRenderingContext2D, ac: Action, x: number, y: number, alpha?: number) {
     let leftIcon: string | MarkedIconData | undefined = undefined;
     let rightIcon = 'unknown';
-    const bgColor = '#5b5f73';
+    const bgColor = '#5f5f5f';
     const fgColor = '#fff';
     const opacity = alpha ?? 1.0;
     let argQuery: string = '';

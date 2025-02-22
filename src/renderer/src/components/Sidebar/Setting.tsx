@@ -6,6 +6,8 @@ import { useModal } from '@renderer/hooks/useModal';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { useFlasher } from '@renderer/store/useFlasher';
 
+import { Autosave } from './AutosaveSetting';
+
 import { AboutTheProgramModal } from '../AboutTheProgramModal';
 import { ClientStatus } from '../Modules/Websocket/ClientStatus';
 import { ResetSettingsModal } from '../ResetSettingsModal';
@@ -40,6 +42,7 @@ export const Setting: React.FC<SettingProps> = ({ openCompilerSettings, openLoad
   const [isDocModalOpen, openDocModal, closeDocModal] = useModal(false);
   const [isResetWarningOpen, openResetWarning, closeResetWarning] = useModal(false);
   const [isAboutModalOpen, openAboutModal, closeAboutModal] = useModal(false);
+  const [isAutosaveModalOpen, openAutosaveModal, closeAutosaveModal] = useModal(false);
 
   const handleChangeTheme = ({ value }: any) => {
     setTheme(value);
@@ -86,12 +89,14 @@ export const Setting: React.FC<SettingProps> = ({ openCompilerSettings, openLoad
         >
           Загрузчик…
         </button>
-        <button className="btn-primary mb-4" onClick={openDocModal}>
+        <button className="btn-primary" onClick={openDocModal}>
           Документация…
         </button>
-
-        <div className="mb-auto flex items-center justify-between">
-          Анимации на холсте
+        <button className="btn-primary mb-4" onClick={openAutosaveModal}>
+          Автосохранение...
+        </button>
+        <div className="mb-auto flex items-center gap-1">
+          Анимации на холсте:
           <Switch
             checked={canvasSettings?.animations}
             onCheckedChange={handleChangeCanvasAnimations}
@@ -110,6 +115,7 @@ export const Setting: React.FC<SettingProps> = ({ openCompilerSettings, openLoad
       <DocSelectModal isOpen={isDocModalOpen} onClose={closeDocModal} />
       <AboutTheProgramModal isOpen={isAboutModalOpen} onClose={closeAboutModal} />
       <ResetSettingsModal isOpen={isResetWarningOpen} onClose={closeResetWarning} />
+      <Autosave isOpen={isAutosaveModalOpen} onClose={closeAutosaveModal} />
     </section>
   );
 };

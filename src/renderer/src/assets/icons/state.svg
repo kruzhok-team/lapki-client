@@ -1,12 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-
-<!-- Uploaded to: SVG Repo, www.svgrepo.com, Transformed by: SVG Repo Mixer Tools -->
-<svg width="1.7rem" height="1.7rem" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" fill="#737373" transform="rotate(0)">
-
-<g id="SVGRepo_bgCarrier" stroke-width="0"/>
-
-<g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"/>
-
-<g id="SVGRepo_iconCarrier"> <title>nodes</title> <g id="Layer_2" data-name="Layer 2"> <g id="invisible_box" data-name="invisible box"> <rect width="48" height="48" fill="none"/> </g> <g id="Layer_6" data-name="Layer 6"> <path d="M36,19.4v-9L24,2,12,10.4v9l-10,7V37.6L14,46l10-7.1L34,46l12-8.5V26.4Zm-14,16-8,5.7L6,35.5v-7l7.9-5.6L22,28.6Zm-6-16V12.5l8-5.6,8,5.6v6.9L24,25Zm26,16-8,5.7-8-5.6V28.6l8-5.7,8,5.6Z"/> </g> </g> </g>
-
+<!-- Creator: CorelDRAW 2021 (64-Bit) -->
+<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" version="1.1" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" image-rendering="optimizeQuality" fill-rule="evenodd" clip-rule="evenodd"
+viewBox="0 0 46656 46656"
+ xmlns:xlink="http://www.w3.org/1999/xlink"
+ xmlns:xodm="http://www.corel.com/coreldraw/odm/2003">
+ <g id="Слой_x0020_1">
+  <metadata id="CorelCorpID_0Corel-Layer"/>
+  <path fill="currentColor" d="M2706 15583l0 28087c0,152 126,280 280,280l40684 0c154,0 280,-126 280,-280l0 -28087c0,-154 -128,-280 -280,-280l-40684 0c-152,0 -280,131 -280,280zm-1306 -15583l43857 0c770,0 1399,629 1399,1400l0 43857c0,770 -629,1399 -1399,1399l-43857 0c-771,0 -1400,-629 -1400,-1399l0 -43857c0,-771 629,-1400 1400,-1400z"/>
+ </g>
 </svg>

@@ -4,6 +4,7 @@ import { Controller, useForm } from 'react-hook-form';
 
 import { Select, Modal, TextField } from '@renderer/components/UI';
 import { useSettings } from '@renderer/hooks';
+import { removeNonNumbers } from '@renderer/utils';
 
 const options = [
   { value: 'remote', label: 'Удалённый' },
@@ -109,9 +110,8 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
           onInput={(event) => {
             const { target } = event;
             if (target) {
-              (target as HTMLInputElement).value = (target as HTMLInputElement).value.replace(
-                /[^0-9]/g,
-                ''
+              (target as HTMLInputElement).value = removeNonNumbers(
+                (target as HTMLInputElement).value
               );
             }
           }}

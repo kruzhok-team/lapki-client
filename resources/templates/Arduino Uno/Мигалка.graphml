@@ -88,7 +88,6 @@ timer1.start(1000)
         <data key="dName">Выключен</data>
         <data key="dData">entry/
 LED1.off()
-timer1.start(1000)
 
         </data>
         <data key="dGeometry">

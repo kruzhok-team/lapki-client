@@ -1,7 +1,15 @@
 import React from 'react';
 
 import { Modal } from '@renderer/components/UI';
-import { releaseName, releaseDate, appVersion } from '@renderer/version';
+import {
+  releaseName,
+  appVersion,
+  seriousMode,
+  telegramLink,
+  sourceLink,
+  showDevInfo,
+  appName,
+} from '@renderer/version';
 
 interface AboutTheProgramModalProps {
   isOpen: boolean;
@@ -12,21 +20,46 @@ export const AboutTheProgramModal: React.FC<AboutTheProgramModalProps> = ({
   onClose,
   ...props
 }) => {
+  const codeName = !seriousMode ? `«${releaseName}»` : '';
+  const devInfo = (
+    <>
+      <b>Разработка:</b>{' '}
+      <a
+        className="text-blue-500 transition duration-150 ease-in-out hover:text-blue-300 focus:text-blue-300 active:text-blue-700"
+        href="https://polyus-nt.ru"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        ООО «Полюс-НТ»
+      </a>{' '}
+      и{' '}
+      <a
+        className="text-blue-500 transition duration-150 ease-in-out hover:text-blue-300 focus:text-blue-300 active:text-blue-700"
+        href="https://github.com/kruzhok-team/lapki-client"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        сообщество
+      </a>
+      <br />
+    </>
+  );
+
   return (
-    <Modal {...props} onRequestClose={onClose} title="О программе">
+    <Modal {...props} onRequestClose={onClose} title={appName}>
       <div>
-        <b>Версия:</b> {appVersion} «{releaseName}»
+        <b>Версия:</b> {appVersion} {codeName}
         <br />
-        <b>Дата релиза:</b> {releaseDate}
         <br />
-        <b>Ссылка на проект:</b>{' '}
+        {showDevInfo ? devInfo : ''}
+        <b>Исходные коды проекта:</b>{' '}
         <a
           className="text-blue-500 transition duration-150 ease-in-out hover:text-blue-300 focus:text-blue-300 active:text-blue-700"
-          href="https://github.com/kruzhok-team/lapki-client"
+          href={sourceLink}
           target="_blank"
           rel="noopener noreferrer"
         >
-          https://github.com/kruzhok-team/lapki-client
+          {sourceLink}
         </a>
         <br />
         <b>Обратная связь:</b>{' '}
@@ -36,15 +69,15 @@ export const AboutTheProgramModal: React.FC<AboutTheProgramModalProps> = ({
           target="_blank"
           rel="noopener noreferrer"
         >
-          баг-трекер,
+          сообщить об ошибке,
         </a>{' '}
         <a
           className="text-blue-500 transition duration-150 ease-in-out hover:text-blue-300 focus:text-blue-300 active:text-blue-700"
-          href="https://t.me/LapkiSupportBot"
+          href={telegramLink}
           target="_blank"
           rel="noopener noreferrer"
         >
-          чат-бот в Telegram
+          чат в Telegram
         </a>
         <br />
       </div>

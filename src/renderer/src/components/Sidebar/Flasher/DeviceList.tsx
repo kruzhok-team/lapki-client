@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
-import { ReactComponent as Setting } from '@renderer/assets/icons/settings.svg';
 import { ReactComponent as Update } from '@renderer/assets/icons/update.svg';
 import { ErrorModal, ErrorModalData } from '@renderer/components/ErrorModal';
 import { Flasher } from '@renderer/components/Modules/Flasher';
@@ -16,28 +15,24 @@ import { CompilerResult } from '@renderer/types/CompilerTypes';
 import { StateMachine } from '@renderer/types/diagram';
 import { FlashResult } from '@renderer/types/FlasherTypes';
 
-import { ArduinoDevice, Device, MSDevice } from '../Modules/Device';
-import { ManagerMS } from '../Modules/ManagerMS';
+import { ArduinoDevice, Device, MSDevice } from '../../Modules/Device';
+import { ManagerMS } from '../../Modules/ManagerMS';
 import {
+  SERIAL_MONITOR_CONNECTED,
   SERIAL_MONITOR_CONNECTING,
   SERIAL_MONITOR_NO_CONNECTION,
   SERIAL_MONITOR_NO_SERVER_CONNECTION,
   SerialMonitor,
-} from '../Modules/SerialMonitor';
-import { ClientStatus } from '../Modules/Websocket/ClientStatus';
-import { Select } from '../UI/Select';
+} from '../../Modules/SerialMonitor';
+import { ClientStatus } from '../../Modules/Websocket/ClientStatus';
+import { Select } from '../../UI/Select';
 
 export interface FlasherProps {
   compilerData: CompilerResult | undefined;
-  openLoaderSettings: () => void;
   openAvrdudeGuideModal: () => void;
 }
 
-export const Loader: React.FC<FlasherProps> = ({
-  compilerData,
-  openLoaderSettings,
-  openAvrdudeGuideModal,
-}) => {
+export const Loader: React.FC<FlasherProps> = ({ compilerData, openAvrdudeGuideModal }) => {
   const modelController = useModelContext();
   const stateMachinesId = modelController.model.useData('', 'elements.stateMachinesId') as {
     [ID: string]: StateMachine;
@@ -130,7 +125,7 @@ export const Loader: React.FC<FlasherProps> = ({
     if (flasherFile) {
       setFlasherFile(undefined);
     } else {
-      Flasher.setFile();
+      Flasher.openAndSetFile();
     }
   };
 
@@ -226,9 +221,9 @@ export const Loader: React.FC<FlasherProps> = ({
   const handleAddSerialMonitorTab = () => {
     const curDevice = devices.get(currentDeviceID ?? '');
     if (
-      serialMonitorDevice != null &&
-      curDevice != serialMonitorDevice &&
-      devices.get(serialMonitorDevice.deviceID) != undefined
+      serialMonitorDevice !== undefined &&
+      curDevice !== serialMonitorDevice &&
+      devices.get(serialMonitorDevice.deviceID) !== undefined
     ) {
       SerialMonitor.closeMonitor(serialMonitorDevice.deviceID);
     }
@@ -314,6 +309,9 @@ export const Loader: React.FC<FlasherProps> = ({
     }
     if (deviceMS && !devices.get(deviceMS.deviceID)) {
       setDeviceMS(undefined);
+    }
+    if (currentDeviceID && !devices.get(currentDeviceID)) {
+      setCurrentDevice(undefined);
     }
   }, [devices]);
 
@@ -447,6 +445,18 @@ export const Loader: React.FC<FlasherProps> = ({
     });
   };
 
+  const onSelectDevice = (deviceId: string) => {
+    setCurrentDevice(deviceId);
+    const dev = devices.get(deviceId);
+    setSerialMonitorDevice(dev);
+    if (serialConnectionStatus === SERIAL_MONITOR_CONNECTED && serialMonitorDevice !== undefined) {
+      SerialMonitor.closeMonitor(serialMonitorDevice?.deviceID);
+    }
+    if (dev?.isMSDevice()) {
+      setDeviceMS(dev as MSDevice);
+    }
+  };
+
   const showReconnectTime = () => {
     if (secondsUntilReconnect == null) return;
     return <p>До подключения: {secondsUntilReconnect} сек.</p>;
@@ -559,13 +569,6 @@ export const Loader: React.FC<FlasherProps> = ({
             <Update width="1.5rem" height="1.5rem" />
             {display()}
           </button>
-          <button
-            className="btn-primary px-2"
-            onClick={openLoaderSettings}
-            disabled={connectionStatus == ClientStatus.CONNECTING || isFlashing}
-          >
-            <Setting width="1.5rem" height="1.5rem" />
-          </button>
         </div>
         <div className="mb-2 h-40 overflow-y-auto break-words rounded bg-bg-primary p-2">
           <ErrorModal isOpen={isMsgModalOpen} data={msgModalData} onClose={closeMsgModal} />
@@ -592,7 +595,7 @@ export const Loader: React.FC<FlasherProps> = ({
                 'my-1 flex w-full items-center rounded border-2 border-[#557b91] p-1 hover:bg-[#557b91] hover:text-white',
                 isActive(key) && 'bg-[#557b91] text-white'
               )}
-              onClick={() => setCurrentDevice(key)}
+              onClick={() => onSelectDevice(key)}
             >
               {devices.get(key)?.displayName()}
             </button>

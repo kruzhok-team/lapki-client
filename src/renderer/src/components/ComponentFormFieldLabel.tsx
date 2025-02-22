@@ -1,4 +1,4 @@
-import React, { ComponentProps } from 'react';
+import React, { ComponentProps, ReactNode } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
@@ -6,10 +6,11 @@ import { ReactComponent as QuestionMark } from '@renderer/assets/icons/question-
 import { WithHint } from '@renderer/components/UI';
 
 interface ComponentFormFieldLabelProps extends ComponentProps<'input'> {
-  label: string;
+  label: string | ReactNode;
   hint?: string;
   error?: string;
   as?: 'label' | 'div';
+  labelClassName?: string;
 }
 
 export const ComponentFormFieldLabel: React.FC<ComponentFormFieldLabelProps> = ({
@@ -17,6 +18,7 @@ export const ComponentFormFieldLabel: React.FC<ComponentFormFieldLabelProps> = (
   hint,
   error,
   className,
+  labelClassName,
   children,
   as = 'label',
   ...props
@@ -26,7 +28,7 @@ export const ComponentFormFieldLabel: React.FC<ComponentFormFieldLabelProps> = (
   return (
     <div>
       <Component className="grid grid-cols-[max-content,1fr] items-center justify-start gap-2">
-        <div className="flex min-w-28 items-center gap-1">
+        <div className={twMerge('flex min-w-32 items-center gap-1', labelClassName)}>
           <span>{label}</span>
           {hint && (
             <WithHint hint={hint}>
@@ -41,7 +43,7 @@ export const ComponentFormFieldLabel: React.FC<ComponentFormFieldLabelProps> = (
         {children || (
           <input
             className={twMerge(
-              'w-[250px] rounded border border-border-primary bg-transparent px-2 py-1 text-text-primary outline-none focus:border-text-primary',
+              'rounded border border-border-primary bg-transparent px-2 py-1 text-text-primary outline-none focus:border-text-primary',
               error && '!border-error text-error',
               className
             )}

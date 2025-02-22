@@ -4,6 +4,7 @@ import { SingleValue } from 'react-select';
 
 import { SelectOption } from '@renderer/components/UI';
 import { serializeEvent } from '@renderer/lib/data/GraphmlBuilder';
+import { variableRegex } from '@renderer/lib/data/GraphmlParser';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { Component, Event } from '@renderer/types/diagram';
@@ -14,7 +15,8 @@ import { Component, Event } from '@renderer/types/diagram';
 export const useTrigger = (
   smId: string,
   controller: CanvasController,
-  addSystemComponents: boolean
+  addSystemComponents: boolean,
+  event: string | Event | null | undefined
 ) => {
   const modelController = useModelContext();
   const componentsData = modelController.model.useData(smId, 'elements.components') as {
@@ -24,9 +26,13 @@ export const useTrigger = (
   const visual = controller.useData('visual');
 
   const [tabValue, setTabValue] = useState(0);
+  const [selectedComponent, setSelectedComponent] = useState<string | null>(
+    typeof event !== 'string' && event ? event.component : null
+  );
 
-  const [selectedComponent, setSelectedComponent] = useState<string | null>(null);
-  const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
+  const [selectedMethod, setSelectedMethod] = useState<string | null>(
+    typeof event !== 'string' && event ? event.method : null
+  );
 
   const [text, setText] = useState('');
 
@@ -47,20 +53,33 @@ export const useTrigger = (
       }
       const proto = controller.platform[smId]?.getComponent(id);
 
+      if (proto && Object.keys(proto.signals).length === 0) {
+        return;
+      }
+
+      const name =
+        componentsData[id] && visual && componentsData[id].name ? componentsData[id].name : id;
       return {
         value: id,
-        label: id,
+        label: name,
         hint: proto?.description,
         icon: controller.platform[smId]?.getFullComponentIcon(id, 'mr-1 h-7 w-7'),
       };
     };
 
-    const result = Object.entries(componentsData)
-      .sort((a, b) => a[1].order - b[1].order)
-      .map(([idx]) => getComponentOption(idx));
-
+    const sortedComponents = Object.entries(componentsData).sort((a, b) => a[1].order - b[1].order);
+    const result: Exclude<ReturnType<typeof getComponentOption>, undefined>[] = [];
+    for (const [componentId] of sortedComponents) {
+      const option = getComponentOption(componentId);
+      if (option) {
+        result.push(option);
+      }
+    }
     if (addSystemComponents) {
-      result.unshift(getComponentOption('System'));
+      const system = getComponentOption('System');
+      if (system) {
+        result.unshift(system);
+      }
     }
 
     return result;
@@ -96,6 +115,14 @@ export const useTrigger = (
 
   const handleMethodChange = useCallback((value: SingleValue<SelectOption>) => {
     setSelectedMethod(value?.value ?? null);
+    // debugger;
+    // if (!visual && controller.platform[smId] && selectedComponent && value?.value)
+    //   setText(
+    //     serializeEvent(componentsData, controller.platform[smId].data, {
+    //       component: selectedComponent,
+    //       method: value?.value,
+    //     })
+    //   ); // для перехода в текст
   }, []);
 
   const clear = useCallback(() => {
@@ -117,9 +144,14 @@ export const useTrigger = (
           setText(serializeEvent(componentsData, controller.platform[smId].data, triggerToParse)); // для перехода в текст
         return setTabValue(0);
       }
-
+      const parsedTrigger = variableRegex.exec(triggerToParse)?.groups;
+      if (parsedTrigger) {
+        setSelectedComponent(parsedTrigger['component']);
+        setSelectedMethod(parsedTrigger['method']);
+      } else {
+        setTabValue(1);
+      }
       setText(triggerToParse);
-      setTabValue(1);
     },
     [clear, visual] // visual для того, чтобы при смене режима парсер работал корректно
   );

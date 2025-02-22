@@ -80,6 +80,7 @@ export const NoteEdit: React.FC<NoteEditProps> = ({ smId, controller }) => {
         fontSize: fontSize + 'px',
         padding: padding + 'px',
         borderRadius: borderRadius + 'px',
+        color: note.data.textColor,
         backgroundColor: note.data?.backgroundColor,
       });
       el.textContent = note.data.text;

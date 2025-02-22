@@ -45,17 +45,23 @@ export type PossibleActions = {
     prevColor: StateData['color'];
   };
   changeStatePosition: { smId: string; id: string; startPosition: Point; endPosition: Point };
-  linkState: { smId: string; parentId: string; childId: string };
+  linkState: { smId: string; parentId: string; childId: string; dragEndPos: Point };
   linkStateToAnotherParent: {
     smId: string;
     prevParentId: string;
     parentId: string;
     childId: string;
+    dragEndPos: Point;
   };
-  unlinkState: { smId: string; parentId: string; params: UnlinkStateParams };
+  unlinkState: {
+    smId: string;
+    parentId: string;
+    params: UnlinkStateParams;
+    dragEndPos: Point;
+  };
 
-  createInitialState: { smId: string; targetId: string; id: string };
-  deleteInitialState: { smId: string; targetId: string; id: string };
+  createInitialState: { smId: string; targetId: string; id: string; position?: Point };
+  deleteInitialState: { smId: string; targetId: string; id: string; position?: Point };
   changeInitialStatePosition: {
     smId: string;
     id: string;
@@ -66,11 +72,11 @@ export type PossibleActions = {
   createStateMachine: { smId: string } & StateMachine;
   deleteStateMachine: { smId: string } & StateMachine;
 
-  createFinalState: CreateFinalStateParams & { newStateId: string };
+  createFinalState: CreateFinalStateParams;
   deleteFinalState: { smId: string; id: string; stateData: FinalStateData };
   changeFinalStatePosition: { smId: string; id: string; startPosition: Point; endPosition: Point };
 
-  createChoiceState: CreateChoiceStateParams & { newStateId: string };
+  createChoiceState: CreateChoiceStateParams;
   deleteChoiceState: { smId: string; id: string; stateData: ChoiceStateData };
   changeChoiceStatePosition: { smId: string; id: string; startPosition: Point; endPosition: Point };
 
@@ -207,31 +213,62 @@ export const actionFunctions: ActionFunctions = {
     ),
   }),
 
-  linkStateToAnotherParent: (sM, { smId, prevParentId, parentId, childId }) => ({
-    redo: sM.linkState.bind(sM, { smId, parentId, childId, canBeInitial: false }, false),
+  linkStateToAnotherParent: (sM, { smId, prevParentId, parentId, childId, dragEndPos }) => ({
+    redo: sM.linkState.bind(
+      sM,
+      { smId, parentId, childId, canBeInitial: false, dragEndPos },
+      false,
+      true
+    ),
     undo: sM.linkState.bind(sM, { smId, parentId: prevParentId, childId }, false),
   }),
 
-  linkState: (sM, { smId, parentId, childId }) => ({
-    redo: sM.linkState.bind(sM, { smId, parentId, childId, canBeInitial: false }, false),
+  linkState: (sM, { smId, parentId, childId, dragEndPos }) => ({
+    redo: sM.linkState.bind(
+      sM,
+      { smId, parentId, childId, canBeInitial: false, dragEndPos },
+      false,
+      true
+    ),
     undo: sM.unlinkState.bind(sM, { smId, id: childId, canUndo: false }),
   }),
-  unlinkState: (sM, { smId, parentId, params }) => ({
+  unlinkState: (sM, { smId, parentId, params, dragEndPos }) => ({
     redo: sM.unlinkState.bind(sM, { ...params, parentId, childId: params.id, canUndo: false }),
-    undo: sM.linkState.bind(sM, { smId, parentId, childId: params.id, canBeInitial: false }, false),
+    undo: sM.linkState.bind(
+      sM,
+      { smId, parentId, childId: params.id, canBeInitial: false, dragEndPos },
+      false,
+      true
+    ),
   }),
   changeStatePosition: (sM, { smId, id, startPosition, endPosition }) => ({
     redo: sM.changeStatePosition.bind(sM, { smId, id, startPosition, endPosition }, false),
-    undo: sM.changeStatePosition.bind(sM, { smId, id, endPosition, startPosition }, false),
+    undo: sM.changeStatePosition.bind(
+      sM,
+      { smId, id, startPosition: endPosition, endPosition: startPosition },
+      false
+    ),
   }),
 
   createInitialState: (sM, args) => ({
-    redo: sM.createInitialStateWithTransition.bind(sM, args.smId, args.targetId, false),
+    redo: sM.createInitialStateWithTransition.bind(
+      sM,
+      args.smId,
+      args.targetId,
+      false,
+      args.position
+    ),
     undo: sM.deleteInitialStateWithTransition.bind(sM, args.smId, args.targetId, false),
   }),
   deleteInitialState: (sM, args) => ({
     redo: sM.deleteInitialStateWithTransition.bind(sM, args.smId, args.targetId, false),
-    undo: sM.createInitialStateWithTransition.bind(sM, args.smId, args.targetId, false),
+    undo: sM.createInitialStateWithTransition.bind(
+      sM,
+      args.smId,
+      args.targetId,
+      false,
+      args.position
+    ),
   }),
   changeInitialStatePosition: (sM, { smId, id, startPosition, endPosition }) => ({
     redo: sM.changeInitialStatePosition.bind(sM, { smId, id, startPosition, endPosition }, false),
@@ -241,10 +278,10 @@ export const actionFunctions: ActionFunctions = {
   createFinalState: (sM, args) => ({
     redo: sM.createFinalState.bind(
       sM,
-      { ...args, id: args.newStateId, linkByPoint: false, canBeInitial: false },
+      { ...args, id: args.id, linkByPoint: false, canBeInitial: false },
       false
     ),
-    undo: sM.deleteFinalState.bind(sM, { smId: args.smId, id: args.newStateId }, false),
+    undo: sM.deleteFinalState.bind(sM, { smId: args.smId, id: args.id! }, false),
   }),
   deleteFinalState: (sM, { smId, id, stateData }) => ({
     redo: sM.deleteFinalState.bind(sM, { smId, id }, false),
@@ -268,8 +305,8 @@ export const actionFunctions: ActionFunctions = {
       {
         smId,
         id,
-        endPosition,
-        startPosition,
+        startPosition: endPosition,
+        endPosition: startPosition,
       },
       false
     ),
@@ -278,7 +315,7 @@ export const actionFunctions: ActionFunctions = {
   createChoiceState: (sM, args) => ({
     redo: sM.createChoiceState.bind(
       sM,
-      { ...args, id: args.newStateId, linkByPoint: false, canBeInitial: false },
+      { ...args, id: args.id, linkByPoint: false, canBeInitial: false },
       false
     ),
     undo: sM.deleteChoiceState.bind(sM, { ...args, id: args.id!, smId: args.smId }, false),
@@ -305,8 +342,8 @@ export const actionFunctions: ActionFunctions = {
       {
         smId,
         id,
-        endPosition,
-        startPosition,
+        startPosition: endPosition,
+        endPosition: startPosition,
       },
       false
     ),
@@ -358,8 +395,8 @@ export const actionFunctions: ActionFunctions = {
       {
         smId,
         id,
-        endPosition,
-        startPosition,
+        startPosition: endPosition,
+        endPosition: startPosition,
       },
       false
     ),
@@ -408,11 +445,11 @@ export const actionFunctions: ActionFunctions = {
 
   createComponent: (sM, { args }) => ({
     redo: sM.createComponent.bind(sM, args, false),
-    undo: sM.deleteComponent.bind(sM, { id: args.name, smId: args.smId, purge: false }, false),
+    undo: sM.deleteComponent.bind(sM, { id: args.id, smId: args.smId, purge: false }, false),
   }),
   deleteComponent: (sM, { args, prevComponent }) => ({
     redo: sM.deleteComponent.bind(sM, args, false),
-    undo: sM.createComponent.bind(sM, { name: args.id, smId: args.smId, ...prevComponent }, false),
+    undo: sM.createComponent.bind(sM, { id: args.id, smId: args.smId, ...prevComponent }, false),
   }),
   editComponent: (sM, { args, prevComponent }) => ({
     redo: sM.editComponent.bind(sM, args, false),
@@ -421,9 +458,10 @@ export const actionFunctions: ActionFunctions = {
       {
         smId: args.smId,
         type: args.type,
-        id: args.newName ?? args.id,
+        id: args.newId ?? args.id,
+        name: prevComponent.name,
         parameters: prevComponent.parameters,
-        newName: args.newName ? args.id : undefined,
+        newId: args.newId ? args.id : undefined,
       },
       false
     ),
@@ -645,9 +683,9 @@ export const actionDescriptions: ActionDescriptions = {
     description: `Имя: ${args.id}\nТип: ${prevComponent.type}`,
   }),
   editComponent: ({ args, prevComponent }) => {
-    const prev = { prevComponent, name: args.id };
+    const prev = { prevComponent, id: args.id, name: args.name };
     const newComp = { ...args, type: prevComponent.type };
-    delete newComp.newName;
+    delete newComp.newId;
 
     return {
       name: 'Изменение компонента',

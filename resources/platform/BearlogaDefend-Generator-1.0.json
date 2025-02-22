@@ -1,6 +1,7 @@
 {
   "id": "BearlogaDefend-Generator",
   "name": "Берлога/Защита пасеки - Генератор",
+  "nameTag": "Generator",
   "icon": "",
   "description": "Генератор, дрон поддержки с лечением союзников по площади и способностью «Самоуничтожение» (взрыв с уроном по площади).",
   "staticComponents": true,

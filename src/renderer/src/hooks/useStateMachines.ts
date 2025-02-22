@@ -2,8 +2,8 @@ import { useState } from 'react';
 
 import { useForm } from 'react-hook-form';
 
+import { getPlatform } from '@renderer/lib/data/PlatformLoader';
 import { StateMachineData } from '@renderer/lib/types';
-import { generateId } from '@renderer/lib/utils';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { useTabs } from '@renderer/store/useTabs';
 import { emptyStateMachine } from '@renderer/types/diagram';
@@ -79,7 +79,20 @@ export const useStateMachines = () => {
   };
 
   const onAdd = (data: StateMachineData) => {
-    const smId = generateId();
+    const platformIdx = data.platform;
+    const platform = getPlatform(platformIdx);
+    if (!platform) {
+      throw Error('unknown platform ' + platformIdx);
+    }
+
+    const baseKey = platform.nameTag ?? 'Machine';
+    let n = 1;
+    let smId = baseKey + n;
+    while (isDuplicateName(smId)) {
+      n += 1;
+      smId = baseKey + n;
+    }
+
     const sm = { ...emptyStateMachine(), ...data };
     const canvasId = modelController.createStateMachine(smId, sm);
     openTab(modelController, {

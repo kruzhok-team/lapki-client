@@ -29,9 +29,7 @@ export const CreateSchemeModal: React.FC<CreateSchemeModalProps> = ({
 
   const submitDisabled = tabValue === 0 ? !selectedPlatformIdx : !selectedTemplate;
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const submit = () => {
     if (tabValue === 0) {
       if (!selectedPlatformIdx) return;
 
@@ -44,6 +42,12 @@ export const CreateSchemeModal: React.FC<CreateSchemeModalProps> = ({
     }
 
     handleCLose();
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    submit();
   };
 
   const handleCLose = () => {
@@ -62,7 +66,7 @@ export const CreateSchemeModal: React.FC<CreateSchemeModalProps> = ({
     >
       <Tabs
         className="mb-4"
-        tabs={['Создать пустую', 'Выбрать шаблон']}
+        tabs={['Создать пустую', 'Выбрать пример']}
         value={tabValue}
         onChange={setTabValue}
       />
@@ -71,6 +75,7 @@ export const CreateSchemeModal: React.FC<CreateSchemeModalProps> = ({
         <PlatformSelection
           selectedPlatformIdx={selectedPlatformIdx}
           setSelectedPlatformIdx={setSelectedPlatformIdx}
+          onDoubleClick={submit}
         />
       </TabPanel>
 
@@ -78,6 +83,7 @@ export const CreateSchemeModal: React.FC<CreateSchemeModalProps> = ({
         <TemplateSelection
           selectedTemplate={selectedTemplate}
           setSelectedTemplate={setSelectedTemplate}
+          onDoubleClick={submit}
         />
       </TabPanel>
     </Modal>

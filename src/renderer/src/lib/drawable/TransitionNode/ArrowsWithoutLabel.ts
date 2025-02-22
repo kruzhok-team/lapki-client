@@ -1,5 +1,5 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
-import { Note, Transition } from '@renderer/lib/drawable';
+import { Transition } from '@renderer/lib/drawable';
 import { transitionStyle } from '@renderer/lib/styles';
 import { Drawable } from '@renderer/lib/types/drawable';
 import {
@@ -23,20 +23,28 @@ export class ArrowsWithoutLabel implements Drawable {
     const sourceBounds = this.parent.source.drawBounds;
 
     const line = getLine({
-      rect1: { ...targetBounds, height: targetBounds.height + targetBounds.childrenHeight },
-      rect2: { ...sourceBounds, height: sourceBounds.height + sourceBounds.childrenHeight },
+      rect1: {
+        ...targetBounds,
+        height:
+          targetBounds.childrenHeight === 0 ? targetBounds.height : targetBounds.childrenHeight,
+      },
+      rect2: {
+        ...sourceBounds,
+        height:
+          sourceBounds.childrenHeight === 0 ? sourceBounds.height : sourceBounds.childrenHeight,
+      },
       rectPadding: 10,
     });
 
     const data = this.parent.data;
     const fillStyle = data.color ?? getColor('default-transition-color');
 
-    ctx.lineWidth = transitionStyle.width;
+    ctx.lineWidth = transitionStyle.width / this.app.controller.scale;
     ctx.strokeStyle = this.parent.data.color ?? getColor('default-transition-color');
     ctx.fillStyle = fillStyle;
 
-    if (!this.parent.isSelected && this.parent.source instanceof Note) {
-      ctx.globalAlpha = 0.3;
+    if (!this.parent.isSelected) {
+      ctx.globalAlpha = transitionStyle.notSelectedAlpha;
     }
     drawCurvedLine(ctx, line, 12 / this.app.controller.scale);
     ctx.globalAlpha = 1;

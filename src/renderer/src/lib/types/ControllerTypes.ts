@@ -38,9 +38,10 @@ export const emptyControllerListeners = Object.fromEntries([
 export interface EditComponentParams {
   smId: string;
   id: string;
+  name?: string;
   type: string;
   parameters: ComponentData['parameters'];
-  newName?: string;
+  newId?: string;
 }
 
 export interface ChangeComponentPosition {
@@ -59,7 +60,8 @@ export interface ChangeSelectionParams {
 export interface RenameComponentParams {
   smId: string;
   id: string;
-  newName: string;
+  name?: string;
+  newId: string;
   type: string;
   parameters: ComponentData['parameters'];
 }
@@ -81,6 +83,7 @@ export interface LinkStateParams {
   childId: string;
   // Поля ниже нужны для коректной отмены этого действия с помощью истории
   smId: string;
+  dragEndPos?: Point;
   addOnceOff?: boolean;
   canBeInitial?: boolean;
 }
@@ -101,6 +104,7 @@ export type CCreateInitialStateParams = {
   id?: string;
   smId: string;
   targetId: string;
+  position?: Point;
 };
 
 export type CreateInitialStateControllerParams = CCreateInitialStateParams & InitialStateData;

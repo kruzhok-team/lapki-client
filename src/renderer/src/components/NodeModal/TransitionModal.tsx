@@ -1,11 +1,19 @@
 import React, { useEffect, useMemo, useState } from 'react';
 
+import { isEqual } from 'lodash';
+
 import { Modal } from '@renderer/components/UI';
 import { useModal } from '@renderer/hooks/useModal';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { ChangeTransitionParams } from '@renderer/lib/types';
 import { useModelContext } from '@renderer/store/ModelContext';
-import { Transition } from '@renderer/types/diagram';
+import {
+  Action,
+  Condition as ConditionData,
+  Event,
+  EventData,
+  Transition,
+} from '@renderer/types/diagram';
 
 import { Actions, Condition, ColorField, Trigger } from './components';
 import { useTrigger, useCondition, useActions } from './hooks';
@@ -20,6 +28,10 @@ export const TransitionModal: React.FC<TransitionModalProps> = ({ smId, controll
   const visual = controller.useData('visual');
   const headControllerId = modelController.model.useData('', 'headControllerId');
   const choiceStates = modelController.model.useData(smId, 'elements.choiceStates');
+  const transitions = modelController.model.useData(smId, 'elements.transitions') as {
+    [id: string]: Transition;
+  };
+  const [error, setError] = useState<string | undefined>(undefined);
   const [isOpen, open, close] = useModal(false);
   const [transitionId, setTransitionId] = useState<string | null>(null);
   const [transition, setTransition] = useState<Transition | null>(null);
@@ -30,9 +42,9 @@ export const TransitionModal: React.FC<TransitionModalProps> = ({ smId, controll
   const [isInitialTransition, setIsInitialTransition] = useState<boolean>(false);
 
   // Данные формы
-  const trigger = useTrigger(smId, controller, false);
-  const condition = useCondition(smId, controller);
-  const actions = useActions(smId, controller);
+  const trigger = useTrigger(smId, controller, false, transition?.label?.trigger as Event | null);
+  const condition = useCondition(smId, controller, transition?.label?.condition);
+  const actions = useActions(smId, controller, (transition?.label?.do as Action[]) ?? []);
   const [color, setColor] = useState<string | undefined>();
 
   // Если создается новый переход и это переход из состояния выбора то показывать триггер не нужно
@@ -72,6 +84,7 @@ export const TransitionModal: React.FC<TransitionModalProps> = ({ smId, controll
       ((tabValue === 0 && (!selectedComponent || !selectedMethod)) ||
         (tabValue === 1 && !triggerText))
     ) {
+      setError(`Необходимо выбрать триггер ("Когда")!`);
       return;
     }
 
@@ -149,8 +162,36 @@ export const TransitionModal: React.FC<TransitionModalProps> = ({ smId, controll
       return actions.text.trim() || undefined; // Чтобы при пустом текте возвращался undefined
     };
 
+    const checkCondition = (newTransition: Transition, transitionId?: string) => {
+      for (const [id, transition] of Object.entries(transitions)) {
+        if (
+          id === transitionId ||
+          !transition.label ||
+          transition.sourceId !== newTransition.sourceId
+        )
+          continue;
+
+        const trigger = transition.label.trigger as Event | undefined;
+        const condition = transition.label.condition as ConditionData | undefined;
+
+        if (!trigger) continue;
+
+        if (trigger.component === selectedComponent && trigger.method === selectedMethod) {
+          const newCondition = getCondition() as ConditionData | undefined;
+          if (isEqual(condition, newCondition)) {
+            return `Переход на событие ${selectedComponent}.${selectedMethod} с таким условием уже существует!`;
+          }
+        }
+      }
+      return undefined;
+    };
     // Если редактируем состояние
     if (transition && transitionId) {
+      const error = checkCondition(transition, transitionId);
+      if (error) {
+        setError(error);
+        return;
+      }
       modelController.changeTransition({
         smId: smId,
         id: transitionId,
@@ -167,6 +208,11 @@ export const TransitionModal: React.FC<TransitionModalProps> = ({ smId, controll
 
     // Если создаем новое
     if (newTransition) {
+      const error = checkCondition(newTransition);
+      if (error) {
+        setError(error);
+        return;
+      }
       modelController.createTransition({
         smId: smId,
         sourceId: newTransition.sourceId,
@@ -188,7 +234,7 @@ export const TransitionModal: React.FC<TransitionModalProps> = ({ smId, controll
     condition.clear();
     actions.clear();
     setColor(undefined);
-
+    setError(undefined);
     setTransition(null);
 
     setTransitionId(null);
@@ -245,9 +291,14 @@ export const TransitionModal: React.FC<TransitionModalProps> = ({ smId, controll
         onAfterClose={handleAfterClose}
       >
         <div className="flex flex-col gap-4">
-          {!isInitialTransition && showTrigger && <Trigger {...trigger} />}
+          {!isInitialTransition && showTrigger && (
+            <Trigger event={(transition?.label as EventData) ?? null} {...trigger} />
+          )}
           {!isInitialTransition && <Condition {...condition} />}
-          {!isInitialTransition && <Actions {...actions} />}
+          {!isInitialTransition && (
+            <Actions event={(transition?.label as EventData) ?? null} {...actions} />
+          )}
+          {error && <div className="text-error">{error}</div>}
           <ColorField label="Цвет линии:" value={color} onChange={setColor} />
         </div>
       </Modal>

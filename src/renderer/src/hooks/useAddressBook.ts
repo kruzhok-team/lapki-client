@@ -5,7 +5,22 @@ import { AddressData } from '@renderer/types/FlasherTypes';
 
 import { useSettings } from './useSettings';
 
-export const useAddressBook = () => {
+export type addressBookReturn = {
+  addressBookSetting: AddressData[] | null;
+  selectedAddress: () => string;
+  selectedAddressIndex: number | null;
+  onAdd: (data: AddressData) => void;
+  onRemove: (index: number) => void;
+  onEdit: (data: AddressData, index: number) => void;
+  onSwapEntries: (index1: number, index2: number) => void;
+  getID: (index: number) => number | null;
+  getIndex: (id: number) => number | undefined;
+  getEntryById: (id: number) => AddressData | undefined;
+  displayEntry: (index: number) => string | null;
+  idCounter: number;
+};
+
+export const useAddressBook = (): addressBookReturn => {
   const [addressBookSetting, setAddressBookSetting] = useSettings('addressBookMS');
 
   const [selectedAddressIndex, setSelectedAddressIndex] = useState<number | null>(null);

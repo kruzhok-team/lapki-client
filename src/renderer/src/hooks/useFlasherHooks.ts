@@ -17,7 +17,6 @@ import {
   DeviceCommentCode,
   FlashBacktrackMs,
   FlashResult,
-  FlashTableItem,
   FlashUpdatePort,
   MetaDataID,
   MSAddressAndMeta,

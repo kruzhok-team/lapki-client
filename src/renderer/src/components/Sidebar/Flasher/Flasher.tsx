@@ -1,7 +1,7 @@
 /*
 Окно загрузчика
 */
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef } from 'react';
 
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';

@@ -5,7 +5,7 @@ import { twMerge } from 'tailwind-merge';
 import { Checkbox, Select, SelectOption } from '@renderer/components/UI';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { StateMachine } from '@renderer/types/diagram';
-import { AddressData, FlashTableItem } from '@renderer/types/FlasherTypes';
+import { AddressData, FirmwareTargetType, FlashTableItem } from '@renderer/types/FlasherTypes';
 
 interface FlasherTableProps {
   tableData: FlashTableItem[];
@@ -47,7 +47,7 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
   });
 
   const [checkedAll, setCheckedAll] = useState<boolean>(true);
-  const [fileBaseName, setFileBaseName] = useState<Map<number, string>>(new Map());
+  const [fileBaseName, setFileBaseName] = useState<Map<number | string, string>>(new Map());
 
   const stateMachineOption = (sm: StateMachine | null | undefined, smId: string) => {
     if (!sm) return null;
@@ -215,7 +215,16 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
 
   const rowRender = (tableItem: FlashTableItem) => {
     const checked = tableItem.isSelected;
-    const addressData = getEntryById(tableItem.targetId);
+    // Реализовать рендер для arduino
+    const addressData: AddressData | undefined =
+      tableItem.targetType === FirmwareTargetType.tjc_ms
+        ? getEntryById(tableItem.targetId as number)
+        : {
+            address: '-',
+            name: 'Arduino',
+            type: '-',
+            meta: undefined,
+          };
     if (addressData === undefined) return;
     return (
       <div key={tableItem.targetId} className="flex items-start">

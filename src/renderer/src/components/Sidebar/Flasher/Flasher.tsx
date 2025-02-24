@@ -6,6 +6,7 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
+import { Device } from '@renderer/components/Modules/Device';
 import { ClientStatus } from '@renderer/components/Modules/Websocket/ClientStatus';
 import { useAddressBook } from '@renderer/hooks/useAddressBook';
 import { useModal } from '@renderer/hooks/useModal';
@@ -50,7 +51,7 @@ export const FlasherTab: React.FC = () => {
     onSwapEntries,
     idCounter,
   } = useAddressBook();
-  const { connectionStatus, secondsUntilReconnect, flashResult } = useFlasher();
+  const { connectionStatus, secondsUntilReconnect, flashResult, devices } = useFlasher();
 
   const [managerMSSetting, setManagerMSSetting] = useSettings('managerMS');
 
@@ -206,15 +207,21 @@ export const FlasherTab: React.FC = () => {
     if (!deviceMs) return;
     for (const item of flashTableData) {
       if (item.isSelected) {
-        const addr = getEntryById(item.targetId);
-        if (addr === undefined) {
-          continue;
+        if (item.targetType === FirmwareTargetType.tjc_ms) {
+          const addr = getEntryById(item.targetId as number);
+          if (addr === undefined) {
+            continue;
+          }
+          ManagerMS.addOperation({
+            addressInfo: addr,
+            deviceId: deviceMs.deviceID,
+            type: op,
+          });
+        } else if (item.targetType === FirmwareTargetType.arduino) {
+          // TODO
+        } else {
+          // TODO
         }
-        ManagerMS.addOperation({
-          addressInfo: addr,
-          deviceId: deviceMs.deviceID,
-          type: op,
-        });
       }
     }
   };
@@ -242,7 +249,9 @@ export const FlasherTab: React.FC = () => {
     }
     for (const item of flashTableData) {
       if (!item.isSelected) continue;
-      const entry = getEntryById(item.targetId);
+      // TODO: реализация для ардуино
+      if (item.targetType === FirmwareTargetType.arduino) continue;
+      const entry = getEntryById(item.targetId as number);
       // значит адрес или машина состояний были удалены
       if (entry === undefined) {
         ManagerMS.addLog(
@@ -360,6 +369,41 @@ export const FlasherTab: React.FC = () => {
         language: 'txt',
       });
     });
+  };
+
+  const getArduinoDevicePlatform = (device: Device) => {
+    // TODO: подумать, можно ли найти более надёжный способ сверки платформ на клиенте и сервере
+    // названия платформ на загрузчике можно посмотреть здесь: https://github.com/kruzhok-team/lapki-flasher/blob/main/src/device_list.JSON
+    const name = device.name.toLocaleLowerCase();
+    switch (name) {
+      case 'arduino micro':
+      case 'arduino micro (bootloader)':
+        return 'ArduinoMicro';
+      case 'arduino uno':
+        return 'ArduinoUno';
+    }
+    return undefined;
+  };
+
+  const handleAddDevice = (deviceIds: string[]) => {
+    console.log(deviceIds);
+    const newFlashTableData: FlashTableItem[] = [];
+    for (const devId of deviceIds) {
+      const dev = devices.get(devId);
+      console.log(dev);
+      if (!dev) continue;
+      if (dev.isMSDevice()) {
+        handleGetAddressAndMeta();
+        continue;
+      }
+      newFlashTableData.push({
+        isFile: false,
+        isSelected: true,
+        targetId: devId,
+        targetType: FirmwareTargetType.arduino,
+      });
+    }
+    setFlashTableData(flashTableData.concat(newFlashTableData));
   };
 
   /**
@@ -556,7 +600,7 @@ export const FlasherTab: React.FC = () => {
           });
         }}
       />
-      <DeviceList isOpen={isDeviceListOpen} onClose={closeDeviceList} />
+      <DeviceList isOpen={isDeviceListOpen} onClose={closeDeviceList} onSubmit={handleAddDevice} />
     </section>
   );
 };

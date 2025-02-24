@@ -17,9 +17,10 @@ import { ClientStatus } from '../../Modules/Websocket/ClientStatus';
 interface DeviceListProps {
   isOpen: boolean;
   onClose: () => void;
+  onSubmit: (deviceIds: string[]) => void;
 }
 
-export const DeviceList: React.FC<DeviceListProps> = ({ isOpen, onClose, ...props }) => {
+export const DeviceList: React.FC<DeviceListProps> = ({ isOpen, onClose, onSubmit, ...props }) => {
   const [flasherSetting, setFlasherSetting] = useSettings('flasher');
   const flasherIsLocal = flasherSetting?.type === 'local';
   const { handleSubmit: hookHandleSubmit } = useForm();
@@ -284,7 +285,12 @@ export const DeviceList: React.FC<DeviceListProps> = ({ isOpen, onClose, ...prop
   };
 
   const handleSubmit = hookHandleSubmit(() => {
-    console.log('hi');
+    if (!currentDeviceID) {
+      onClose();
+      return;
+    }
+    // TODO: реализовать передачу нескольких устройств одновременно
+    onSubmit([currentDeviceID]);
     onClose();
   });
 
@@ -297,6 +303,7 @@ export const DeviceList: React.FC<DeviceListProps> = ({ isOpen, onClose, ...prop
       submitLabel="Добавить"
       onSubmit={handleSubmit}
       className="bg-bg-secondary"
+      submitDisabled={!currentDeviceID}
     >
       <section className="flex h-full flex-col text-center">
         <div className="px-4">

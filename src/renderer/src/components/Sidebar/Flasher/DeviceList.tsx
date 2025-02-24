@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 
+import { useForm } from 'react-hook-form';
 import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as Update } from '@renderer/assets/icons/update.svg';
 import { ErrorModal, ErrorModalData } from '@renderer/components/ErrorModal';
 import { Flasher } from '@renderer/components/Modules/Flasher';
+import { Modal } from '@renderer/components/UI';
 import { useSettings } from '@renderer/hooks/useSettings';
 import { useFlasher } from '@renderer/store/useFlasher';
 import { FlashResult } from '@renderer/types/FlasherTypes';
@@ -12,9 +14,15 @@ import { FlashResult } from '@renderer/types/FlasherTypes';
 import { ArduinoDevice, Device, MSDevice } from '../../Modules/Device';
 import { ClientStatus } from '../../Modules/Websocket/ClientStatus';
 
-export const DeviceList: React.FC = () => {
+interface DeviceListProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export const DeviceList: React.FC<DeviceListProps> = ({ isOpen, onClose, ...props }) => {
   const [flasherSetting, setFlasherSetting] = useSettings('flasher');
   const flasherIsLocal = flasherSetting?.type === 'local';
+  const { handleSubmit: hookHandleSubmit } = useForm();
   const { connectionStatus, devices } = useFlasher();
   const [currentDeviceID, setCurrentDevice] = useState<string | undefined>(undefined);
   const [flasherLog, setFlasherLog] = useState<string | undefined>(undefined);
@@ -275,29 +283,36 @@ export const DeviceList: React.FC = () => {
     }
   };
 
-  return (
-    <section className="flex h-full flex-col text-center">
-      <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
-        Список устройств
-      </h3>
+  const handleSubmit = hookHandleSubmit(() => {
+    console.log('hi');
+    onClose();
+  });
 
-      <div className="px-4">
-        <div className="mb-2 flex rounded">
-          <button
-            className="btn-primary mr-2 flex w-full items-center justify-center gap-2 px-0"
-            onClick={() => handleGetList()}
-            disabled={connectionStatus !== ClientStatus.CONNECTED}
-          >
-            <Update width="1.5rem" height="1.5rem" />
-            {'Обновить'}
-          </button>
-        </div>
-        <div className="mb-2 h-40 overflow-y-auto break-words rounded bg-bg-primary p-2">
-          <ErrorModal isOpen={isMsgModalOpen} data={msgModalData} onClose={closeMsgModal} />
-          <p>{connectionStatus}</p>
-          {showReconnectTime()}
-          <br></br>
-          {/* 
+  return (
+    <Modal
+      {...props}
+      isOpen={isOpen}
+      title="Список устройств"
+      onRequestClose={onClose}
+      submitLabel="Добавить"
+      onSubmit={handleSubmit}
+      className="bg-bg-secondary"
+    >
+      <section className="flex h-full flex-col text-center">
+        <div className="px-4">
+          <div className="mb-2 flex rounded">
+            <button
+              className="btn-primary mr-2 flex w-full items-center justify-center gap-2 px-0"
+              onClick={() => handleGetList()}
+              disabled={connectionStatus !== ClientStatus.CONNECTED}
+              type="button"
+            >
+              <Update width="1.5rem" height="1.5rem" />
+              {'Обновить'}
+            </button>
+          </div>
+          <div className="mb-2 h-32 overflow-y-auto break-words rounded bg-bg-primary p-2">
+            {/* 
           TODO: перенести во flasher
           <button
             className="btn-primary mb-2 w-full"
@@ -312,30 +327,32 @@ export const DeviceList: React.FC = () => {
           >
             Подробнее
           </button> */}
-          {[...devices.keys()].map((key) => (
-            <button
-              key={key}
-              className={twMerge(
-                'my-1 flex w-full items-center rounded border-2 border-[#557b91] p-1 hover:bg-[#557b91] hover:text-white',
-                isActive(key) && 'bg-[#557b91] text-white'
-              )}
-              onClick={() => setCurrentDevice(key)}
-            >
-              {devices.get(key)?.displayName()}
-            </button>
-          ))}
+            {[...devices.keys()].map((key) => (
+              <button
+                key={key}
+                className={twMerge(
+                  'my-1 flex w-full items-center rounded border-2 border-[#557b91] p-1 hover:bg-[#557b91] hover:text-white',
+                  isActive(key) && 'bg-[#557b91] text-white'
+                )}
+                onClick={() => setCurrentDevice(key)}
+                type="button"
+              >
+                {devices.get(key)?.displayName()}
+              </button>
+            ))}
+          </div>
+          <div className="mb-2 h-36 overflow-y-auto break-words rounded bg-bg-primary p-2 text-left">
+            {[...devices.keys()].map((key) => (
+              <div key={key} className={twMerge('hidden', isActive(key) && 'block')}>
+                {deviceInfoDisplay(devices.get(key))}
+              </div>
+            ))}
+          </div>
+          <div className="min-h-16 overflow-y-auto break-words rounded bg-bg-primary p-2">
+            <div>{flasherLog}</div>
+          </div>
         </div>
-        <div className="mb-2 h-64 overflow-y-auto break-words rounded bg-bg-primary p-2 text-left">
-          {[...devices.keys()].map((key) => (
-            <div key={key} className={twMerge('hidden', isActive(key) && 'block')}>
-              {deviceInfoDisplay(devices.get(key))}
-            </div>
-          ))}
-        </div>
-        <div className="h-96 overflow-y-auto break-words rounded bg-bg-primary p-2">
-          <div>{flasherLog}</div>
-        </div>
-      </div>
-    </section>
+      </section>
+    </Modal>
   );
 };

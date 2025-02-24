@@ -201,8 +201,9 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
       <div className="flex">
         <Checkbox
           className={twMerge(checkColumn, cellHeight)}
-          checked={checkedAll}
+          checked={checkedAll && tableData.length > 0}
           onCheckedChange={() => changeCheckedAll(!checkedAll)}
+          disabled={tableData.length === 0}
         />
         {cellRender('Наименование', nameColumn)}
         {cellRender('Тип', typeColumn)}

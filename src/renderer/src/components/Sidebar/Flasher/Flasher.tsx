@@ -29,7 +29,7 @@ import { Switch, WithHint } from '../../UI';
 
 export const FlasherTab: React.FC = () => {
   const {
-    device,
+    device: deviceMs,
     log,
     address: serverAddress,
     setAddress: setServerAddress,
@@ -60,7 +60,7 @@ export const FlasherTab: React.FC = () => {
 
   const [flashTableData, setFlashTableData] = useState<FlashTableItem[]>([]);
 
-  const noAccessToDevice = device === undefined || connectionStatus !== ClientStatus.CONNECTED;
+  const noAccessToDevice = deviceMs === undefined || connectionStatus !== ClientStatus.CONNECTED;
   const commonOperationDisabled =
     noAccessToDevice ||
     flashTableData.find((item) => {
@@ -176,18 +176,18 @@ export const FlasherTab: React.FC = () => {
   }, [metaID]);
 
   useEffect(() => {
-    if (device === undefined) {
+    if (deviceMs === undefined) {
       ManagerMS.addLog('Потеряно соединение с устройством.');
       return;
     }
-  }, [device]);
+  }, [deviceMs]);
 
   const handleGetAddressAndMeta = () => {
-    if (!device || !managerMSSetting) return;
+    if (!deviceMs || !managerMSSetting) return;
     if (!managerMSSetting.hideGetAddressModal) {
       openMsGetAddressModal();
     } else {
-      ManagerMS.getAddressAndMeta(device.deviceID);
+      ManagerMS.getAddressAndMeta(deviceMs.deviceID);
     }
   };
   const handleOpenAddressBook = () => {
@@ -195,7 +195,7 @@ export const FlasherTab: React.FC = () => {
   };
 
   const handleOperation = (op: OperationType) => {
-    if (!device) return;
+    if (!deviceMs) return;
     for (const item of flashTableData) {
       if (item.isSelected) {
         const addr = getEntryById(item.targetId);
@@ -204,7 +204,7 @@ export const FlasherTab: React.FC = () => {
         }
         ManagerMS.addOperation({
           addressInfo: addr,
-          deviceId: device.deviceID,
+          deviceId: deviceMs.deviceID,
           type: op,
         });
       }
@@ -228,7 +228,7 @@ export const FlasherTab: React.FC = () => {
       ManagerMS.addLog('Ошибка! Адресная книга не загрузилась!');
       return;
     }
-    if (!device) {
+    if (!deviceMs) {
       ManagerMS.addLog('Прошивку начать нельзя! Выберите устройство!');
       return;
     }
@@ -265,7 +265,7 @@ export const FlasherTab: React.FC = () => {
         if (binData !== null) {
           ManagerMS.binAdd({
             addressInfo: entry,
-            device: device,
+            device: deviceMs,
             verification: managerMSSetting ? managerMSSetting.verification : false,
             binaries: new Blob([binData]),
             isFile: true,
@@ -286,7 +286,7 @@ export const FlasherTab: React.FC = () => {
         }
         ManagerMS.binAdd({
           addressInfo: entry,
-          device: device,
+          device: deviceMs,
           verification: managerMSSetting ? managerMSSetting.verification : false,
           binaries: smData.binary,
           isFile: false,
@@ -497,8 +497,8 @@ export const FlasherTab: React.FC = () => {
         isOpen={isMsGetAddressOpen}
         onClose={closeMsGetAddressModal}
         onSubmit={() => {
-          if (!device) return;
-          ManagerMS.getAddressAndMeta(device.deviceID);
+          if (!deviceMs) return;
+          ManagerMS.getAddressAndMeta(deviceMs.deviceID);
         }}
         onNoRemind={() => {
           setManagerMSSetting({

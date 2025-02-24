@@ -51,7 +51,14 @@ export const FlasherTab: React.FC = () => {
     onSwapEntries,
     idCounter,
   } = useAddressBook();
-  const { connectionStatus, secondsUntilReconnect, flashResult, devices } = useFlasher();
+  const {
+    connectionStatus,
+    secondsUntilReconnect,
+    flashResult,
+    devices,
+    flashTableData,
+    setFlashTableData,
+  } = useFlasher();
 
   const [managerMSSetting, setManagerMSSetting] = useSettings('managerMS');
 
@@ -66,8 +73,6 @@ export const FlasherTab: React.FC = () => {
   const addressEntryEditForm = useForm<AddressData>();
   const [isAddressEnrtyAddOpen, openAddressEnrtyAdd, closeAddressEnrtyAdd] = useModal(false); // для добавления новых записей в адресную книгу
   const addressEntryAddForm = useForm<AddressData>();
-
-  const [flashTableData, setFlashTableData] = useState<FlashTableItem[]>([]);
 
   const noAccessToDevice = deviceMs === undefined || connectionStatus !== ClientStatus.CONNECTED;
   const commonOperationDisabled =
@@ -432,13 +437,7 @@ export const FlasherTab: React.FC = () => {
       </div>
       <div className="m-2">
         <label>Устройства на прошивку</label>
-        <FlasherTable
-          addressEnrtyEdit={addressEnrtyEdit}
-          getEntryById={getEntryById}
-          setTableData={setFlashTableData}
-          tableData={flashTableData}
-          devices={devices}
-        />
+        <FlasherTable addressEnrtyEdit={addressEnrtyEdit} getEntryById={getEntryById} />
       </div>
       <div className="m-2 flex overflow-y-auto">
         <WithHint hint={'Убрать отмеченные платы из таблицы.'}>

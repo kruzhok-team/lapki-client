@@ -2,7 +2,7 @@ import { create } from 'zustand';
 
 import { Device } from '@renderer/components/Modules/Device';
 import { ClientStatus } from '@renderer/components/Modules/Websocket/ClientStatus';
-import { FlasherMessage, FlashResult } from '@renderer/types/FlasherTypes';
+import { FlasherMessage, FlashResult, FlashTableItem } from '@renderer/types/FlasherTypes';
 
 // TODO: объединить с useManagerMS
 interface FlasherState {
@@ -29,6 +29,8 @@ interface FlasherState {
   setFlashResult: (newFlashResult: Map<string, FlashResult>) => void;
   errorMessage: string | undefined;
   setErrorMessage: (newError: string | undefined) => void;
+  flashTableData: FlashTableItem[];
+  setFlashTableData: (newFlashTableData: FlashTableItem[]) => void;
 }
 
 export const useFlasher = create<FlasherState>((set) => ({
@@ -50,4 +52,7 @@ export const useFlasher = create<FlasherState>((set) => ({
     set({ flashResult: newFlashResult }),
   errorMessage: undefined,
   setErrorMessage: (newError: string | undefined) => set({ errorMessage: newError }),
+  flashTableData: [],
+  setFlashTableData: (newFlashTableData: FlashTableItem[]) =>
+    set({ flashTableData: newFlashTableData }),
 }));

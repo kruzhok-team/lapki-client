@@ -5,15 +5,13 @@ import { twMerge } from 'tailwind-merge';
 import { Device } from '@renderer/components/Modules/Device';
 import { Checkbox, Select, SelectOption } from '@renderer/components/UI';
 import { useModelContext } from '@renderer/store/ModelContext';
+import { useFlasher } from '@renderer/store/useFlasher';
 import { StateMachine } from '@renderer/types/diagram';
 import { AddressData, FirmwareTargetType, FlashTableItem } from '@renderer/types/FlasherTypes';
 
 interface FlasherTableProps {
-  tableData: FlashTableItem[];
-  setTableData: Dispatch<SetStateAction<FlashTableItem[]>>;
   getEntryById: (ID: number) => AddressData | undefined;
   addressEnrtyEdit: (data: AddressData) => void;
-  devices: Map<string, Device>;
 }
 
 // размеры столбцов
@@ -31,11 +29,8 @@ const allColumn = 'w-[76vw]';
 const cellHeight = 'h-[38px]';
 
 export const FlasherTable: React.FC<FlasherTableProps> = ({
-  tableData,
-  setTableData,
   getEntryById,
   addressEnrtyEdit,
-  devices,
   ...props
 }) => {
   const modelController = useModelContext();
@@ -44,10 +39,7 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
     [ID: string]: StateMachine;
   };
 
-  // TODO: (Roundabout1): удалить фильтр (при объединении arduino-загрузчика с менеджером МС-ТЮК)
-  const stateMachinesArray = [...Object.entries(stateMachinesId)].filter(([, sm]) => {
-    return sm.platform.startsWith('tjc');
-  });
+  const { devices, flashTableData: tableData, setFlashTableData: setTableData } = useFlasher();
 
   const [checkedAll, setCheckedAll] = useState<boolean>(true);
   const [fileBaseName, setFileBaseName] = useState<Map<number | string, string>>(new Map());
@@ -203,6 +195,10 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
         return 'ArduinoUno';
     }
     return undefined;
+  };
+
+  const removeTableItemByIndex = (index: number) => {
+    setTableData(tableData.toSpliced(index, 1));
   };
 
   const cellRender = (content: string | JSX.Element, mergeClassName: string) => {

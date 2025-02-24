@@ -487,21 +487,21 @@ export const FlasherTab: React.FC = () => {
           onClick={() => handleOperation(OperationType.ping)}
           disabled={commonOperationDisabled}
         >
-          Пинг
+          {getOpName(OperationType.ping)}
         </button>
         <button
           className="btn-primary mr-4"
           onClick={() => handleOperation(OperationType.reset)}
           disabled={commonOperationDisabled}
         >
-          Перезагрузить
+          {getOpName(OperationType.reset)}
         </button>
         <button
           className="btn-primary mr-4"
           onClick={() => handleOperation(OperationType.meta)}
           disabled={commonOperationDisabled}
         >
-          Получить метаданные
+          {getOpName(OperationType.meta)}
         </button>
       </div>
       <div className="m-2">

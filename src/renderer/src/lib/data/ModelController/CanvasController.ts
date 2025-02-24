@@ -32,7 +32,6 @@ import {
   EditComponentParams,
   EditStateMachine,
   emptyControllerListeners,
-  Layer,
   LinkStateParams,
   LinkTransitionParams,
   RenameComponentParams,

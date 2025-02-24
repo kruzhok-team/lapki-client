@@ -46,7 +46,7 @@ export const FlasherTab: React.FC = () => {
     onSwapEntries,
     idCounter,
   } = useAddressBook();
-  const { connectionStatus } = useFlasher();
+  const { connectionStatus, secondsUntilReconnect } = useFlasher();
 
   const [managerMSSetting, setManagerMSSetting] = useSettings('managerMS');
 
@@ -333,13 +333,21 @@ export const FlasherTab: React.FC = () => {
     openAddressEnrtyEdit();
   };
 
+  const serverStatus = () => {
+    const prefix = `Статус: ${connectionStatus}`;
+    if (secondsUntilReconnect !== null) {
+      return `${prefix} (до повтроного подключения: ${secondsUntilReconnect} сек.)`;
+    }
+    return prefix;
+  };
+
   if (!managerMSSetting) {
     return null;
   }
 
   return (
     <section className="mr-3 flex h-full flex-col bg-bg-secondary">
-      <label className="m-2">{`Статус: ${connectionStatus}`}</label>
+      <label className="m-2">{serverStatus()}</label>
       <div className="m-2">
         <button
           className="btn-primary mr-4"

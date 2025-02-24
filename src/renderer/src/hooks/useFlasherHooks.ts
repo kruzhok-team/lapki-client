@@ -11,11 +11,11 @@ import {
 import { ClientStatus } from '@renderer/components/Modules/Websocket/ClientStatus';
 import { useFlasher } from '@renderer/store/useFlasher';
 import { useManagerMS } from '@renderer/store/useManagerMS';
+import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
 import {
   AddressData,
   DeviceCommentCode,
   FlashBacktrackMs,
-  FlasherMessage,
   FlashResult,
   FlashTableItem,
   FlashUpdatePort,
@@ -44,7 +44,15 @@ export const useFlasherHooks = () => {
     setErrorMessage,
   } = useFlasher();
 
-  const { setDevice, setLog, setAddress, setMetaID } = useManagerMS();
+  const {
+    device: deviceMS,
+    setDevice: setDeviceMS,
+    setLog,
+    setAddress,
+    setMetaID,
+  } = useManagerMS();
+
+  const { device: serialMonitorDevice, setDevice: setSerialMonitorDevice } = useSerialMonitor();
 
   // const {
   //   addressBookSetting,
@@ -72,6 +80,13 @@ export const useFlasherHooks = () => {
     const newMap = new Map(devices);
     newMap.delete(deviceID);
     setDevices(newMap);
+
+    if (serialMonitorDevice) {
+      setSerialMonitorDevice(undefined);
+    }
+    if (deviceMS) {
+      setDeviceMS(undefined);
+    }
   };
 
   /**
@@ -134,7 +149,7 @@ export const useFlasherHooks = () => {
       setSecondsUntilReconnect,
       setFlasherMessage
     );
-    ManagerMS.bindReact(setDevice, setLog, setAddress, setMetaID);
+    ManagerMS.bindReact(setDeviceMS, setLog, setAddress, setMetaID);
     Flasher.initReader(new FileReader());
   }, []);
 

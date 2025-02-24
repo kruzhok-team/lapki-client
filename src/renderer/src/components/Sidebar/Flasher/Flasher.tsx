@@ -10,8 +10,10 @@ import { ClientStatus } from '@renderer/components/Modules/Websocket/ClientStatu
 import { useAddressBook } from '@renderer/hooks/useAddressBook';
 import { useModal } from '@renderer/hooks/useModal';
 import { useSettings } from '@renderer/hooks/useSettings';
+import { useModelContext } from '@renderer/store/ModelContext';
 import { useFlasher } from '@renderer/store/useFlasher';
 import { useManagerMS } from '@renderer/store/useManagerMS';
+import { useTabs } from '@renderer/store/useTabs';
 import {
   AddressData,
   FirmwareTargetType,
@@ -28,6 +30,7 @@ import { ManagerMS } from '../../Modules/ManagerMS';
 import { Switch, WithHint } from '../../UI';
 
 export const FlasherTab: React.FC = () => {
+  const modelController = useModelContext();
   const {
     device: deviceMs,
     log,
@@ -46,9 +49,12 @@ export const FlasherTab: React.FC = () => {
     onSwapEntries,
     idCounter,
   } = useAddressBook();
-  const { connectionStatus, secondsUntilReconnect } = useFlasher();
+  const { connectionStatus, secondsUntilReconnect, flashResult } = useFlasher();
 
   const [managerMSSetting, setManagerMSSetting] = useSettings('managerMS');
+
+  const openTab = useTabs((state) => state.openTab);
+  const closeTab = useTabs((state) => state.closeTab);
 
   const [isAddressBookOpen, openAddressBook, closeAddressBook] = useModal(false);
   const [isMsGetAddressOpen, openMsGetAddressModal, closeMsGetAddressModal] = useModal(false);
@@ -341,6 +347,42 @@ export const FlasherTab: React.FC = () => {
     return prefix;
   };
 
+  // добавление вкладки с сообщением от программы загрузки прошивки (например от avrdude)
+  const handleAddFlashResultTab = () => {
+    flashResult.forEach((result, key) => {
+      closeTab(key, modelController);
+      openTab(modelController, {
+        type: 'code',
+        name: key,
+        code: result.report() ?? '',
+        language: 'txt',
+      });
+    });
+  };
+
+  /**
+   * TODO: реализовать
+  // добавление вкладки с serial monitor
+  // открытие новой вкладки закрывает соединение со старым портом
+  // пока клиент может мониторить только один порт
+  const handleAddSerialMonitorTab = () => {
+    const curDevice = devices.get(currentDeviceID ?? '');
+    if (
+      serialMonitorDevice !== undefined &&
+      curDevice !== serialMonitorDevice &&
+      devices.get(serialMonitorDevice.deviceID) !== undefined
+    ) {
+      SerialMonitor.closeMonitor(serialMonitorDevice.deviceID);
+    }
+    closeTab('Монитор порта', modelController);
+    setSerialMonitorDevice(curDevice);
+    openTab(modelController, {
+      type: 'serialMonitor',
+      name: 'Монитор порта',
+    });
+  };
+  */
+
   if (!managerMSSetting) {
     return null;
   }
@@ -416,6 +458,15 @@ export const FlasherTab: React.FC = () => {
           disabled={commonOperationDisabled}
         >
           Получить метаданные
+        </button>
+      </div>
+      <div className="m-2">
+        <button
+          className="btn-primary"
+          onClick={handleAddFlashResultTab}
+          disabled={flashResult.size === 0}
+        >
+          Результаты прошивки
         </button>
       </div>
       <div className="m-2">Журнал действий</div>

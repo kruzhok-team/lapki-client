@@ -24,10 +24,6 @@ import {
 import { ClientStatus } from '../../Modules/Websocket/ClientStatus';
 
 export const DeviceList: React.FC = () => {
-  const modelController = useModelContext();
-  const stateMachinesId = modelController.model.useData('', 'elements.stateMachinesId') as {
-    [ID: string]: StateMachine;
-  };
   // ключ: ID устройства; значение: ID машины состояний
   const [deviceStateMachine, setDeviceStateMachine] = useState<Map<string, string>>(new Map());
   const [flasherSetting, setFlasherSetting] = useSettings('flasher');
@@ -154,49 +150,6 @@ export const DeviceList: React.FC = () => {
       caption: 'Ошибка',
     };
     openMsgModal(msg);
-  };
-
-  // добавление вкладки с сообщением от программы загрузки прошивки (например от avrdude)
-  const handleAddAvrdudeTab = () => {
-    flashResult.forEach((result, key) => {
-      closeTab(key, modelController);
-      openTab(modelController, {
-        type: 'code',
-        name: key,
-        code: result.report() ?? '',
-        language: 'txt',
-      });
-    });
-  };
-
-  // добавление вкладки с serial monitor
-  // открытие новой вкладки закрывает соединение со старым портом
-  // пока клиент может мониторить только один порт
-  const handleAddSerialMonitorTab = () => {
-    const curDevice = devices.get(currentDeviceID ?? '');
-    if (
-      serialMonitorDevice !== undefined &&
-      curDevice !== serialMonitorDevice &&
-      devices.get(serialMonitorDevice.deviceID) !== undefined
-    ) {
-      SerialMonitor.closeMonitor(serialMonitorDevice.deviceID);
-    }
-    closeTab('Монитор порта', modelController);
-    setSerialMonitorDevice(curDevice);
-    openTab(modelController, {
-      type: 'serialMonitor',
-      name: 'Монитор порта',
-    });
-  };
-
-  const handleAddManagerMSTab = () => {
-    const curDevice = devices.get(currentDeviceID ?? '');
-    setDeviceMS(curDevice as MSDevice);
-    closeTab('Менеджер МС-ТЮК', modelController);
-    openTab(modelController, {
-      type: 'managerMS',
-      name: 'Менеджер МС-ТЮК',
-    });
   };
 
   // useEffect(() => {
@@ -431,20 +384,6 @@ export const DeviceList: React.FC = () => {
             </div>
           ))}
         </div>
-        <button
-          className="btn-primary mb-2 w-full"
-          onClick={handleAddAvrdudeTab}
-          disabled={flashResult.size === 0}
-        >
-          Результат прошивки
-        </button>
-        <button
-          className="btn-primary mb-2 w-full"
-          onClick={handleAddSerialMonitorTab}
-          disabled={currentDeviceID == undefined}
-        >
-          Монитор порта
-        </button>
         <div className="h-96 overflow-y-auto break-words rounded bg-bg-primary p-2">
           <div>{flasherLog}</div>
         </div>

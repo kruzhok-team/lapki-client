@@ -336,7 +336,7 @@ export const FlasherTab: React.FC = () => {
   const serverStatus = () => {
     const prefix = `Статус: ${connectionStatus}`;
     if (secondsUntilReconnect !== null) {
-      return `${prefix} (до повтроного подключения: ${secondsUntilReconnect} сек.)`;
+      return `${prefix} (до повторного подключения: ${secondsUntilReconnect} сек.)`;
     }
     return prefix;
   };

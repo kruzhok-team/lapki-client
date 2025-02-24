@@ -42,6 +42,8 @@ export const useFlasherHooks = () => {
     setFlashResult,
     connectionStatus,
     setErrorMessage,
+    flashTableData,
+    setFlashTableData,
   } = useFlasher();
 
   const {
@@ -81,11 +83,15 @@ export const useFlasherHooks = () => {
     newMap.delete(deviceID);
     setDevices(newMap);
 
-    if (serialMonitorDevice) {
+    if (serialMonitorDevice && serialMonitorDevice.deviceID === deviceID) {
       setSerialMonitorDevice(undefined);
     }
-    if (deviceMS) {
+    if (deviceMS && deviceMS.deviceID === deviceID) {
       setDeviceMS(undefined);
+    }
+    const flashTableIndex = flashTableData.findIndex((item) => item.targetId === deviceID);
+    if (flashTableIndex !== -1) {
+      setFlashTableData(flashTableData.toSpliced(flashTableIndex, 1));
     }
   };
 

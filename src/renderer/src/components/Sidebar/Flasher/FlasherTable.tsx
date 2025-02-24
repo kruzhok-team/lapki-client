@@ -93,9 +93,14 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
   }
 
   const handleSelectFile = async (tableItem: FlashTableItem) => {
-    const [canceled, filePath, basename] = await window.api.fileHandlers.selectFile('bin файлы', [
-      'bin',
-    ]);
+    const extensions = ['bin'];
+    if (tableItem.targetType === FirmwareTargetType.arduino) {
+      extensions.push('hex');
+    }
+    const [canceled, filePath, basename] = await window.api.fileHandlers.selectFile(
+      'прошивки',
+      extensions
+    );
     if (canceled) return;
     setTableData(
       tableData.map((item) => {

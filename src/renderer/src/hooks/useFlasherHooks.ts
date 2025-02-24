@@ -139,7 +139,6 @@ export const useFlasherHooks = () => {
   }, []);
 
   useEffect(() => {
-    console.log('settings', flasherSetting);
     if (!flasherSetting) return;
     const { host, port, localPort, type } = flasherSetting;
     const autoReconnect = type === 'remote';

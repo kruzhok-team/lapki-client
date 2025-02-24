@@ -23,6 +23,7 @@ import {
 
 import { AddressBookModal } from './AddressBook';
 import { AddressEntryEditModal } from './AddressEntryModal';
+import { DeviceList } from './DeviceList';
 import { FlasherTable } from './FlasherTable';
 import { MsGetAddressModal } from './MsGetAddressModal';
 
@@ -58,6 +59,7 @@ export const FlasherTab: React.FC = () => {
 
   const [isAddressBookOpen, openAddressBook, closeAddressBook] = useModal(false);
   const [isMsGetAddressOpen, openMsGetAddressModal, closeMsGetAddressModal] = useModal(false);
+  const [isDeviceListOpen, openDeviceList, closeDeviceList] = useModal(false);
 
   const [isAddressEnrtyEditOpen, openAddressEnrtyEdit, closeAddressEnrtyEdit] = useModal(false); // для редактирования существующих записей в адресной книге
   const addressEntryEditForm = useForm<AddressData>();
@@ -391,11 +393,7 @@ export const FlasherTab: React.FC = () => {
     <section className="mr-3 flex h-full flex-col bg-bg-secondary">
       <label className="m-2">{serverStatus()}</label>
       <div className="m-2">
-        <button
-          className="btn-primary mr-4"
-          onClick={handleGetAddressAndMeta}
-          disabled={noAccessToDevice}
-        >
+        <button className="btn-primary mr-4" onClick={openDeviceList} disabled={noAccessToDevice}>
           Подключить плату
         </button>
         <button className="btn-primary mr-4" onClick={handleOpenAddressBook}>
@@ -558,6 +556,7 @@ export const FlasherTab: React.FC = () => {
           });
         }}
       />
+      <DeviceList isOpen={isDeviceListOpen} onClose={closeDeviceList} />
     </section>
   );
 };

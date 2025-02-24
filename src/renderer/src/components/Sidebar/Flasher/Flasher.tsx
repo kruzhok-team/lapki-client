@@ -371,20 +371,6 @@ export const FlasherTab: React.FC = () => {
     });
   };
 
-  const getArduinoDevicePlatform = (device: Device) => {
-    // TODO: подумать, можно ли найти более надёжный способ сверки платформ на клиенте и сервере
-    // названия платформ на загрузчике можно посмотреть здесь: https://github.com/kruzhok-team/lapki-flasher/blob/main/src/device_list.JSON
-    const name = device.name.toLocaleLowerCase();
-    switch (name) {
-      case 'arduino micro':
-      case 'arduino micro (bootloader)':
-        return 'ArduinoMicro';
-      case 'arduino uno':
-        return 'ArduinoUno';
-    }
-    return undefined;
-  };
-
   const handleAddDevice = (deviceIds: string[]) => {
     console.log(deviceIds);
     const newFlashTableData: FlashTableItem[] = [];
@@ -451,6 +437,7 @@ export const FlasherTab: React.FC = () => {
           getEntryById={getEntryById}
           setTableData={setFlashTableData}
           tableData={flashTableData}
+          devices={devices}
         />
       </div>
       <div className="m-2 flex overflow-y-auto">

@@ -107,7 +107,7 @@ export const useFlasherHooks = () => {
       ManagerMS.addLog(`${flashResultKey}: ${result}`);
     } else if (Flasher.currentFlashingDevice instanceof MSDevice) {
       const msDev = Flasher.currentFlashingDevice as MSDevice;
-      flashResultKey = msDev.displayName() + ' - ' + ManagerMS.getFlashingAddress()?.name;
+      flashResultKey = `${ManagerMS.getFlashingAddress()?.name} - ${msDev.displayName()}`;
       addressInfo = ManagerMS.getFlashingAddress();
       ManagerMS.flashingAddressEndLog(result);
     } else {

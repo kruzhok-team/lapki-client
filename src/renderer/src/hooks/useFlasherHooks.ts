@@ -92,6 +92,10 @@ export const useFlasherHooks = () => {
     const flashTableIndex = flashTableData.findIndex((item) => item.targetId === deviceID);
     if (flashTableIndex !== -1) {
       setFlashTableData(flashTableData.toSpliced(flashTableIndex, 1));
+      const dev = devices.get(deviceID);
+      if (dev) {
+        ManagerMS.addLog(`${dev.displayName()}: устройство отключено.`);
+      }
     }
   };
 

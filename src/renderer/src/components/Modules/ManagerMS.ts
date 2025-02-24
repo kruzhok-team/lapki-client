@@ -8,7 +8,7 @@ import {
   OperationType,
 } from '@renderer/types/FlasherTypes';
 
-import { MSDevice } from './Device';
+import { Device, MSDevice } from './Device';
 import { Flasher } from './Flasher';
 
 export class ManagerMS {
@@ -57,14 +57,23 @@ export class ManagerMS {
       Flasher.setBinaryFromCompiler(binariesInfo.binaries as Array<Binary>, binariesInfo.device);
     }
     Flasher.flashPreparation(binariesInfo.device);
-    this.flashingAddress = binariesInfo.addressInfo;
-    ManagerMS.flashingAddressLog('Начат процесс прошивки...');
-    Flasher.send('ms-bin-start', {
-      deviceID: binariesInfo.device.deviceID,
-      fileSize: Flasher.binary.size,
-      address: binariesInfo.addressInfo.address,
-      verification: binariesInfo.verification,
-    });
+    const flashBeginMsg = 'Начат процесс прошивки...';
+    if (binariesInfo.addressInfo) {
+      this.flashingAddress = binariesInfo.addressInfo;
+      ManagerMS.flashingAddressLog(flashBeginMsg);
+      Flasher.send('ms-bin-start', {
+        deviceID: binariesInfo.device.deviceID,
+        fileSize: Flasher.binary.size,
+        address: binariesInfo.addressInfo.address,
+        verification: binariesInfo.verification,
+      });
+    } else {
+      ManagerMS.addLog(`${binariesInfo.device.displayName()}: ${flashBeginMsg}`);
+      Flasher.send('flash-start', {
+        deviceID: binariesInfo.device.deviceID,
+        fileSize: Flasher.binary.size,
+      });
+    }
   }
   private static ping(deviceID: string, address: string) {
     Flasher.send('ms-ping', {
@@ -156,6 +165,12 @@ export class ManagerMS {
     const name = addressInfo.name ? addressInfo.name : addressInfo.address;
     const type = addressInfo.type ? addressInfo.type : 'Неизвестный тип';
     return `${name} (${type})`;
+  }
+  static displayDeviceInfo(devInfo: AddressData | Device) {
+    if (devInfo instanceof Device) {
+      return `${devInfo.displayName()}`;
+    }
+    return this.displayAddressInfo(devInfo);
   }
   static clearLog() {
     this.logSize = 0;

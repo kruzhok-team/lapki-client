@@ -235,8 +235,8 @@ export type FlashTableItem = {
 };
 
 export type BinariesQueueItem = {
-  device: MSDevice;
-  addressInfo: AddressData;
+  device: Device;
+  addressInfo: AddressData | undefined;
   verification: boolean;
   binaries: Array<Binary> | Blob;
   isFile: boolean;

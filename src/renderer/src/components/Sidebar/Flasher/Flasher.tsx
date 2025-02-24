@@ -74,9 +74,9 @@ export const FlasherTab: React.FC = () => {
   const [isAddressEnrtyAddOpen, openAddressEnrtyAdd, closeAddressEnrtyAdd] = useModal(false); // для добавления новых записей в адресную книгу
   const addressEntryAddForm = useForm<AddressData>();
 
-  const noAccessToDevice = deviceMs === undefined || connectionStatus !== ClientStatus.CONNECTED;
+  const noConnection = connectionStatus !== ClientStatus.CONNECTED;
   const commonOperationDisabled =
-    noAccessToDevice ||
+    noConnection ||
     flashTableData.find((item) => {
       return item.isSelected;
     }) === undefined;
@@ -262,25 +262,56 @@ export const FlasherTab: React.FC = () => {
     //   */
     //   SerialMonitor.closeMonitor(serialMonitorDevice.deviceID);
     // }
-    if (!addressBookSetting) {
-      ManagerMS.addLog('Ошибка! Адресная книга не загрузилась!');
-      return;
-    }
-    if (!deviceMs) {
-      ManagerMS.addLog('Прошивку начать нельзя! Выберите устройство!');
-      return;
-    }
     for (const item of flashTableData) {
       if (!item.isSelected) continue;
-      // TODO: реализация для ардуино
-      if (item.targetType === FirmwareTargetType.arduino) continue;
-      const entry = getEntryById(item.targetId as number);
-      // значит адрес или машина состояний были удалены
-      if (entry === undefined) {
+      let notFound = false;
+      let dev: Device | undefined = undefined;
+      let address: AddressData | undefined = undefined;
+      let devName: string = '';
+      switch (item.targetType) {
+        case FirmwareTargetType.arduino: {
+          dev = devices.get(item.targetId as string);
+          if (!dev) {
+            notFound = true;
+            break;
+          }
+          devName = dev.displayName();
+          break;
+        }
+        case FirmwareTargetType.tjc_ms: {
+          if (!addressBookSetting) {
+            ManagerMS.addLog(
+              `${ManagerMS.displayDeviceInfo}: Ошибка! Адресная книга не загрузилась!`
+            );
+            continue;
+          }
+          address = getEntryById(item.targetId as number);
+          if (!address) {
+            notFound = true;
+            break;
+          }
+          if (!deviceMs) {
+            ManagerMS.addLog(
+              `${ManagerMS.displayAddressInfo(address)}: прошивку начать нельзя, подключите МС-ТЮК.`
+            );
+            continue;
+          }
+          dev = deviceMs;
+          devName = ManagerMS.displayAddressInfo(address);
+          break;
+        }
+        default: {
+          ManagerMS.addLog(`Операция прошивки не поддерживается для выбранного устройства.`);
+          continue;
+        }
+      }
+
+      // значит плата или машина состояний были удалены
+      if (notFound) {
         ManagerMS.addLog(
-          `Ошибка! Не удаётся найти адрес для ${
+          `Ошибка! Не удаётся найти плату для ${
             item.isFile ? 'файла с прошивкой' : 'машины состояний'
-          } (${item.source}). Возможно Вы удалили адрес или ${
+          } (${item.source}). Возможно Вы удалили плату из таблицы или ${
             item.isFile ? 'файл с прошивкой' : 'машину состояний'
           }.`
         );
@@ -288,9 +319,7 @@ export const FlasherTab: React.FC = () => {
       }
       if (!item.source) {
         ManagerMS.addLog(
-          `Не удалось прошить ${ManagerMS.displayAddressInfo(
-            entry
-          )}, так как для неё не указана прошивка.`
+          `${devName}: не удалось прошить, так как для этой платы не указана прошивка.`
         );
         continue;
       }
@@ -304,17 +333,15 @@ export const FlasherTab: React.FC = () => {
         }
         if (binData !== null) {
           ManagerMS.binAdd({
-            addressInfo: entry,
-            device: deviceMs,
+            addressInfo: address,
+            device: dev!, // проверка осуществляется ранее в этой функции
             verification: managerMSSetting ? managerMSSetting.verification : false,
             binaries: new Blob([binData]),
             isFile: true,
           });
         }
       } else {
-        const noBinary = `${ManagerMS.displayAddressInfo(
-          entry
-        )}: отсутствуют бинарные данные для выбранной машины состояния. Перейдите во вкладку компилятор, чтобы скомпилировать схему.`;
+        const noBinary = `${devName}: отсутствуют бинарные данные для выбранной машины состояния. Перейдите во вкладку компилятор, чтобы скомпилировать схему.`;
         if (!compilerData) {
           ManagerMS.addLog(noBinary);
           continue;
@@ -325,8 +352,8 @@ export const FlasherTab: React.FC = () => {
           continue;
         }
         ManagerMS.binAdd({
-          addressInfo: entry,
-          device: deviceMs,
+          addressInfo: address,
+          device: dev!, // проверка осуществляется ранее в этой функции
           verification: managerMSSetting ? managerMSSetting.verification : false,
           binaries: smData.binary,
           isFile: false,
@@ -444,7 +471,7 @@ export const FlasherTab: React.FC = () => {
     <section className="mr-3 flex h-full flex-col bg-bg-secondary">
       <label className="m-2">{serverStatus()}</label>
       <div className="m-2">
-        <button className="btn-primary mr-4" onClick={openDeviceList} disabled={noAccessToDevice}>
+        <button className="btn-primary mr-4" onClick={openDeviceList} disabled={noConnection}>
           Подключить плату
         </button>
         <button className="btn-primary mr-4" onClick={handleOpenAddressBook}>

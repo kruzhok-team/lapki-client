@@ -449,7 +449,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
           'addDragendStateSig',
           this.bindHelper('state', 'addDragendStateSig', this.addDragendState)
         );
-        this.model.on('linkState', this.bindHelper('state', 'linkState', this.linkState));
+        this.model.on('linkState', this.bindHelper('state', 'linkState', this.states.linkState));
         this.model.on(
           'unlinkState',
           this.bindHelper('state', 'unlinkState', this.states.unlinkState)
@@ -970,16 +970,6 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
   setMountStatus = (status: boolean) => {
     this.isMounted = status;
     this.triggerDataUpdate('isMounted');
-  };
-
-  private linkState = (args: LinkStateParams) => {
-    const { childId, parentId } = args;
-    const child = this.states.get(childId);
-    const parent = this.states.get(parentId);
-    if (!child || !parent) return;
-    (child.parent || this.view).children.remove(child, Layer.States);
-    child.parent = parent;
-    parent.children.add(child, Layer.States);
   };
 
   private linkTransitions = (args: LinkTransitionParams) => {

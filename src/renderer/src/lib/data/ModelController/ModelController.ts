@@ -1037,7 +1037,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
     // Перелинковка переходов
     //! Нужно делать до создания перехода из начального состояния
-    this.emit('linkTransitions', { smId: smId, stateId: childId });
+    // TODO (L140-beep): линковка переходов
+    // this.emit('linkTransitions', { smId: smId, stateId: childId });
 
     // Если не было начального состояния, им станет новое
     if (canBeInitial && this.getSiblings(smId, childId, child.parentId, 'states')[0].length === 0) {

@@ -208,11 +208,24 @@ export const FlasherTab: React.FC = () => {
     openAddressBook();
   };
 
+  const getOpName = (op: OperationType) => {
+    switch (op) {
+      case OperationType.ping:
+        return 'Пинг';
+      case OperationType.reset:
+        return 'Перезагрузить';
+      case OperationType.meta:
+        return 'Получить метаданные';
+      default:
+        throw Error('Неизвестная операция');
+    }
+  };
+
   const handleOperation = (op: OperationType) => {
-    if (!deviceMs) return;
     for (const item of flashTableData) {
       if (item.isSelected) {
         if (item.targetType === FirmwareTargetType.tjc_ms) {
+          if (!deviceMs) continue;
           const addr = getEntryById(item.targetId as number);
           if (addr === undefined) {
             continue;
@@ -223,9 +236,14 @@ export const FlasherTab: React.FC = () => {
             type: op,
           });
         } else if (item.targetType === FirmwareTargetType.arduino) {
-          // TODO
+          const dev = devices.get(item.targetId as string);
+          ManagerMS.addLog(
+            `${dev ? dev.displayName() : 'Неизвестное устройство'}: операция "${getOpName(
+              op
+            )}" не поддерживается для этого устройства.`
+          );
         } else {
-          // TODO
+          throw Error('Неизвестный тип устройства');
         }
       }
     }

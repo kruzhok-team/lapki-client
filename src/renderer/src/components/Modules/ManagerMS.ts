@@ -1,7 +1,7 @@
 import { Binary } from '@renderer/types/CompilerTypes';
 import {
   AddressData,
-  BinariesMsType,
+  BinariesQueueItem,
   FlashBacktrackMs,
   MetaDataID,
   OperationInfo,
@@ -26,7 +26,7 @@ export class ManagerMS {
     ['PULL_FIRMWARE', 'загрузка записанного кода прошивки для проверки...'],
     ['VERIFY_FIRMWARE', 'проверка целостности загруженной прошивки...'],
   ]);
-  private static flashQueue: BinariesMsType[] = [];
+  private static flashQueue: BinariesQueueItem[] = [];
   private static flashingAddress: AddressData | undefined;
   private static lastBacktrackLogIndex: number | null;
   private static lastBacktrackStage: string = '';
@@ -45,7 +45,7 @@ export class ManagerMS {
     this.setAddress = setAddress;
     this.setMeta = setMeta;
   }
-  static binAdd(binariesInfo: BinariesMsType) {
+  static binAdd(binariesInfo: BinariesQueueItem) {
     this.flashQueue.push(binariesInfo);
   }
   static binStart() {

@@ -234,7 +234,7 @@ export type FlashTableItem = {
   isFile: boolean;
 };
 
-export type BinariesMsType = {
+export type BinariesQueueItem = {
   device: MSDevice;
   addressInfo: AddressData;
   verification: boolean;

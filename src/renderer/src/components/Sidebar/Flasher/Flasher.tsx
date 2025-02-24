@@ -377,11 +377,9 @@ export const FlasherTab: React.FC = () => {
   };
 
   const handleAddDevice = (deviceIds: string[]) => {
-    console.log(deviceIds);
     const newFlashTableData: FlashTableItem[] = [];
     for (const devId of deviceIds) {
       const dev = devices.get(devId);
-      console.log(dev);
       if (!dev) continue;
       if (dev.isMSDevice()) {
         handleGetAddressAndMeta();

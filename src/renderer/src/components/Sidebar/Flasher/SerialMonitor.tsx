@@ -116,7 +116,7 @@ export const SerialMonitorTab: React.FC = () => {
     if (device === undefined) {
       return 'Устройство отсутствует';
     }
-    return device.displaySerialName();
+    return `${device.displaySerialName()} - ${connectionStatus}`;
   };
 
   const handleConnectionButton = () => {
@@ -185,7 +185,7 @@ export const SerialMonitorTab: React.FC = () => {
         >
           Выбрать устройство
         </button>
-        {`${handleCurrentDeviceDisplay()} - ${connectionStatus}`}
+        {`${handleCurrentDeviceDisplay()}`}
       </div>
       <div className="m-2 flex">
         <TextInput

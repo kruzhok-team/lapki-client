@@ -1,7 +1,7 @@
 /*
 Окно загрузчика
 */
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -106,14 +106,6 @@ export const FlasherTab: React.FC = () => {
     return true;
   };
 
-  const removeFromTable = (ID: number) => {
-    const tableIndex = flashTableData.findIndex((v) => {
-      return v.targetId === ID;
-    });
-    if (tableIndex === -1) return;
-    setFlashTableData(flashTableData.toSpliced(tableIndex, 1));
-  };
-
   useEffect(() => {
     if (serverAddress === '' || addressBookSetting === null) return;
     setServerAddress('');
@@ -199,6 +191,19 @@ export const FlasherTab: React.FC = () => {
       return;
     }
   }, [deviceMs]);
+
+  useEffect(() => {
+    setFlashTableData(
+      flashTableData.filter((item) => {
+        switch (item.targetType) {
+          case FirmwareTargetType.arduino:
+            return devices.has(item.targetId as string);
+          case FirmwareTargetType.tjc_ms:
+            return getEntryById(item.targetId as number) !== undefined;
+        }
+      })
+    );
+  }, [addressBookSetting, devices]);
 
   const handleGetAddressAndMeta = () => {
     if (!deviceMs || !managerMSSetting) return;
@@ -587,13 +592,7 @@ export const FlasherTab: React.FC = () => {
         }}
         addressBookSetting={addressBookSetting}
         getID={getID}
-        onRemove={(index) => {
-          const id = getID(index);
-          if (id !== null) {
-            removeFromTable(id);
-          }
-          onRemove(index);
-        }}
+        onRemove={(index) => onRemove(index)}
         onSwapEntries={onSwapEntries}
         addressEnrtyEdit={addressEnrtyEdit}
         openAddressEnrtyAdd={openAddressEnrtyAdd}

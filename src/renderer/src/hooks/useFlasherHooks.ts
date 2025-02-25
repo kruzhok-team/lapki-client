@@ -42,7 +42,6 @@ export const useFlasherHooks = () => {
     connectionStatus,
     setErrorMessage,
     flashTableData,
-    setFlashTableData,
     setHasAvrdude,
   } = useFlasher();
 
@@ -94,14 +93,6 @@ export const useFlasherHooks = () => {
     }
     if (deviceMS && deviceMS.deviceID === deviceID) {
       setDeviceMS(undefined);
-    }
-    const flashTableIndex = flashTableData.findIndex((item) => item.targetId === deviceID);
-    if (flashTableIndex !== -1) {
-      setFlashTableData(flashTableData.toSpliced(flashTableIndex, 1));
-      const dev = devices.get(deviceID);
-      if (dev) {
-        ManagerMS.addLog(`${dev.displayName()}: устройство отключено.`);
-      }
     }
   };
 

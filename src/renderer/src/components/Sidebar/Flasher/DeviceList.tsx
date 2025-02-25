@@ -131,31 +131,6 @@ export const DeviceList: React.FC<DeviceListProps> = ({
   //   openMsgModal(msg);
   // };
 
-  // useEffect(() => {
-  //   window.electron.ipcRenderer.invoke('hasAvrdude').then(function (has: boolean) {
-  //     //console.log('hasAvrdude', has);
-  //     setHasAvrdude(has);
-  //   });
-  //   Flasher.bindReact(
-  //     setFlasherDevices,
-  //     setFlasherConnectionStatus,
-  //     setFlasherLog,
-  //     setFlasherFile,
-  //     setIsFlashing,
-  //     setFlasherError,
-  //     setFlashResult,
-  //     setSecondsUntilReconnect
-  //   );
-  //   SerialMonitor.bindReact(
-  //     addDeviceMessage,
-  //     setSerialMonitorDevice,
-  //     setSerialConnectionStatus,
-  //     setSerialLog
-  //   );
-  //   ManagerMS.bindReact(setDeviceMS, setLogMS, setAddressMS, setMetaMS);
-  //   Flasher.initReader(new FileReader());
-  // }, []);
-
   // TODO: перенести во flasher
   // const display = () => {
   //   if (!flasherIsLocal && connectionStatus == ClientStatus.CONNECTING) {

@@ -1,11 +1,12 @@
 /*
 Окно загрузчика
 */
-import React, { useEffect, useLayoutEffect, useRef } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
+import { AvrdudeGuideModal } from '@renderer/components/AvrdudeGuide';
 import { Device } from '@renderer/components/Modules/Device';
 import { ClientStatus } from '@renderer/components/Modules/Websocket/ClientStatus';
 import { useAddressBook } from '@renderer/hooks/useAddressBook';
@@ -33,6 +34,7 @@ import { Switch, WithHint } from '../../UI';
 
 export const FlasherTab: React.FC = () => {
   const modelController = useModelContext();
+  const [flasherSetting] = useSettings('flasher');
   const {
     device: deviceMs,
     log,
@@ -58,6 +60,7 @@ export const FlasherTab: React.FC = () => {
     devices,
     flashTableData,
     setFlashTableData,
+    hasAvrdude,
   } = useFlasher();
 
   const [managerMSSetting, setManagerMSSetting] = useSettings('managerMS');
@@ -68,6 +71,7 @@ export const FlasherTab: React.FC = () => {
   const [isAddressBookOpen, openAddressBook, closeAddressBook] = useModal(false);
   const [isMsGetAddressOpen, openMsGetAddressModal, closeMsGetAddressModal] = useModal(false);
   const [isDeviceListOpen, openDeviceList, closeDeviceList] = useModal(false);
+  const [isAvrdudeGuideModalOpen, openAvrdudeGuideModal, closeAvrdudeGuideModal] = useModal(false);
 
   const [isAddressEnrtyEditOpen, openAddressEnrtyEdit, closeAddressEnrtyEdit] = useModal(false); // для редактирования существующих записей в адресной книге
   const addressEntryEditForm = useForm<AddressData>();
@@ -437,6 +441,25 @@ export const FlasherTab: React.FC = () => {
     });
   };
 
+  const needAvrdude = useMemo(() => {
+    if (!flasherSetting?.type || flasherSetting.type === 'remote' || hasAvrdude) return false;
+    return flashTableData.some((item) => item.targetType === FirmwareTargetType.arduino);
+  }, [flashTableData, hasAvrdude, flasherSetting?.type]);
+
+  // вывод сообщения об отсутствии avrdude и кнопка с подсказкой для пользователя
+  const avrdudeCheck = () => {
+    if (!needAvrdude) return;
+    return (
+      <button
+        type="button"
+        className="btn-primary mr-4 border-warning bg-warning"
+        onClick={openAvrdudeGuideModal}
+      >
+        Программа avrdude не найдена!
+      </button>
+    );
+  };
+
   if (!managerMSSetting) {
     return null;
   }
@@ -510,12 +533,13 @@ export const FlasherTab: React.FC = () => {
       </div>
       <div className="m-2">
         <button
-          className="btn-primary"
+          className="btn-primary mr-4"
           onClick={handleAddFlashResultTab}
           disabled={flashResult.size === 0}
         >
           Результаты прошивки
         </button>
+        {avrdudeCheck()}
       </div>
       <div className="m-2">Журнал действий</div>
       <div
@@ -612,6 +636,7 @@ export const FlasherTab: React.FC = () => {
         onSubmit={handleAddDevice}
         submitLabel="Добавить"
       />
+      <AvrdudeGuideModal isOpen={isAvrdudeGuideModalOpen} onClose={closeAvrdudeGuideModal} />
     </section>
   );
 };

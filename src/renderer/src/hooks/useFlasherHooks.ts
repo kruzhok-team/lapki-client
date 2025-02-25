@@ -43,6 +43,7 @@ export const useFlasherHooks = () => {
     setErrorMessage,
     flashTableData,
     setFlashTableData,
+    setHasAvrdude,
   } = useFlasher();
 
   const {
@@ -157,6 +158,9 @@ export const useFlasherHooks = () => {
   };
 
   useEffect(() => {
+    window.electron.ipcRenderer.invoke('hasAvrdude').then(function (has: boolean) {
+      setHasAvrdude(has);
+    });
     Flasher.bindReact(
       setErrorMessage,
       setConnectionStatus,

@@ -31,6 +31,8 @@ interface FlasherState {
   setErrorMessage: (newError: string | undefined) => void;
   flashTableData: FlashTableItem[];
   setFlashTableData: (newFlashTableData: FlashTableItem[]) => void;
+  hasAvrdude: boolean;
+  setHasAvrdude: (newHasAvrdude: boolean) => void;
 }
 
 export const useFlasher = create<FlasherState>((set) => ({
@@ -55,4 +57,6 @@ export const useFlasher = create<FlasherState>((set) => ({
   flashTableData: [],
   setFlashTableData: (newFlashTableData: FlashTableItem[]) =>
     set({ flashTableData: newFlashTableData }),
+  hasAvrdude: false,
+  setHasAvrdude: (newHasAvrdude: boolean) => set({ hasAvrdude: newHasAvrdude }),
 }));

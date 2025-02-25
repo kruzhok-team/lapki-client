@@ -162,8 +162,6 @@ export class Flasher extends ClientWS {
     serialConnectionStatus: string = ''
   ) {
     this.flashPreparation(device, serialMonitorDevice, serialConnectionStatus);
-    //TODO: добавить лог для arduino-устройства, что оно прошивается
-    //this.setFlasherLog('Идёт загрузка...');
     this.send('flash-start', {
       deviceID: device.deviceID,
       fileSize: Flasher.binary.size,

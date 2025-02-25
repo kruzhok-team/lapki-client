@@ -152,7 +152,6 @@ export const useFlasherHooks = () => {
     newMap.set(flashResultKey, flashReport);
     setFlashResult(newMap);
     Flasher.currentFlashingDevice = undefined;
-    // TODO: общая очередь загрузок
     ManagerMS.binStart();
   };
 
@@ -447,8 +446,7 @@ export const useFlasherHooks = () => {
         break;
       }
       case 'flash-open-serial-monitor':
-        // если не удалось закрыть монитор порта перед прошивкой, то повторяем попытку (см. handleFlash из Loader.tsx)
-        // обычно монитор порта закрывается с первой попытки и этот код не воспроизводится
+        // если не удалось закрыть монитор порта перед прошивкой, то повторяем попытку
         console.log('flash-open-serial-monitor');
         if (Flasher.currentFlashingDevice) {
           SerialMonitor.closeMonitor(Flasher.currentFlashingDevice.deviceID);

@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
@@ -200,10 +200,6 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
         return 'ArduinoUno';
     }
     return undefined;
-  };
-
-  const removeTableItemByIndex = (index: number) => {
-    setTableData(tableData.toSpliced(index, 1));
   };
 
   const cellRender = (content: string | JSX.Element, mergeClassName: string) => {

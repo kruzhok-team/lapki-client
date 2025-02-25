@@ -156,20 +156,6 @@ export const DeviceList: React.FC<DeviceListProps> = ({
   //   Flasher.initReader(new FileReader());
   // }, []);
 
-  // TODO: перенести во useFlasherHooks
-  // useEffect(() => {
-  //   if (!flasherSetting) return;
-  //   const { host, port, localPort, type } = flasherSetting;
-  //   const autoReconnect = type === 'remote';
-  //   if (type === 'local' && port !== localPort) {
-  //     setFlasherSetting({ ...flasherSetting, port: localPort }).then(() => {
-  //       Flasher.connect(host, localPort, autoReconnect);
-  //     });
-  //   } else {
-  //     Flasher.connect(host, port, autoReconnect);
-  //   }
-  // }, [flasherSetting, setFlasherSetting]);
-
   // TODO: перенести во flasher
   // const display = () => {
   //   if (!flasherIsLocal && connectionStatus == ClientStatus.CONNECTING) {

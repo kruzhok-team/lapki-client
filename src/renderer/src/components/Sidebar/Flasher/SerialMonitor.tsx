@@ -113,6 +113,9 @@ export const SerialMonitorTab: React.FC = () => {
   };
 
   const handleCurrentDeviceDisplay = () => {
+    if (connectionStatus === SERIAL_MONITOR_NO_SERVER_CONNECTION) {
+      return connectionStatus;
+    }
     if (device === undefined) {
       return 'Устройство отсутствует';
     }

@@ -170,19 +170,6 @@ export const DeviceList: React.FC<DeviceListProps> = ({
   //   }
   // }, [flasherSetting, setFlasherSetting]);
 
-  // TODO: перенести во useFlasherHooks
-  // useEffect(() => {
-  //   if (serialMonitorDevice && !devices.get(serialMonitorDevice.deviceID)) {
-  //     SerialMonitor.setDevice(undefined);
-  //   }
-  //   if (deviceMS && !devices.get(deviceMS.deviceID)) {
-  //     setDeviceMS(undefined);
-  //   }
-  //   if (currentDeviceID && !devices.get(currentDeviceID)) {
-  //     setCurrentDevice(undefined);
-  //   }
-  // }, [devices]);
-
   // TODO: перенести во flasher
   // const display = () => {
   //   if (!flasherIsLocal && connectionStatus == ClientStatus.CONNECTING) {

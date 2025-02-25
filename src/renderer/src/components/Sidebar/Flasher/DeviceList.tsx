@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { useForm } from 'react-hook-form';
 import { twMerge } from 'tailwind-merge';
@@ -28,9 +28,16 @@ export const DeviceList: React.FC<DeviceListProps> = ({
   const { handleSubmit: hookHandleSubmit } = useForm();
   const { connectionStatus, devices } = useFlasher();
   const [currentDeviceID, setCurrentDevice] = useState<string | undefined>(undefined);
-  const [flasherLog, setFlasherLog] = useState<string | undefined>(undefined);
 
   const isActive = (id: string) => currentDeviceID === id;
+
+  useEffect(() => {
+    if (!currentDeviceID) return;
+
+    if (!devices.has(currentDeviceID)) {
+      setCurrentDevice(undefined);
+    }
+  }, [devices]);
 
   const handleGetList = async () => {
     Flasher.getList();
@@ -46,7 +53,7 @@ export const DeviceList: React.FC<DeviceListProps> = ({
       }
       return (
         <div>
-          <div className="flex items-center">{MSDevice.name}</div>
+          <p>{MSDevice.name}</p>
           <p>Порты: {portNames}</p>
         </div>
       );
@@ -54,7 +61,7 @@ export const DeviceList: React.FC<DeviceListProps> = ({
       const ArduinoDevice = device as ArduinoDevice;
       return (
         <div>
-          <div className="flex items-center">{ArduinoDevice.name}</div>
+          <p> {ArduinoDevice.name}</p>
           <p>Серийный номер: {ArduinoDevice.serialID}</p>
           <p>Порт: {ArduinoDevice.portName}</p>
           <p>Контроллер: {ArduinoDevice.controller}</p>
@@ -73,6 +80,41 @@ export const DeviceList: React.FC<DeviceListProps> = ({
     onSubmit([currentDeviceID]);
     onClose();
   });
+
+  const renderBottom = () => {
+    if (connectionStatus === ClientStatus.CONNECTED) {
+      return (
+        <div>
+          <label>Устройства</label>
+          <div className="mb-2 h-32 overflow-y-auto break-words rounded bg-bg-primary p-2">
+            {[...devices.keys()].map((key) => (
+              <button
+                key={key}
+                className={twMerge(
+                  'my-1 flex w-full items-center justify-center rounded border-2 border-[#557b91] p-1 hover:bg-[#557b91] hover:text-white',
+                  isActive(key) && ' bg-[#557b91] text-white'
+                )}
+                onClick={() => setCurrentDevice(key)}
+                type="button"
+              >
+                {devices.get(key)?.displayName()}
+              </button>
+            ))}
+          </div>
+          <label>Информация об устройстве</label>
+          <div className="mb-2 h-36 items-center overflow-y-auto break-words rounded bg-bg-primary p-2 text-left">
+            {[...devices.keys()].map((key) => (
+              <div key={key} className={twMerge('hidden', isActive(key) && 'block')}>
+                {deviceInfoDisplay(devices.get(key))}
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    } else {
+      return <label>Отсутствует подключение к загрузчику</label>;
+    }
+  };
 
   return (
     <Modal
@@ -98,31 +140,7 @@ export const DeviceList: React.FC<DeviceListProps> = ({
               Обновить
             </button>
           </div>
-          <div className="mb-2 h-32 overflow-y-auto break-words rounded bg-bg-primary p-2">
-            {[...devices.keys()].map((key) => (
-              <button
-                key={key}
-                className={twMerge(
-                  'my-1 flex w-full items-center rounded border-2 border-[#557b91] p-1 hover:bg-[#557b91] hover:text-white',
-                  isActive(key) && 'bg-[#557b91] text-white'
-                )}
-                onClick={() => setCurrentDevice(key)}
-                type="button"
-              >
-                {devices.get(key)?.displayName()}
-              </button>
-            ))}
-          </div>
-          <div className="mb-2 h-36 overflow-y-auto break-words rounded bg-bg-primary p-2 text-left">
-            {[...devices.keys()].map((key) => (
-              <div key={key} className={twMerge('hidden', isActive(key) && 'block')}>
-                {deviceInfoDisplay(devices.get(key))}
-              </div>
-            ))}
-          </div>
-          <div className="min-h-16 overflow-y-auto break-words rounded bg-bg-primary p-2">
-            <div>{flasherLog}</div>
-          </div>
+          {renderBottom()}
         </div>
       </section>
     </Modal>

@@ -1,13 +1,15 @@
 /*
 Окно загрузчика
 */
-import React, { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
 import { AvrdudeGuideModal } from '@renderer/components/AvrdudeGuide';
+import { ErrorModal, ErrorModalData } from '@renderer/components/ErrorModal';
 import { Device } from '@renderer/components/Modules/Device';
+import { Flasher } from '@renderer/components/Modules/Flasher';
 import { ClientStatus } from '@renderer/components/Modules/Websocket/ClientStatus';
 import { useAddressBook } from '@renderer/hooks/useAddressBook';
 import { useModal } from '@renderer/hooks/useModal';
@@ -61,6 +63,7 @@ export const FlasherTab: React.FC = () => {
     flashTableData,
     setFlashTableData,
     hasAvrdude,
+    errorMessage,
   } = useFlasher();
 
   const [managerMSSetting, setManagerMSSetting] = useSettings('managerMS');
@@ -77,6 +80,14 @@ export const FlasherTab: React.FC = () => {
   const addressEntryEditForm = useForm<AddressData>();
   const [isAddressEnrtyAddOpen, openAddressEnrtyAdd, closeAddressEnrtyAdd] = useModal(false); // для добавления новых записей в адресную книгу
   const addressEntryAddForm = useForm<AddressData>();
+
+  const [msgModalData, setMsgModalData] = useState<ErrorModalData>();
+  const [isMsgModalOpen, setIsMsgModalOpen] = useState(false);
+  const closeMsgModal = () => setIsMsgModalOpen(false);
+  const openMsgModal = (data: ErrorModalData) => {
+    setMsgModalData(data);
+    setIsMsgModalOpen(true);
+  };
 
   const noConnection = connectionStatus !== ClientStatus.CONNECTED;
   const commonOperationDisabled =
@@ -465,6 +476,106 @@ export const FlasherTab: React.FC = () => {
     );
   };
 
+  const handleErrorMessageDisplay = async () => {
+    if (!flasherSetting) return;
+    // выводимое для пользователя сообщение
+    let errorMsg: JSX.Element = <p>`Неизвестный тип ошибки`</p>;
+    if (flasherSetting.type === 'local') {
+      await window.electron.ipcRenderer
+        .invoke('Module:getStatus', 'lapki-flasher')
+        .then(function (obj) {
+          const errorDetails = obj.details;
+          switch (obj.code) {
+            // код 0 означает, что не было попытки запустить загрузчик, по-идее такая ошибка не может возникнуть, если только нет какой-то ошибки в коде.
+            case 0:
+              errorMsg = <p>{'Загрузчик не был запущен по неизвестной причине.'}</p>;
+              break;
+            // код 1 означает, что загрузчик работает, но соединение с ним не установлено.
+            case 1:
+              switch (connectionStatus) {
+                case ClientStatus.CONNECTION_ERROR:
+                  errorMsg = (
+                    <p>
+                      {`Локальный загрузчик работает, но он не может подключиться к IDE из-за ошибки.`}
+                      <br></br>
+                      {errorMessage}
+                    </p>
+                  );
+                  break;
+                default:
+                  errorMsg = (
+                    <p>
+                      {`Локальный загрузчик работает, но IDE не может установить с ним соединение.`}
+                    </p>
+                  );
+                  break;
+              }
+              break;
+            case 2:
+              errorMsg = (
+                <p>
+                  {`Локальный загрузчик не смог запуститься из-за ошибки.`}
+                  <br></br>
+                  {errorDetails}
+                </p>
+              );
+              break;
+            case 3:
+              errorMsg = <p>{`Прервана работа локального загрузчика.`}</p>;
+              break;
+            case 4:
+              errorMsg = <p>{`Платформа ${errorDetails} не поддерживается.`}</p>;
+              break;
+          }
+        });
+    } else {
+      if (connectionStatus == ClientStatus.CONNECTION_ERROR) {
+        errorMsg = (
+          <p>
+            {`Ошибка соединения.`}
+            <br></br>
+            {errorMessage}
+          </p>
+        );
+      } else {
+        errorMsg = <p>{errorMessage}</p>;
+      }
+    }
+    const msg: ErrorModalData = {
+      text: errorMsg,
+      caption: 'Ошибка',
+    };
+    openMsgModal(msg);
+  };
+
+  const handleReconnect = async () => {
+    if (!flasherSetting) return;
+
+    if (connectionStatus === ClientStatus.CONNECTING) {
+      Flasher.cancelConnection();
+      return;
+    }
+
+    if (flasherSetting.type === 'local') {
+      await window.electron.ipcRenderer.invoke('Module:reboot', 'lapki-flasher');
+    } else {
+      Flasher.reconnect();
+    }
+  };
+
+  const displayReconnect = () => {
+    if (!flasherSetting) return;
+
+    if (flasherSetting.type !== 'local' && connectionStatus === ClientStatus.CONNECTING) {
+      return 'Отменить подключение';
+    }
+    if (flasherSetting.type === 'local') {
+      return 'Перезапустить';
+    } else {
+      return 'Переподключиться';
+    }
+  };
+
   if (!managerMSSetting) {
     return null;
   }
@@ -472,6 +583,17 @@ export const FlasherTab: React.FC = () => {
   return (
     <section className="mr-3 flex h-full flex-col bg-bg-secondary">
       <label className="m-2">{serverStatus()}</label>
+      <div className="m-2" hidden={connectionStatus === ClientStatus.CONNECTED}>
+        <button className="btn-primary mr-4" onClick={handleReconnect}>
+          {displayReconnect()}
+        </button>
+        <button
+          className="btn-primary border-warning bg-warning"
+          onClick={handleErrorMessageDisplay}
+        >
+          Описание ошибки
+        </button>
+      </div>
       <div className="m-2 flex">
         <button className="btn-primary mr-4" onClick={openDeviceList} disabled={noConnection}>
           Подключить плату
@@ -636,6 +758,7 @@ export const FlasherTab: React.FC = () => {
         submitLabel="Добавить"
       />
       <AvrdudeGuideModal isOpen={isAvrdudeGuideModalOpen} onClose={closeAvrdudeGuideModal} />
+      <ErrorModal isOpen={isMsgModalOpen} data={msgModalData} onClose={closeMsgModal} />
     </section>
   );
 };

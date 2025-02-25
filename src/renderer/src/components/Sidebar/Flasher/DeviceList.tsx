@@ -57,105 +57,6 @@ export const DeviceList: React.FC<DeviceListProps> = ({
     Flasher.getList();
   };
 
-  //const avrdudeBlock = flasherIsLocal && !hasAvrdude;
-
-  // TODO: перенести во flasher
-  // const handleErrorMessageDisplay = async () => {
-  //   // выводимое для пользователя сообщение
-  //   let errorMsg: JSX.Element = <p>`Неизвестный тип ошибки`</p>;
-  //   if (flasherIsLocal) {
-  //     await window.electron.ipcRenderer
-  //       .invoke('Module:getStatus', 'lapki-flasher')
-  //       .then(function (obj) {
-  //         const errorDetails = obj.details;
-  //         switch (obj.code) {
-  //           // код 0 означает, что не было попытки запустить загрузчик, по-идее такая ошибка не может возникнуть, если только нет какой-то ошибки в коде.
-  //           case 0:
-  //             errorMsg = <p>{'Загрузчик не был запущен по неизвестной причине.'}</p>;
-  //             break;
-  //           // код 1 означает, что загрузчик работает, но соединение с ним не установлено.
-  //           case 1:
-  //             switch (connectionStatus) {
-  //               case ClientStatus.CONNECTION_ERROR:
-  //                 errorMsg = (
-  //                   <p>
-  //                     {`Локальный загрузчик работает, но он не может подключиться к IDE из-за ошибки.`}
-  //                     <br></br>
-  //                     {flasherError}
-  //                   </p>
-  //                 );
-  //                 break;
-  //               default:
-  //                 errorMsg = (
-  //                   <p>
-  //                     {`Локальный загрузчик работает, но IDE не может установить с ним соединение.`}
-  //                   </p>
-  //                 );
-  //                 break;
-  //             }
-  //             break;
-  //           case 2:
-  //             errorMsg = (
-  //               <p>
-  //                 {`Локальный загрузчик не смог запуститься из-за ошибки.`}
-  //                 <br></br>
-  //                 {errorDetails}
-  //               </p>
-  //             );
-  //             break;
-  //           case 3:
-  //             errorMsg = <p>{`Прервана работа локального загрузчика.`}</p>;
-  //             break;
-  //           case 4:
-  //             errorMsg = <p>{`Платформа ${errorDetails} не поддерживается.`}</p>;
-  //             break;
-  //         }
-  //       });
-  //   } else {
-  //     if (connectionStatus == ClientStatus.CONNECTION_ERROR) {
-  //       errorMsg = (
-  //         <p>
-  //           {`Ошибка соединения.`}
-  //           <br></br>
-  //           {flasherError}
-  //         </p>
-  //       );
-  //     } else {
-  //       errorMsg = <p>{flasherError}</p>;
-  //     }
-  //   }
-  //   const msg: ErrorModalData = {
-  //     text: errorMsg,
-  //     caption: 'Ошибка',
-  //   };
-  //   openMsgModal(msg);
-  // };
-
-  // TODO: перенести во flasher
-  // const display = () => {
-  //   if (!flasherIsLocal && connectionStatus == ClientStatus.CONNECTING) {
-  //     return 'Отменить';
-  //   }
-  //   if (connectionStatus == ClientStatus.CONNECTED) {
-  //     return 'Обновить';
-  //   } else {
-  //     if (flasherIsLocal) {
-  //       return 'Перезапустить';
-  //     } else {
-  //       return 'Подключиться';
-  //     }
-  //   }
-  // };
-
-  // TODO: перенести во flasher
-  // const handleReconnect = async () => {
-  //   if (flasherIsLocal) {
-  //     await window.electron.ipcRenderer.invoke('Module:reboot', 'lapki-flasher');
-  //   } else {
-  //     Flasher.reconnect();
-  //   }
-  // };
-
   const deviceInfoDisplay = (device: Device | undefined) => {
     if (!device) return;
     if (device.isMSDevice()) {
@@ -219,21 +120,6 @@ export const DeviceList: React.FC<DeviceListProps> = ({
             </button>
           </div>
           <div className="mb-2 h-32 overflow-y-auto break-words rounded bg-bg-primary p-2">
-            {/* 
-          TODO: перенести во flasher
-          <button
-            className="btn-primary mb-2 w-full"
-            onClick={() => handleErrorMessageDisplay()}
-            style={{
-              display:
-                connectionStatus === ClientStatus.NO_CONNECTION ||
-                connectionStatus === ClientStatus.CONNECTION_ERROR
-                  ? 'inline-block'
-                  : 'none',
-            }}
-          >
-            Подробнее
-          </button> */}
             {[...devices.keys()].map((key) => (
               <button
                 key={key}

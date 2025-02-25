@@ -583,8 +583,14 @@ export const FlasherTab: React.FC = () => {
   return (
     <section className="mr-3 flex h-full flex-col bg-bg-secondary">
       <label className="m-2">{serverStatus()}</label>
-      <div className="m-2" hidden={connectionStatus === ClientStatus.CONNECTED}>
-        <button className="btn-primary mr-4" onClick={handleReconnect}>
+      <div className="m-2" hidden={errorMessage ? false : true}>
+        <button
+          className="btn-primary mr-4"
+          onClick={handleReconnect}
+          disabled={
+            flasherSetting?.type === 'local' && connectionStatus === ClientStatus.CONNECTING
+          }
+        >
           {displayReconnect()}
         </button>
         <button

@@ -41,7 +41,6 @@ export const useFlasherHooks = () => {
     setFlashResult,
     connectionStatus,
     setErrorMessage,
-    flashTableData,
     setHasAvrdude,
   } = useFlasher();
 

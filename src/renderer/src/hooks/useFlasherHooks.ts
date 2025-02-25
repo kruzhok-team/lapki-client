@@ -6,6 +6,7 @@ import { ManagerMS } from '@renderer/components/Modules/ManagerMS';
 import {
   SERIAL_MONITOR_CONNECTED,
   SERIAL_MONITOR_NO_CONNECTION,
+  SERIAL_MONITOR_NO_SERVER_CONNECTION,
   SerialMonitor,
 } from '@renderer/components/Modules/SerialMonitor';
 import { ClientStatus } from '@renderer/components/Modules/Websocket/ClientStatus';
@@ -188,7 +189,9 @@ export const useFlasherHooks = () => {
   useEffect(() => {
     setDevices(new Map());
     setIsFlashing(false);
-    if (connectionStatus === ClientStatus.NO_CONNECTION) {
+    if (connectionStatus !== ClientStatus.CONNECTED) {
+      setSerialConnectionStatus(SERIAL_MONITOR_NO_SERVER_CONNECTION);
+      setSerialMonitorDevice(undefined);
       ManagerMS.clearQueue();
       if (Flasher.currentFlashingDevice) {
         flashingEnd(
@@ -196,6 +199,8 @@ export const useFlasherHooks = () => {
           undefined
         );
       }
+    } else {
+      setSerialConnectionStatus(SERIAL_MONITOR_NO_CONNECTION);
     }
   }, [connectionStatus]);
 

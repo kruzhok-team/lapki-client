@@ -172,27 +172,6 @@ export const DeviceList: React.FC<DeviceListProps> = ({
 
   // TODO: перенести во useFlasherHooks
   // useEffect(() => {
-  //   /*
-  //     Если соединение с сервером отсутствует, то это означает, что
-  //     связь с портом (если она была) утерена и к нему нельзя подключиться.
-  //     Сервер автоматически прервёт соединение с портом на своей стороне при
-  //     отключении клиента.
-  //   */
-  //   if (connectionStatus != ClientStatus.CONNECTED) {
-  //     setSerialConnectionStatus(SERIAL_MONITOR_NO_SERVER_CONNECTION);
-  //     return;
-  //   }
-  //   /*
-  //     Если установлена новая связь с сервером, то нужно поменять статус с
-  //     того, что нет соединения с сервером (SERIAL_MONITOR_NO_SERVER_CONNECTION) на то,
-  //     что отсутствует соединение с портом, но есть соедиенение с сервером,
-  //     то есть можно подключиться к порту по нажатии на кнопку.
-  //   */
-  //   setSerialConnectionStatus(SERIAL_MONITOR_NO_CONNECTION);
-  // }, [connectionStatus, setSerialConnectionStatus]);
-
-  // TODO: перенести во useFlasherHooks
-  // useEffect(() => {
   //   if (serialMonitorDevice && !devices.get(serialMonitorDevice.deviceID)) {
   //     SerialMonitor.setDevice(undefined);
   //   }

@@ -156,21 +156,6 @@ export const DeviceList: React.FC<DeviceListProps> = ({
   //   }
   // };
 
-  // TODO: перенести во flasher
-  // // вывод сообщения об отсутствии avrdude и кнопка с подсказкой для пользователя
-  // const avrdudeCheck = () => {
-  //   if (!avrdudeBlock) return;
-  //   return (
-  //     <button
-  //       type="button"
-  //       className="btn-primary mb-2 w-full border-warning bg-warning"
-  //       onClick={openAvrdudeGuideModal}
-  //     >
-  //       Программа avrdude не найдена!
-  //     </button>
-  //   );
-  // };
-
   const deviceInfoDisplay = (device: Device | undefined) => {
     if (!device) return;
     if (device.isMSDevice()) {

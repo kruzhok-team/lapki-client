@@ -237,25 +237,6 @@ export const DeviceList: React.FC<DeviceListProps> = ({ isOpen, onClose, onSubmi
   //   );
   // };
 
-  // TODO: перенести во flasher
-  // const getDevicePlatform = (device: Device) => {
-  //   // TODO: подумать, можно ли найти более надёжный способ сверки платформ на клиенте и сервере
-  //   // названия платформ на загрузчике можно посмотреть здесь: https://github.com/kruzhok-team/lapki-flasher/blob/main/src/device_list.JSON
-  //   const name = device.name.toLocaleLowerCase();
-  //   switch (name) {
-  //     case 'arduino micro':
-  //     case 'arduino micro (bootloader)':
-  //       return 'ArduinoMicro';
-  //     case 'arduino uno':
-  //       return 'ArduinoUno';
-  //   }
-  //   return undefined;
-  // };
-
-  const showReconnectTime = () => {
-    if (secondsUntilReconnect == null) return;
-    return <p>До подключения: {secondsUntilReconnect} сек.</p>;
-  };
   const deviceInfoDisplay = (device: Device | undefined) => {
     if (!device) return;
     if (device.isMSDevice()) {

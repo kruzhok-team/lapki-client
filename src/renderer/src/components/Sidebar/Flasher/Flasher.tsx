@@ -440,28 +440,14 @@ export const FlasherTab: React.FC = () => {
     setFlashTableData(flashTableData.concat(newFlashTableData));
   };
 
-  /**
-   * TODO: реализовать
   // добавление вкладки с serial monitor
-  // открытие новой вкладки закрывает соединение со старым портом
   // пока клиент может мониторить только один порт
   const handleAddSerialMonitorTab = () => {
-    const curDevice = devices.get(currentDeviceID ?? '');
-    if (
-      serialMonitorDevice !== undefined &&
-      curDevice !== serialMonitorDevice &&
-      devices.get(serialMonitorDevice.deviceID) !== undefined
-    ) {
-      SerialMonitor.closeMonitor(serialMonitorDevice.deviceID);
-    }
-    closeTab('Монитор порта', modelController);
-    setSerialMonitorDevice(curDevice);
     openTab(modelController, {
       type: 'serialMonitor',
       name: 'Монитор порта',
     });
   };
-  */
 
   if (!managerMSSetting) {
     return null;
@@ -470,12 +456,15 @@ export const FlasherTab: React.FC = () => {
   return (
     <section className="mr-3 flex h-full flex-col bg-bg-secondary">
       <label className="m-2">{serverStatus()}</label>
-      <div className="m-2">
+      <div className="m-2 flex">
         <button className="btn-primary mr-4" onClick={openDeviceList} disabled={noConnection}>
           Подключить плату
         </button>
         <button className="btn-primary mr-4" onClick={handleOpenAddressBook}>
           Адреса плат МС-ТЮК
+        </button>
+        <button className="btn-primary mr-4" onClick={handleAddSerialMonitorTab}>
+          Монитор порта
         </button>
       </div>
       <div className="m-2">

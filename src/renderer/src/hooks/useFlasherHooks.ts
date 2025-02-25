@@ -24,7 +24,6 @@ import {
   UpdateDelete,
 } from '@renderer/types/FlasherTypes';
 
-import { useAddressBook } from './useAddressBook';
 import { useSettings } from './useSettings';
 
 export const useFlasherHooks = () => {
@@ -53,7 +52,13 @@ export const useFlasherHooks = () => {
     setMetaID,
   } = useManagerMS();
 
-  const { device: serialMonitorDevice, setDevice: setSerialMonitorDevice } = useSerialMonitor();
+  const {
+    device: serialMonitorDevice,
+    setDevice: setSerialMonitorDevice,
+    addDeviceMessage: addSerialDeviceMessage,
+    setConnectionStatus: setSerialConnectionStatus,
+    setLog: setSerialLog,
+  } = useSerialMonitor();
 
   // const {
   //   addressBookSetting,
@@ -157,6 +162,12 @@ export const useFlasherHooks = () => {
       setConnectionStatus,
       setSecondsUntilReconnect,
       setFlasherMessage
+    );
+    SerialMonitor.bindReact(
+      addSerialDeviceMessage,
+      setSerialMonitorDevice,
+      setSerialConnectionStatus,
+      setSerialLog
     );
     ManagerMS.bindReact(setDeviceMS, setLog, setAddress, setMetaID);
     Flasher.initReader(new FileReader());

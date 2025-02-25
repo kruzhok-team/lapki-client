@@ -4,12 +4,9 @@ import { useForm } from 'react-hook-form';
 import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as Update } from '@renderer/assets/icons/update.svg';
-import { ErrorModalData } from '@renderer/components/ErrorModal';
 import { Flasher } from '@renderer/components/Modules/Flasher';
 import { Modal } from '@renderer/components/UI';
-import { useSettings } from '@renderer/hooks/useSettings';
 import { useFlasher } from '@renderer/store/useFlasher';
-import { FlashResult } from '@renderer/types/FlasherTypes';
 
 import { ArduinoDevice, Device, MSDevice } from '../../Modules/Device';
 import { ClientStatus } from '../../Modules/Websocket/ClientStatus';
@@ -28,28 +25,10 @@ export const DeviceList: React.FC<DeviceListProps> = ({
   submitLabel,
   ...props
 }) => {
-  const [flasherSetting, setFlasherSetting] = useSettings('flasher');
-  const flasherIsLocal = flasherSetting?.type === 'local';
   const { handleSubmit: hookHandleSubmit } = useForm();
   const { connectionStatus, devices } = useFlasher();
   const [currentDeviceID, setCurrentDevice] = useState<string | undefined>(undefined);
   const [flasherLog, setFlasherLog] = useState<string | undefined>(undefined);
-  const [flasherFile, setFlasherFile] = useState<string | undefined | null>(undefined);
-  const [flasherError, setFlasherError] = useState<string | undefined>(undefined);
-  const [hasAvrdude, setHasAvrdude] = useState<boolean>(true);
-
-  const [msgModalData, setMsgModalData] = useState<ErrorModalData>();
-  const [isMsgModalOpen, setIsMsgModalOpen] = useState(false);
-  const openMsgModal = (data: ErrorModalData) => {
-    setMsgModalData(data);
-    setIsMsgModalOpen(true);
-  };
-
-  const [flashResult, setFlashResult] = useState<Map<string, FlashResult>>(new Map());
-  // секунд до переподключения, null - означает, что отчёт до переподключения не ведётся
-  const [secondsUntilReconnect, setSecondsUntilReconnect] = useState<number | null>(null);
-
-  const closeMsgModal = () => setIsMsgModalOpen(false);
 
   const isActive = (id: string) => currentDeviceID === id;
 
@@ -116,7 +95,7 @@ export const DeviceList: React.FC<DeviceListProps> = ({
               type="button"
             >
               <Update width="1.5rem" height="1.5rem" />
-              {'Обновить'}
+              Обновить
             </button>
           </div>
           <div className="mb-2 h-32 overflow-y-auto break-words rounded bg-bg-primary p-2">

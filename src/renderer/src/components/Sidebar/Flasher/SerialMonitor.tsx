@@ -286,7 +286,12 @@ export const SerialMonitorTab: React.FC = () => {
         ))}
       </div>
 
-      <DeviceList isOpen={isDeviceListOpen} onClose={closeDeviceList} onSubmit={handleAddDevice} />
+      <DeviceList
+        isOpen={isDeviceListOpen}
+        onClose={closeDeviceList}
+        onSubmit={handleAddDevice}
+        submitLabel="Выбрать"
+      />
     </section>
   );
 };

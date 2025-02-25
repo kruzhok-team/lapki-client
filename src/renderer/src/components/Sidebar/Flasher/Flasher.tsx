@@ -606,7 +606,12 @@ export const FlasherTab: React.FC = () => {
           });
         }}
       />
-      <DeviceList isOpen={isDeviceListOpen} onClose={closeDeviceList} onSubmit={handleAddDevice} />
+      <DeviceList
+        isOpen={isDeviceListOpen}
+        onClose={closeDeviceList}
+        onSubmit={handleAddDevice}
+        submitLabel="Добавить"
+      />
     </section>
   );
 };

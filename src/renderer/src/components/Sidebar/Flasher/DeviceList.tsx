@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as Update } from '@renderer/assets/icons/update.svg';
-import { ErrorModal, ErrorModalData } from '@renderer/components/ErrorModal';
+import { ErrorModalData } from '@renderer/components/ErrorModal';
 import { Flasher } from '@renderer/components/Modules/Flasher';
 import { Modal } from '@renderer/components/UI';
 import { useSettings } from '@renderer/hooks/useSettings';
@@ -18,9 +18,16 @@ interface DeviceListProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (deviceIds: string[]) => void;
+  submitLabel: string;
 }
 
-export const DeviceList: React.FC<DeviceListProps> = ({ isOpen, onClose, onSubmit, ...props }) => {
+export const DeviceList: React.FC<DeviceListProps> = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  submitLabel,
+  ...props
+}) => {
   const [flasherSetting, setFlasherSetting] = useSettings('flasher');
   const flasherIsLocal = flasherSetting?.type === 'local';
   const { handleSubmit: hookHandleSubmit } = useForm();
@@ -281,7 +288,7 @@ export const DeviceList: React.FC<DeviceListProps> = ({ isOpen, onClose, onSubmi
       isOpen={isOpen}
       title="Список устройств"
       onRequestClose={onClose}
-      submitLabel="Добавить"
+      submitLabel={submitLabel}
       onSubmit={handleSubmit}
       className="bg-bg-secondary"
       submitDisabled={!currentDeviceID}

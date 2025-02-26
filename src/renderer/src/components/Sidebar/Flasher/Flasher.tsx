@@ -240,7 +240,6 @@ export const FlasherTab: React.FC = () => {
   };
 
   useEffect(() => {
-    console.log(addressAndMeta, addressBookSetting, flashTableData);
     if (addressAndMeta === undefined || addressBookSetting === null) return;
     setAddressAndMeta(undefined);
     if (addressAndMeta.address) {
@@ -254,6 +253,7 @@ export const FlasherTab: React.FC = () => {
     } else {
       ManagerMS.addLog('Ошибка получения адреса или метаданных!');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [addressAndMeta, addressBookSetting, setAddressAndMeta]);
 
   useEffect(() => {
@@ -267,6 +267,7 @@ export const FlasherTab: React.FC = () => {
         }
       })
     );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [devices]);
 
   const handleGetAddressAndMeta = () => {
@@ -411,6 +412,7 @@ export const FlasherTab: React.FC = () => {
         if (binData !== null) {
           ManagerMS.binAdd({
             addressInfo: address,
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             device: dev!, // проверка осуществляется ранее в этой функции
             verification: managerMSSetting ? managerMSSetting.verification : false,
             binaries: new Blob([binData]),
@@ -430,6 +432,7 @@ export const FlasherTab: React.FC = () => {
         }
         ManagerMS.binAdd({
           addressInfo: address,
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           device: dev!, // проверка осуществляется ранее в этой функции
           verification: managerMSSetting ? managerMSSetting.verification : false,
           binaries: smData.binary,

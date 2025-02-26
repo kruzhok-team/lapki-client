@@ -149,6 +149,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         openLoaderSettings={openLoaderSettings}
       />,
     ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       onRequestSaveFile,
       onRequestImportFile,
@@ -205,6 +206,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         hint: 'Настройки',
       },
     ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [isEditorDataStale, isDocOpen, isFlasherTabOpen]
   );
 

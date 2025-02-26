@@ -19,7 +19,6 @@ import {
   FlashBacktrackMs,
   FlashResult,
   FlashUpdatePort,
-  MetaData,
   MetaDataID,
   MSAddressAndMeta,
   SerialRead,
@@ -29,8 +28,6 @@ import {
 import { useSettings } from './useSettings';
 
 export const useFlasherHooks = () => {
-  // FIXME: не безопасно изменять адресную книгу вне useAddressBook
-  const [addressBookSetting, setAddressBookSetting] = useSettings('addressBookMS');
   const [flasherSetting, setFlasherSetting] = useSettings('flasher');
   const {
     flasherMessage,
@@ -188,6 +185,7 @@ export const useFlasherHooks = () => {
     );
     ManagerMS.bindReact(setDeviceMS, setLog);
     Flasher.initReader(new FileReader());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -221,6 +219,7 @@ export const useFlasherHooks = () => {
     } else {
       setSerialConnectionStatus(SERIAL_MONITOR_NO_CONNECTION);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [connectionStatus]);
 
   useEffect(() => {
@@ -714,5 +713,6 @@ export const useFlasherHooks = () => {
         break;
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [flasherMessage]);
 };

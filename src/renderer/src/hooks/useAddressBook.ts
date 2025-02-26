@@ -42,6 +42,7 @@ export const useAddressBook = (): addressBookReturn => {
     setIndexToId(indexToId.concat(newIndexToId));
     setIdToIndex(newIdToIndex);
     setIdCounter(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [addressBookSetting]);
 
   /**

@@ -1,4 +1,4 @@
-import { ArduinoDevice, Device, MSDevice } from '@renderer/components/Modules/Device';
+import { ArduinoDevice, Device } from '@renderer/components/Modules/Device';
 
 import { Binary } from './CompilerTypes';
 

@@ -40,8 +40,6 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
 
   const { devices, flashTableData: tableData, setFlashTableData: setTableData } = useFlasher();
 
-  console.log('flash table??????', tableData);
-
   const [checkedAll, setCheckedAll] = useState<boolean>(true);
   const [fileBaseName, setFileBaseName] = useState<Map<number | string, string>>(new Map());
 

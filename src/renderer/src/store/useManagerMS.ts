@@ -15,6 +15,8 @@ interface ManagerMSState {
   setMetaID: (curMeta: MetaDataID | undefined) => void;
   compilerData: CompilerResult | undefined;
   setCompilerData: (data: CompilerResult | undefined) => void;
+  devicesCnt: number;
+  setDevicesCnt: (newDevicesCnt: number) => void;
 }
 
 export const useManagerMS = create<ManagerMSState>((set) => ({
@@ -28,4 +30,6 @@ export const useManagerMS = create<ManagerMSState>((set) => ({
   setMetaID: (newMeta) => set({ metaID: newMeta }),
   compilerData: undefined,
   setCompilerData: (newCompilerData) => set({ compilerData: newCompilerData }),
+  devicesCnt: 0,
+  setDevicesCnt: (newDevicesCnt: number) => set({ devicesCnt: newDevicesCnt }),
 }));

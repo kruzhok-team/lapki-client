@@ -50,6 +50,8 @@ export const useFlasherHooks = () => {
     setLog,
     setAddress,
     setMetaID,
+    devicesCnt: msDevicesCnt,
+    setDevicesCnt: setMsDevicesCnt,
   } = useManagerMS();
 
   const {
@@ -78,6 +80,12 @@ export const useFlasherHooks = () => {
   */
   const addDevice = (device: Device) => {
     const newMap = new Map(devices);
+    if (device.isMSDevice() && !devices.has(device.deviceID)) {
+      setMsDevicesCnt(msDevicesCnt + 1);
+      if (!deviceMS) {
+        setDeviceMS(device as MSDevice);
+      }
+    }
     newMap.set(device.deviceID, device);
     setDevices(newMap);
   };
@@ -89,6 +97,10 @@ export const useFlasherHooks = () => {
 
     if (serialMonitorDevice && serialMonitorDevice.deviceID === deviceID) {
       setSerialMonitorDevice(undefined);
+    }
+    const dev = devices.get(deviceID);
+    if (dev && dev.isMSDevice()) {
+      setMsDevicesCnt(msDevicesCnt - 1);
     }
     if (deviceMS && deviceMS.deviceID === deviceID) {
       setDeviceMS(undefined);
@@ -182,6 +194,8 @@ export const useFlasherHooks = () => {
 
   useEffect(() => {
     setDevices(new Map());
+    setMsDevicesCnt(0);
+    setDeviceMS(undefined);
     setIsFlashing(false);
     if (connectionStatus !== ClientStatus.CONNECTED) {
       setSerialConnectionStatus(SERIAL_MONITOR_NO_SERVER_CONNECTION);
@@ -224,7 +238,6 @@ export const useFlasherHooks = () => {
       case 'ms-device': {
         const device = new MSDevice(flasherMessage.payload as MSDevice);
         addDevice(device);
-        ManagerMS.setDevice(device); // TODO: временный костыль для тестирования. Убрать потом!
         break;
       }
       case 'device-update-delete': {

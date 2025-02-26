@@ -16,6 +16,7 @@ interface DeviceListProps {
   onClose: () => void;
   onSubmit: (deviceIds: string[]) => void;
   submitLabel: string;
+  devices: Map<string, Device>;
 }
 
 export const DeviceList: React.FC<DeviceListProps> = ({
@@ -23,10 +24,11 @@ export const DeviceList: React.FC<DeviceListProps> = ({
   onClose,
   onSubmit,
   submitLabel,
+  devices,
   ...props
 }) => {
   const { handleSubmit: hookHandleSubmit } = useForm();
-  const { connectionStatus, devices } = useFlasher();
+  const { connectionStatus } = useFlasher();
   const [currentDeviceID, setCurrentDevice] = useState<string | undefined>(undefined);
 
   const isActive = (id: string) => currentDeviceID === id;

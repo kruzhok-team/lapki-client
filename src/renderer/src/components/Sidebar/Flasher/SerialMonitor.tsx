@@ -294,6 +294,7 @@ export const SerialMonitorTab: React.FC = () => {
         onClose={closeDeviceList}
         onSubmit={handleAddDevice}
         submitLabel="Выбрать"
+        devices={devices}
       />
     </section>
   );

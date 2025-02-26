@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 
 import { AvrdudeGuideModal } from '@renderer/components/AvrdudeGuide';
 import { ErrorModal, ErrorModalData } from '@renderer/components/ErrorModal';
-import { Device } from '@renderer/components/Modules/Device';
+import { Device, MSDevice } from '@renderer/components/Modules/Device';
 import { Flasher } from '@renderer/components/Modules/Flasher';
 import { ClientStatus } from '@renderer/components/Modules/Websocket/ClientStatus';
 import { useAddressBook } from '@renderer/hooks/useAddressBook';
@@ -39,11 +39,13 @@ export const FlasherTab: React.FC = () => {
   const [flasherSetting] = useSettings('flasher');
   const {
     device: deviceMs,
+    setDevice: setDeviceMs,
     log,
     address: serverAddress,
     setAddress: setServerAddress,
     metaID,
     compilerData,
+    devicesCnt: devicesMsCnt,
   } = useManagerMS();
   const {
     addressBookSetting,
@@ -74,6 +76,7 @@ export const FlasherTab: React.FC = () => {
   const [isAddressBookOpen, openAddressBook, closeAddressBook] = useModal(false);
   const [isMsGetAddressOpen, openMsGetAddressModal, closeMsGetAddressModal] = useModal(false);
   const [isDeviceListOpen, openDeviceList, closeDeviceList] = useModal(false);
+  const [isDeviceMsListOpen, openDeviceMsList, closeDeviceMsList] = useModal(false);
   const [isAvrdudeGuideModalOpen, openAvrdudeGuideModal, closeAvrdudeGuideModal] = useModal(false);
 
   const [isAddressEnrtyEditOpen, openAddressEnrtyEdit, closeAddressEnrtyEdit] = useModal(false); // для редактирования существующих записей в адресной книге
@@ -95,6 +98,33 @@ export const FlasherTab: React.FC = () => {
     flashTableData.find((item) => {
       return item.isSelected;
     }) === undefined;
+
+  const deviceMsList = () => {
+    if (devicesMsCnt < 2) return null;
+    const devs = new Map();
+    for (const [id, dev] of devices) {
+      if (dev.isMSDevice()) {
+        devs.set(id, dev);
+        if (devs.size === devicesMsCnt) {
+          break;
+        }
+      }
+    }
+    return (
+      <DeviceList
+        isOpen={isDeviceMsListOpen}
+        onClose={closeDeviceMsList}
+        onSubmit={(deviceIds) => {
+          if (deviceIds.length === 0) return;
+          const dev = devices.get(deviceIds[0]);
+          if (!dev) return;
+          setDeviceMs(dev as MSDevice);
+        }}
+        submitLabel="Выбрать"
+        devices={devs}
+      />
+    );
+  };
 
   const logContainerRef = useRef<HTMLDivElement>(null);
 
@@ -604,6 +634,14 @@ export const FlasherTab: React.FC = () => {
         <button className="btn-primary mr-4" onClick={openDeviceList} disabled={noConnection}>
           Подключить плату
         </button>
+        <button
+          className="btn-primary mr-4"
+          onClick={openDeviceMsList}
+          disabled={noConnection}
+          hidden={devicesMsCnt < 2}
+        >
+          Выбрать МС-ТЮК
+        </button>
         <button className="btn-primary mr-4" onClick={handleOpenAddressBook}>
           Адреса плат МС-ТЮК
         </button>
@@ -762,7 +800,9 @@ export const FlasherTab: React.FC = () => {
         onClose={closeDeviceList}
         onSubmit={handleAddDevice}
         submitLabel="Добавить"
+        devices={devices}
       />
+      {deviceMsList()}
       <AvrdudeGuideModal isOpen={isAvrdudeGuideModalOpen} onClose={closeAvrdudeGuideModal} />
       <ErrorModal isOpen={isMsgModalOpen} data={msgModalData} onClose={closeMsgModal} />
     </section>

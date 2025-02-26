@@ -72,11 +72,11 @@ export type PossibleActions = {
   createStateMachine: { smId: string } & StateMachine;
   deleteStateMachine: { smId: string } & StateMachine;
 
-  createFinalState: CreateFinalStateParams & { newStateId: string };
+  createFinalState: CreateFinalStateParams;
   deleteFinalState: { smId: string; id: string; stateData: FinalStateData };
   changeFinalStatePosition: { smId: string; id: string; startPosition: Point; endPosition: Point };
 
-  createChoiceState: CreateChoiceStateParams & { newStateId: string };
+  createChoiceState: CreateChoiceStateParams;
   deleteChoiceState: { smId: string; id: string; stateData: ChoiceStateData };
   changeChoiceStatePosition: { smId: string; id: string; startPosition: Point; endPosition: Point };
 
@@ -278,10 +278,10 @@ export const actionFunctions: ActionFunctions = {
   createFinalState: (sM, args) => ({
     redo: sM.createFinalState.bind(
       sM,
-      { ...args, id: args.newStateId, linkByPoint: false, canBeInitial: false },
+      { ...args, id: args.id, linkByPoint: false, canBeInitial: false },
       false
     ),
-    undo: sM.deleteFinalState.bind(sM, { smId: args.smId, id: args.newStateId }, false),
+    undo: sM.deleteFinalState.bind(sM, { smId: args.smId, id: args.id! }, false),
   }),
   deleteFinalState: (sM, { smId, id, stateData }) => ({
     redo: sM.deleteFinalState.bind(sM, { smId, id }, false),
@@ -305,8 +305,8 @@ export const actionFunctions: ActionFunctions = {
       {
         smId,
         id,
-        endPosition,
-        startPosition,
+        startPosition: endPosition,
+        endPosition: startPosition,
       },
       false
     ),
@@ -315,7 +315,7 @@ export const actionFunctions: ActionFunctions = {
   createChoiceState: (sM, args) => ({
     redo: sM.createChoiceState.bind(
       sM,
-      { ...args, id: args.newStateId, linkByPoint: false, canBeInitial: false },
+      { ...args, id: args.id, linkByPoint: false, canBeInitial: false },
       false
     ),
     undo: sM.deleteChoiceState.bind(sM, { ...args, id: args.id!, smId: args.smId }, false),
@@ -342,8 +342,8 @@ export const actionFunctions: ActionFunctions = {
       {
         smId,
         id,
-        endPosition,
-        startPosition,
+        startPosition: endPosition,
+        endPosition: startPosition,
       },
       false
     ),
@@ -395,8 +395,8 @@ export const actionFunctions: ActionFunctions = {
       {
         smId,
         id,
-        endPosition,
-        startPosition,
+        startPosition: endPosition,
+        endPosition: startPosition,
       },
       false
     ),

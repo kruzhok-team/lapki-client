@@ -25,6 +25,10 @@ export class Transition extends Shape {
       : new ArrowsWithoutLabel(this, this.app);
   }
 
+  get tooltipText() {
+    return undefined;
+  }
+
   get source() {
     const node =
       this.app.controller.states.get(this.data.sourceId) ||

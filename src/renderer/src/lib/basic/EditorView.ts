@@ -1,4 +1,5 @@
 import * as TWEEN from '@tweenjs/tween.js';
+import throttle from 'lodash.throttle';
 
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
@@ -18,6 +19,8 @@ import { getColor } from '@renderer/theme';
 interface EditorViewEvents {
   dblclick: Point;
   contextMenu: Point;
+  showToolTip: { position: Point; text: string };
+  closeToolTip: undefined;
 }
 
 export class EditorView extends EventEmitter<EditorViewEvents> implements Drawable {
@@ -25,10 +28,14 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
 
   children = new Children();
   picto = new Picto();
+  private showTooltipTimer: NodeJS.Timeout | undefined = undefined;
+  private mouseOnNode: Shape | null = null;
   private mouseDownNode: Shape | null = null; // Для оптимизации чтобы на каждый mousemove не искать
+
   constructor(public app: CanvasEditor) {
     super();
   }
+  lastMousePov: Point = { x: 0, y: 0 };
 
   initEvents() {
     if (!this.app) return;
@@ -41,7 +48,6 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
     this.app.keyboard.on('ctrlc', this.app.controller.model.copySelected);
     this.app.keyboard.on('ctrlv', this.app.controller.model.pasteSelected);
     this.app.keyboard.on('ctrld', this.app.controller.model.duplicateSelected);
-
     this.app.mouse.on('mouseout', this.handleMouseUp);
     this.app.mouse.on('mousedown', this.handleMouseDown);
     this.app.mouse.on('mouseup', this.handleMouseUp);
@@ -205,6 +211,46 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
   };
 
   handleMouseMove = (e: MyMouseEvent) => {
+    const clear = () => {
+      clearTimeout(this.showTooltipTimer);
+      setTimeout(() => {
+        // this.mouseOnNode?.handleCloseTooltip();
+        // this.isDirty = true;
+        this.emit('closeToolTip', undefined);
+        this.mouseOnNode = null;
+      }, 70);
+    };
+
+    if (this.showTooltipTimer) {
+      clear();
+    }
+
+    const checkTooltip = throttle((e: MyMouseEvent) => {
+      const node = this.getCapturedNode({ position: e });
+      if (!node) {
+        clear();
+        return;
+      }
+      if (!e.left && !e.right && node !== this.mouseOnNode) {
+        clearTimeout(this.showTooltipTimer);
+        this.mouseOnNode = node;
+        this.showTooltipTimer = setTimeout(() => {
+          const offset = this.app.mouse.getOffset();
+          if (node?.tooltipText) {
+            this.emit('showToolTip', {
+              position: {
+                x: this.app.mouse.px + offset.x,
+                y: this.app.mouse.py + offset.y,
+              },
+              text: node.tooltipText,
+            });
+          }
+        }, 400);
+      }
+    }, 20);
+
+    checkTooltip(e);
+
     if (e.left) this.handleLeftMouseMove(e);
     if (e.right) this.handleRightMouseMove(e);
 

@@ -41,10 +41,9 @@ export const Action: React.FC<ActionProps> = (props) => {
     if (param === undefined) return '';
     if (Array.isArray(param)) return '[...]';
     if (typeof param === 'string') return `${index !== 0 ? ', ' : ''}${param}`;
-    return `${index !== 0 && ', '}${components[param.component].name ?? param.component}${getActionDelimeter(
-      platform.data,
-      components[param.component].type
-    )}${param.method}`;
+    return `${index !== 0 ? ', ' : ''}${
+      components[param.component].name ?? param.component
+    }${getActionDelimeter(platform.data, components[param.component].type)}${param.method}`;
   };
 
   const handleDoubleClick = (e: React.MouseEvent) => {
@@ -63,8 +62,10 @@ export const Action: React.FC<ActionProps> = (props) => {
       onDoubleClick={handleDoubleClick}
     >
       <Picto
-        leftIcon={platform.getFullComponentIcon(data.component)}
-        rightIcon={platform.getActionIconUrl(data.component, data.method, true)}
+        leftIcon={platform ? platform.getFullComponentIcon(data.component) : 'unknown'}
+        rightIcon={
+          platform ? platform.getActionIconUrl(data.component, data.method, true) : 'unknown'
+        }
       />
 
       <div className="flex flex-row items-center">

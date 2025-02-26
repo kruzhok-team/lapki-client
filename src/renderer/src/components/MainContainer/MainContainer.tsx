@@ -13,6 +13,7 @@ import {
   UpdateModal,
   DiagramContextMenu,
   EditorSettings,
+  Tooltip,
 } from '@renderer/components';
 import { hideLoadingOverlay } from '@renderer/components/utils/OverlayControl';
 import { useErrorModal, useFileOperations, useSettings } from '@renderer/hooks';
@@ -53,6 +54,7 @@ export const MainContainer: React.FC = () => {
       openSaveError,
       openImportError,
     });
+  const isSaveModalOpen = saveModalProps.isOpen;
 
   useAppTitle();
   const onDrop = useCallback(
@@ -98,7 +100,7 @@ export const MainContainer: React.FC = () => {
 
   // автосохранение
   useEffect(() => {
-    if (autoSaveSettings === null || restoreSession === null || saveModalProps.isOpen) return;
+    if (autoSaveSettings === null || restoreSession === null || isSaveModalOpen) return;
 
     if (autoSaveSettings.disabled) {
       if (restoreSession) {
@@ -153,7 +155,7 @@ export const MainContainer: React.FC = () => {
     basename,
     restoreSession,
     isReservedDataPresent,
-    saveModalProps,
+    isSaveModalOpen,
   ]);
 
   return (
@@ -183,7 +185,11 @@ export const MainContainer: React.FC = () => {
           </div>
         </div>
 
-        {isMounted && <DiagramContextMenu />}
+        {isMounted && (
+          <>
+            <DiagramContextMenu /> <Tooltip controller={controller} />
+          </>
+        )}
       </div>
 
       <SaveRemindModal {...saveModalProps} />

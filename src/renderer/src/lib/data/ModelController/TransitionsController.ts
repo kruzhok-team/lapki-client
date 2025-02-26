@@ -370,6 +370,12 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
       id: transition.id,
       endPosition: e.dragEndPosition,
     });
+    this.controller.emit('changeTransitionPositionFromController', {
+      endPosition: e.dragEndPosition,
+      startPosition: e.dragStartPosition,
+      smId: transition.smId,
+      id: transition.id,
+    });
   };
 
   watchTransition(transition: Transition) {
@@ -381,10 +387,11 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
   }
 
   unwatchTransition(transition: Transition) {
-    transition.off('click', this.handleConditionClick.bind(this, transition));
-    transition.off('dblclick', this.handleConditionDoubleClick.bind(this, transition));
-    transition.off('mouseup', this.handleMouseUpOnTransition.bind(this, transition));
-    transition.off('contextmenu', this.handleContextMenu.bind(this, transition.id));
-    transition.off('dragend', this.handleDragEnd.bind(this, transition));
+    transition.handlers.clear();
+    // transition.off('click', this.handleConditionClick.bind(this, transition));
+    // transition.off('dblclick', this.handleConditionDoubleClick.bind(this, transition));
+    // transition.off('mouseup', this.handleMouseUpOnTransition.bind(this, transition));
+    // transition.off('contextmenu', this.handleContextMenu.bind(this, transition.id));
+    // transition.off('dragend', this.handleDragEnd.bind(this, transition));
   }
 }

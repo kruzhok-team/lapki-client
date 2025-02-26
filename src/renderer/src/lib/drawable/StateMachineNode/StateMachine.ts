@@ -44,6 +44,10 @@ export class DrawableStateMachine extends Shape {
     );
   }
 
+  get tooltipText() {
+    return undefined;
+  }
+
   get titleHeight() {
     const fontSize = 15;
     const paddingY = 10;

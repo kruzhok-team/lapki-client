@@ -27,6 +27,10 @@ export class State extends Shape {
     this.edgeHandlers = new EdgeHandlers(this.app as CanvasEditor, this);
   }
 
+  get tooltipText() {
+    return undefined;
+  }
+
   get scale() {
     return this.app.controller.scale;
   }

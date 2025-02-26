@@ -621,7 +621,7 @@ export const FlasherTab: React.FC = () => {
   }
 
   return (
-    <section className="mr-3 flex h-full flex-col bg-bg-secondary">
+    <section className="mr-3 flex h-full flex-col overflow-auto bg-bg-secondary">
       <label className="m-2">{serverStatus()}</label>
       <div className="m-2" hidden={errorMessage ? false : true}>
         <button
@@ -663,7 +663,7 @@ export const FlasherTab: React.FC = () => {
         <label>Устройства на прошивку</label>
         <FlasherTable addressEnrtyEdit={addressEnrtyEdit} getEntryById={getEntryById} />
       </div>
-      <div className="m-2 flex overflow-y-auto">
+      <div className="m-2 flex">
         <WithHint hint={'Убрать отмеченные платы из таблицы.'}>
           {(hintProps) => (
             <button {...hintProps} className="btn-error mr-6" onClick={handleRemoveDevs}>
@@ -724,7 +724,7 @@ export const FlasherTab: React.FC = () => {
       </div>
       <div className="m-2">Журнал действий</div>
       <div
-        className="mx-2 h-72 overflow-y-auto whitespace-break-spaces bg-bg-primary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
+        className="mx-2 max-h-60 min-h-20 overflow-y-auto whitespace-break-spaces bg-bg-primary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
         ref={logContainerRef}
       >
         {log.map((msg, index) => (

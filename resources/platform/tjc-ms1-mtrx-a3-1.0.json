@@ -1,8 +1,8 @@
 {
   "name": "МС-ТЮК-1: Матрица (a3)",
   "id": "tjc-ms1-mtrx-a3",
-  "description": "Платформа для программирования матрицы МС-ТЮК-1 версии a3.",
   "nameTag": "MS1Matrix",
+  "description": "Платформа для программирования матрицы МС-ТЮК-1 версии a3.",
   "icon": "",
   "staticComponents": false,
   "version": "1.0",
@@ -64,7 +64,7 @@
   "components": {
     "SimpleBus": {
       "description": "Компонент для базового взаимодействия с общей шиной данных на основе простого протокола. Шина является полудуплексной – отправку в конкретный момент времени может осуществлять только один участник.",
-      "img": "arduino/serial.svg",
+      "img": "tjc-ms/busSimple.svg",
       "signals": {
         "packetReceived": {
           "img": "arduino/byteReceived.svg",
@@ -75,19 +75,19 @@
       "constructorParameters": {},
       "variables": {
         "myAddress": {
-          "img": "common/value.svg",
+          "img": "tjc-ms/addr.svg",
           "type": "uint8_t",
           "description": "Адрес устройства."
         },
         "lastData": {
-          "img": "common/value.svg",
+          "img": "tjc-ms/lastData.svg",
           "type": "uint8_t",
           "description": "Последний полученный символ."
         }
       },
       "methods": {
         "setAddress": {
-          "img": "arduino/blink.svg",
+          "img": "tjc-ms/addrSet.svg",
           "parameters": [
             {
               "name": "address",
@@ -98,7 +98,7 @@
           "description": "Назначить новый адрес для получения пакетов."
         },
         "sendPacket": {
-          "img": "arduino/blink.svg",
+          "img": "tjc-ms/sendPacket.svg",
           "parameters": [
             {
               "name": "address",
@@ -114,13 +114,13 @@
           "description": "Отправляет символ по адресу."
         }
       },
-      "buildFiles": ["SimpleBus.hpp", "Pins.hpp", "UART.hpp"],
+      "buildFiles": ["SimpleBus.hpp"],
       "importFiles": ["SimpleBus.hpp"],
       "singletone": false
     },
     "DataBus": {
       "description": "Компонент для низкоуровневого взаимодействия с общей шиной данных. Шина является полудуплексной – отправку в конкретный момент времени может отсуществлять только один участник.",
-      "img": "arduino/serial.svg",
+      "img": "tjc-ms/bus.svg",
       "signals": {
         "isByteReceived": {
           "img": "arduino/byteReceived.svg",
@@ -137,14 +137,14 @@
       },
       "variables": {
         "lastByte": {
-          "img": "common/value.svg",
+          "img": "tjc-ms/lastByte.svg",
           "type": "uint8_t",
           "description": "Последний полученный байт."
         }
       },
       "methods": {
         "sendByte": {
-          "img": "arduino/blink.svg",
+          "img": "tjc-ms/sendByte.svg",
           "parameters": [
             {
               "name": "data",
@@ -155,18 +155,18 @@
           "description": "Отправить байт в шину."
         }
       },
-      "buildFiles": ["DataBus.hpp", "Pins.hpp", "UART.hpp"],
+      "buildFiles": ["DataBus.hpp"],
       "importFiles": ["DataBus.hpp"],
       "singletone": false
     },
 
     "Matrix": {
       "description": "Компонент для взаимодействия со светодиодной матрицы.",
-      "img": "arduino/led.svg",
+      "img": "tjc-ms/matrix.svg",
       "signals": {},
       "methods": {
         "setPixel": {
-          "img": "arduino/blink.svg",
+          "img": "tjc-ms/cellSet.svg",
           "description": "Включить или выключить светодиод.",
           "parameters": [
             {
@@ -187,7 +187,7 @@
           ]
         },
         "offPixel": {
-          "img": "arduino/blink.svg",
+          "img": "tjc-ms/cellClear.svg",
           "description": "Выключить светодиод.",
           "parameters": [
             {
@@ -203,7 +203,7 @@
           ]
         },
         "setPattern": {
-          "img": "arduino/blink.svg",
+          "img": "tjc-ms/draw.svg",
           "description": "Изобразить паттерн на матрице.",
           "parameters": [
             {
@@ -214,7 +214,7 @@
           ]
         },
         "fill": {
-          "img": "arduino/blink.svg",
+          "img": "tjc-ms/fill.svg",
           "description": "Установить уровень яркости на каждый светодиод.",
           "parameters": [
             {
@@ -225,7 +225,7 @@
           ]
         },
         "clear": {
-          "img": "arduino/blink.svg",
+          "img": "tjc-ms/matrixEmpty.svg",
           "description": "Выключить все светодиоды.",
           "parameters": []
         },
@@ -321,6 +321,106 @@
       "singletone": false
     },
 
+    "Timer": {
+      "description": "Программный таймер",
+      "img": "arduino/timer.svg",
+      "signals": {
+        "timeout": {
+          "img": "arduino/timeout.svg",
+          "description": "Время вышло!",
+          "checkMethod": "timeout"
+        }
+      },
+      "constructorParameters": {},
+      "methods": {
+        "reset": {
+          "img": "arduino/reset.svg",
+          "description": "Сбросить таймер, отчет начнется сначала"
+        },
+        "disable": {
+          "img": "arduino/timer-stop.svg",
+          "description": "Отключить таймер."
+        },
+        "enable": {
+          "img": "arduino/timer-start.svg",
+          "description": "Включить таймер."
+        },
+        "start": {
+          "img": "arduino/start.svg",
+          "parameters": [
+            {
+              "name": "interval",
+              "type": "unsigned long",
+              "description": "Интервал срабатывания (в миллисекундах)."
+            }
+          ],
+          "description": "Запустить таймер. Будет сигнал раз в интервал."
+        }
+      },
+      "buildFiles": ["Timer.h"],
+      "importFiles": ["Timer.h"],
+      "singletone": false,
+      "variables": {
+        "difference": {
+          "img": "arduino/difference.svg",
+          "type": "unsigned long",
+          "description": "Оставшееся время до окончания таймера."
+        }
+      }
+    },
+    "Counter": {
+      "description": "Переменная-счетчик.",
+      "img": "arduino/counter.svg",
+      "signals": {},
+      "constructorParameters": {},
+      "methods": {
+        "add": {
+          "img": "arduino/add.svg",
+          "description": "Добавить value к значению счетчика",
+          "parameters": [
+            {
+              "name": "value",
+              "type": "int"
+            }
+          ]
+        },
+        "sub": {
+          "img": "arduino/sub.svg",
+          "description": "Вычесть value к значению счетчика",
+          "parameters": [
+            {
+              "name": "value",
+              "type": "int"
+            }
+          ]
+        },
+        "set": {
+          "img": "common/set.svg",
+          "description": "Установить value к значению счетчика",
+          "parameters": [
+            {
+              "name": "value",
+              "type": "int"
+            }
+          ]
+        },
+        "reset": {
+          "img": "arduino/reset.svg",
+          "description": "Обнулить значение счетчика."
+        }
+      },
+      "variables": {
+        "value": {
+          "img": "common/value.svg",
+          "description": "Текущее значение счетчика",
+          "type": "int"
+        }
+      },
+      "buildFiles": ["Counter.h", "Counter.cpp"],
+      "importFiles": ["Counter.h"],
+      "singletone": false
+    },
+
     "Random": {
       "description": "Генерация псевдо-случайного числа",
       "img": "common/random.svg",
@@ -371,140 +471,6 @@
           "description": "Сгенерированное безнаковое целое число"
         }
       }
-    },
-
-    "Timer": {
-      "description": "Программный таймер",
-      "img": "arduino/timer.svg",
-      "signals": {
-        "timeout": {
-          "img": "arduino/timeout.svg",
-          "description": "Время вышло!",
-          "checkMethod": "timeout"
-        }
-      },
-      "constructorParameters": {},
-      "methods": {
-        "reset": {
-          "img": "arduino/reset.svg",
-          "description": "Сбросить таймер, отчет начнется сначала"
-        },
-        "disable": {
-          "img": "arduino/timer-stop.svg",
-          "description": "Отключить таймер."
-        },
-        "enable": {
-          "img": "arduino/timer-start.svg",
-          "description": "Включить таймер."
-        },
-        "start": {
-          "img": "arduino/start.svg",
-          "parameters": [
-            {
-              "name": "interval",
-              "type": "unsigned long",
-              "description": "Интервал срабатывания."
-            }
-          ],
-          "description": "Запустить таймер. Будет сигнал раз в интервал."
-        }
-      },
-      "buildFiles": ["Timer.h"],
-      "importFiles": ["Timer.h"],
-      "singletone": false,
-      "variables": {
-        "difference": {
-          "img": "arduino/difference.svg",
-          "type": "unsigned long",
-          "description": "Оставшееся время до окончания таймера."
-        }
-      }
-    },
-    "Counter": {
-      "description": "Переменная-счетчик.",
-      "img": "arduino/counter.svg",
-      "signals": {
-        "isEqual": {
-          "img": "arduino/isEqual.svg",
-          "description": "Издать сигнал, если значение счетчика равно value",
-          "checkMethod": "isEqual",
-          "parameters": [
-            {
-              "name": "value",
-              "type": "int"
-            }
-          ]
-        },
-        "isLess": {
-          "img": "arduino/isLess.svg",
-          "description": "Издать сигнал, если значение счетчика меньше value",
-          "checkMethod": "isLess",
-          "parameters": [
-            {
-              "name": "value",
-              "type": "int"
-            }
-          ]
-        },
-        "isGreater": {
-          "img": "arduino/isGreater.svg",
-          "description": "Издать сигнал, если значение счетчика больше value",
-          "checkMethod": "isGreater",
-          "parameters": [
-            {
-              "name": "value",
-              "type": "int"
-            }
-          ]
-        }
-      },
-      "constructorParameters": {},
-      "methods": {
-        "add": {
-          "img": "arduino/add.svg",
-          "description": "Добавить value к значению счетчика",
-          "parameters": [
-            {
-              "name": "value",
-              "type": "int"
-            }
-          ]
-        },
-        "sub": {
-          "img": "arduino/sub.svg",
-          "description": "Вычесть value к значению счетчика",
-          "parameters": [
-            {
-              "name": "value",
-              "type": "int"
-            }
-          ]
-        },
-        "set": {
-          "img": "arduino/sub.svg",
-          "description": "Установить value к значению счетчика",
-          "parameters": [
-            {
-              "name": "value",
-              "type": "int"
-            }
-          ]
-        },
-        "reset": {
-          "img": "arduino/reset.svg",
-          "description": "Обнулить значение счетчика."
-        }
-      },
-      "variables": {
-        "value": {
-          "img": "common/value.svg",
-          "description": "Текущее значение счетчика",
-          "type": "int"
-        }
-      },
-      "buildFiles": ["Counter.h"],
-      "importFiles": ["Counter.h"],
-      "singletone": false
     },
 
     "CalcInt": {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
@@ -329,12 +329,13 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
       className="flex max-h-60 flex-col overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
     >
       {headerRender()}
-      {tableData.length > 0
-        ? tableData.map((tableItem) => rowRender(tableItem))
-        : cellRender(
-            'Добавьте устройства через кнопку «Подключить плату» или кнопку «Адреса плат МС-ТЮК»',
-            twMerge(allColumn, 'opacity-70')
-          )}
+      {tableData.length > 0 ? (
+        tableData.map((tableItem) => rowRender(tableItem))
+      ) : (
+        <label className="justify-center text-center opacity-70">
+          Добавьте устройства через кнопку «Подключить плату» или кнопку «Адреса плат МС-ТЮК»
+        </label>
+      )}
     </div>
   );
 };

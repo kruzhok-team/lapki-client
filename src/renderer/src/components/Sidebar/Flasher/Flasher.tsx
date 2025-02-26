@@ -753,7 +753,7 @@ export const FlasherTab: React.FC = () => {
       </div>
       <div className="m-2">Журнал действий</div>
       <div
-        className="mx-2 max-h-60 min-h-20 overflow-y-auto whitespace-break-spaces bg-bg-primary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
+        className="mx-2 min-h-20 overflow-y-auto whitespace-break-spaces bg-bg-primary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
         ref={logContainerRef}
       >
         {log.map((msg, index) => (

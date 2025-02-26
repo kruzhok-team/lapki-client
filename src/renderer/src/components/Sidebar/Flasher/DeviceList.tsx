@@ -17,6 +17,7 @@ interface DeviceListProps {
   onSubmit: (deviceIds: string[]) => void;
   submitLabel: string;
   devices: Map<string, Device>;
+  listExtraLabel?: string;
 }
 
 export const DeviceList: React.FC<DeviceListProps> = ({
@@ -25,6 +26,7 @@ export const DeviceList: React.FC<DeviceListProps> = ({
   onSubmit,
   submitLabel,
   devices,
+  listExtraLabel,
   ...props
 }) => {
   const { handleSubmit: hookHandleSubmit } = useForm();
@@ -85,9 +87,14 @@ export const DeviceList: React.FC<DeviceListProps> = ({
 
   const renderBottom = () => {
     if (connectionStatus === ClientStatus.CONNECTED) {
+      const extraLabel = () => {
+        if (!listExtraLabel) return null;
+        return <div>{listExtraLabel}</div>;
+      };
       return (
         <div>
           <label>Устройства</label>
+          {extraLabel()}
           <div className="mb-2 h-32 overflow-y-auto break-words rounded bg-bg-primary p-2">
             {[...devices.keys()].map((key) => (
               <button

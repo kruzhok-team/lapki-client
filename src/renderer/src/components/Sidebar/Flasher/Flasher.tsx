@@ -122,6 +122,7 @@ export const FlasherTab: React.FC = () => {
         }}
         submitLabel="Выбрать"
         devices={devs}
+        listExtraLabel={`Выбранное устройство: ${deviceMs ? deviceMs.displayName() : 'не указано'}`}
       />
     );
   };
@@ -227,13 +228,6 @@ export const FlasherTab: React.FC = () => {
   }, [metaID]);
 
   useEffect(() => {
-    if (deviceMs === undefined) {
-      ManagerMS.addLog('Потеряно соединение с устройством.');
-      return;
-    }
-  }, [deviceMs]);
-
-  useEffect(() => {
     setFlashTableData(
       flashTableData.filter((item) => {
         switch (item.targetType) {
@@ -275,9 +269,25 @@ export const FlasherTab: React.FC = () => {
     for (const item of flashTableData) {
       if (item.isSelected) {
         if (item.targetType === FirmwareTargetType.tjc_ms) {
-          if (!deviceMs) continue;
           const addr = getEntryById(item.targetId as number);
           if (addr === undefined) {
+            ManagerMS.addLog('Ошибка! Не удалось найти адрес в адресной книге.');
+            continue;
+          }
+          if (!deviceMs) {
+            if (devicesMsCnt > 0) {
+              ManagerMS.addLog(
+                `${ManagerMS.displayAddressInfo(
+                  addr
+                )}: выберите МС-ТЮК через соответствующую кнопку.`
+              );
+            } else {
+              ManagerMS.addLog(
+                `${ManagerMS.displayAddressInfo(
+                  addr
+                )}: МС-ТЮК не найден. Подключите МС-ТЮК к компьютеру.`
+              );
+            }
             continue;
           }
           ManagerMS.addOperation({

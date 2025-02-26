@@ -3,7 +3,6 @@ import {
   AddressData,
   BinariesQueueItem,
   FlashBacktrackMs,
-  MetaDataID,
   OperationInfo,
   OperationType,
 } from '@renderer/types/FlasherTypes';
@@ -14,8 +13,6 @@ import { Flasher } from './Flasher';
 export class ManagerMS {
   static setDevice: (currentDevice: MSDevice | undefined) => void;
   static setLog: (update: (prevMessages: string[]) => string[]) => void;
-  static setAddress: (curAddress: string) => void;
-  static setMeta: (curMeta: MetaDataID) => void;
   private static backtrackMap: Map<string, string> = new Map([
     ['PING', 'отправка пинга на устройство...'],
     ['PREPARE_FIRMWARE', 'открытие прошивки и формирование пакетов...'],
@@ -36,14 +33,10 @@ export class ManagerMS {
 
   static bindReact(
     setDevice: (currentDevice: MSDevice | undefined) => void,
-    setLog: (update: (prevMessages: string[]) => string[]) => void,
-    setAddress: (curAddress: string) => void,
-    setMeta: (curMeta: MetaDataID) => void
+    setLog: (update: (prevMessages: string[]) => string[]) => void
   ): void {
     this.setDevice = setDevice;
     this.setLog = setLog;
-    this.setAddress = setAddress;
-    this.setMeta = setMeta;
   }
   static binAdd(binariesInfo: BinariesQueueItem) {
     this.flashQueue.push(binariesInfo);

@@ -269,3 +269,10 @@ export type MSAddressAndMeta = {
   errorCode: number;
   meta: MetaData;
 };
+
+export type AddressAndMeta = {
+  deviceID: string;
+  address?: string;
+  type?: string;
+  meta?: MetaData;
+};

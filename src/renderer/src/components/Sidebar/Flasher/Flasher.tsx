@@ -22,6 +22,8 @@ import {
   AddressData,
   FirmwareTargetType,
   FlashTableItem,
+  MetaData,
+  MetaDataID,
   OperationType,
 } from '@renderer/types/FlasherTypes';
 
@@ -41,11 +43,10 @@ export const FlasherTab: React.FC = () => {
     device: deviceMs,
     setDevice: setDeviceMs,
     log,
-    address: serverAddress,
-    setAddress: setServerAddress,
-    metaID,
     compilerData,
     devicesCnt: devicesMsCnt,
+    addressAndMeta,
+    setAddressAndMeta,
   } = useManagerMS();
   const {
     addressBookSetting,
@@ -148,54 +149,26 @@ export const FlasherTab: React.FC = () => {
     return true;
   };
 
-  useEffect(() => {
-    if (serverAddress === '' || addressBookSetting === null) return;
-    setServerAddress('');
-    const index = addressBookSetting.findIndex((v) => {
-      return v.address === serverAddress;
+  const removeFromTable = (ID: number) => {
+    const tableIndex = flashTableData.findIndex((v) => {
+      return v.targetId === ID;
     });
-    let ID: number | null;
-    if (index === -1) {
-      onAdd({ name: '', address: serverAddress, type: '', meta: undefined });
-      ID = idCounter;
-    } else {
-      ID = getID(index);
-      if (ID === null) {
-        ManagerMS.addLog(
-          'Ошибка подключения платы! Индекс записи присутствует в таблице, но её ID не удалось определить!'
-        );
-        return;
-      }
-    }
-    const isAdded = addToTable({
-      isFile: false,
-      isSelected: true,
-      targetId: ID,
-      targetType: FirmwareTargetType.tjc_ms,
-    });
-    if (!isAdded) {
-      const entry = getEntryById(ID);
-      if (entry === undefined) {
-        return;
-      }
-      ManagerMS.addLog(
-        `Устройство ${ManagerMS.displayAddressInfo(entry)} уже было добавлено в таблицу ранее.`
-      );
-    }
-  }, [serverAddress]);
+    if (tableIndex === -1) return;
+    setFlashTableData(flashTableData.toSpliced(tableIndex, 1));
+  };
 
-  useEffect(() => {
-    if (!metaID || addressBookSetting === null) return;
+  const handleGetMeta = (metaID: MetaDataID) => {
+    if (addressBookSetting === null) return;
     const meta = metaID.meta;
     const metaStr = `
-- bootloader REF_HW: ${meta.RefBlHw} (${metaID.type})
-- bootloader REF_FW: ${meta.RefBlFw}
-- bootloader REF_CHIP: ${meta.RefBlChip}
-- booloader REF_PROTOCOL: ${meta.RefBlProtocol}
-- cybergene REF_FW: ${meta.RefCgFw}
-- cybergene REF_HW: ${meta.RefCgHw}
-- cybergene REF_PROTOCOL: ${meta.RefCgProtocol}
-    `;
+    - bootloader REF_HW: ${meta.RefBlHw} (${metaID.type})
+    - bootloader REF_FW: ${meta.RefBlFw}
+    - bootloader REF_CHIP: ${meta.RefBlChip}
+    - booloader REF_PROTOCOL: ${meta.RefBlProtocol}
+    - cybergene REF_FW: ${meta.RefCgFw}
+    - cybergene REF_HW: ${meta.RefCgHw}
+    - cybergene REF_PROTOCOL: ${meta.RefCgProtocol}
+        `;
     const op = ManagerMS.finishOperation(`Получены метаданные: ${metaStr}`);
     if (op === undefined) {
       return;
@@ -206,26 +179,82 @@ export const FlasherTab: React.FC = () => {
     if (index === -1) {
       return;
     }
-    const entry = addressBookSetting[index];
+    const enrty = addressBookSetting[index];
     onEdit(
       {
-        name: entry.name,
-        address: entry.address,
+        ...enrty,
+        meta: meta,
         type: metaID.type,
-        meta: {
-          RefBlHw: meta.RefBlHw,
-          RefBlFw: meta.RefBlFw,
-          RefBlUserCode: meta.RefBlUserCode,
-          RefBlChip: meta.RefBlChip,
-          RefBlProtocol: meta.RefBlProtocol,
-          RefCgHw: meta.RefCgHw,
-          RefCgFw: meta.RefCgFw,
-          RefCgProtocol: meta.RefCgProtocol,
-        },
       },
       index
     );
-  }, [metaID]);
+  };
+
+  const handleGetAddress = (address: string, meta?: MetaData, type?: string) => {
+    if (addressBookSetting === null) return;
+    const index = addressBookSetting.findIndex((v) => {
+      return v.address === address;
+    });
+    let ID: number | null;
+    if (index === -1) {
+      onAdd({
+        address: address,
+        meta: meta,
+        name: '',
+        type: type ?? '',
+      });
+      ID = idCounter;
+    } else {
+      ID = getID(index);
+      if (ID === null) {
+        ManagerMS.addLog(
+          'Ошибка подключения платы! Индекс записи присутствует в таблице, но её ID не удалось определить!'
+        );
+        return;
+      }
+      if (meta || type) {
+        const entry = addressBookSetting[index];
+        onEdit(
+          {
+            ...entry,
+            meta: meta,
+            type: type ?? '',
+          },
+          index
+        );
+      }
+    }
+    const isAdded = addToTable({
+      isFile: false,
+      isSelected: true,
+      targetId: ID,
+      targetType: FirmwareTargetType.tjc_ms,
+    });
+    if (!isAdded && index !== -1) {
+      ManagerMS.addLog(
+        `Устройство ${ManagerMS.displayAddressInfo(
+          addressBookSetting[index]
+        )} уже было добавлено в таблицу ранее.`
+      );
+    }
+  };
+
+  useEffect(() => {
+    console.log(addressAndMeta, addressBookSetting, flashTableData);
+    if (addressAndMeta === undefined || addressBookSetting === null) return;
+    setAddressAndMeta(undefined);
+    if (addressAndMeta.address) {
+      handleGetAddress(addressAndMeta.address, addressAndMeta.meta, addressAndMeta.type);
+    } else if (addressAndMeta.meta) {
+      handleGetMeta({
+        deviceID: addressAndMeta.deviceID,
+        meta: addressAndMeta.meta,
+        type: addressAndMeta.type ?? '',
+      });
+    } else {
+      ManagerMS.addLog('Ошибка получения адреса или метаданных!');
+    }
+  }, [addressAndMeta, addressBookSetting, setAddressAndMeta]);
 
   useEffect(() => {
     setFlashTableData(
@@ -233,12 +262,12 @@ export const FlasherTab: React.FC = () => {
         switch (item.targetType) {
           case FirmwareTargetType.arduino:
             return devices.has(item.targetId as string);
-          case FirmwareTargetType.tjc_ms:
-            return getEntryById(item.targetId as number) !== undefined;
+          default:
+            return true;
         }
       })
     );
-  }, [addressBookSetting, devices]);
+  }, [devices]);
 
   const handleGetAddressAndMeta = () => {
     if (!deviceMs || !managerMSSetting) return;
@@ -768,7 +797,13 @@ export const FlasherTab: React.FC = () => {
         }}
         addressBookSetting={addressBookSetting}
         getID={getID}
-        onRemove={(index) => onRemove(index)}
+        onRemove={(index) => {
+          const id = getID(index);
+          if (id !== null) {
+            removeFromTable(id);
+          }
+          onRemove(index);
+        }}
         onSwapEntries={onSwapEntries}
         addressEnrtyEdit={addressEnrtyEdit}
         openAddressEnrtyAdd={openAddressEnrtyAdd}

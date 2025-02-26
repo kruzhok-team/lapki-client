@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
 import { ArduinoDevice, Device, MSDevice } from '@renderer/components/Modules/Device';
 import { Flasher } from '@renderer/components/Modules/Flasher';
@@ -19,6 +19,7 @@ import {
   FlashBacktrackMs,
   FlashResult,
   FlashUpdatePort,
+  MetaData,
   MetaDataID,
   MSAddressAndMeta,
   SerialRead,
@@ -28,6 +29,8 @@ import {
 import { useSettings } from './useSettings';
 
 export const useFlasherHooks = () => {
+  // FIXME: не безопасно изменять адресную книгу вне useAddressBook
+  const [addressBookSetting, setAddressBookSetting] = useSettings('addressBookMS');
   const [flasherSetting, setFlasherSetting] = useSettings('flasher');
   const {
     flasherMessage,
@@ -48,10 +51,9 @@ export const useFlasherHooks = () => {
     device: deviceMS,
     setDevice: setDeviceMS,
     setLog,
-    setAddress,
-    setMetaID,
     devicesCnt: msDevicesCnt,
     setDevicesCnt: setMsDevicesCnt,
+    setAddressAndMeta,
   } = useManagerMS();
 
   const {
@@ -184,7 +186,7 @@ export const useFlasherHooks = () => {
       setSerialConnectionStatus,
       setSerialLog
     );
-    ManagerMS.bindReact(setDeviceMS, setLog, setAddress, setMetaID);
+    ManagerMS.bindReact(setDeviceMS, setLog);
     Flasher.initReader(new FileReader());
   }, []);
 
@@ -531,7 +533,10 @@ export const useFlasherHooks = () => {
         switch (getAddressStatus.code) {
           case 0:
             ManagerMS.addLog(`Получен адрес устройства: ${getAddressStatus.comment}`);
-            ManagerMS.setAddress(getAddressStatus.comment);
+            setAddressAndMeta({
+              deviceID: getAddressStatus.deviceID,
+              address: getAddressStatus.comment,
+            });
             break;
           case 1:
             ManagerMS.addLog('Не удалось получить адрес устройства, так как оно не подключено.');
@@ -583,7 +588,6 @@ export const useFlasherHooks = () => {
             } else {
               ManagerMS.finishOperation(`${errorLog}.`);
             }
-            ManagerMS.setAddress('');
             break;
           }
           case 3:
@@ -605,7 +609,11 @@ export const useFlasherHooks = () => {
       case 'ms-meta-data': {
         // TODO: обновление адресной книги здесь
         const meta = flasherMessage.payload as MetaDataID;
-        ManagerMS.setMeta(meta);
+        setAddressAndMeta({
+          deviceID: meta.deviceID,
+          meta: meta.meta,
+          type: meta.type,
+        });
         break;
       }
       case 'ms-meta-data-error': {
@@ -653,11 +661,11 @@ export const useFlasherHooks = () => {
           case 0: {
             // TODO: обновление адресной книги здесь
             ManagerMS.addLog(`Получен адрес устройства: ${result.address}`);
-            ManagerMS.setAddress(result.address);
-            ManagerMS.setMeta({
+            setAddressAndMeta({
               deviceID: result.deviceID,
               meta: result.meta,
               type: result.type,
+              address: result.address,
             });
             break;
           }
@@ -677,7 +685,10 @@ export const useFlasherHooks = () => {
             } else {
               ManagerMS.addLog(`${prefix}.`);
             }
-            ManagerMS.setAddress(result.address);
+            setAddressAndMeta({
+              deviceID: result.deviceID,
+              address: result.address,
+            });
             break;
           }
           case 3: {

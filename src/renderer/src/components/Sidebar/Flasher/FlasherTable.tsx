@@ -24,7 +24,6 @@ const addressColumn = 'w-[18vw]';
 const firmwareSourceColumn = 'w-[20vw]';
 const selectSmSubColumn = 'w-[18vw]';
 const selectFileSubColumn = 'w-[2vw]';
-const allColumn = 'w-[76vw]';
 // высота клеток
 const cellHeight = 'h-[38px]';
 
@@ -40,6 +39,8 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
   };
 
   const { devices, flashTableData: tableData, setFlashTableData: setTableData } = useFlasher();
+
+  console.log('flash table??????', tableData);
 
   const [checkedAll, setCheckedAll] = useState<boolean>(true);
   const [fileBaseName, setFileBaseName] = useState<Map<number | string, string>>(new Map());

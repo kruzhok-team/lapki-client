@@ -103,7 +103,16 @@ export const useFlasherHooks = () => {
       setMsDevicesCnt(msDevicesCnt - 1);
     }
     if (deviceMS && deviceMS.deviceID === deviceID) {
-      setDeviceMS(undefined);
+      if (msDevicesCnt === 2) {
+        for (const [, dev] of devices) {
+          if (dev.isMSDevice()) {
+            setDeviceMS(dev as MSDevice);
+            break;
+          }
+        }
+      } else {
+        setDeviceMS(undefined);
+      }
     }
   };
 

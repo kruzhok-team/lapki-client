@@ -41,6 +41,7 @@ export const DeviceList: React.FC<DeviceListProps> = ({
     if (!devices.has(currentDeviceID)) {
       setCurrentDevice(undefined);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [devices]);
 
   const handleGetList = async () => {

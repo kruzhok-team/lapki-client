@@ -65,6 +65,8 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
   const stateMachineOptions = new Map<string, SelectOption[]>();
   const allAddressOptions: SelectOption[] = [];
 
+  // составление словаря, где ключ - это платформа, а значение - это список доступных на данный момент машин состояний на этой платформе
+  // также здесь составляется список всех доступных платформ для выпадающего списка на случай, если тип платы неизвестен
   [...Object.entries(stateMachinesId)].forEach(([smId, sm]) => {
     if (!smId) return;
     let key: string = '';

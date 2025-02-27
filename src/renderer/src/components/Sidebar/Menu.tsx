@@ -91,7 +91,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
     //   className: 'border-t border-border-primary',
     // },
     {
-      text: 'Открыть схемоэкран',
+      text: 'Схемоэкран',
       onClick: () => {
         const schemeEditorId = modelController.schemeEditorId;
         if (!schemeEditorId) return;
@@ -108,7 +108,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
       hidden: controller.type === 'scheme',
     },
     {
-      text: 'Перейти в текстовый режим (β)',
+      text: 'Текстовый режим (β)',
       onClick: () => openTextModeModal(),
       hidden:
         noTextMode ||

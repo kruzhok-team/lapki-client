@@ -170,7 +170,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
       <button
         key={text}
         className={twMerge(
-          'px-2 py-2 text-base transition-colors enabled:hover:bg-bg-hover enabled:active:bg-bg-active disabled:text-text-disabled',
+          'px-2 py-2 text-left text-base transition-colors enabled:hover:bg-bg-hover enabled:active:bg-bg-active disabled:text-text-disabled',
           className
         )}
         {...props}

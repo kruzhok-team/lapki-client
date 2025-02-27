@@ -315,7 +315,7 @@ export const FlasherTab: React.FC = () => {
               ManagerMS.addLog(
                 `${ManagerMS.displayAddressInfo(
                   addr
-                )}: МС-ТЮК не найден. Подключите МС-ТЮК к компьютеру.`
+                )}: МС-ТЮК не найден. Подключите центральную плату МС-ТЮК.`
               );
             }
             continue;
@@ -397,7 +397,7 @@ export const FlasherTab: React.FC = () => {
       }
       if (!item.source) {
         ManagerMS.addLog(
-          `${devName}: не удалось прошить, так как для этой платы не указана прошивка.`
+          `${devName}: прошивка пропущена, так как для этой платы не указана прошивка.`
         );
         continue;
       }
@@ -420,7 +420,7 @@ export const FlasherTab: React.FC = () => {
           });
         }
       } else {
-        const noBinary = `${devName}: отсутствуют бинарные данные для выбранной машины состояния. Перейдите во вкладку компилятор, чтобы скомпилировать схему.`;
+        const noBinary = `${devName}: данная машина состояний не компилировалась. Чтобы получить данные для прошивки, перейдите на вкладку Компилятор.`;
         if (!compilerData) {
           ManagerMS.addLog(noBinary);
           continue;

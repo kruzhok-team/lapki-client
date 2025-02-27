@@ -109,10 +109,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const handleFlasherClick = () => {
-    if (isFlasherTabOpen) {
-      closeTab(flasherTabName, modelController);
-      return;
-    }
     openTab(modelController, {
       type: 'managerMS',
       name: flasherTabName,

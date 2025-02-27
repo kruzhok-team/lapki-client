@@ -1,21 +1,18 @@
 import { Binary } from '@renderer/types/CompilerTypes';
 import {
   AddressData,
-  BinariesMsType,
+  BinariesQueueItem,
   FlashBacktrackMs,
-  MetaDataID,
   OperationInfo,
   OperationType,
 } from '@renderer/types/FlasherTypes';
 
-import { MSDevice } from './Device';
+import { Device, MSDevice } from './Device';
 import { Flasher } from './Flasher';
 
 export class ManagerMS {
   static setDevice: (currentDevice: MSDevice | undefined) => void;
   static setLog: (update: (prevMessages: string[]) => string[]) => void;
-  static setAddress: (curAddress: string) => void;
-  static setMeta: (curMeta: MetaDataID) => void;
   private static backtrackMap: Map<string, string> = new Map([
     ['PING', 'отправка пинга на устройство...'],
     ['PREPARE_FIRMWARE', 'открытие прошивки и формирование пакетов...'],
@@ -26,7 +23,7 @@ export class ManagerMS {
     ['PULL_FIRMWARE', 'загрузка записанного кода прошивки для проверки...'],
     ['VERIFY_FIRMWARE', 'проверка целостности загруженной прошивки...'],
   ]);
-  private static flashQueue: BinariesMsType[] = [];
+  private static flashQueue: BinariesQueueItem[] = [];
   private static flashingAddress: AddressData | undefined;
   private static lastBacktrackLogIndex: number | null;
   private static lastBacktrackStage: string = '';
@@ -36,16 +33,12 @@ export class ManagerMS {
 
   static bindReact(
     setDevice: (currentDevice: MSDevice | undefined) => void,
-    setLog: (update: (prevMessages: string[]) => string[]) => void,
-    setAddress: (curAddress: string) => void,
-    setMeta: (curMeta: MetaDataID) => void
+    setLog: (update: (prevMessages: string[]) => string[]) => void
   ): void {
     this.setDevice = setDevice;
     this.setLog = setLog;
-    this.setAddress = setAddress;
-    this.setMeta = setMeta;
   }
-  static binAdd(binariesInfo: BinariesMsType) {
+  static binAdd(binariesInfo: BinariesQueueItem) {
     this.flashQueue.push(binariesInfo);
   }
   static binStart() {
@@ -57,14 +50,23 @@ export class ManagerMS {
       Flasher.setBinaryFromCompiler(binariesInfo.binaries as Array<Binary>, binariesInfo.device);
     }
     Flasher.flashPreparation(binariesInfo.device);
-    this.flashingAddress = binariesInfo.addressInfo;
-    ManagerMS.flashingAddressLog('Начат процесс прошивки...');
-    Flasher.send('ms-bin-start', {
-      deviceID: binariesInfo.device.deviceID,
-      fileSize: Flasher.binary.size,
-      address: binariesInfo.addressInfo.address,
-      verification: binariesInfo.verification,
-    });
+    const flashBeginMsg = 'Начат процесс прошивки...';
+    if (binariesInfo.addressInfo) {
+      this.flashingAddress = binariesInfo.addressInfo;
+      ManagerMS.flashingAddressLog(flashBeginMsg);
+      Flasher.send('ms-bin-start', {
+        deviceID: binariesInfo.device.deviceID,
+        fileSize: Flasher.binary.size,
+        address: binariesInfo.addressInfo.address,
+        verification: binariesInfo.verification,
+      });
+    } else {
+      ManagerMS.addLog(`${binariesInfo.device.displayName()}: ${flashBeginMsg}`);
+      Flasher.send('flash-start', {
+        deviceID: binariesInfo.device.deviceID,
+        fileSize: Flasher.binary.size,
+      });
+    }
   }
   private static ping(deviceID: string, address: string) {
     Flasher.send('ms-ping', {
@@ -72,8 +74,8 @@ export class ManagerMS {
       address: address,
     });
   }
-  static getAddress(deviceID: string) {
-    Flasher.send('ms-get-address', {
+  static getAddressAndMeta(deviceID: string) {
+    Flasher.send('ms-get-address-and-meta', {
       deviceID: deviceID,
     });
   }
@@ -156,6 +158,12 @@ export class ManagerMS {
     const name = addressInfo.name ? addressInfo.name : addressInfo.address;
     const type = addressInfo.type ? addressInfo.type : 'Неизвестный тип';
     return `${name} (${type})`;
+  }
+  static displayDeviceInfo(devInfo: AddressData | Device) {
+    if (devInfo instanceof Device) {
+      return `${devInfo.displayName()}`;
+    }
+    return this.displayAddressInfo(devInfo);
   }
   static clearLog() {
     this.logSize = 0;

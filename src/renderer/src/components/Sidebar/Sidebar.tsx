@@ -1,4 +1,4 @@
-import React, { Dispatch, useMemo, useState } from 'react';
+import React, { Dispatch, useEffect, useMemo, useState } from 'react';
 
 import { ReactComponent as CompilerIcon } from '@renderer/assets/icons/compiler.svg';
 import { ReactComponent as ComponentsIcon } from '@renderer/assets/icons/components.svg';
@@ -9,14 +9,16 @@ import { ReactComponent as HistoryIcon } from '@renderer/assets/icons/history.sv
 import { ReactComponent as SettingsIcon } from '@renderer/assets/icons/settings.svg';
 import { ReactComponent as StateIcon } from '@renderer/assets/icons/state_machine.svg';
 import { useSettings } from '@renderer/hooks';
+import { useFlasherHooks } from '@renderer/hooks/useFlasherHooks';
 import { useModal } from '@renderer/hooks/useModal';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { useDoc } from '@renderer/store/useDoc';
+import { useManagerMS } from '@renderer/store/useManagerMS';
+import { useTabs } from '@renderer/store/useTabs';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
 
 import { CompilerTab } from './Compiler';
 import { Explorer } from './Explorer';
-import { Loader } from './Flasher/DeviceList';
 import { History } from './History';
 import { Labels } from './Labels';
 import { Menu } from './Menu';
@@ -24,7 +26,6 @@ import { Menus } from './Menus';
 import { Setting } from './Setting';
 import { StateMachinesList } from './StateMachinesTab/StateMachinesList';
 
-import { AvrdudeGuideModal } from '../AvrdudeGuide';
 import { Flasher } from '../Modules/Flasher';
 import { CompilerSelectModal } from '../serverSelect/CompilerSelectModal';
 import {
@@ -48,6 +49,8 @@ interface SidebarProps {
   openImportError: (error: string) => void;
 }
 
+const flasherTabName = 'Загрузчик';
+
 export const Sidebar: React.FC<SidebarProps> = ({
   callbacks: {
     onRequestNewFile,
@@ -60,21 +63,30 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const modelController = useModelContext();
 
+  useFlasherHooks();
+
   const [isCompilerOpen, openCompilerSettings, closeCompilerSettings] = useModal(false);
   const [flasherSetting, setFlasherSetting] = useSettings('flasher');
-  const [isFlasherOpen, openFlasherSettings, closeFlasherSettings] = useModal(false);
-  const [isAvrdudeGuideModalOpen, openAvrdudeGuideModal, closeAvrdudeGuideModal] = useModal(false);
+  const [isFlasherSettingsOpen, openFlasherSettings, closeFlasherSettings] = useModal(false);
   const [openData, setOpenData] = useState<
     [boolean, string | null, string | null, string] | undefined
   >(undefined);
   const [compilerData, setCompilerData] = useState<CompilerResult | undefined>(undefined);
   const [compilerStatus, setCompilerStatus] = useState('Не подключен.');
+  const { setCompilerData: setCompilerDataMS } = useManagerMS();
   const [onDocumentationToggle, isDocOpen] = useDoc((state) => [
     state.onDocumentationToggle,
     state.isOpen,
   ]);
+  const [openTab, tabs] = useTabs((state) => [state.openTab, state.items]);
+  const isFlasherTabOpen = tabs.find((tab) => tab.name === flasherTabName) !== undefined;
 
   const isEditorDataStale = modelController.model.useData('', 'isStale');
+
+  // TODO: костыль
+  useEffect(() => {
+    setCompilerDataMS(compilerData);
+  }, [compilerData, setCompilerDataMS]);
 
   const closeFlasherModal = () => {
     Flasher.freezeReconnectTimer(false);
@@ -90,6 +102,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
     if (!flasherSetting) return;
 
     setFlasherSetting({ ...flasherSetting, ...data });
+  };
+
+  const handleFlasherClick = () => {
+    openTab(modelController, {
+      type: 'managerMS',
+      name: flasherTabName,
+    });
   };
 
   // при добавлении новой вкладки или изменения их расположения нужно обновить SidebarIndex из useSidebar
@@ -114,7 +133,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         setCompilerStatus={setCompilerStatus}
         openImportError={openImportError}
       />,
-      <Loader compilerData={compilerData} openAvrdudeGuideModal={openAvrdudeGuideModal} />,
+      undefined,
       <History />,
       undefined,
       <Setting
@@ -122,6 +141,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         openLoaderSettings={openLoaderSettings}
       />,
     ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       onRequestSaveFile,
       onRequestImportFile,
@@ -159,6 +179,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {
         Icon: <FlasherIcon />,
         hint: 'Загрузчик',
+        action: handleFlasherClick,
+        isActive: isFlasherTabOpen,
       },
       {
         Icon: <HistoryIcon />,
@@ -176,7 +198,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
         hint: 'Настройки',
       },
     ],
-    [isEditorDataStale, isDocOpen]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [isEditorDataStale, isDocOpen, isFlasherTabOpen]
   );
 
   return (
@@ -185,12 +208,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <Menus items={menus} />
 
       <FlasherSelectModal
-        isOpen={isFlasherOpen}
+        isOpen={isFlasherSettingsOpen}
         onSubmit={handleFlasherModalSubmit}
         onClose={closeFlasherModal}
       />
       <CompilerSelectModal isOpen={isCompilerOpen} onClose={closeCompilerSettings} />
-      <AvrdudeGuideModal isOpen={isAvrdudeGuideModalOpen} onClose={closeAvrdudeGuideModal} />
     </div>
   );
 };

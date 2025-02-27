@@ -1,5 +1,3 @@
-import { Dispatch, SetStateAction } from 'react';
-
 import Websocket from 'isomorphic-ws';
 
 import { ClientStatus } from './ClientStatus';
@@ -17,11 +15,11 @@ export abstract class ClientWS {
   static onStatusChange: (newConnectionStatus: string) => void;
 
   // секунд до переподключения, null - означает, что отчёт до переподключения не ведётся
-  static setSecondsUntilReconnect: Dispatch<SetStateAction<number | null>>;
+  static setSecondsUntilReconnect: (newSeconds: number | null) => void;
 
   static bind(
     onStatusChange: (newConnectionStatus: string) => void,
-    setSecondsUntilReconnect: Dispatch<SetStateAction<number | null>>
+    setSecondsUntilReconnect: (newSeconds: number | null) => void
   ): void {
     this.onStatusChange = onStatusChange;
     this.setSecondsUntilReconnect = setSecondsUntilReconnect;

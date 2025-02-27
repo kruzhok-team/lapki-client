@@ -1,15 +1,15 @@
-import { Dispatch, SetStateAction, useState } from 'react';
+import { useState } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
+import { Device } from '@renderer/components/Modules/Device';
 import { Checkbox, Select, SelectOption } from '@renderer/components/UI';
 import { useModelContext } from '@renderer/store/ModelContext';
+import { useFlasher } from '@renderer/store/useFlasher';
 import { StateMachine } from '@renderer/types/diagram';
-import { AddressData, FlashTableItem } from '@renderer/types/FlasherTypes';
+import { AddressData, FirmwareTargetType, FlashTableItem } from '@renderer/types/FlasherTypes';
 
 interface FlasherTableProps {
-  tableData: FlashTableItem[];
-  setTableData: Dispatch<SetStateAction<FlashTableItem[]>>;
   getEntryById: (ID: number) => AddressData | undefined;
   addressEnrtyEdit: (data: AddressData) => void;
 }
@@ -24,13 +24,10 @@ const addressColumn = 'w-[18vw]';
 const firmwareSourceColumn = 'w-[20vw]';
 const selectSmSubColumn = 'w-[18vw]';
 const selectFileSubColumn = 'w-[2vw]';
-const allColumn = 'w-[76vw]';
 // высота клеток
 const cellHeight = 'h-[38px]';
 
 export const FlasherTable: React.FC<FlasherTableProps> = ({
-  tableData,
-  setTableData,
   getEntryById,
   addressEnrtyEdit,
   ...props
@@ -41,13 +38,10 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
     [ID: string]: StateMachine;
   };
 
-  // TODO: (Roundabout1): удалить фильтр (при объединении arduino-загрузчика с менеджером МС-ТЮК)
-  const stateMachinesArray = [...Object.entries(stateMachinesId)].filter(([, sm]) => {
-    return sm.platform.startsWith('tjc');
-  });
+  const { devices, flashTableData: tableData, setFlashTableData: setTableData } = useFlasher();
 
   const [checkedAll, setCheckedAll] = useState<boolean>(true);
-  const [fileBaseName, setFileBaseName] = useState<Map<number, string>>(new Map());
+  const [fileBaseName, setFileBaseName] = useState<Map<number | string, string>>(new Map());
 
   const stateMachineOption = (sm: StateMachine | null | undefined, smId: string) => {
     if (!sm) return null;
@@ -71,8 +65,16 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
   const stateMachineOptions = new Map<string, SelectOption[]>();
   const allAddressOptions: SelectOption[] = [];
 
-  stateMachinesArray.forEach(([smId, sm]) => {
-    const key = platformWithoutVersion(sm.platform);
+  // составление словаря, где ключ - это платформа, а значение - это список доступных на данный момент машин состояний на этой платформе
+  // также здесь составляется список всех доступных платформ для выпадающего списка на случай, если тип платы неизвестен
+  [...Object.entries(stateMachinesId)].forEach(([smId, sm]) => {
+    if (!smId) return;
+    let key: string = '';
+    if (sm.platform.startsWith('tjc')) {
+      key = platformWithoutVersion(sm.platform);
+    } else {
+      key = sm.platform;
+    }
     const value = stateMachineOptions.get(key) ?? [];
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     stateMachineOptions.set(key, [...value, stateMachineOption(sm, smId)!]);
@@ -92,9 +94,14 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
   }
 
   const handleSelectFile = async (tableItem: FlashTableItem) => {
-    const [canceled, filePath, basename] = await window.api.fileHandlers.selectFile('bin файлы', [
-      'bin',
-    ]);
+    const extensions = ['bin'];
+    if (tableItem.targetType === FirmwareTargetType.arduino) {
+      extensions.push('hex');
+    }
+    const [canceled, filePath, basename] = await window.api.fileHandlers.selectFile(
+      'прошивки',
+      extensions
+    );
     if (canceled) return;
     setTableData(
       tableData.map((item) => {
@@ -182,6 +189,20 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
     );
   };
 
+  const getArduinoDevicePlatform = (device: Device) => {
+    // TODO: подумать, можно ли найти более надёжный способ сверки платформ на клиенте и сервере
+    // названия платформ на загрузчике можно посмотреть здесь: https://github.com/kruzhok-team/lapki-flasher/blob/main/src/device_list.JSON
+    const name = device.name.toLocaleLowerCase();
+    switch (name) {
+      case 'arduino micro':
+      case 'arduino micro (bootloader)':
+        return 'ArduinoMicro';
+      case 'arduino uno':
+        return 'ArduinoUno';
+    }
+    return undefined;
+  };
+
   const cellRender = (content: string | JSX.Element, mergeClassName: string) => {
     return (
       <div
@@ -201,8 +222,9 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
       <div className="flex">
         <Checkbox
           className={twMerge(checkColumn, cellHeight)}
-          checked={checkedAll}
+          checked={checkedAll && tableData.length > 0}
           onCheckedChange={() => changeCheckedAll(!checkedAll)}
+          disabled={tableData.length === 0}
         />
         {cellRender('Наименование', nameColumn)}
         {cellRender('Тип', typeColumn)}
@@ -214,8 +236,31 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
 
   const rowRender = (tableItem: FlashTableItem) => {
     const checked = tableItem.isSelected;
-    const addressData = getEntryById(tableItem.targetId);
-    if (addressData === undefined) return;
+    // Реализовать рендер для arduino
+    let displayName: string = '…';
+    let displayType: string = '…';
+    let typeId: string | undefined = undefined;
+    let displayAddress: string = '…';
+    let addressData: AddressData | undefined = undefined;
+    if (tableItem.targetType === FirmwareTargetType.tjc_ms) {
+      addressData = getEntryById(tableItem.targetId as number);
+      if (!addressData) {
+        return;
+      }
+      displayName = addressData.name ? addressData.name : 'Не указано';
+      displayType = addressData.type ? addressData.type : 'Неизвестно';
+      typeId = addressData.type ? platformWithoutVersion(addressData.type) : undefined;
+      displayAddress = addressData.address;
+    } else if (tableItem.targetType === FirmwareTargetType.arduino) {
+      const dev = devices.get(tableItem.targetId as string);
+      if (!dev) {
+        return;
+      }
+      displayName = dev.displayName();
+      typeId = getArduinoDevicePlatform(dev);
+    } else {
+      throw Error(`Плата не поддерживается: ${tableItem}`);
+    }
     return (
       <div key={tableItem.targetId} className="flex items-start">
         <Checkbox
@@ -226,18 +271,17 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
         {cellRender(
           <label
             onClick={() => {
-              addressEnrtyEdit(addressData);
+              if (addressData) {
+                addressEnrtyEdit(addressData);
+              }
             }}
           >
-            {addressData.name ? addressData.name : 'Не указано'}
+            {displayName}
           </label>,
           nameColumn
         )}
-        {cellRender(
-          <label>{addressData.type ? addressData.type : 'Неизвестно'}</label>,
-          typeColumn
-        )}
-        {cellRender(<label>{addressData.address}</label>, addressColumn)}
+        {cellRender(<label>{displayType}</label>, typeColumn)}
+        {cellRender(<label>{displayAddress}</label>, addressColumn)}
         {/* (Roundabout1) TODO: центрировать текст опций в выпадающем списке и текстовом поле */}
         {tableItem.isFile ? (
           <div
@@ -251,11 +295,7 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
           </div>
         ) : (
           <Select
-            options={
-              addressData.type
-                ? stateMachineOptions.get(platformWithoutVersion(addressData.type))
-                : allAddressOptions
-            }
+            options={typeId ? stateMachineOptions.get(typeId) : allAddressOptions}
             containerClassName={selectSmSubColumn}
             menuPosition="fixed"
             isSearchable={false}
@@ -290,12 +330,13 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
       className="flex max-h-60 flex-col overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
     >
       {headerRender()}
-      {tableData.length > 0
-        ? tableData.map((tableItem) => rowRender(tableItem))
-        : cellRender(
-            'Добавьте устройства через кнопку «Подключить плату» или кнопку «Адреса плат МС-ТЮК»',
-            twMerge(allColumn, 'opacity-70')
-          )}
+      {tableData.length > 0 ? (
+        tableData.map((tableItem) => rowRender(tableItem))
+      ) : (
+        <label className="justify-center text-center opacity-70">
+          Добавьте устройства через кнопку «Подключить плату» или кнопку «Адреса плат МС-ТЮК»
+        </label>
+      )}
     </div>
   );
 };

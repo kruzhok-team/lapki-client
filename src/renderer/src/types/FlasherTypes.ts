@@ -1,4 +1,4 @@
-import { ArduinoDevice, Device, MSDevice } from '@renderer/components/Modules/Device';
+import { ArduinoDevice, Device } from '@renderer/components/Modules/Device';
 
 import { Binary } from './CompilerTypes';
 
@@ -60,7 +60,9 @@ export type FlasherType =
   | 'ms-reset-result'
   | 'ms-get-meta-data'
   | 'ms-meta-data'
-  | 'ms-meta-data-error';
+  | 'ms-meta-data-error'
+  | 'ms-get-address-and-meta'
+  | 'ms-address-and-meta';
 export type FlasherPayload =
   | string
   | Device
@@ -77,7 +79,8 @@ export type FlasherPayload =
   | MSGetAddress
   | MSAddressAction
   | MetaData
-  | FlashBacktrackMs;
+  | FlashBacktrackMs
+  | MSAddressAndMeta;
 export type FlasherMessage = {
   type: FlasherType;
   payload: FlasherPayload;
@@ -205,10 +208,11 @@ export type AddressData = {
 };
 
 // метаданные с deviceID
-export interface MetaDataID extends MetaData {
+export type MetaDataID = {
   deviceID: string;
+  meta: MetaData;
   type: string; // тип устройства (определяется по RefBlHw)
-}
+};
 
 export enum FirmwareTargetType {
   tjc_ms,
@@ -224,15 +228,15 @@ export type FirmwaresType = {
 
 export type FlashTableItem = {
   isSelected: boolean;
-  targetId: number;
+  targetId: number | string;
   targetType: FirmwareTargetType;
   source?: string; // id машины состояний или путь к файлу
   isFile: boolean;
 };
 
-export type BinariesMsType = {
-  device: MSDevice;
-  addressInfo: AddressData;
+export type BinariesQueueItem = {
+  device: Device;
+  addressInfo: AddressData | undefined;
   verification: boolean;
   binaries: Array<Binary> | Blob;
   isFile: boolean;
@@ -255,4 +259,20 @@ export type OperationInfo = {
   type: OperationType;
   addressInfo: AddressData;
   deviceId: string;
+};
+
+export type MSAddressAndMeta = {
+  deviceID: string;
+  address: string;
+  type: string;
+  errorMsg: string;
+  errorCode: number;
+  meta: MetaData;
+};
+
+export type AddressAndMeta = {
+  deviceID: string;
+  address?: string;
+  type?: string;
+  meta?: MetaData;
 };

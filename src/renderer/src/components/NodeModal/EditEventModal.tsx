@@ -80,10 +80,11 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
       argsParam1,
       argsParam2,
       conditionOperator,
+      isElse,
     } = condition;
 
     //Проверка на наличие пустых блоков условия, если же они пустые, то форма не отправляется
-    if (showCondition && show) {
+    if (showCondition && show && !isElse) {
       const errors = condition.checkForErrors();
 
       for (const key in errors) {
@@ -93,7 +94,7 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
 
     const getCondition = () => {
       if (!show || !showCondition) return undefined;
-
+      if (isElse) return 'else';
       if (condition.tabValue === 0) {
         // Тут много as string потому что проверка на null в checkForErrors
         return {

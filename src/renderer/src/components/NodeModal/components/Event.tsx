@@ -85,6 +85,9 @@ export const Event: React.FC<EventProps> = ({
     if (condition && typeof condition !== 'string') {
       getCondition(condition);
     }
+    if (typeof condition === 'string') {
+      setConditionsPicto((p) => [...p, <MonoPicto content={condition} />]);
+    }
   }, [platform, condition, setConditionsPicto]);
 
   return (

@@ -71,8 +71,9 @@ function checkConditionTokenType(token: string): Condition {
   };
 }
 
-function parseCondition(condition: string): Condition {
+function parseCondition(condition: string): Condition | string {
   const tokens = condition.split(' ');
+  if (tokens.length != 3) return condition;
   const lval = checkConditionTokenType(tokens[0]);
   const operator = operatorAlias[tokens[1]];
   const rval = checkConditionTokenType(tokens[2]);
@@ -336,8 +337,12 @@ function actionsToEventData(
         eventData.trigger = trigger;
       }
     }
-    if (action.trigger?.condition && action.trigger?.condition !== 'else') {
-      eventData.condition = parseCondition(action.trigger.condition);
+    if (action.trigger?.condition) {
+      const condition = parseCondition(action.trigger.condition);
+      if (typeof condition === 'string' && condition !== 'else') {
+        visual = true;
+      }
+      eventData.condition = condition;
     }
     eventDataArr.push(eventData);
   }
@@ -646,7 +651,7 @@ export function importGraphml(
       sm.name = rawSm.name;
       sm.position = rawSm.position ?? { x: 0, y: 0 };
       elements.stateMachines[smId] = sm;
-      platforms[rawSm.platform] = platform;
+      platforms[platformName] = platform;
     }
     validateElements(elements, platforms);
 

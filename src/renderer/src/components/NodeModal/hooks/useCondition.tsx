@@ -18,7 +18,7 @@ export const useCondition = (
   condition: Condition | null | undefined | string
 ) => {
   const modelController = useModelContext();
-
+  const [isElse, setElse] = useState<boolean>(false);
   const componentsData = modelController.model.useData(smId, 'elements.components') as {
     [id: string]: Component;
   };
@@ -180,6 +180,11 @@ export const useCondition = (
     tabValue,
     text,
   ]);
+  const handleElseChange = useCallback((value: boolean) => {
+    setElse(value);
+    // setSelectedComponentParam1(null);
+    // setSelectedMethodParam1(null);
+  }, []);
 
   const handleComponentParam1Change = useCallback((value: SingleValue<SelectOption>) => {
     setSelectedComponentParam1(value?.value ?? null);
@@ -212,7 +217,7 @@ export const useCondition = (
     setShow(false);
     setIsParamOneInput1(true);
     setIsParamOneInput2(true);
-
+    setElse(false);
     setText('');
     setTabValue(0);
 
@@ -229,6 +234,11 @@ export const useCondition = (
       setShow(true);
 
       if (typeof c === 'string') {
+        if (c === 'else') {
+          setText(c);
+          setElse(true);
+          return undefined;
+        }
         setTabValue(1);
         setText(c);
         return undefined;
@@ -348,5 +358,8 @@ export const useCondition = (
     controller,
     smId,
     condition,
+
+    isElse,
+    handleElseChange,
   };
 };

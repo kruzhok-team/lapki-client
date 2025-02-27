@@ -78,11 +78,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     state.onDocumentationToggle,
     state.isOpen,
   ]);
-  const [openTab, closeTab, tabs] = useTabs((state) => [
-    state.openTab,
-    state.closeTab,
-    state.items,
-  ]);
+  const [openTab, tabs] = useTabs((state) => [state.openTab, state.items]);
   const isFlasherTabOpen = tabs.find((tab) => tab.name === flasherTabName) !== undefined;
 
   const isEditorDataStale = modelController.model.useData('', 'isStale');

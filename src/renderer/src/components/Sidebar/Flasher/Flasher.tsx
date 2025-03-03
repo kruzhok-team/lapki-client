@@ -648,6 +648,21 @@ export const FlasherTab: React.FC = () => {
     }
   };
 
+  const handleGetFirmware = async () => {
+    const [isCreated, directory, error] = await window.api.fileHandlers.createFolder(
+      `прошивки-${Date.now()}`
+    );
+    if (error) {
+      ManagerMS.addLog(`Ошибка: ${error}`);
+      return;
+    } else {
+      if (!isCreated) {
+        return;
+      }
+      // TODO
+    }
+  };
+
   if (!managerMSSetting) {
     return null;
   }
@@ -751,6 +766,9 @@ export const FlasherTab: React.FC = () => {
           disabled={flashResult.size === 0}
         >
           Результаты прошивки
+        </button>
+        <button className="btn-primary mr-4" onClick={handleGetFirmware}>
+          Выгрузка прошивки...
         </button>
         {avrdudeCheck()}
       </div>

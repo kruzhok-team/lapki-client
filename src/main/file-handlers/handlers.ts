@@ -17,6 +17,8 @@ import {
   HandleBinFileOpenReturn,
   HandleFileSelectReturn,
   HandleFileReadReturn,
+  HandleFolderCreateReturn,
+  handleSaveBinaryIntoFileReturn,
 } from './handlersTypes';
 
 /**
@@ -283,4 +285,47 @@ export async function handleFileRead(filePath: string): HandleFileReadReturn {
 export function handleGetFileMetadata(absolute_path: string) {
   //const stat = fs.statSync(absolute_path);
   return fs.statSync(absolute_path);
+}
+
+/**
+ * Асинхронный диалог для создания папки.
+ */
+export function handleCreateFolder(folderName: string): HandleFolderCreateReturn {
+  return new Promise((resolve) => {
+    dialog
+      .showOpenDialog({
+        properties: ['openDirectory'],
+      })
+      .then((dir) => {
+        const pathToDir = `${dir.filePaths[0]}/${folderName}`;
+        if (fs.existsSync(pathToDir)) {
+          resolve([false, '', `Папка ${pathToDir} уже существует.`]);
+          return;
+        }
+        fs.mkdirSync(pathToDir);
+        if (!fs.existsSync(pathToDir)) {
+          resolve([false, '', `Папку ${pathToDir} не удалось создать.`]);
+          return;
+        }
+        resolve([true, pathToDir, '']);
+      })
+      .catch((err) => {
+        resolve([false, '', err.message]);
+      });
+  });
+}
+
+export function handleSaveBinaryIntoFile(
+  filePath: string,
+  binary: Uint8Array
+): handleSaveBinaryIntoFileReturn {
+  return new Promise((resolve) => {
+    fs.writeFile(filePath, binary, function (err) {
+      if (err) {
+        resolve([err.message]);
+      } else {
+        resolve(['']);
+      }
+    });
+  });
 }

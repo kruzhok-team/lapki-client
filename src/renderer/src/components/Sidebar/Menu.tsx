@@ -91,7 +91,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
     //   className: 'border-t border-border-primary',
     // },
     {
-      text: 'Открыть схемоэкран',
+      text: 'Схемоэкран',
       onClick: () => {
         const schemeEditorId = modelController.schemeEditorId;
         if (!schemeEditorId) return;
@@ -108,7 +108,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
       hidden: controller.type === 'scheme',
     },
     {
-      text: 'Перейти в текстовый режим (β)',
+      text: 'Текстовый режим (β)',
       onClick: () => openTextModeModal(),
       hidden:
         noTextMode ||
@@ -170,7 +170,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
       <button
         key={text}
         className={twMerge(
-          'px-2 py-2 text-base transition-colors enabled:hover:bg-bg-hover enabled:active:bg-bg-active disabled:text-text-disabled',
+          'px-2 py-2 text-left indent-4 text-base transition-colors enabled:hover:bg-bg-hover enabled:active:bg-bg-active disabled:text-text-disabled',
           className
         )}
         {...props}

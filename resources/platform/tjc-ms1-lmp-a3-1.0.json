@@ -381,7 +381,7 @@
       },
       "methods": {
         "set": {
-          "img": "common/set-value.svg",
+          "img": "common/set.svg",
           "description": "Установить значение счетчика.",
           "parameters": [
             {
@@ -547,7 +547,7 @@
       },
       "methods": {
         "set": {
-          "img": "common/set-value.svg",
+          "img": "common/set.svg",
           "description": "Установить значение счетчика.",
           "parameters": [
             {
@@ -665,7 +665,7 @@
 
     "Array": {
       "description": "Статический массив",
-      "img": "arduino/timer.svg",
+      "img": "common/array.svg",
       "signals": {},
       "constructorParameters": {
         "size": {

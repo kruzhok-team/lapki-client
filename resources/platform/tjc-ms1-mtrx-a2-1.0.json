@@ -790,7 +790,7 @@
           "parameters": [
             {
               "name": "index",
-              "img": "common/arrayIndex.svg",
+              "img": "common/arrayPeek.svg",
               "description": "Индекс элемента",
               "type": "uint16_t"
             },
@@ -808,7 +808,7 @@
           "parameters": [
             {
               "name": "index",
-              "img": "common/arrayIndex.svg",
+              "img": "common/arrayPeek.svg",
               "description": "Индекс элемента",
               "type": "uint16_t"
             }
@@ -833,12 +833,12 @@
           "description": "Значение элемента с текущим индексом."
         },
         "index": {
-          "img": "common/arrayIndex.svg",
+          "img": "common/arrayPeek.svg",
           "type": "uint16_t",
           "description": "Текущий индекс."
         },
         "size": {
-          "img": "common/arraySize.svg",
+          "img": "common/array.svg",
           "type": "uint16_t",
           "description": "Размер массива."
         }

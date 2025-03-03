@@ -662,7 +662,6 @@ export const FlasherTab: React.FC = () => {
     if (!isCreated) {
       return;
     }
-    setBinaryFolder(directory);
     for (const item of flashTableData) {
       if (!item.isSelected) continue;
       if (item.targetType !== FirmwareTargetType.tjc_ms) {
@@ -692,7 +691,9 @@ export const FlasherTab: React.FC = () => {
         dev: deviceMs,
       });
     }
-    ManagerMS.getFirmwareStart();
+    if (ManagerMS.getFirmwareStart()) {
+      setBinaryFolder(directory);
+    }
   };
 
   if (!managerMSSetting) {

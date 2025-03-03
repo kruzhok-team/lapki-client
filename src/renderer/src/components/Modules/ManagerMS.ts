@@ -23,6 +23,7 @@ export class ManagerMS {
     ['PUSH_FIRMWARE', 'загрузка прошивки...'],
     ['PULL_FIRMWARE', 'загрузка записанного кода прошивки для проверки...'],
     ['VERIFY_FIRMWARE', 'проверка целостности загруженной прошивки...'],
+    ['GET_FIRMWARE', 'выгрузка прошивки...'],
   ]);
   private static flashQueue: BinariesQueueItem[] = [];
   private static getFirmwareQueue: GetFirmwareQueueItem[] = [];

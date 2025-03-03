@@ -168,6 +168,19 @@ export class Flasher extends ClientWS {
     });
   }
 
+  static getFirmware(dev: Device, address: string, blockSize: number) {
+    this.currentFlashingDevice = dev;
+    this.send('ms-get-firmware', {
+      deviceID: dev.deviceID,
+      address: address,
+      blockSize: blockSize,
+    });
+  }
+
+  static endGetFirmware() {
+    this.currentFlashingDevice = undefined;
+  }
+
   // получение адреса в виде строки
   static makeAddress(host: string, port: number): string {
     return `${super.makeAddress(host, port)}/flasher`;
@@ -199,8 +212,14 @@ export class Flasher extends ClientWS {
 
   // обработка входящих через вебсоект сообщений
   static messageHandler(msg: Websocket.MessageEvent) {
-    const flasherMessage = JSON.parse(msg.data as string) as FlasherMessage;
-    this.setFlasherMessage(flasherMessage);
+    if (typeof msg.data === 'string') {
+      const flasherMessage = JSON.parse(msg.data as string) as FlasherMessage;
+      this.setFlasherMessage(flasherMessage);
+    } else {
+      // бинарные данные
+      const bin = new Uint8Array(msg.data as ArrayBuffer);
+      this.setFlasherMessage({ type: 'binary-data', payload: bin });
+    }
   }
 
   static send(type: FlasherType, payload: FlasherPayload) {

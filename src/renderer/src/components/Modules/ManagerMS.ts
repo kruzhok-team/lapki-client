@@ -3,6 +3,7 @@ import {
   AddressData,
   BinariesQueueItem,
   FlashBacktrackMs,
+  GetFirmwareQueueItem,
   OperationInfo,
   OperationType,
 } from '@renderer/types/FlasherTypes';
@@ -24,6 +25,7 @@ export class ManagerMS {
     ['VERIFY_FIRMWARE', 'проверка целостности загруженной прошивки...'],
   ]);
   private static flashQueue: BinariesQueueItem[] = [];
+  private static getFirmwareQueue: GetFirmwareQueueItem[] = [];
   private static flashingAddress: AddressData | undefined;
   private static lastBacktrackLogIndex: number | null;
   private static lastBacktrackStage: string = '';
@@ -67,6 +69,19 @@ export class ManagerMS {
         fileSize: Flasher.binary.size,
       });
     }
+  }
+  static getFirmwareAdd(getFirmwareRequest: GetFirmwareQueueItem) {
+    this.getFirmwareQueue.push(getFirmwareRequest);
+  }
+  static getFirmwareStart() {
+    const request = this.getFirmwareQueue.shift();
+    if (!request) {
+      return false;
+    }
+    this.flashingAddress = request.addressInfo;
+    ManagerMS.flashingAddressLog('Начат процесс выгрузки прошивки...');
+    Flasher.getFirmware(request.dev, request.addressInfo.address, request.blockSize);
+    return true;
   }
   private static ping(deviceID: string, address: string) {
     Flasher.send('ms-ping', {
@@ -121,6 +136,7 @@ export class ManagerMS {
     });
   }
   static backtrack(backtrack: FlashBacktrackMs) {
+    // TODO: адаптировать сообщения под выгрузку
     const uploadStage = this.backtrackMap.get(backtrack.UploadStage);
     const status = 'Статус загрузки';
     if (uploadStage === undefined) {
@@ -174,6 +190,7 @@ export class ManagerMS {
   static clearQueue() {
     this.flashQueue = [];
     this.operationQueue = [];
+    this.getFirmwareQueue = [];
   }
   static getFlashingAddress() {
     return this.flashingAddress;

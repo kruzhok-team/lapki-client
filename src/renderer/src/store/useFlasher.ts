@@ -33,6 +33,8 @@ interface FlasherState {
   setFlashTableData: (newFlashTableData: FlashTableItem[]) => void;
   hasAvrdude: boolean;
   setHasAvrdude: (newHasAvrdude: boolean) => void;
+  binaryFolder: string | null;
+  setBinaryFolder: (newBinaryFolder: string | null) => void;
 }
 
 export const useFlasher = create<FlasherState>((set) => ({
@@ -59,4 +61,6 @@ export const useFlasher = create<FlasherState>((set) => ({
     set({ flashTableData: newFlashTableData }),
   hasAvrdude: false,
   setHasAvrdude: (newHasAvrdude: boolean) => set({ hasAvrdude: newHasAvrdude }),
+  binaryFolder: null,
+  setBinaryFolder: (newBinaryFolder: string | null) => set({ binaryFolder: newBinaryFolder }),
 }));

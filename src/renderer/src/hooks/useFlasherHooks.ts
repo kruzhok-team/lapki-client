@@ -337,6 +337,7 @@ export const useFlasherHooks = () => {
         break;
       }
       case 'event-not-supported': {
+        // TODO: прекращение текущих операций, типа прошивки?
         ManagerMS.addLog('Загрузчик получил неизвестный тип сообщения.');
         break;
       }

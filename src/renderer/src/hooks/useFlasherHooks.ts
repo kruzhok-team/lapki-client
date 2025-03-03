@@ -170,14 +170,6 @@ export const useFlasherHooks = () => {
     ManagerMS.binStart();
   };
 
-  const writeBinary = async (path: string, binary: Uint8Array) => {
-    const [error] = await window.api.fileHandlers.saveBinaryIntoFile(path, binary);
-    if (error) {
-      // TODO: дописать, конкретную плату и то, что не удалось выгрузить бинарники из неё
-      ManagerMS.addLog(`Ошибка выгрузки прошивки: ${error}`);
-    }
-  };
-
   useEffect(() => {
     window.electron.ipcRenderer.invoke('hasAvrdude').then(function (has: boolean) {
       setHasAvrdude(has);
@@ -241,7 +233,7 @@ export const useFlasherHooks = () => {
       case 'binary-data': {
         if (binaryFolder) {
           // async функция
-          writeBinary(binaryFolder, flasherMessage.payload as Uint8Array);
+          ManagerMS.writeBinary(binaryFolder, flasherMessage.payload as Uint8Array);
           Flasher.send('ms-get-firmware-next-block', null);
         } else {
           // TODO: дописать плату к которой это относится

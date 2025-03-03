@@ -320,7 +320,7 @@ export function handleSaveBinaryIntoFile(
   binary: Uint8Array
 ): handleSaveBinaryIntoFileReturn {
   return new Promise((resolve) => {
-    fs.writeFile(filePath, binary, function (err) {
+    fs.appendFile(filePath, binary, function (err) {
       if (err) {
         resolve([err.message]);
       } else {

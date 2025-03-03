@@ -240,4 +240,17 @@ export class ManagerMS {
     this.nextOperation();
     return op;
   }
+
+  static async writeBinary(path: string, binary: Uint8Array) {
+    if (!this.flashingAddress) {
+      throw Error('No flashing address');
+    }
+    const [error] = await window.api.fileHandlers.saveBinaryIntoFile(
+      `${path}/${this.flashingAddress.address}.bin`,
+      binary
+    );
+    if (error) {
+      this.flashingAddressLog(`ошибка выгрузки прошивки: ${error}`);
+    }
+  }
 }

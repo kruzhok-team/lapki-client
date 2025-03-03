@@ -833,7 +833,7 @@
           "description": "Значение элемента с текущим индексом."
         },
         "index": {
-          "img": "common/",
+          "img": "common/arrayPeek.svg",
           "type": "uint16_t",
           "description": "Текущий индекс."
         },

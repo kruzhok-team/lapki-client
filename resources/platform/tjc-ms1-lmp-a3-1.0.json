@@ -665,7 +665,7 @@
 
     "Array": {
       "description": "Статический массив",
-      "img": "arduino/timer.svg",
+      "img": "common/array.svg",
       "signals": {},
       "constructorParameters": {
         "size": {

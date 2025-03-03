@@ -174,7 +174,7 @@ export const useFlasherHooks = () => {
     const [error] = await window.api.fileHandlers.saveBinaryIntoFile(path, binary);
     if (error) {
       // TODO: дописать, конкретную плату и то, что не удалось выгрузить бинарники из неё
-      ManagerMS.addLog(`Ошибка: ${error}`);
+      ManagerMS.addLog(`Ошибка выгрузки прошивки: ${error}`);
     }
   };
 

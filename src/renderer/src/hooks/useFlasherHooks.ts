@@ -776,6 +776,7 @@ export const useFlasherHooks = () => {
             );
             break;
         }
+        Flasher.currentFlashingDevice = undefined;
         if (!ManagerMS.getFirmwareStart()) {
           setBinaryFolder(null);
         }

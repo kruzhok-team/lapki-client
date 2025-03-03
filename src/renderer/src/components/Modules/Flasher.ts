@@ -211,13 +211,18 @@ export class Flasher extends ClientWS {
   }
 
   // обработка входящих через вебсоект сообщений
-  static messageHandler(msg: Websocket.MessageEvent) {
+  static async messageHandler(msg: Websocket.MessageEvent) {
     if (typeof msg.data === 'string') {
       const flasherMessage = JSON.parse(msg.data as string) as FlasherMessage;
       this.setFlasherMessage(flasherMessage);
     } else {
       // бинарные данные
-      const bin = new Uint8Array(msg.data as ArrayBuffer);
+      let bin: Uint8Array;
+      if (msg.data instanceof Blob) {
+        bin = new Uint8Array(await msg.data.arrayBuffer());
+      } else {
+        bin = new Uint8Array(msg.data as ArrayBuffer);
+      }
       this.setFlasherMessage({ type: 'binary-data', payload: bin });
     }
   }

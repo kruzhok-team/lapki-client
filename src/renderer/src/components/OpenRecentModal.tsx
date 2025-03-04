@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
+import { toast } from 'sonner';
 import { twMerge } from 'tailwind-merge';
 
 import { useSettings } from '@renderer/hooks';
@@ -21,7 +22,7 @@ export const OpenRecentModal: React.FC<OpenRecentModalProps> = ({
 }) => {
   const [selectedFileIdx, setSelectedFileIdx] = useState<number | null>(null);
 
-  const [recentFiles] = useSettings('recentFiles');
+  const [recentFiles, setRecentFiles] = useSettings('recentFiles');
 
   if (recentFiles === null) return;
 
@@ -29,11 +30,19 @@ export const OpenRecentModal: React.FC<OpenRecentModalProps> = ({
 
   const isSelected = (idx: number) => selectedFileIdx === idx;
 
-  const submit = () => {
+  const submit = async () => {
     if (selectedFileIdx === null) return;
 
-    onSubmit(recentFiles[selectedFileIdx].path);
-    onClose();
+    const path = recentFiles[selectedFileIdx].path;
+    await window.api.fileHandlers.existsFile(path).then((exists) => {
+      if (exists) {
+        onSubmit(path);
+        onClose();
+      } else {
+        setRecentFiles(recentFiles.filter((file) => file.path !== path));
+        toast.error('Не удаётся найти выбранный файл');
+      }
+    });
   };
 
   const handleSubmit = (e: React.FormEvent) => {

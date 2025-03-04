@@ -104,6 +104,7 @@ export const defaultSettings = {
 
 export type Settings = typeof defaultSettings;
 export type SettingsKey = keyof Settings;
+const noResetKeys: SettingsKey[] = ['addressBookMS', 'recentFiles'];
 
 export const initDefaultSettings = () => {
   for (const key in defaultSettings) {
@@ -125,7 +126,7 @@ export const initSettingsHandlers = (webContents: WebContents) => {
   });
   ipcMain.handle('settings:fullReset', async () => {
     for (const key in defaultSettings) {
-      if ((key as SettingsKey) != 'addressBookMS') {
+      if (noResetKeys.findIndex((v) => v === key) === -1) {
         await settingsChange(webContents, key as SettingsKey, defaultSettings[key]);
       }
     }

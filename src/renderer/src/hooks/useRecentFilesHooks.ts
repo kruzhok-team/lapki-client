@@ -32,7 +32,7 @@ export const useRecentFilesHooks = () => {
     });
 
     const filtered = recentFiles.filter((v) => v.path !== basename);
-    setRecentFiles([...filtered, { name: name, path: basename, stateMachines: stateMachines }]);
+    setRecentFiles([{ name: name, path: basename, stateMachines: stateMachines }, ...filtered]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [basename, name, stateMachinesId, settingsLoaded, isStale]);
 };

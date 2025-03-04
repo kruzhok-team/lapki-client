@@ -284,3 +284,8 @@ export function handleGetFileMetadata(absolute_path: string) {
   //const stat = fs.statSync(absolute_path);
   return fs.statSync(absolute_path);
 }
+
+// получить метаданные о файле (дата создания, последней модификации, размер и т.д.)
+export function handleFileExists(path: string) {
+  return fs.existsSync(path);
+}

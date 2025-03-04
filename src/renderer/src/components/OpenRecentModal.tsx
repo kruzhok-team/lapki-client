@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
-import { useSettings } from '@renderer/hooks';
+import { useErrorModal, useFileOperations, useSettings } from '@renderer/hooks';
 import { getPlatform } from '@renderer/lib/data/PlatformLoader';
 
 import { Modal } from './UI';
@@ -10,13 +10,20 @@ import { Modal } from './UI';
 interface OpenRecentModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onOpen: (filePath: string) => void;
 }
 
-export const OpenRecentModal: React.FC<OpenRecentModalProps> = ({ onClose, onOpen, ...props }) => {
+export const OpenRecentModal: React.FC<OpenRecentModalProps> = ({ onClose, ...props }) => {
   const [selectedFileIdx, setSelectedFileIdx] = useState<number | null>(null);
 
-  const [recentFiles, setRecentFiles] = useSettings('recentFiles');
+  const { openLoadError, openSaveError, openImportError } = useErrorModal();
+  const { operations } = useFileOperations({
+    openLoadError,
+    openSaveError,
+    openCreateSchemeModal: () => undefined,
+    openImportError,
+  });
+
+  const [recentFiles] = useSettings('recentFiles');
 
   if (recentFiles === null) return;
 
@@ -27,7 +34,7 @@ export const OpenRecentModal: React.FC<OpenRecentModalProps> = ({ onClose, onOpe
   const submit = () => {
     if (selectedFileIdx === null) return;
 
-    onOpen(recentFiles[selectedFileIdx].path);
+    operations.onRequestOpenFile(recentFiles[selectedFileIdx].path);
     onClose();
   };
 

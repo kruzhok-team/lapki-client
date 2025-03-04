@@ -3,7 +3,6 @@ import React, { Dispatch, useLayoutEffect } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import { PropertiesModal, TextModeModal } from '@renderer/components';
-import { useSettings } from '@renderer/hooks';
 import { useModal } from '@renderer/hooks/useModal';
 import { useProperties } from '@renderer/hooks/useProperties';
 import { useModelContext } from '@renderer/store/ModelContext';
@@ -210,11 +209,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
 
       <PropertiesModal {...propertiesModalProps} />
       <TextModeModal isOpen={isTextModeModalOpen} onClose={closeTextModeModal} />
-      <OpenRecentModal
-        isOpen={isRecentModalOpen}
-        onClose={closeRecentModal}
-        onOpen={(path) => console.log(path)}
-      />
+      <OpenRecentModal isOpen={isRecentModalOpen} onClose={closeRecentModal} />
     </section>
   );
 };

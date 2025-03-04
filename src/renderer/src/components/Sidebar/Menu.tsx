@@ -24,7 +24,7 @@ interface MenuItem {
 
 export interface MenuProps {
   onRequestNewFile: () => void;
-  onRequestOpenFile: () => void;
+  onRequestOpenFile: (path?: string) => void;
   onRequestSaveFile: () => void;
   onRequestSaveAsFile: () => void;
   onRequestImport: (setOpenData: Dispatch<[boolean, string | null, string | null, string]>) => void;
@@ -209,7 +209,11 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
 
       <PropertiesModal {...propertiesModalProps} />
       <TextModeModal isOpen={isTextModeModalOpen} onClose={closeTextModeModal} />
-      <OpenRecentModal isOpen={isRecentModalOpen} onClose={closeRecentModal} />
+      <OpenRecentModal
+        isOpen={isRecentModalOpen}
+        onClose={closeRecentModal}
+        onSubmit={(filePath) => props.onRequestOpenFile(filePath)}
+      />
     </section>
   );
 };

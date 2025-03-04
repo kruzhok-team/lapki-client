@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import { useSettings } from '@renderer/hooks';
+import { getPlatform } from '@renderer/lib/data/PlatformLoader';
 
 import { Modal } from './UI';
 
@@ -38,15 +39,41 @@ export const OpenRecentModal: React.FC<OpenRecentModalProps> = ({ onClose, onOpe
 
   const description = () => {
     if (selectedFileIdx === null) {
-      return 'Выберите файл из списка слева';
+      return <label>Выберите файл из списка слева</label>;
     }
-    return recentFiles[selectedFileIdx].path;
+    const selectedFile = recentFiles[selectedFileIdx];
+    return (
+      <div className="h-[40vh] flex-col items-center overflow-y-auto break-words">
+        <div>
+          <b>Путь</b>:
+        </div>
+        <div className="p-1">{selectedFile.path}</div>
+        <div>
+          <b>Машины состояний</b>:
+        </div>
+        {selectedFile.stateMachines.map((v) => {
+          if (v.name === '') return;
+          const platform = getPlatform(v.platformIdx);
+          if (platform === undefined) return;
+          return (
+            <div className="p-1">
+              <div>
+                <b>Название:</b> {v.name}
+              </div>
+              <div>
+                <b>Платформа:</b> {platform.name ?? 'Неизвестная платформа'}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
   };
 
   const renderFileList = () => {
     return (
       <div className="grid grid-cols-2 gap-4">
-        <div className="max-h-[40vh] w-full overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
+        <div className="h-[40vh] w-full overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
           {recentFiles.map((file, idx) => (
             <div
               key={file.path}
@@ -57,7 +84,7 @@ export const OpenRecentModal: React.FC<OpenRecentModalProps> = ({ onClose, onOpe
               onDoubleClick={submit}
               onClick={handleClick(idx)}
             >
-              {file.basename}
+              {file.name}
             </div>
           ))}
         </div>

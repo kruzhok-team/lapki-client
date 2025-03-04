@@ -1,6 +1,8 @@
 import { ipcMain, WebContents } from 'electron';
 import settings from 'electron-settings';
 
+import { existsSync } from 'fs';
+
 import { defaultCompilerHost, defaultCompilerPort, defaultDocHost } from './version';
 
 type MetaType =
@@ -106,7 +108,20 @@ export type Settings = typeof defaultSettings;
 export type SettingsKey = keyof Settings;
 const noResetKeys: SettingsKey[] = ['addressBookMS', 'recentFiles'];
 
-export const initDefaultSettings = () => {
+/**
+ * Удаление недавних файлов, пути которых невозможно отыскать
+ */
+const checkRecentFiles = () => {
+  const key = 'recentFiles' as SettingsKey;
+  const files = settings.getSync(key) as RecentFile[];
+  settings.setSync(
+    key,
+    files.filter((file) => existsSync(file.path))
+  );
+};
+
+export const initSettings = () => {
+  checkRecentFiles();
   for (const key in defaultSettings) {
     if (!settings.hasSync(key)) {
       settings.setSync(key, defaultSettings[key]);

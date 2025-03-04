@@ -57,13 +57,16 @@ export const OpenRecentModal: React.FC<OpenRecentModalProps> = ({
       return <label>Выберите файл из списка слева</label>;
     }
     const selectedFile = recentFiles[selectedFileIdx];
+    const keyPrefix = `!description-${selectedFile.path}`;
     return (
-      <div className="h-[40vh] flex-col items-center overflow-y-auto break-words">
-        <div>
+      <div className="h-[40vh] flex-col items-center overflow-y-auto break-words" key={keyPrefix}>
+        <div key={`${keyPrefix}-path-label`}>
           <b>Путь</b>:
         </div>
-        <div className="p-1">{selectedFile.path}</div>
-        <div>
+        <div className="p-1" key={`${keyPrefix}-path-value`}>
+          {selectedFile.path}
+        </div>
+        <div key={`${keyPrefix}-stateMachines-label`}>
           <b>Машины состояний</b>:
         </div>
         {selectedFile.stateMachines.map((v) => {
@@ -71,7 +74,7 @@ export const OpenRecentModal: React.FC<OpenRecentModalProps> = ({
           const platform = getPlatform(v.platformIdx);
           if (platform === undefined) return;
           return (
-            <div className="p-1">
+            <div className="p-1" key={`${keyPrefix}-stateMachines-${v.name}-value`}>
               <div>
                 <b>Название:</b> {v.name}
               </div>

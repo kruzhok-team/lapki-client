@@ -6,10 +6,13 @@ import {
   SERIAL_MONITOR_NO_SERVER_CONNECTION,
   SerialMonitor,
 } from '@renderer/components/Modules/SerialMonitor';
-import { useSettings } from '@renderer/hooks';
+import { useModal, useSettings } from '@renderer/hooks';
+import { useFlasher } from '@renderer/store/useFlasher';
 import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
 
-import { Select, Switch, TextInput } from './UI';
+import { DeviceList } from './DeviceList';
+
+import { Select, Switch, TextInput } from '../../UI';
 
 type LineBreakType = 'LF' | 'CR' | 'CRLF' | 'Без';
 // опции выбора символа окончания строки
@@ -44,10 +47,15 @@ export const SerialMonitorTab: React.FC = () => {
     deviceMessages,
     setDeviceMessages: setMessages,
     device,
+    setDevice,
     connectionStatus,
     log,
     setLog,
   } = useSerialMonitor();
+
+  const { devices } = useFlasher();
+
+  const [isDeviceListOpen, openDeviceList, closeDeviceList] = useModal(false);
 
   const makeOption = (x) => {
     return { label: x, value: x };
@@ -77,13 +85,13 @@ export const SerialMonitorTab: React.FC = () => {
   }, [deviceMessages, log, monitorSetting]);
 
   useLayoutEffect(() => {
-    if (deviceMessages != '' && deviceMessages[deviceMessages.length - 1] != '\n') {
+    if (deviceMessages !== '' && deviceMessages[deviceMessages.length - 1] !== '\n') {
       SerialMonitor.addDeviceMessage('\n');
     }
   }, [device]);
 
   const handleSend = () => {
-    if (inputValue.trim() && device != undefined && monitorSetting != null) {
+    if (inputValue.trim() && device !== undefined && monitorSetting !== null) {
       // Отправляем сообщение через SerialMonitor
       SerialMonitor.sendMessage(
         device?.deviceID,
@@ -105,10 +113,13 @@ export const SerialMonitorTab: React.FC = () => {
   };
 
   const handleCurrentDeviceDisplay = () => {
+    if (connectionStatus === SERIAL_MONITOR_NO_SERVER_CONNECTION) {
+      return connectionStatus;
+    }
     if (device === undefined) {
       return 'Устройство отсутствует';
     }
-    return device.displaySerialName();
+    return `${device.displaySerialName()} - ${connectionStatus}`;
   };
 
   const handleConnectionButton = () => {
@@ -145,12 +156,40 @@ export const SerialMonitorTab: React.FC = () => {
       baudRate: newBaudRate,
     });
   };
+
   if (!monitorSetting) {
     return null;
   }
+
+  const handleAddDevice = (deviceIds: string[]) => {
+    if (deviceIds.length === 0) return;
+
+    // поддерживается только выбор одного устройства
+    const dev = devices.get(deviceIds[0]);
+    if (dev) {
+      if (device && connectionStatus === SERIAL_MONITOR_CONNECTED) {
+        SerialMonitor.closeMonitor(device.deviceID);
+      }
+      SerialMonitor.openMonitor(dev, Number(monitorSetting.baudRate));
+    }
+    setDevice(dev);
+  };
+
   return (
     <section className="mr-3 flex h-full flex-col bg-bg-secondary">
-      <div className="m-2 flex justify-between">{`${handleCurrentDeviceDisplay()} - ${connectionStatus}`}</div>
+      <div className="m-2 flex justify-between">
+        <button
+          className="btn-primary"
+          onClick={openDeviceList}
+          disabled={
+            connectionStatus === SERIAL_MONITOR_CONNECTING ||
+            connectionStatus === SERIAL_MONITOR_NO_SERVER_CONNECTION
+          }
+        >
+          Выбрать устройство
+        </button>
+        {`${handleCurrentDeviceDisplay()}`}
+      </div>
       <div className="m-2 flex">
         <TextInput
           className="mr-2 max-w-full"
@@ -223,7 +262,8 @@ export const SerialMonitorTab: React.FC = () => {
               onClick={handleConnectionButton}
               disabled={
                 connectionStatus === SERIAL_MONITOR_NO_SERVER_CONNECTION ||
-                connectionStatus === SERIAL_MONITOR_CONNECTING
+                connectionStatus === SERIAL_MONITOR_CONNECTING ||
+                !device
               }
             >
               {connectionStatus === SERIAL_MONITOR_CONNECTED ? 'Отключиться' : 'Подключиться'}
@@ -248,6 +288,14 @@ export const SerialMonitorTab: React.FC = () => {
           <div key={index}>{msg}</div>
         ))}
       </div>
+
+      <DeviceList
+        isOpen={isDeviceListOpen}
+        onClose={closeDeviceList}
+        onSubmit={handleAddDevice}
+        submitLabel="Выбрать"
+        devices={devices}
+      />
     </section>
   );
 };

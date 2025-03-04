@@ -39,7 +39,7 @@ export class ArrowsWithoutLabel implements Drawable {
     const data = this.parent.data;
     const fillStyle = data.color ?? getColor('default-transition-color');
 
-    ctx.lineWidth = transitionStyle.width;
+    ctx.lineWidth = transitionStyle.width / this.app.controller.scale;
     ctx.strokeStyle = this.parent.data.color ?? getColor('default-transition-color');
     ctx.fillStyle = fillStyle;
 

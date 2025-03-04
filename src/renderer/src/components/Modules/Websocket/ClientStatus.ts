@@ -1,3 +1,4 @@
+// TODO: заменить на тип
 export class ClientStatus {
   static CONNECTING: string = 'Идет подключение...';
   static CONNECTED: string = 'Подключен';

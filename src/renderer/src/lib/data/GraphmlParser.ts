@@ -71,8 +71,9 @@ function checkConditionTokenType(token: string): Condition {
   };
 }
 
-function parseCondition(condition: string): Condition {
+function parseCondition(condition: string): Condition | string {
   const tokens = condition.split(' ');
+  if (tokens.length != 3) return condition;
   const lval = checkConditionTokenType(tokens[0]);
   const operator = operatorAlias[tokens[1]];
   const rval = checkConditionTokenType(tokens[2]);
@@ -116,7 +117,7 @@ function initArgList(args: (string | Variable)[]): ArgList {
 }
 
 const pictoRegex: RegExp = /.+(\.|::).+\(.*\)/;
-const variableRegex: RegExp = /(?<component>.+)(\.|::)(?<method>.+)/;
+export const variableRegex: RegExp = /(?<component>.+)(\.|::)(?<method>.+)/;
 function splitArgs(argString: string): (string | Variable)[] {
   // split по запятой, но не внутри скобок
   const args: (string | Variable)[] = [];
@@ -337,7 +338,11 @@ function actionsToEventData(
       }
     }
     if (action.trigger?.condition) {
-      eventData.condition = parseCondition(action.trigger.condition);
+      const condition = parseCondition(action.trigger.condition);
+      if (typeof condition === 'string' && condition !== 'else') {
+        visual = true;
+      }
+      eventData.condition = condition;
     }
     eventDataArr.push(eventData);
   }
@@ -609,10 +614,11 @@ export function importGraphml(
     const platforms: { [id: string]: Platform } = {};
     for (const smId in rawElements.stateMachines) {
       const rawSm = rawElements.stateMachines[smId];
-      if (!isPlatformAvailable(rawSm.platform)) {
-        throw new Error(`Неизвестная платформа ${rawSm.platform}.`);
+      const platformName = rawSm.platform ?? 'empty';
+      if (!isPlatformAvailable(platformName)) {
+        throw new Error(`Неизвестная платформа ${platformName}.`);
       }
-      const platform: Platform | undefined = getPlatform(rawSm.platform);
+      const platform: Platform | undefined = getPlatform(platformName);
       if (platform === undefined) {
         throw new Error('Internal error: undefined getPlatform result, but platform is avaialble.');
       }
@@ -640,12 +646,12 @@ export function importGraphml(
           sm.components
         );
       }
-      sm.platform = rawSm.platform;
+      sm.platform = platformName;
       sm.choiceStates = getChoices(rawSm.choices);
       sm.name = rawSm.name;
       sm.position = rawSm.position ?? { x: 0, y: 0 };
       elements.stateMachines[smId] = sm;
-      platforms[rawSm.platform] = platform;
+      platforms[platformName] = platform;
     }
     validateElements(elements, platforms);
 

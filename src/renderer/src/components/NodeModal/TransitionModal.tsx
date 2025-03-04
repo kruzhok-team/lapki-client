@@ -99,10 +99,11 @@ export const TransitionModal: React.FC<TransitionModalProps> = ({ smId, controll
       argsParam1,
       argsParam2,
       conditionOperator,
+      isElse,
     } = condition;
 
     //Проверка на наличие пустых блоков условия, если же они пустые, то форма не отправляется
-    if (show) {
+    if (show && !isElse) {
       const errors = condition.checkForErrors();
 
       for (const key in errors) {
@@ -112,6 +113,8 @@ export const TransitionModal: React.FC<TransitionModalProps> = ({ smId, controll
 
     const getCondition = () => {
       if (!show) return undefined;
+
+      if (isElse) return 'else';
 
       if (condition.tabValue === 0) {
         // Тут много as string потому что проверка на null в checkForErrors
@@ -185,6 +188,11 @@ export const TransitionModal: React.FC<TransitionModalProps> = ({ smId, controll
       }
       return undefined;
     };
+    const valueCondition = getCondition();
+    if (!showTrigger && valueCondition === undefined) {
+      setError('Необходимо указать условие!');
+      return;
+    }
     // Если редактируем состояние
     if (transition && transitionId) {
       const error = checkCondition(transition, transitionId);
@@ -295,7 +303,9 @@ export const TransitionModal: React.FC<TransitionModalProps> = ({ smId, controll
             <Trigger event={(transition?.label as EventData) ?? null} {...trigger} />
           )}
           {!isInitialTransition && <Condition {...condition} />}
-          {!isInitialTransition && <Actions event={null} {...actions} />}
+          {!isInitialTransition && (
+            <Actions event={(transition?.label as EventData) ?? null} {...actions} />
+          )}
           {error && <div className="text-error">{error}</div>}
           <ColorField label="Цвет линии:" value={color} onChange={setColor} />
         </div>

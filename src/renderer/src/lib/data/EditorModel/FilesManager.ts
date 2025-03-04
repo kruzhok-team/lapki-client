@@ -28,17 +28,19 @@ export class FilesManager {
     if (!platform) {
       throw Error('unknown platform ' + platformIdx);
     }
+
+    const name = (platform.nameTag ?? 'Machine') + '1';
     const elements = emptyElements();
-    elements.stateMachines['G'] = emptyStateMachine();
-    elements.stateMachines['G'].platform = platformIdx;
-    this.modelController.initData(null, 'Без названия', elements as any);
+    elements.stateMachines[name] = emptyStateMachine();
+    elements.stateMachines[name].platform = platformIdx;
+    this.modelController.initData(null, 'Без названия', elements as any, true);
 
     return this.modelController.model.data.headControllerId;
     // this.modelController.model.init(null, 'Без названия', elements as any);
   }
 
-  compile() {
-    Compiler.compile(this.data.elements, 'CGML');
+  compile(data: Elements = this.data.elements) {
+    Compiler.compile(data, 'CGML');
   }
 
   isPlatformsAvailable(importData: Elements) {
@@ -66,7 +68,8 @@ export class FilesManager {
         this.modelController.initData(
           openData[1]!.replace('.graphml', '.json'),
           openData[2]!.replace('.graphml', '.json'),
-          importData
+          importData,
+          false
         );
         return makeRight(null);
       } catch (e) {
@@ -123,7 +126,7 @@ export class FilesManager {
             content: `Незнакомая платформа "${checkResult[2]}".`,
           });
         }
-        this.modelController.initData(openData[1] ?? '', openData[2] ?? '', data);
+        this.modelController.initData(openData[1] ?? '', openData[2] ?? '', data, false);
         // this.modelController.components.fromElementsComponents(data.components);
         return makeRight(null);
       } catch (e) {
@@ -200,7 +203,7 @@ export class FilesManager {
     if (data == undefined) {
       return;
     }
-    this.modelController.initData(null, 'Без названия', data);
+    this.modelController.initData(null, 'Без названия', data, false);
     // this.modelController.model.init(null, 'Без названия', data);
   }
 }

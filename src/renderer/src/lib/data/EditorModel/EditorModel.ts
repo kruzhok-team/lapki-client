@@ -1,7 +1,6 @@
 import { useSyncExternalStore } from 'react';
 
 import { EventSelection } from '@renderer/lib/drawable';
-import { stateStyle } from '@renderer/lib/styles';
 import {
   emptyEditorData,
   emptyDataListeners,
@@ -80,7 +79,6 @@ export class EditorModel {
     this.data.elements.stateMachines[''] = emptyStateMachine();
     this.data.isInitialized = true;
     this.initPlatform(); // TODO(bryzZz) Платформа непонятно где вообще в архитектуре, судя по всему ее нужно переносить в данные
-    this.triggerDataUpdate('elements.meta', 'basename', 'name', 'elements', 'isInitialized');
   }
 
   triggerSave(basename: string | null, name: string | null) {
@@ -154,6 +152,9 @@ export class EditorModel {
               }
             }
           }
+        }
+        if (typeof ev.condition !== 'string' && ev.condition) {
+          this.renameCondition(ev.condition, oldComponentId, newComponentId);
         }
       }
     }
@@ -283,14 +284,15 @@ export class EditorModel {
       placeInCenter = false,
       color,
       smId,
+      dimensions,
     } = args;
+
     let position = args.position;
-    const { width, height } = stateStyle;
 
     const centerPosition = () => {
       return {
-        x: position.x - width / 2,
-        y: position.y - height / 2,
+        x: position.x - dimensions.width / 2,
+        y: position.y - dimensions.height / 2,
       };
     };
 
@@ -298,7 +300,7 @@ export class EditorModel {
 
     this.data.elements.stateMachines[smId].states[id] = {
       position,
-      dimensions: { width, height },
+      dimensions: { ...dimensions },
       events: events,
       name,
       parentId,

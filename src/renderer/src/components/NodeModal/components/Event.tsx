@@ -3,22 +3,26 @@ import React, { useMemo, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import { operatorSet, PlatformManager } from '@renderer/lib/data/PlatformManager';
+import { useModelContext } from '@renderer/store/ModelContext';
 import { Condition, Event as EventData, Variable } from '@renderer/types/diagram';
 
 import { MonoPicto } from './MonoPicto';
 import { Picto } from './Picto';
+
 import './css/event.css';
 interface EventProps {
+  smId: string;
   platform: PlatformManager;
-  event: EventData;
+  event: EventData | string;
   isSelected: boolean;
   onDoubleClick?: (e: React.MouseEvent) => void;
   onClick?: () => void;
   text?: string;
-  condition?: Condition;
+  condition?: Condition | string;
 }
 
 export const Event: React.FC<EventProps> = ({
+  smId,
   platform,
   event,
   condition,
@@ -27,6 +31,8 @@ export const Event: React.FC<EventProps> = ({
   onDoubleClick,
   isSelected,
 }) => {
+  const modelController = useModelContext();
+  const visual = modelController.model.useData(smId, 'elements.visual');
   const [conditionsPicto, setConditionsPicto] = useState<React.ReactNode[]>([]);
   useMemo(() => {
     setConditionsPicto([]);
@@ -76,8 +82,11 @@ export const Event: React.FC<EventProps> = ({
         return;
       }
     };
-    if (condition) {
+    if (condition && typeof condition !== 'string') {
       getCondition(condition);
+    }
+    if (typeof condition === 'string') {
+      setConditionsPicto((p) => [...p, <MonoPicto content={condition} />]);
     }
   }, [platform, condition, setConditionsPicto]);
 
@@ -92,12 +101,14 @@ export const Event: React.FC<EventProps> = ({
       )}
     >
       <div className="flex gap-1">
-        <span className="mr-2">
-          <Picto
-            leftIcon={platform.getFullComponentIcon(event.component)}
-            rightIcon={platform.getEventIconUrl(event.component, event.method, true)}
-          />
-        </span>
+        {visual && typeof event !== 'string' && (
+          <span className="mr-2">
+            <Picto
+              leftIcon={platform.getFullComponentIcon(event.component)}
+              rightIcon={platform.getEventIconUrl(event.component, event.method, true)}
+            />
+          </span>
+        )}
         {...conditionsPicto}
       </div>
       {text && <div className="ml-2 mt-[0.5px]">{text}</div>}

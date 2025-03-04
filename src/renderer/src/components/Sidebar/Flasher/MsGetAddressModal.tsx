@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import { Checkbox, Modal } from './UI';
+import { Checkbox, Modal } from '../../UI';
 
 interface MsGetAddressModalProps {
   isOpen: boolean;
@@ -39,9 +39,9 @@ export const MsGetAddressModal: React.FC<MsGetAddressModalProps> = ({
       cancelLabel="Отменить"
     >
       <div>
-        Возьмите плату, которую вы хотите опознать. Зажмите на ней кнопку <b>Addr</b> и, не отпуская
-        её, нажмите кнопку <b>Reset</b>. Светодиод «<b>!</b>» должен загореться синим. После этого
-        нажмите <b>Получить адрес</b>.
+        Возьмите плату, которую вы хотите опознать. В окошке «<b>Киберфизический ген</b>» зажмите
+        кнопку <b>Addr</b> и, не отпуская её, нажмите кнопку <b>Reset</b>. Светодиод «<b>!</b>»
+        должен загореться синим. После этого нажмите <b>Получить адрес</b>.
       </div>
       <div className="flex items-start">
         <Checkbox

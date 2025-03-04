@@ -35,4 +35,8 @@
   .vertical-flip {
     transform: scale(1, -1);
   }
+
+  .event:has(+ .event:hover) hr {
+    border-color: transparent;
+  }
 }

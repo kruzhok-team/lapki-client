@@ -6,6 +6,7 @@ import { SaveModalData } from '@renderer/components';
 import { Compiler } from '@renderer/components/Modules/Compiler';
 import { importGraphml } from '@renderer/lib/data/GraphmlParser';
 import { useModelContext } from '@renderer/store/ModelContext';
+import { SidebarIndex, useSidebar } from '@renderer/store/useSidebar';
 import { useTabs } from '@renderer/store/useTabs';
 import { Elements } from '@renderer/types/diagram';
 import { isLeft, isRight, unwrapEither } from '@renderer/types/Either';
@@ -23,7 +24,7 @@ interface useFileOperationsArgs {
 
 export const useFileOperations = (args: useFileOperationsArgs) => {
   const { openLoadError, openSaveError, openCreateSchemeModal, openImportError } = args;
-
+  const { changeTab } = useSidebar();
   const modelController = useModelContext();
   const model = modelController.model;
   const name = modelController.model.useData('', 'name') as string | null;
@@ -42,6 +43,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
 
   // Открыть вкладки на каждый контроллер
   const openTabs = () => {
+    changeTab(SidebarIndex.Explorer);
     for (const controllerId in modelController.controllers) {
       if (controllerId === '') continue;
       const controller = modelController.controllers[controllerId];
@@ -66,7 +68,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
       setData({
         shownName: name,
         question: 'Хотите сохранить файл перед тем, как открыть другой?',
-        onConfirm: performOpenFile,
+        onConfirm: async () => await performOpenFile(path),
         onSave: handleSaveFile,
         onOpen: async () => await performOpenFile(path),
       });
@@ -218,7 +220,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
     if (parsedData === undefined) {
       return false;
     }
-    modelController.initData(null, 'Без названия', parsedData);
+    modelController.initData(null, 'Без названия', parsedData, true);
     openTabs();
     if (!restoreSession) {
       await setRestoreSession(true);

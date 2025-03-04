@@ -44,30 +44,20 @@ export class ModuleManager {
     this.moduleStatus.set(module, new ModuleStatus());
     if (!this.localProccesses.has(module)) {
       const platform = process.platform;
-      const basePath = path
-        .join(__dirname, '../../resources')
-        .replace('app.asar', 'app.asar.unpacked'); // process.resourcesPath;
       let chprocess;
       let modulePath: string = '';
-      let osPath = '';
       switch (platform) {
         case 'darwin': {
           // позволяет унаследовать $PATH, то есть системный путь
           // это нужно для того, чтобы загрузчик смог получить доступ к avrdude, если путь к нему прописан в $PATH
           fixPath();
-          // break не нужен, так как дальнейшие действия одинаковы для Linux и macOS
+          // break не нужен, так как дальнейшие действия одинаковы для Linux, macOS и windows
         }
         // eslint-disable-next-line no-fallthrough
-        case 'linux': {
-          osPath = `${basePath}/modules/${platform}`;
-          modulePath = `${osPath}/${module}`;
+        case 'linux':
+        case 'win32':
+          modulePath = this.getModulePath(module);
           break;
-        }
-        case 'win32': {
-          osPath = `${basePath}\\modules\\${platform}`;
-          modulePath = `${osPath}\\${module}.exe`;
-          break;
-        }
         default:
           this.moduleStatus[module] = new ModuleStatus(4, platform);
           console.log(`Платформа ${platform} не поддерживается (:^( )`);
@@ -109,19 +99,9 @@ export class ModuleManager {
               `-address=localhost:${port}`,
             ];
 
-            let avrdudePath = '';
-            let configPath = '';
-            switch (platform) {
-              case 'darwin':
-              case 'linux':
-                avrdudePath = `${osPath}/avrdude`;
-                configPath = `${osPath}/avrdude.conf`;
-                break;
-              case 'win32':
-                avrdudePath = `${osPath}\\avrdude.exe`;
-                configPath = `${osPath}\\avrdude.conf`;
-                break;
-            }
+            const avrdudePath = this.getAvrdudePath();
+            const configPath = this.getConfPath();
+            console.log('pathes', avrdudePath, configPath);
             if (existsSync(avrdudePath)) {
               flasherArgs.push(`-avrdudePath=${avrdudePath}`);
             }
@@ -175,5 +155,31 @@ export class ModuleManager {
 
   static getLocalStatus(module: ModuleName): ModuleStatus {
     return this.moduleStatus.get(module)!;
+  }
+
+  static getOsPath(): string {
+    const basePath = path
+      .join(__dirname, '../../resources')
+      .replace('app.asar', 'app.asar.unpacked');
+    return `${basePath}/modules/${process.platform}`;
+  }
+
+  static getOsExe(executable: string): string {
+    if (process.platform === 'win32') {
+      return `${executable}.exe`;
+    }
+    return executable;
+  }
+
+  static getAvrdudePath(): string {
+    return this.getOsExe(`${this.getOsPath()}/avrdude`);
+  }
+
+  static getConfPath(): string {
+    return `${this.getOsPath()}/avrdude.conf`;
+  }
+
+  static getModulePath(module: string): string {
+    return this.getOsExe(`${this.getOsPath()}/${module}`);
   }
 }

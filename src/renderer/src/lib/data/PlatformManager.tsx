@@ -438,6 +438,19 @@ export class PlatformManager {
     return this.picto.eventWidth;
   }
 
+  drawText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, alpha?: number) {
+    const bgColor = '#5b7173';
+    const fgColor = '#fff';
+    const opacity = alpha ?? 1.0;
+
+    this.picto.drawText(ctx, x, y, {
+      rightIcon: text,
+      bgColor,
+      fgColor,
+      opacity,
+    });
+  }
+
   drawCondition(
     ctx: CanvasRenderingContext2D,
     ac: Condition,

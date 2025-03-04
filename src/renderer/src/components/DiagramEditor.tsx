@@ -8,8 +8,9 @@ import {
   StateModal,
   TransitionModal,
   StateMachineNameEdit,
+  EditEventModal,
 } from '@renderer/components';
-import { useSettings } from '@renderer/hooks';
+import { useEditEventModal, useSettings } from '@renderer/hooks';
 import { useModal } from '@renderer/hooks/useModal';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
@@ -32,6 +33,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditor
   const isMounted = controller.useData('isMounted');
   const containerRef = useRef<HTMLDivElement>(null);
 
+  const eventModal = useEditEventModal();
   const [isActionsModalOpen, openActionsModal, closeActionsModal] = useModal(false);
   const [actionsModalData, setActionsModalData] = useState<ActionsModalData>();
   // Дополнительные данные о родителе события
@@ -68,10 +70,17 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditor
       if (controller.type === 'scheme') return;
       const { state, eventSelection, event, isEditingEvent } = data;
 
-      setActionsModalParentData({ state, eventSelection });
-      setActionsModalData({ smId: state.smId, action: event, isEditingEvent });
+      if (eventSelection.actionIdx !== null) {
+        setActionsModalParentData({ state, eventSelection });
+        setActionsModalData({ smId: state.smId, action: event, isEditingEvent });
+        openActionsModal();
+      } else {
+        eventModal.setState(state);
+        eventModal.setCurrentEventIdx(eventSelection.eventIdx);
+        eventModal.setCurrentEvent(state.data.events[eventSelection.eventIdx]);
+        eventModal.openEditEventModal();
+      }
       setSmId(state.smId);
-      openActionsModal();
     };
 
     editor.view.on('dblclick', handleDblclick);
@@ -87,7 +96,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditor
     // Скорее всего, контейнер меняться уже не будет, поэтому
     // реф закомментирован, но если что, https://stackoverflow.com/a/60476525.
     // }, [ containerRef.current ]);
-  }, [editor, openActionsModal]);
+  }, [editor, eventModal.openEditEventModal, openActionsModal]);
 
   useEffect(() => {
     if (!canvasSettings) return;
@@ -120,6 +129,15 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditor
             Здесь находятся модалки, которые вызываются через взаимодействие с канвасом. 
             Модалки могут дублироваться по кодовой базе, если они вызываются другим способом.
           */}
+          <EditEventModal
+            close={eventModal.closeEditEventModal}
+            event={eventModal.currentEvent}
+            state={eventModal.state}
+            currentEventIndex={eventModal.currentEventIdx}
+            isOpen={eventModal.props.isEditEventModalOpen}
+            smId={smId}
+            controller={controller}
+          />
           <StateModal smId={smId} controller={controller} />
           <TransitionModal controller={controller} smId={smId} />
           <ActionsModal

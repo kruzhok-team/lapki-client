@@ -70,7 +70,7 @@ export const Setting: React.FC<SettingProps> = ({ openCompilerSettings, openLoad
       {/* 44.8 - это высота заголовка сверху, а высота считается для того чтобы кнопка "О программе" была внизу */}
       <div className="flex h-[calc(100%-44.8px)] flex-col gap-2 px-4 pb-4">
         <div className="mb-4">
-          Тема
+          <div className="mb-1">Тема</div>
           <Select
             options={themeOptions}
             value={themeOptions.find((o) => o.value === theme)}

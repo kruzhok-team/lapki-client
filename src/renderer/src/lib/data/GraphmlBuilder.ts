@@ -52,6 +52,15 @@ function exportMeta(visual: boolean, meta: Meta, platform: Platform): CGMLMeta {
   };
 }
 
+const invertOperatorAlias = {
+  equals: '==',
+  notEquals: '!=',
+  greater: '>',
+  less: '<',
+  greaterOrEqual: '>=',
+  lessOrEqual: '<=',
+};
+
 /* 
   Клонируем, потому что при экспорте у нас параметры-матрицы превращаются в строку
   и эти параметры меняются глобально

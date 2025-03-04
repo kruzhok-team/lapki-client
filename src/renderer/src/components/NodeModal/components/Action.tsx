@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
@@ -51,6 +51,12 @@ export const Action: React.FC<ActionProps> = (props) => {
     onChange();
   };
 
+  const sortedComponent = useMemo(() => {
+    if (!data.args) return [];
+
+    return Object.entries(data.args).sort(([, param], [, param2]) => param.order - param2.order);
+  }, [data.args]);
+
   return (
     <div
       className={twMerge('flex gap-2 p-2 hover:bg-bg-hover', isSelected && 'bg-bg-active')}
@@ -73,52 +79,50 @@ export const Action: React.FC<ActionProps> = (props) => {
         <div>{data.method}</div>
         <div>(</div>
         <div className="flex items-center gap-[2px]">
-          {data.args === undefined ||
-            Object.entries(data.args).map(([id, value], index) => {
-              const protoComponent =
-                platform.data.components[platform.resolveComponentType(data.component)];
-              if (!protoComponent) {
-                return <>{serializeParameter(index, value.value)}</>;
-              }
-              const protoMethod = protoComponent.methods[data.method];
-              const protoParameters = protoMethod.parameters;
-
-              if (!protoParameters) return <>{serializeParameter(index, value.value)}</>;
-
-              const parameter = protoParameters.find((param) => param.name === id);
-
-              if (!parameter || !parameter.type)
-                return <>{serializeParameter(index, value.value)}</>;
-
-              if (typeof parameter.type === 'string' && parameter.type.startsWith('Matrix')) {
-                const dimensions = getMatrixDimensions(parameter.type);
-
-                if (Array.isArray(value) && typeof value[0][0] === 'number') {
-                  return (
-                    <>
-                      {index !== 0 && ', '}
-                      <MatrixWidget
-                        key={`${smId}-${dimensions.width}-${dimensions.height}`}
-                        width={dimensions.width}
-                        height={dimensions.height}
-                        values={value}
-                        isClickable={false}
-                        onChange={() => undefined}
-                        style={{
-                          ledWidth: 2,
-                          ledHeight: 2,
-                          margin: 0,
-                          border: 1,
-                          isRounded: false,
-                        }}
-                      />
-                    </>
-                  );
-                }
-              }
-
+          {sortedComponent.map(([id, value], index) => {
+            const protoComponent =
+              platform.data.components[platform.resolveComponentType(data.component)];
+            if (!protoComponent) {
               return <>{serializeParameter(index, value.value)}</>;
-            })}
+            }
+            const protoMethod = protoComponent.methods[data.method];
+            const protoParameters = protoMethod.parameters;
+
+            if (!protoParameters) return <>{serializeParameter(index, value.value)}</>;
+
+            const parameter = protoParameters.find((param) => param.name === id);
+
+            if (!parameter || !parameter.type) return <>{serializeParameter(index, value.value)}</>;
+
+            if (typeof parameter.type === 'string' && parameter.type.startsWith('Matrix')) {
+              const dimensions = getMatrixDimensions(parameter.type);
+
+              if (Array.isArray(value.value) && typeof value.value[0][0] === 'number') {
+                return (
+                  <>
+                    {index !== 0 && ', '}
+                    <MatrixWidget
+                      key={`${smId}-${dimensions.width}-${dimensions.height}`}
+                      width={dimensions.width}
+                      height={dimensions.height}
+                      values={value.value}
+                      isClickable={false}
+                      onChange={() => undefined}
+                      style={{
+                        ledWidth: 2,
+                        ledHeight: 2,
+                        margin: 0,
+                        border: 1,
+                        isRounded: false,
+                      }}
+                    />
+                  </>
+                );
+              }
+            }
+
+            return <>{serializeParameter(index, value.value)}</>;
+          })}
         </div>
         <div>)</div>
       </div>

@@ -202,7 +202,7 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
     if (
       !protoParameters.every((proto, idx) => {
         const { name, type = '' } = proto;
-        const parameter = parameters[name] ?? { value: undefined, order: idx };
+        const parameter = parameters[name] ?? { value: '', order: idx };
         const value = parameter.value;
         if (Array.isArray(value)) {
           return true;

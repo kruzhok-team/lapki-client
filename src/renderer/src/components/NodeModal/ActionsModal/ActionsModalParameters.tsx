@@ -44,13 +44,22 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
   smId,
   controller,
 }) => {
-  const handleInputChange = (name: string, value: string | Variable) => {
+  const handleInputChange = (name: string, order: number, value: string | Variable) => {
     setErrors((p) => ({ ...p, [name]: '' }));
-    parameters[name].value = value;
+    if (parameters[name]) {
+      parameters[name].value = value;
+    } else {
+      parameters[name] = { value, order };
+    }
     setParameters({ ...parameters });
   };
 
-  const handleComponentAttributeChange = (name: string, component: string, attribute: string) => {
+  const handleComponentAttributeChange = (
+    name: string,
+    order: number,
+    component: string,
+    attribute: string
+  ) => {
     let inputValue: string | Variable = '';
     if (component || attribute) {
       inputValue = {
@@ -62,7 +71,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
       //   proto?.singletone || platform.staticComponents ? platform.staticActionDelimeter : '.';
       // inputValue = `${component}${delimiter}${attribute}`;
     }
-    handleInputChange(name, inputValue);
+    handleInputChange(name, order, inputValue);
   };
 
   const [isChecked, setIsChecked] = useState<Map<string, boolean>>(new Map());
@@ -92,7 +101,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
       <h3 className="mb-1 text-xl">Параметры:</h3>
       {protoParameters.map((proto, idx) => {
         const { name, description = '', type = '' } = proto;
-        const parameter = parameters[name] ?? { value: undefined, order: idx };
+        const parameter = parameters[name] ?? { value: '', order: idx };
         const value = parameter.value;
         const error = errors[name];
         const hint =
@@ -106,7 +115,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                 className="w-[300px] pl-[50px]"
                 options={options}
                 value={options.find((o) => o.value === value)}
-                onChange={(opt) => handleInputChange(name, opt?.value ?? '')}
+                onChange={(opt) => handleInputChange(name, idx, opt?.value ?? '')}
               />
             </ComponentFormFieldLabel>
           );
@@ -178,7 +187,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                 checked={currentChecked}
                 onCheckedChange={() => {
                   setCheckedTo(name, !currentChecked);
-                  handleInputChange(name, '');
+                  handleInputChange(name, idx, '');
                 }}
               />
             </div>
@@ -203,7 +212,9 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                     <Select
                       containerClassName="w-[250px]"
                       options={componentOptions}
-                      onChange={(opt) => handleComponentAttributeChange(name, opt?.value ?? '', '')}
+                      onChange={(opt) =>
+                        handleComponentAttributeChange(name, idx, opt?.value ?? '', '')
+                      }
                       value={
                         componentOptions.find((o) => o.value === selectedParameterComponent) ?? null
                       }
@@ -217,6 +228,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                       onChange={(opt) =>
                         handleComponentAttributeChange(
                           name,
+                          idx,
                           selectedParameterComponent ?? '',
                           opt?.value ?? ''
                         )
@@ -239,7 +251,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                 value={value as string}
                 name={name}
                 placeholder="Введите значение..."
-                onChange={(e) => handleInputChange(name, e.target.value)}
+                onChange={(e) => handleInputChange(name, idx, e.target.value)}
               />
             )}
           </div>

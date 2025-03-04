@@ -62,29 +62,32 @@ function serializeArgs(
   platform: Platform,
   args: ArgList | undefined
 ) {
-  const serializedArgs = structuredClone(args);
+  const serializedArgs = Object.entries(structuredClone(args) ?? {}).sort(
+    ([, param1], [, param2]) => param1.order - param2.order
+  );
   if (serializedArgs === undefined) {
     return '';
   }
-  for (const argId in serializedArgs) {
-    const arg = serializedArgs[argId];
+  for (const [, arg] of serializedArgs) {
     if (arg === undefined) continue;
-    if (isVariable(arg)) {
-      const trimmedComponentName = arg.component.trim();
+    const argValue = arg.value;
+    if (isVariable(argValue)) {
+      const trimmedComponentName = argValue.component.trim();
       const component = components[trimmedComponentName];
-      serializedArgs[argId].value = `${arg.component}${getActionDelimeter(
-        platform,
-        component.type
-      )}${arg.method}`;
-    } else if (Array.isArray(arg) && Array.isArray(arg[0])) {
-      serializedArgs[argId].value = buildMatrix({
-        values: arg,
-        width: arg[0].length,
-        height: arg.length,
+      arg.value = `${argValue.component}${getActionDelimeter(platform, component.type)}${
+        argValue.method
+      }`;
+    } else if (Array.isArray(argValue) && Array.isArray(argValue[0])) {
+      arg.value = buildMatrix({
+        values: argValue,
+        width: argValue[0].length,
+        height: argValue.length,
       });
     }
   }
-  return Object.values(serializedArgs).join(', ');
+  return Object.values(serializedArgs)
+    .map(([, arg]) => arg.value)
+    .join(', ');
 }
 
 /**
@@ -246,15 +249,6 @@ function serializeStates(
   }
   return cgmlStates;
 }
-
-const invertOperatorAlias = {
-  equals: '==',
-  notEquals: '!=',
-  greater: '>',
-  less: '<',
-  greaterOrEqual: '>=',
-  lessOrEqual: '<=',
-};
 
 function isVariable(operand: any): operand is Variable {
   return operand['component'] !== undefined;

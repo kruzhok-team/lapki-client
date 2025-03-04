@@ -31,7 +31,6 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   const isStale = modelController.model.useData('', 'isStale');
   const [clearTabs, openTab] = useTabs((state) => [state.clearTabs, state.openTab]);
   const [restoreSession, setRestoreSession] = useSettings('restoreSession');
-  const [recentFiles, setRecentFiles] = useSettings('recentFiles');
 
   const [data, setData] = useState<SaveModalData | null>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -260,7 +259,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
     return () => {
       unsubscribe();
     };
-  }, [handleSaveFile, model, recentFiles]);
+  }, [handleSaveFile, model]);
 
   return {
     saveModalProps: { isOpen, onClose, data, deleteTempSave },

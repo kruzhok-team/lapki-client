@@ -11,6 +11,7 @@ export const useRecentFilesHooks = () => {
   const modelController = useModelContext();
   const name = modelController.model.useData('', 'name') as string | null;
   const basename = modelController.model.useData('', 'basename');
+  const isStale = modelController.model.useData('', 'isStale');
   const stateMachinesId = modelController.model.useData('', 'elements.stateMachinesId') as {
     [ID: string]: StateMachine;
   };
@@ -22,7 +23,8 @@ export const useRecentFilesHooks = () => {
   }, [recentFiles]);
 
   useEffect(() => {
-    if (recentFiles === null || name === null || basename === null) {
+    console.log(isStale);
+    if (recentFiles === null || name === null || basename === null || isStale) {
       return;
     }
 
@@ -33,5 +35,5 @@ export const useRecentFilesHooks = () => {
     const filtered = recentFiles.filter((v) => v.path !== basename);
     setRecentFiles([...filtered, { name: name, path: basename, stateMachines: stateMachines }]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [basename, name, stateMachinesId, settingsLoaded]);
+  }, [basename, name, stateMachinesId, settingsLoaded, isStale]);
 };

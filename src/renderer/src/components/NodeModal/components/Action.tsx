@@ -78,16 +78,17 @@ export const Action: React.FC<ActionProps> = (props) => {
               const protoComponent =
                 platform.data.components[platform.resolveComponentType(data.component)];
               if (!protoComponent) {
-                return <>{serializeParameter(index, value)}</>;
+                return <>{serializeParameter(index, value.value)}</>;
               }
               const protoMethod = protoComponent.methods[data.method];
               const protoParameters = protoMethod.parameters;
 
-              if (!protoParameters) return <>{serializeParameter(index, value)}</>;
+              if (!protoParameters) return <>{serializeParameter(index, value.value)}</>;
 
               const parameter = protoParameters.find((param) => param.name === id);
 
-              if (!parameter || !parameter.type) return <>{serializeParameter(index, value)}</>;
+              if (!parameter || !parameter.type)
+                return <>{serializeParameter(index, value.value)}</>;
 
               if (typeof parameter.type === 'string' && parameter.type.startsWith('Matrix')) {
                 const dimensions = getMatrixDimensions(parameter.type);
@@ -116,7 +117,7 @@ export const Action: React.FC<ActionProps> = (props) => {
                 }
               }
 
-              return <>{serializeParameter(index, value)}</>;
+              return <>{serializeParameter(index, value.value)}</>;
             })}
         </div>
         <div>)</div>

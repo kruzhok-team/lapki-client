@@ -46,7 +46,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
 }) => {
   const handleInputChange = (name: string, value: string | Variable) => {
     setErrors((p) => ({ ...p, [name]: '' }));
-    parameters[name] = value;
+    parameters[name].value = value;
     setParameters({ ...parameters });
   };
 
@@ -68,7 +68,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
   const [isChecked, setIsChecked] = useState<Map<string, boolean>>(new Map());
 
   const onChange = (parameter: string, row: number, col: number, value: number) => {
-    (parameters[parameter] as number[][])[row][col] = value;
+    (parameters[parameter].value as number[][])[row][col] = value;
     setParameters({
       ...parameters,
     });
@@ -90,9 +90,10 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
   return (
     <div className="flex flex-col gap-2">
       <h3 className="mb-1 text-xl">Параметры:</h3>
-      {protoParameters.map((proto) => {
+      {protoParameters.map((proto, idx) => {
         const { name, description = '', type = '' } = proto;
-        const value = parameters[name] ?? '';
+        const parameter = parameters[name] ?? { value: undefined, order: idx };
+        const value = parameter.value;
         const error = errors[name];
         const hint =
           description + (type && `${description ? '\n' : ''}Тип: ${formatArgType(type)}`);
@@ -114,7 +115,10 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
           const { width, height } = getMatrixDimensions(type);
           if (!value) {
             const newMatrix = createEmptyMatrix(type);
-            parameters[name] = newMatrix.values;
+            parameters[name] = {
+              value: newMatrix.values,
+              order: idx,
+            };
           }
           if (Array.isArray(value) && Array.isArray(value[0])) {
             return (
@@ -131,7 +135,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                   {...{
                     width: width,
                     height: height,
-                    values: parameters[name] as number[][],
+                    values: parameters[name].value as number[][],
                     isClickable: true,
                     style: {
                       ledHeight: 16,

@@ -72,14 +72,15 @@ function serializeArgs(
     if (isVariable(arg)) {
       const trimmedComponentName = arg.component.trim();
       const component = components[trimmedComponentName];
-      serializedArgs[argId] = `${arg.component}${getActionDelimeter(platform, component.type)}${
-        arg.method
-      }`;
+      serializedArgs[argId].value = `${arg.component}${getActionDelimeter(
+        platform,
+        component.type
+      )}${arg.method}`;
     } else if (Array.isArray(arg) && Array.isArray(arg[0])) {
-      serializedArgs[argId] = buildMatrix({
+      serializedArgs[argId].value = buildMatrix({
         values: arg,
-        width: arg.length,
-        height: arg[0].length,
+        width: arg[0].length,
+        height: arg.length,
       });
     }
   }

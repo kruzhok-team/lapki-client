@@ -23,7 +23,6 @@ export const useRecentFilesHooks = () => {
   }, [recentFiles]);
 
   useEffect(() => {
-    console.log(isStale);
     if (recentFiles === null || name === null || basename === null || isStale) {
       return;
     }

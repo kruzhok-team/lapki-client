@@ -108,9 +108,9 @@ function initArgList(args: (string | Variable)[]): ArgList {
   const argList: ArgList = {};
   args.forEach((value, index) => {
     if (typeof value === 'string') {
-      argList[index] = value.trim();
+      argList[index] = { value: value.trim(), order: index };
     } else {
-      argList[index] = value;
+      argList[index] = { value: value, order: index };
     }
   });
   return argList;
@@ -427,7 +427,10 @@ function labelParameters(args: ArgList, method: MethodProto): ArgList {
     delete labeledArgs[index];
     if (element.type && !Array.isArray(element.type) && element.type.startsWith('Matrix')) {
       const { width, height } = getMatrixDimensions(element.type);
-      labeledArgs[element.name] = parseMatrixFromString(args[index] as string, width, height);
+      labeledArgs[element.name] = {
+        value: parseMatrixFromString(args[index].value as string, width, height),
+        order: index,
+      };
       return;
     }
     labeledArgs[element.name] = args[index];

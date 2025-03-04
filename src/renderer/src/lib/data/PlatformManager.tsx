@@ -289,13 +289,13 @@ export class PlatformManager {
       const paramValue = ev.args[argQuery];
       if (typeof paramValue === 'undefined') {
         parameter = '?!';
-      } else if (typeof paramValue === 'string') {
-        parameter = paramValue;
+      } else if (typeof paramValue.value === 'string') {
+        parameter = paramValue.value;
       } else if (
         typeof parameterList[0].type === 'string' &&
         parameterList[0].type.startsWith('Matrix')
       ) {
-        parameter = paramValue;
+        parameter = paramValue.value;
         drawFunction = this.picto.drawMatrix;
       } else {
         // FIXME
@@ -355,17 +355,17 @@ export class PlatformManager {
         } else {
           parameter = '?!';
         }
-      } else if (typeof paramValue === 'string') {
-        parameter = paramValue;
+      } else if (typeof paramValue.value === 'string') {
+        parameter = paramValue.value;
       } else if (
         typeof parameterList[0].type === 'string' &&
         parameterList[0].type.startsWith('Matrix')
       ) {
-        parameter = paramValue;
+        parameter = paramValue.value;
         drawFunction = this.picto.drawMatrix;
-      } else if (isVariable(paramValue)) {
+      } else if (isVariable(paramValue.value)) {
         drawFunction = this.drawParameterPicto;
-        parameter = paramValue;
+        parameter = paramValue.value;
       } else {
         // FIXME
         console.log(['PlatformManager.drawAction', 'Variable!', ac]);

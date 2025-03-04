@@ -29,10 +29,9 @@ type StateMachineInfo = {
 };
 
 type RecentFile = {
-  basename: string;
+  name: string;
   path: string;
   stateMachines: StateMachineInfo[];
-  lastOpen: Date;
 };
 
 export const defaultSettings = {

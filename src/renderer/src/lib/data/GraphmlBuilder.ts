@@ -95,7 +95,7 @@ function serializeArgs(
     }
   }
   return Object.values(serializedArgs)
-    .map(([, arg]) => arg.value)
+    .map(([, arg]) => (arg ? arg.value : ''))
     .join(', ');
 }
 

@@ -37,6 +37,7 @@ export const OpenRecentModal: React.FC<OpenRecentModalProps> = ({
     await window.api.fileHandlers.existsFile(path).then((exists) => {
       if (exists) {
         onSubmit(path);
+        setSelectedFileIdx(null);
         onClose();
       } else {
         setRecentFiles(recentFiles.filter((file) => file.path !== path));

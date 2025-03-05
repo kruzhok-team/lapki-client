@@ -281,11 +281,14 @@ export async function handleFileRead(filePath: string): HandleFileReadReturn {
 
 // получить метаданные о файле (дата создания, последней модификации, размер и т.д.)
 export function handleGetFileMetadata(absolute_path: string) {
-  //const stat = fs.statSync(absolute_path);
   return fs.statSync(absolute_path);
 }
 
-// получить метаданные о файле (дата создания, последней модификации, размер и т.д.)
+/**
+ * Проверка рна существование файла
+ * @param path путь к файлу
+ * @returns существует ли файл
+ */
 export function handleFileExists(path: string) {
   return fs.existsSync(path);
 }

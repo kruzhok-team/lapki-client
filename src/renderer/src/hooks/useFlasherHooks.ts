@@ -236,8 +236,9 @@ export const useFlasherHooks = () => {
           ManagerMS.writeBinary(binaryFolder, flasherMessage.payload as Uint8Array);
           Flasher.send('ms-get-firmware-next-block', null);
         } else {
-          // TODO: дописать плату к которой это относится
-          ManagerMS.addLog('Ошибка! Отсутствует папка для сохранения выгруженных прошивок.');
+          ManagerMS.flashingAddressLog(
+            'Ошибка! Отсутствует папка для сохранения выгруженных прошивок.'
+          );
         }
         break;
       }

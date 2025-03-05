@@ -760,7 +760,9 @@ export const FlasherTab: React.FC = () => {
         ref={logContainerRef}
       >
         {log.map((msg, index) => (
-          <div key={index}>{msg}</div>
+          <div key={index} className="select-text">
+            {msg}
+          </div>
         ))}
       </div>
       <div className="m-2 flex flex-row-reverse">

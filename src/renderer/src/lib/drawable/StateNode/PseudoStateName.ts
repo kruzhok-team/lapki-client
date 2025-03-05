@@ -21,10 +21,16 @@ export class PseudoStateName extends Shape {
   }
 
   get position(): Point {
-    return { x: 0, y: 0 };
+    if (!this.parent) return { x: 0, y: 0 };
+    return {
+      x: this.parent.dimensions.width / 2 - this.dimensions.width / 2,
+      y: this.parent.dimensions.height + 5,
+    };
   }
+
   set position(_: Point) {
-    throw new Error('No message');
+    // (L140-beep) линтер ругается на пустую строку, но отключение не сработало
+    // eslint-disable @typescript-eslint/no-empty-function
   }
 
   get tooltipText(): string | undefined {
@@ -32,10 +38,14 @@ export class PseudoStateName extends Shape {
   }
 
   get dimensions() {
-    const { fontSize, fontFamily, textP, lineHeight } = this.style;
+    if (!this.parent) return { width: 0, height: 0 };
+    const { textP, fontSize, fontFamily, lineHeight } = this.style;
     const textWidth =
       getTextWidth(this.text, `${fontSize}px/${lineHeight} '${fontFamily}'`) + textP * 2;
-    return { width: textWidth, height: 30 };
+    return {
+      width: textWidth,
+      height: 30,
+    };
   }
   set dimensions(_value) {
     throw new Error('InitialState dimensions are immutable');
@@ -54,27 +64,22 @@ export class PseudoStateName extends Shape {
   draw(ctx: CanvasRenderingContext2D) {
     if (!this.parent) return;
 
-    const { x, y, height, width } = this.parent.drawBounds;
-    const labelH = 30 / this.app.controller.scale;
-    const textP = 5 / this.app.controller.scale; // паддинг текста внутри метки
-    const bodyP = 5 / this.app.controller.scale; // паддинг метки от родителя
-    const fontSize = 16 / this.app.controller.scale;
-    const lineHeight = 1.2;
-    const fontFamily = 'Fira Sans';
-    const textWidth =
-      getTextWidth(this.text, `${fontSize}px/${lineHeight} '${fontFamily}'`) + textP * 2;
-    const labelX = x + width / 2 - textWidth / 2;
-    const labelY = y + height + bodyP;
+    const { x, y, height, width } = this.drawBounds;
+    const textP = this.style.textP / this.app.controller.scale; // паддинг текста внутри метки
+    const fontSize = this.style.fontSize / this.app.controller.scale;
+    const lineHeight = this.style.lineHeight;
+    const fontFamily = this.style.fontFamily;
+
     ctx.fillStyle = getColor('bg-hover');
     ctx.globalAlpha = 0.9;
     ctx.beginPath();
-    ctx.roundRect(labelX, labelY, textWidth, labelH, 10 / this.app.controller.scale);
+    ctx.roundRect(x, y, width, height, 10 / this.app.controller.scale);
     ctx.fill();
     ctx.closePath();
 
     drawText(ctx, this.text, {
-      x: labelX + textP,
-      y: labelY + textP,
+      x: x + textP,
+      y: y + textP,
       textAlign: 'left',
       color: theme.colors.diagram.transition.color,
       font: {

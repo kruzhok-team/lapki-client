@@ -100,6 +100,13 @@ export interface ChangeStateNameParams {
   name: string;
 }
 
+export interface ChangePseudoStateNameParams {
+  smId: string;
+  id: string;
+  name: string;
+  pseudoStateType: 'finalStates' | 'choiceStates';
+}
+
 export type CCreateInitialStateParams = {
   id?: string;
   smId: string;

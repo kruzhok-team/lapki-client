@@ -18,6 +18,7 @@ import {
   StateVariant,
   ChangeStateNameParams,
   CreateInitialStateControllerParams,
+  ChangePseudoStateNameParams,
 } from '@renderer/lib/types/ControllerTypes';
 import { Point } from '@renderer/lib/types/graphics';
 import {
@@ -59,6 +60,7 @@ interface StatesControllerEvents {
     isEditingEvent: boolean;
   };
   eventContextMenu: { state: State; event: EventSelection; position: Point };
+  changePseudoStateName: FinalState | ChoiceState;
 }
 
 /**
@@ -733,11 +735,34 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.unwatchInitialState(state);
   }
 
+  changePseudoStateName = (args: ChangePseudoStateNameParams) => {
+    const { id, name, pseudoStateType } = args;
+    let state: FinalState | ChoiceState | undefined = undefined;
+    switch (pseudoStateType) {
+      case 'choiceStates':
+        state = this.data.choiceStates.get(id);
+        break;
+      case 'finalStates':
+        state = this.data.finalStates.get(id);
+        break;
+      default:
+        break;
+    }
+
+    if (!state) return;
+
+    state.updateLabel(name);
+    this.view.isDirty = true;
+  };
+
+  handlePseudoStateLabelDoubleClick = (state: FinalState | ChoiceState) => {
+    this.emit('changePseudoStateName', state);
+  };
+
   /*
   Мы вынесли это сюда, потому что EdgeHandlers подписывается на события мыши, которой не существует
   на момент инициализации данных, из-за чего происходил краш IDE.
   */
-
   bindEdgeHandlers(state: State | ChoiceState) {
     state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition.bind(this, state);
     state.edgeHandlers.bindEvents();
@@ -779,8 +804,10 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   private watchFinalState(state: FinalState) {
     state.on('dragend', this.handleFinalStateDragEnd.bind(this, state));
     state.on('mouseup', this.handleMouseUpOnFinalState.bind(this, state));
+    state.label.on('dblclick', this.handlePseudoStateLabelDoubleClick.bind(this, state));
     state.on('contextmenu', this.handleFinalStateContextMenu.bind(this, state.id));
   }
+
   private unwatchFinalState(state: FinalState) {
     state.handlers.clear();
     // state.off('dragend', this.handleInitialStateDragEnd.bind(this, state));
@@ -793,6 +820,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     state.on('mouseup', this.handleMouseUpOnState.bind(this, state));
     state.on('contextmenu', this.handleChoiceStateContextMenu.bind(this, state.id));
     state.on('longpress', this.handleChoiceStateLongPress.bind(this, state));
+    state.label.on('dblclick', this.handlePseudoStateLabelDoubleClick.bind(this, state));
   }
   private unwatchChoiceState(state: ChoiceState) {
     state.handlers.clear();

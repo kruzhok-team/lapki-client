@@ -326,6 +326,22 @@ export class EditorModel {
     return true;
   }
 
+  changePseudoStateName(
+    pseudoStateType: 'finalStates' | 'choiceStates',
+    smId: string,
+    id: string,
+    name: string
+  ) {
+    const state = this.data.elements.stateMachines[smId][pseudoStateType][id];
+    if (!state) return false;
+
+    state.name = name;
+
+    this.triggerDataUpdate(`elements.${pseudoStateType}`);
+
+    return true;
+  }
+
   changeStateName(smId: string, id: string, name: string) {
     const state = this.data.elements.stateMachines[smId].states[id];
     if (!state) return false;

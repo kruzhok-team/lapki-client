@@ -11,6 +11,7 @@ import {
   ChangeNoteText,
   ChangeNoteTextColorParams,
   ChangePosition,
+  ChangePseudoStateNameParams,
   ChangeSelectionParams,
   ChangeStateNameParams,
   ChangeStateParams,
@@ -148,6 +149,7 @@ export type CanvasControllerEvents = {
   unlinkState: UnlinkStateParams;
   unlinkChoiceState: UnlinkStateParams;
   changeStateName: ChangeStateNameParams;
+  changePseudoStateName: ChangePseudoStateNameParams;
   changeFinalStatePosition: ChangePosition;
   deleteEventAction: DeleteEventParams;
   deleteStateMachine: DeleteStateMachineParams;
@@ -963,6 +965,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     this.model.on('deleteStateMachine', this.deleteStateMachine);
     this.model.on('loadData', this.loadData);
     this.model.on('initEvents', this.transitions.initEvents);
+    this.model.on('changePseudoStateName', this.states.changePseudoStateName);
     this.model.on('deleteSelected', this.deleteSelected);
   }
 

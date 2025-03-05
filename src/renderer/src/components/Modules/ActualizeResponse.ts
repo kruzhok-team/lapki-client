@@ -63,6 +63,7 @@ function actualizeInitialState(
     targetId: oldInitial.target,
   };
   const initial: InitialState = {
+    name: '',
     position: oldInitial.position,
     dimensions: { width: 50, height: 50 },
   };

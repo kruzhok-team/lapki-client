@@ -3,6 +3,7 @@ import { useSyncExternalStore } from 'react';
 import { EventSelection } from '@renderer/lib/drawable';
 import {
   EditComponentParams,
+  PseudoStateType,
   // DeleteComponentParams,
   UnlinkStateParams,
 } from '@renderer/lib/types/ControllerTypes';
@@ -39,6 +40,13 @@ export type PossibleActions = {
   createState: CreateStateParams & { newStateId: string };
   deleteState: { smId: string; id: string; stateData: StateData };
   changeStateName: { smId: string; id: string; name: string; prevName: string };
+  changePseudoStateName: {
+    pseudoStateType: PseudoStateType;
+    smId: string;
+    id: string;
+    name: string;
+    prevName: string;
+  };
   changeState: {
     args: ChangeStateParams;
     prevEvents: StateData['events'];
@@ -199,6 +207,10 @@ export const actionFunctions: ActionFunctions = {
     redo: sM.changeStateName.bind(sM, smId, id, name, false),
     undo: sM.changeStateName.bind(sM, smId, id, prevName, false),
   }),
+  changePseudoStateName: (sM, { pseudoStateType, smId, id, name, prevName }) => ({
+    redo: sM.changePseudoStateName.bind(sM, pseudoStateType, smId, id, name, false),
+    undo: sM.changePseudoStateName.bind(sM, pseudoStateType, smId, id, prevName, false),
+  }),
 
   changeState: (sM, { args, prevEvents, prevColor }) => ({
     redo: sM.changeState.bind(sM, args, false),
@@ -294,6 +306,7 @@ export const actionFunctions: ActionFunctions = {
         position: stateData.position,
         parentId: stateData.parentId,
         linkByPoint: false,
+        name: stateData.name,
       },
       false
     ),
@@ -331,6 +344,7 @@ export const actionFunctions: ActionFunctions = {
         position: stateData.position,
         parentId: stateData.parentId,
         linkByPoint: false,
+        name: stateData.name,
       },
       false
     ),
@@ -564,6 +578,10 @@ export const actionDescriptions: ActionDescriptions = {
   }),
   changeStateName: (args) => ({
     name: 'Изменение имени состояния',
+    description: `Было: "${args.prevName}"\nСтало: "${args.name}"`,
+  }),
+  changePseudoStateName: (args) => ({
+    name: 'Изменение имени псевдосостояния',
     description: `Было: "${args.prevName}"\nСтало: "${args.name}"`,
   }),
   linkStateToAnotherParent: (args) => ({

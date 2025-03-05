@@ -31,13 +31,13 @@ import {
   InitialState,
   FinalState,
   Note,
+  ChoiceState,
 } from '@renderer/types/diagram';
 import { Platform } from '@renderer/types/platform';
 import { buildMatrix, isString } from '@renderer/utils';
 
 import { isDefaultComponent, convertDefaultComponent } from './ElementsValidator';
 
-import { ChoiceState } from '../drawable';
 import { Point } from '../types';
 
 function exportMeta(visual: boolean, meta: Meta, platform: Platform): CGMLMeta {
@@ -316,6 +316,7 @@ function serializeVertex(
       data: '',
       type: vertexType,
       position: vertex.position,
+      name: vertex.name,
     };
     if (vertex['parentId']) {
       rawVertexes[vertexId].parent = vertex['parentId'];

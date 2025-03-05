@@ -175,6 +175,7 @@ export const StateMachineContextMenu: React.FC<StateMachineContextMenuProps> = (
                 dimensions: FINAL_STATE_DIMENSIONS,
                 position: canvasPos,
                 placeInCenter: true,
+                name: '',
               })
             }
           >
@@ -187,6 +188,7 @@ export const StateMachineContextMenu: React.FC<StateMachineContextMenuProps> = (
                 dimensions: CHOICE_STATE_DIMENSIONS,
                 position: canvasPos,
                 placeInCenter: true,
+                name: '',
               })
             }
           >
@@ -352,13 +354,19 @@ export const StateMachineContextMenu: React.FC<StateMachineContextMenuProps> = (
       const unfilteredSourceArray = controller.notes.items.get(transition.data.sourceId)
         ? []
         : // TODO (L140-beep): Заголовки у заметок Array.from(controller.notes.items)
-          Array.from(controller.states.getStates());
+          [
+            ...Array.from(controller.states.getStates()),
+            ...Array.from(controller.states.data.choiceStates),
+            ...Array.from(controller.states.data.finalStates),
+          ];
       const sourceArray = unfilteredSourceArray.filter(
         (value) => transition.data.sourceId !== value[0]
       );
-      const targetArray = Array.from(controller.states.getStates()).filter(
-        (value) => transition.data.targetId !== value[0]
-      );
+      const targetArray = [
+        ...Array.from(controller.states.getStates()),
+        ...Array.from(controller.states.data.choiceStates),
+        ...Array.from(controller.states.data.finalStates),
+      ].filter((value) => transition.data.targetId !== value[0]);
 
       return (
         <ContextMenu onClose={close}>

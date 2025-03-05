@@ -65,7 +65,7 @@ export const PseudoStateNameEdit: React.FC<PseudoStateNameEditProps> = ({ smId, 
     const handler = (state: FinalState | ChoiceState) => {
       const el = ref.current;
       if (!el) return;
-      console.log('aaaa');
+
       const globalOffset = controller.view.app.mouse.getOffset();
       const labelPos = state.label.computedPosition;
       const position = {

@@ -18,7 +18,12 @@ export class FinalState extends Shape {
     super(app, id, parent);
     this.data = data;
     this.smId = smId;
-    this.label = new PseudoStateName(app, id, this, this.data.name ?? this.defaultName);
+    this.label = new PseudoStateName(
+      app,
+      id,
+      this,
+      data.name === '' ? this.defaultName : data.name
+    );
     this.app.view.children.add(this.label, Layer.ChoiceStates);
   }
 
@@ -41,7 +46,7 @@ export class FinalState extends Shape {
   }
 
   updateLabel(value: string) {
-    const name = value === '' ? this.defaultName : value;
+    const name = !value ? this.defaultName : value;
     this.label.text = name;
     this.data.name = name;
   }

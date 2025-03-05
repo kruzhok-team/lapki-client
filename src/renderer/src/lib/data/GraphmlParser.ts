@@ -1,7 +1,6 @@
 import {
   CGMLElements,
   parseCGML,
-  CGMLInitialState,
   CGMLState,
   CGMLTransition,
   CGMLComponent,
@@ -229,13 +228,14 @@ function getFinals(rawFinalStates: { [id: string]: CGMLVertex }): { [id: string]
           }
         : { x: -1, y: -1 },
       parentId: final.parent,
+      name: final.name ?? '',
       dimensions: { width: 100, height: 50 },
     };
   }
   return finalStates;
 }
 
-function getInitialStates(rawInitialStates: { [id: string]: CGMLInitialState }): {
+function getInitialStates(rawInitialStates: { [id: string]: CGMLVertex }): {
   [id: string]: InitialState;
 } {
   const initialStates: { [id: string]: InitialState } = {};
@@ -247,6 +247,7 @@ function getInitialStates(rawInitialStates: { [id: string]: CGMLInitialState }):
     initialStates[initialId] = {
       position: rawInitial.position,
       parentId: rawInitial.parent,
+      name: rawInitial.name ?? '',
       dimensions: { width: 100, height: 50 },
     };
   }
@@ -266,6 +267,7 @@ function getChoices(rawChoices: { [id: string]: CGMLVertex }): {
       position: rawChoice.position,
       parentId: rawChoice.parent,
       dimensions: { width: 100, height: 50 },
+      name: rawChoice.name ?? '',
     };
   }
   return choices;

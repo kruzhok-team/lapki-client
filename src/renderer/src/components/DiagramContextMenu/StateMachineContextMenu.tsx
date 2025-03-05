@@ -458,6 +458,19 @@ export const StateMachineContextMenu: React.FC<StateMachineContextMenuProps> = (
       );
     }
 
+    if (menuVariant.type === 'note') {
+      const { note, position } = menuVariant;
+      return (
+        <NoteMenu
+          smId={smId}
+          controller={controller}
+          onClose={close}
+          note={note}
+          position={position}
+        />
+      );
+    }
+
     return null;
   }, [smId, controller, close, menuVariant, openTab]);
 

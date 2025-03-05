@@ -12,7 +12,7 @@ import { twMerge } from 'tailwind-merge';
 import { WithHint } from '@renderer/components/UI';
 import { useModal } from '@renderer/hooks';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
-import { ChoiceState, FinalState, State } from '@renderer/lib/drawable';
+import { ChoiceState, FinalState } from '@renderer/lib/drawable';
 import { useModelContext } from '@renderer/store/ModelContext';
 
 interface PseudoStateNameEditProps {

@@ -287,6 +287,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     const state = this.data.finalStates.get(id);
     if (!state) return;
 
+    this.view.children.remove(state.label, Layer.FinalStates);
     (state.parent || this.view).children.remove(state, Layer.FinalStates); // Отсоединяемся вью от родителя
     this.unwatch(state); // Убираем обработчик событий с вью
     this.data.finalStates.delete(id); // Удаляем само вью
@@ -342,7 +343,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     const { id } = args;
     const state = this.data.choiceStates.get(id);
     if (!state) return;
-
+    this.view.children.remove(state.label, Layer.ChoiceStates);
     (state.parent || this.view).children.remove(state, Layer.ChoiceStates); // Отсоединяемся вью от родителя
     this.unwatch(state); // Убираем обрабочик событий с вью
     this.data.choiceStates.delete(id); // Удаляем само вью

@@ -22,6 +22,8 @@ export const emptyControllerData = () => ({
   stateMachinesSub: {},
 });
 
+export type PseudoStateType = 'finalStates' | 'choiceStates';
+
 export type ControllerDataPropertyName =
   | 'stateMachinesSub'
   | 'visual'
@@ -104,7 +106,7 @@ export interface ChangePseudoStateNameParams {
   smId: string;
   id: string;
   name: string;
-  pseudoStateType: 'finalStates' | 'choiceStates';
+  pseudoStateType: PseudoStateType;
 }
 
 export type CCreateInitialStateParams = {

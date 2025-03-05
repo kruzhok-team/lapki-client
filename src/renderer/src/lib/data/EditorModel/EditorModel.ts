@@ -19,6 +19,7 @@ import {
   CreateChoiceStateParams,
   SwapComponentsParams,
   StateMachineData,
+  PseudoStateType,
 } from '@renderer/lib/types';
 import { generateId, isVariable } from '@renderer/lib/utils';
 import {
@@ -326,12 +327,7 @@ export class EditorModel {
     return true;
   }
 
-  changePseudoStateName(
-    pseudoStateType: 'finalStates' | 'choiceStates',
-    smId: string,
-    id: string,
-    name: string
-  ) {
+  changePseudoStateName(pseudoStateType: PseudoStateType, smId: string, id: string, name: string) {
     const state = this.data.elements.stateMachines[smId][pseudoStateType][id];
     if (!state) return false;
 

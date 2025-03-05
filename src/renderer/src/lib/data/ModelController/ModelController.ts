@@ -14,6 +14,7 @@ import {
   CopyType,
   EditComponentParams,
   LinkStateParams,
+  PseudoStateType,
   SelectDrawable,
   StatesControllerDataStateType,
   UnlinkStateParams,
@@ -1165,7 +1166,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   }
 
   changePseudoStateName = (
-    pseudoStateType: 'finalStates' | 'choiceStates',
+    pseudoStateType: PseudoStateType,
     smId: string,
     id: string,
     name: string,
@@ -1175,12 +1176,12 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
     if (!state) return;
 
-    // if (canUndo) {
-    //   this.history.do({
-    //     type: 'changeStateName',
-    //     args: { smId, id, name, prevName: state.name },
-    //   });
-    // }
+    if (canUndo) {
+      this.history.do({
+        type: 'changePseudoStateName',
+        args: { pseudoStateType, smId, id, name, prevName: state.name },
+      });
+    }
 
     this.model.changePseudoStateName(pseudoStateType, smId, id, name);
     this.emit('changePseudoStateName', { pseudoStateType, smId, id, name });

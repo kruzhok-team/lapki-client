@@ -186,7 +186,12 @@ export const Hierarchy: React.FC<HierarchyProps> = ({
             data[stateId] = {
               index: stateId,
               isFolder: false,
-              data: { title: 'Конечное состояние', type: 'finalState' },
+              data: {
+                title: !finalStates[stateId].name
+                  ? 'Конечное состояние'
+                  : finalStates[stateId].name,
+                type: 'finalState',
+              },
               children: [],
               canRename: false,
               canMove: false,
@@ -199,7 +204,12 @@ export const Hierarchy: React.FC<HierarchyProps> = ({
             data[stateId] = {
               index: stateId,
               isFolder: false,
-              data: { title: 'Состояние выбора', type: 'choiceState' },
+              data: {
+                title: !choiceStates[stateId].name
+                  ? 'Псевдосостояние выбора'
+                  : choiceStates[stateId].name,
+                type: 'choiceState',
+              },
               children: [],
               canRename: false,
               canMove: false,

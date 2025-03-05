@@ -16,18 +16,13 @@ export class ChoiceState extends Shape {
   data: DataChoiceState;
   smId: string;
   label: PseudoStateName;
-  defaultName = 'ПС Выбора';
+  defaultName = 'Псевдосостояние выбора';
   constructor(app: CanvasEditor, id: string, smId: string, data: DataChoiceState, parent?: Shape) {
     super(app, id, parent);
     this.data = data;
     this.smId = smId;
     this.edgeHandlers = new EdgeHandlers(this.app as CanvasEditor, this);
-    this.label = new PseudoStateName(
-      app,
-      id,
-      this,
-      data.name === '' ? this.defaultName : data.name
-    );
+    this.label = new PseudoStateName(app, id, this, !data.name ? this.defaultName : data.name);
     this.app.view.children.add(this.label, Layer.ChoiceStates);
   }
 
@@ -60,7 +55,7 @@ export class ChoiceState extends Shape {
 
   updateLabel(value: string) {
     // debugger;
-    const name = value === '' ? this.defaultName : value;
+    const name = !value ? this.defaultName : value;
     this.label.text = name;
     this.data.name = name;
   }

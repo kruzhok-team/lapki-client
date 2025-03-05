@@ -13,17 +13,12 @@ export class FinalState extends Shape {
   data: FinalStateData;
   smId: string;
   label: PseudoStateName;
-  defaultName = 'Конечное состояния';
+  defaultName = 'Конечное состояние';
   constructor(app: CanvasEditor, id: string, smId: string, data: FinalStateData, parent?: Shape) {
     super(app, id, parent);
     this.data = data;
     this.smId = smId;
-    this.label = new PseudoStateName(
-      app,
-      id,
-      this,
-      data.name === '' ? this.defaultName : data.name
-    );
+    this.label = new PseudoStateName(app, id, this, !data.name ? this.defaultName : data.name);
     this.app.view.children.add(this.label, Layer.ChoiceStates);
   }
 

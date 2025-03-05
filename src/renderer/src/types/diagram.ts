@@ -1,6 +1,11 @@
 import { Dimensions, Point } from '@renderer/lib/types';
 
-export type ArgList = { [key: string]: string | number[][] | Variable };
+export type ArgList = {
+  [key: string]: {
+    value: string | number[][] | Variable;
+    order: number;
+  };
+};
 
 export type Action = {
   component: string;

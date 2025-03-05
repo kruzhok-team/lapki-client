@@ -266,7 +266,7 @@
             },
             {
               "name": "pattern",
-              "type": "Matrix5",
+              "type": "Matrix5x1",
               "description": "Паттерн, который будет применен к строке на матрице."
             },
             {
@@ -287,7 +287,7 @@
             },
             {
               "name": "pattern",
-              "type": "Matrix5",
+              "type": "Matrix1x5",
               "description": "Паттерн, который будет применен к столбцу на матрице."
             },
             {

@@ -4,6 +4,8 @@ import { Shape } from '@renderer/lib/drawable/Shape';
 import { getColor } from '@renderer/theme';
 import { ChoiceState as DataChoiceState } from '@renderer/types/diagram';
 
+import { PseudoStateName } from './PseudoStateName';
+
 /**
  * Представление псевдосостояния выбора
  */
@@ -12,11 +14,13 @@ export class ChoiceState extends Shape {
   edgeHandlers!: EdgeHandlers;
   data: DataChoiceState;
   smId: string;
+  label: PseudoStateName;
   constructor(app: CanvasEditor, id: string, smId: string, data: DataChoiceState, parent?: Shape) {
     super(app, id, parent);
     this.data = data;
     this.smId = smId;
     this.edgeHandlers = new EdgeHandlers(this.app as CanvasEditor, this);
+    this.label = new PseudoStateName(app, id, this, 'ПС Выбора');
   }
 
   get tooltipText() {
@@ -44,6 +48,8 @@ export class ChoiceState extends Shape {
       this.drawSelection(ctx);
       this.edgeHandlers.draw(ctx);
     }
+
+    this.label.draw(ctx);
   }
 
   // TODO(bryzZz) Закруглить углы

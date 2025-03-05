@@ -3,16 +3,20 @@ import { Shape } from '@renderer/lib/drawable/Shape';
 import { drawCircle } from '@renderer/lib/utils';
 import { getColor } from '@renderer/theme';
 import { FinalState as FinalStateData } from '@renderer/types/diagram';
+
+import { PseudoStateName } from './PseudoStateName';
 /**
  * Класс для отрисовки конечного состояния
  */
 export class FinalState extends Shape {
   data: FinalStateData;
   smId: string;
+  label: PseudoStateName;
   constructor(app: CanvasEditor, id: string, smId: string, data: FinalStateData, parent?: Shape) {
     super(app, id, parent);
     this.data = data;
     this.smId = smId;
+    this.label = new PseudoStateName(app, id, this, 'Конечное ПС');
   }
 
   get tooltipText() {
@@ -49,5 +53,6 @@ export class FinalState extends Shape {
       lineWidth: 3 / this.app.controller.scale,
       strokeStyle: getColor('primary'),
     });
+    this.label.draw(ctx);
   }
 }

@@ -21,11 +21,11 @@ export const MatrixWidget: React.FC<MatrixWidgetProps> = ({
     <div className="flex shrink-0 flex-col">
       {values.map((rowArr, rowIndex) => {
         return (
-          <div className="flex shrink-0 flex-row">
+          <div key={`div-${rowIndex}`} className="flex shrink-0 flex-row">
             {rowArr.map((value, colIndex) => {
               return (
                 <MatrixLed
-                  key={`${rowIndex}-${colIndex}-${value}`}
+                  key={`mtrx-${rowIndex}-${colIndex}-${value}`}
                   {...{
                     style,
                     isClickable,

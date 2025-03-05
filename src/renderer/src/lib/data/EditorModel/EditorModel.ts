@@ -142,7 +142,7 @@ export class EditorModel {
               act.component = newComponentId;
             }
             for (const argId in act.args) {
-              const arg = act.args[argId];
+              const arg = act.args[argId].value;
               if (typeof arg === 'string') {
                 arg.replace(oldComponentId, newComponentId);
               } else if (isVariable(arg)) {
@@ -178,7 +178,7 @@ export class EditorModel {
               act.component = newComponentId;
             }
             for (const argId in act.args) {
-              const arg = act.args[argId];
+              const arg = act.args[argId].value;
               if (typeof arg === 'string') {
                 arg.replace(oldComponentId, newComponentId);
               } else if (isVariable(arg)) {

@@ -81,7 +81,13 @@ export class ManagerMS {
     }
     this.flashingAddress = request.addressInfo;
     ManagerMS.flashingAddressLog('Начат процесс выгрузки прошивки...');
-    Flasher.getFirmware(request.dev, request.addressInfo.address, request.blockSize);
+    const meta = request.addressInfo.meta;
+    Flasher.getFirmware(
+      request.dev,
+      request.addressInfo.address,
+      request.blockSize,
+      meta ? meta.RefBlChip : ''
+    );
     return true;
   }
   private static ping(deviceID: string, address: string) {

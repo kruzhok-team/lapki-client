@@ -289,6 +289,7 @@ export type MSGetFirmware = {
   deviceID: string;
   address: string;
   blockSize: number;
+  RefBlChip: string; // не обязательный параметр из метаданных, можно оставить пустым, если значение неизвестно.
 };
 
 export type MSOperationReport = {

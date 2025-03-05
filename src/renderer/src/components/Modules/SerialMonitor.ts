@@ -1,3 +1,5 @@
+import { Buffer } from 'buffer';
+
 import { Device } from './Device';
 import { Flasher } from './Flasher';
 
@@ -47,7 +49,7 @@ export class SerialMonitor {
   static sendMessage(deviceID: string, message: string) {
     Flasher.send('serial-send', {
       deviceID: deviceID,
-      msg: message,
+      msg: Buffer.from(message, 'utf-8').toString('base64'),
     });
   }
 

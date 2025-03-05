@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
 
+import { Buffer } from 'buffer';
+
 import { ArduinoDevice, Device, MSDevice } from '@renderer/components/Modules/Device';
 import { Flasher } from '@renderer/components/Modules/Flasher';
 import { ManagerMS } from '@renderer/components/Modules/ManagerMS';
@@ -464,7 +466,7 @@ export const useFlasherHooks = () => {
       }
       case 'serial-device-read': {
         const serialRead = flasherMessage.payload as SerialRead;
-        SerialMonitor.addDeviceMessage(serialRead.msg);
+        SerialMonitor.addDeviceMessage(Buffer.from(serialRead.msg, 'base64').toString('utf-8'));
         break;
       }
       case 'flash-open-serial-monitor':

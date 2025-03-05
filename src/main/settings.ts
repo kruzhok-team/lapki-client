@@ -1,6 +1,8 @@
 import { ipcMain, WebContents } from 'electron';
 import settings from 'electron-settings';
 
+import { existsSync } from 'fs';
+
 import { defaultCompilerHost, defaultCompilerPort, defaultDocHost } from './version';
 
 type MetaType =
@@ -21,6 +23,17 @@ type AddressBook = {
   address: string;
   type: string;
   meta: MetaType;
+};
+
+type StateMachineInfo = {
+  name: string;
+  platformIdx: string;
+};
+
+type RecentFile = {
+  name: string;
+  path: string;
+  stateMachines: StateMachineInfo[];
 };
 
 export const defaultSettings = {
@@ -88,12 +101,27 @@ export const defaultSettings = {
     disabled: false,
   },
   restoreSession: false,
+  recentFiles: [] as RecentFile[],
 };
 
 export type Settings = typeof defaultSettings;
 export type SettingsKey = keyof Settings;
+const noResetKeys: SettingsKey[] = ['addressBookMS', 'recentFiles'];
 
-export const initDefaultSettings = () => {
+/**
+ * Удаление недавних файлов, пути которых невозможно отыскать
+ */
+const checkRecentFiles = () => {
+  const key = 'recentFiles' as SettingsKey;
+  const files = settings.getSync(key) as RecentFile[];
+  settings.setSync(
+    key,
+    files.filter((file) => existsSync(file.path))
+  );
+};
+
+export const initSettings = () => {
+  checkRecentFiles();
   for (const key in defaultSettings) {
     if (!settings.hasSync(key)) {
       settings.setSync(key, defaultSettings[key]);
@@ -113,7 +141,7 @@ export const initSettingsHandlers = (webContents: WebContents) => {
   });
   ipcMain.handle('settings:fullReset', async () => {
     for (const key in defaultSettings) {
-      if ((key as SettingsKey) != 'addressBookMS') {
+      if (noResetKeys.findIndex((v) => v === key) === -1) {
         await settingsChange(webContents, key as SettingsKey, defaultSettings[key]);
       }
     }

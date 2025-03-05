@@ -18,6 +18,7 @@ export class FinalState extends Shape {
     super(app, id, parent);
     this.data = data;
     this.smId = smId;
+    data.name = !data.name ? this.defaultName : data.name;
     this.label = new PseudoStateName(app, id, this, !data.name ? this.defaultName : data.name);
     this.app.view.children.add(this.label, Layer.FinalStates);
   }

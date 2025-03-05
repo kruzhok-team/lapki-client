@@ -22,7 +22,8 @@ export class ChoiceState extends Shape {
     this.data = data;
     this.smId = smId;
     this.edgeHandlers = new EdgeHandlers(this.app as CanvasEditor, this);
-    this.label = new PseudoStateName(app, id, this, !data.name ? this.defaultName : data.name);
+    data.name = !data.name ? this.defaultName : data.name;
+    this.label = new PseudoStateName(app, id, this, data.name);
     this.app.view.children.add(this.label, Layer.ChoiceStates);
   }
 

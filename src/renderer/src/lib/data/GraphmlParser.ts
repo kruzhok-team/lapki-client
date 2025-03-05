@@ -36,6 +36,7 @@ import { getMatrixDimensions, isString, parseMatrixFromString } from '@renderer/
 import { validateElements } from './ElementsValidator';
 import { getPlatform, isPlatformAvailable } from './PlatformLoader';
 
+import { COMPONENT_DEFAULT_POSITION } from '../constants';
 import { Point } from '../types';
 
 const systemComponentAlias = {
@@ -70,8 +71,9 @@ function checkConditionTokenType(token: string): Condition {
   };
 }
 
-function parseCondition(condition: string): Condition {
+function parseCondition(condition: string): Condition | string {
   const tokens = condition.split(' ');
+  if (tokens.length != 3) return condition;
   const lval = checkConditionTokenType(tokens[0]);
   const operator = operatorAlias[tokens[1]];
   const rval = checkConditionTokenType(tokens[2]);
@@ -106,16 +108,16 @@ function initArgList(args: (string | Variable)[]): ArgList {
   const argList: ArgList = {};
   args.forEach((value, index) => {
     if (typeof value === 'string') {
-      argList[index] = value.trim();
+      argList[index] = { value: value.trim(), order: index };
     } else {
-      argList[index] = value;
+      argList[index] = { value: value, order: index };
     }
   });
   return argList;
 }
 
 const pictoRegex: RegExp = /.+(\.|::).+\(.*\)/;
-const variableRegex: RegExp = /(?<component>.+)(\.|::)(?<method>.+)/;
+export const variableRegex: RegExp = /(?<component>.+)(\.|::)(?<method>.+)/;
 function splitArgs(argString: string): (string | Variable)[] {
   // split по запятой, но не внутри скобок
   const args: (string | Variable)[] = [];
@@ -336,7 +338,11 @@ function actionsToEventData(
       }
     }
     if (action.trigger?.condition) {
-      eventData.condition = parseCondition(action.trigger.condition);
+      const condition = parseCondition(action.trigger.condition);
+      if (typeof condition === 'string' && condition !== 'else') {
+        visual = true;
+      }
+      eventData.condition = condition;
     }
     eventDataArr.push(eventData);
   }
@@ -383,16 +389,10 @@ function getComponentPosition(rawComponent: CGMLComponent): Point {
     (value) => value.key == 'dLapkiSchemePosition'
   );
   if (!node) {
-    return {
-      x: 0,
-      y: 0,
-    };
+    return COMPONENT_DEFAULT_POSITION;
   }
   if (!node.point) {
-    return {
-      x: 0,
-      y: 0,
-    };
+    return COMPONENT_DEFAULT_POSITION;
   }
 
   return {
@@ -411,6 +411,7 @@ function getComponents(rawComponents: { [id: string]: CGMLComponent }): {
       throw new Error('Ошибка парсинга схемы! Отсутствует порядок компонентов!');
     }
     components[rawComponent.id] = {
+      name: rawComponent.parameters['name'],
       type: rawComponent.type,
       position: getComponentPosition(rawComponent),
       parameters: rawComponent.parameters,
@@ -426,7 +427,10 @@ function labelParameters(args: ArgList, method: MethodProto): ArgList {
     delete labeledArgs[index];
     if (element.type && !Array.isArray(element.type) && element.type.startsWith('Matrix')) {
       const { width, height } = getMatrixDimensions(element.type);
-      labeledArgs[element.name] = parseMatrixFromString(args[index] as string, width, height);
+      labeledArgs[element.name] = {
+        value: parseMatrixFromString(args[index].value as string, width, height),
+        order: index,
+      };
       return;
     }
     labeledArgs[element.name] = args[index];
@@ -575,7 +579,8 @@ function getAllComponent(platformComponents: { [name: string]: ComponentProto })
       position: {
         x: 0,
         y: 0,
-      }, // TODO (L140-beep): что-то нужно придумать с тем,
+      },
+      // TODO (L140-beep): что-то нужно придумать с тем,
       // что у нас, если платформа статическая, то все компоненты создаются в нулевых координатах
       parameters: {},
       order: 0,
@@ -612,10 +617,11 @@ export function importGraphml(
     const platforms: { [id: string]: Platform } = {};
     for (const smId in rawElements.stateMachines) {
       const rawSm = rawElements.stateMachines[smId];
-      if (!isPlatformAvailable(rawSm.platform)) {
-        throw new Error(`Неизвестная платформа ${rawSm.platform}.`);
+      const platformName = rawSm.platform ?? 'empty';
+      if (!isPlatformAvailable(platformName)) {
+        throw new Error(`Неизвестная платформа ${platformName}.`);
       }
-      const platform: Platform | undefined = getPlatform(rawSm.platform);
+      const platform: Platform | undefined = getPlatform(platformName);
       if (platform === undefined) {
         throw new Error('Internal error: undefined getPlatform result, but platform is avaialble.');
       }
@@ -643,12 +649,12 @@ export function importGraphml(
           sm.components
         );
       }
-      sm.platform = rawSm.platform;
+      sm.platform = platformName;
       sm.choiceStates = getChoices(rawSm.choices);
       sm.name = rawSm.name;
       sm.position = rawSm.position ?? { x: 0, y: 0 };
       elements.stateMachines[smId] = sm;
-      platforms[rawSm.platform] = platform;
+      platforms[platformName] = platform;
     }
     validateElements(elements, platforms);
 

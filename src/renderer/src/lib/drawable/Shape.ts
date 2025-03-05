@@ -49,6 +49,8 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
     super();
   }
 
+  abstract get tooltipText(): string | undefined;
+
   abstract get position(): Point;
   abstract set position(value: Point);
 
@@ -64,8 +66,8 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
     if (this.parent) {
       const { x: px, y: py } = this.parent.compoundPosition;
 
-      x += px + CHILDREN_PADDING;
-      y += py + this.parent.dimensions.height + CHILDREN_PADDING;
+      x += px;
+      y += py;
     }
 
     return { x, y };
@@ -140,22 +142,29 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
 
     children.forEach((child) => {
       const y = child.position.y;
-      const height = child.dimensions.height;
-      const childrenContainerHeight = child.childrenContainerHeight;
+      const childrenContainerHeight =
+        child.childrenContainerHeight === 0
+          ? child.dimensions.height
+          : child.childrenContainerHeight;
 
       const bY = bottomChild.position.y;
-      const bHeight = bottomChild.dimensions.height;
-      const bChildrenContainerHeight = bottomChild.childrenContainerHeight;
+      const bChildrenContainerHeight =
+        bottomChild.childrenContainerHeight === 0
+          ? bottomChild.dimensions.height
+          : bottomChild.childrenContainerHeight;
 
-      if (y + height + childrenContainerHeight > bY + bHeight + bChildrenContainerHeight) {
+      if (y + childrenContainerHeight > bY + bChildrenContainerHeight) {
         bottomChild = child;
       }
     });
 
+    const bottomChildContainerHeight =
+      bottomChild.childrenContainerHeight === 0
+        ? bottomChild.dimensions.height / this.app.controller.scale
+        : bottomChild.childrenContainerHeight;
     result =
-      (bottomChild.position.y + bottomChild.dimensions.height + CHILDREN_PADDING * 2) /
-        this.app.controller.scale +
-      bottomChild.childrenContainerHeight;
+      (bottomChild.position.y + CHILDREN_PADDING * 2) / this.app.controller.scale +
+      bottomChildContainerHeight;
 
     return result;
   }
@@ -253,7 +262,10 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
     const drawBounds = this.drawBounds;
     const bounds = !includeChildrenHeight
       ? drawBounds
-      : { ...drawBounds, height: drawBounds.height + drawBounds.childrenHeight };
+      : {
+          ...drawBounds,
+          height: drawBounds.childrenHeight === 0 ? drawBounds.height : drawBounds.childrenHeight,
+        };
     return isPointInRectangle(bounds, { x, y });
   }
 
@@ -285,10 +297,6 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
     const { position, layer, exclude, includeChildrenHeight } = args;
 
     if (exclude?.includes(this)) return null;
-    // TODO: Флаг includeChildrenHeight выставить в true
-    if (this.isUnderMouse(position, includeChildrenHeight)) {
-      return this;
-    }
 
     if (layer !== undefined) {
       for (let i = this.children.getSize(layer) - 1; i >= 0; i--) {
@@ -306,6 +314,12 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
           if (node) return node;
         }
       }
+    }
+
+    // TODO: Флаг includeChildrenHeight выставить в true
+    // Не совсем помню по какому поводу
+    if (this.isUnderMouse(position, includeChildrenHeight)) {
+      return this;
     }
 
     return null;

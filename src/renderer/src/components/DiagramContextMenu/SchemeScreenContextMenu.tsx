@@ -4,11 +4,11 @@ import { useFloating, offset, flip, shift } from '@floating-ui/react';
 import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as CopyIcon } from '@renderer/assets/icons/copy.svg';
-import { ReactComponent as StateMachineIcon } from '@renderer/assets/icons/cpu-bw.svg';
 import { ReactComponent as DeleteIcon } from '@renderer/assets/icons/delete.svg';
 import { ReactComponent as EditIcon } from '@renderer/assets/icons/edit.svg';
 import { ReactComponent as NoteIcon } from '@renderer/assets/icons/note.svg';
 import { ReactComponent as PasteIcon } from '@renderer/assets/icons/paste.svg';
+import { ReactComponent as StateMachineIcon } from '@renderer/assets/icons/state_machine.svg';
 import { useModal, useClickOutside, useStateMachines, useComponents } from '@renderer/hooks';
 import { useProperties } from '@renderer/hooks/useProperties';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
@@ -209,7 +209,6 @@ export const SchemeScreenContextMenu: React.FC<SchemeScreenContextMenuProps> = (
         platformList={platformList}
         isDuplicateName={sMFuncs.isDuplicateName}
         selectPlatformDisabled={false}
-        duplicateStateMachine={sMFuncs.onDuplicateStateMachine}
       />
       <StateMachineEditModal
         form={sMFuncs.editProps.editForm}

@@ -23,12 +23,20 @@ export class ArrowsWithLabel implements Drawable {
     const targetBounds = this.parent.target.drawBounds;
 
     const sourceLine = getLine({
-      rect1: { ...sourceBounds, height: sourceBounds.height + sourceBounds.childrenHeight },
+      rect1: {
+        ...sourceBounds,
+        height:
+          sourceBounds.childrenHeight === 0 ? sourceBounds.height : sourceBounds.childrenHeight,
+      },
       rect2: this.parent.drawBounds,
       rectPadding: 10,
     });
     const targetLine = getLine({
-      rect1: { ...targetBounds, height: targetBounds.height + targetBounds.childrenHeight },
+      rect1: {
+        ...targetBounds,
+        height:
+          targetBounds.childrenHeight === 0 ? targetBounds.height : targetBounds.childrenHeight,
+      },
       rect2: this.parent.drawBounds,
       rectPadding: 10,
     });
@@ -36,12 +44,12 @@ export class ArrowsWithLabel implements Drawable {
     const data = this.parent.data;
     const fillStyle = data.color ?? getColor('default-transition-color');
 
-    ctx.lineWidth = transitionStyle.width;
+    ctx.lineWidth = transitionStyle.width / this.app.controller.scale;
     ctx.strokeStyle = this.parent.data.color ?? getColor('default-transition-color');
     ctx.fillStyle = fillStyle;
 
     if (!this.parent.isSelected) {
-      ctx.globalAlpha = 0.3;
+      ctx.globalAlpha = transitionStyle.notSelectedAlpha;
     }
     drawCurvedLine(ctx, sourceLine, 12 / this.app.controller.scale);
     drawCurvedLine(ctx, targetLine, 12 / this.app.controller.scale);

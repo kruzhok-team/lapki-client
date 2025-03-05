@@ -1,6 +1,7 @@
 {
   "id": "BearlogaDefend-Autoborder",
   "name": "Берлога/Защита пасеки - Автобортник",
+  "nameTag": "Autoborder",
   "description": "Автобортник, дрон ближнего боя со способностью «Починка» (временное лечение себя или союзника).",
   "icon": "путь/до/иконки",
   "staticComponents": true,

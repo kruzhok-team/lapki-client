@@ -1,4 +1,5 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
+import { COMPONENT_DEFAULT_POSITION } from '@renderer/lib/constants';
 import { Shape } from '@renderer/lib/drawable/Shape';
 import { Dimensions, GetCapturedNodeParams, Layer, Point } from '@renderer/lib/types';
 import { drawText } from '@renderer/lib/utils/text';
@@ -31,9 +32,20 @@ export class DrawableStateMachine extends Shape {
       height: 100,
     };
     this.children.add(
-      new DrawableComponent(app, id, this.id, { x: 0, y: 0 }, { ...icon, label: undefined }, this),
+      new DrawableComponent(
+        app,
+        id,
+        this.id,
+        COMPONENT_DEFAULT_POSITION,
+        { ...icon, label: undefined },
+        this
+      ),
       Layer.Components
     );
+  }
+
+  get tooltipText() {
+    return undefined;
   }
 
   get titleHeight() {
@@ -55,14 +67,12 @@ export class DrawableStateMachine extends Shape {
   //Прорисовка заголовка блока состояния
   private drawTitle(ctx: CanvasRenderingContext2D) {
     const { x, y } = this.drawBounds;
-    const stateMachineHeight = this.drawBounds.height;
     const { height, width, fontSize, paddingX, paddingY } = this.computedTitleSizes;
-    const computedY = y + stateMachineHeight - height;
     ctx.beginPath();
 
     ctx.fillStyle = style.titleBg;
 
-    ctx.roundRect(x, computedY, width, height, [
+    ctx.roundRect(x, y, width, height, [
       6 / this.app.controller.scale,
       6 / this.app.controller.scale,
       0,
@@ -71,7 +81,7 @@ export class DrawableStateMachine extends Shape {
     ctx.fill();
     drawText(ctx, this.icon.label || 'Без названия', {
       x: x + paddingX,
-      y: computedY + paddingY,
+      y: y + paddingY,
       textAlign: 'left',
       color: this.icon.label !== '' ? style.titleColor : style.titleColorUndefined,
       font: {
@@ -95,13 +105,13 @@ export class DrawableStateMachine extends Shape {
   }
 
   private drawChildren(ctx: CanvasRenderingContext2D, _canvas: HTMLCanvasElement) {
-    const { x, y, width, height, childrenHeight } = this.drawBounds;
+    const { x, y, width, childrenHeight } = this.drawBounds;
     ctx.lineWidth = 2;
     ctx.strokeStyle = style.bodyBg;
 
     ctx.beginPath();
 
-    ctx.roundRect(x + 1, y + height, width - 2, childrenHeight, [
+    ctx.roundRect(x + 1, y + this.titleHeight, width - 2, childrenHeight - this.titleHeight, [
       0,
       0,
       6 / this.app.controller.scale,

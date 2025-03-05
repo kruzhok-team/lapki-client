@@ -221,6 +221,7 @@ const typeMap: any = {
       { json: 'mainFileExtension', js: 'mainFileExtension', typ: u(undefined, '') },
       { json: 'mainFunction', js: 'mainFunction', typ: u(undefined, true) },
       { json: 'name', js: 'name', typ: u(undefined, '') },
+      { json: 'nameTag', js: 'nameTag', typ: u(undefined, '') },
       { json: 'parameters', js: 'parameters', typ: u(undefined, m(r('ParameterProto'))) },
       { json: 'standardVersion', js: 'standardVersion', typ: '' },
       { json: 'staticActionDelimeter', js: 'staticActionDelimeter', typ: '' },

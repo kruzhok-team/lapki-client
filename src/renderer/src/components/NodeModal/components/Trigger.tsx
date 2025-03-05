@@ -1,16 +1,20 @@
-import React, { memo, useMemo, useRef } from 'react';
+import React, { memo, useLayoutEffect, useMemo, useRef } from 'react';
 
 import CodeMirror, { Transaction, EditorState, ReactCodeMirrorRef } from '@uiw/react-codemirror';
 import throttle from 'lodash.throttle';
 
 import { Select, TabPanel, Tabs } from '@renderer/components/UI';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
+import { EventData } from '@renderer/types/diagram';
 
 import { useTrigger } from '../hooks';
 
 import '../style.css';
 
-type TriggerProps = ReturnType<typeof useTrigger> & { controller: CanvasController };
+type TriggerProps = ReturnType<typeof useTrigger> & {
+  controller: CanvasController;
+  event: EventData | null | undefined;
+};
 
 /**
  * Виджет редактирования триггера (сигнала) события.
@@ -32,6 +36,8 @@ export const Trigger: React.FC<TriggerProps> = memo(function Trigger(props) {
     controller,
     text,
     onChangeText,
+    event,
+    parse,
   } = props;
   const visual = controller.useData('visual');
 
@@ -56,6 +62,11 @@ export const Trigger: React.FC<TriggerProps> = memo(function Trigger(props) {
       }, 0);
     }
   };
+
+  useLayoutEffect(() => {
+    if (!event) return;
+    parse(event.trigger);
+  }, [event]);
 
   const handleLengthLimit = (tr: Transaction) => {
     return tr.newDoc.lines <= 10;
@@ -89,6 +100,8 @@ export const Trigger: React.FC<TriggerProps> = memo(function Trigger(props) {
               onChange={onComponentChange}
               value={componentOptions.find((o) => o.value === selectedComponent) ?? null}
               isSearchable={false}
+              placeholder="Выберите компонент..."
+              noOptionsMessage={() => 'Отсутствуют компоненты'}
             />
             <Select
               containerClassName="w-full"
@@ -96,6 +109,12 @@ export const Trigger: React.FC<TriggerProps> = memo(function Trigger(props) {
               onChange={onMethodChange}
               value={methodOptions.find((o) => o.value === selectedMethod) ?? null}
               isSearchable={false}
+              placeholder="Выберите событие..."
+              noOptionsMessage={() => (
+                <div>
+                  У компонента отсутствуют события <br /> Выберите другой компонент
+                </div>
+              )}
             />
           </div>
         </TabPanel>

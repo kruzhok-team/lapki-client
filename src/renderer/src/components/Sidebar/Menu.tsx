@@ -7,6 +7,9 @@ import { useModal } from '@renderer/hooks/useModal';
 import { useProperties } from '@renderer/hooks/useProperties';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { useTabs } from '@renderer/store/useTabs';
+import { noTextMode } from '@renderer/version';
+
+import { Badge, WithHint } from '../UI';
 
 interface MenuItem {
   text: string;
@@ -14,6 +17,8 @@ interface MenuItem {
   disabled?: boolean;
   hidden?: boolean;
   className?: string;
+  badge?: boolean;
+  hint?: string;
 }
 
 export interface MenuProps {
@@ -56,6 +61,8 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
       text: 'Сохранить',
       onClick: props.onRequestSaveFile,
       disabled: !isStale || !isInitialized,
+      badge: isStale && isInitialized,
+      hint: isStale && isInitialized ? 'Есть несохранённые изменения' : '',
     },
     {
       text: 'Сохранить как...',
@@ -84,7 +91,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
     //   className: 'border-t border-border-primary',
     // },
     {
-      text: 'Открыть схемоэкран',
+      text: 'Схемоэкран',
       onClick: () => {
         const schemeEditorId = modelController.schemeEditorId;
         if (!schemeEditorId) return;
@@ -101,9 +108,10 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
       hidden: controller.type === 'scheme',
     },
     {
-      text: 'Перейти в текстовый режим (β)',
+      text: 'Текстовый режим (β)',
       onClick: () => openTextModeModal(),
       hidden:
+        noTextMode ||
         !visual ||
         !isInitialized ||
         controller.type === 'scheme' ||
@@ -114,16 +122,28 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
     //   TODO: модальное окно с выбором примера
     // },
   ];
-
+  // TODO (L140-beep): переместить в MainContainer.tsx
   useLayoutEffect(() => {
     window.addEventListener('keyup', handleKeyUp);
     return () => window.removeEventListener('keyup', handleKeyUp);
   });
 
-  const handleKeyUp = (e: KeyboardEvent) => {
+  const handleKeyUp = async (e: KeyboardEvent) => {
     if (e.ctrlKey) {
       if (e.code === 'KeyN') {
         return props.onRequestNewFile();
+      }
+      if (e.code === 'KeyZ') {
+        return modelController.history.undo();
+      }
+      if (e.code === 'KeyY') {
+        return modelController.history.redo();
+      }
+      if (!e.shiftKey && e.code === 'KeyS') {
+        return await modelController.files.save();
+      }
+      if (e.shiftKey && e.code === 'KeyS') {
+        return await modelController.files.saveAs();
       }
       if (e.code === 'KeyO') {
         return props.onRequestOpenFile();
@@ -137,26 +157,49 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
     }
   };
 
+  const renderButton = (
+    text: string,
+    onClick: () => void,
+    disabled: boolean,
+    hidden: boolean,
+    className?: string,
+    badge?: boolean,
+    props?: Record<string, any>
+  ) => {
+    return (
+      <button
+        key={text}
+        className={twMerge(
+          'px-2 py-2 text-left indent-4 text-base transition-colors enabled:hover:bg-bg-hover enabled:active:bg-bg-active disabled:text-text-disabled',
+          className
+        )}
+        {...props}
+        onClick={onClick}
+        disabled={disabled}
+        hidden={hidden}
+      >
+        <Badge show={badge ?? false}>{text}</Badge>
+      </button>
+    );
+  };
+
   return (
     <section className="flex flex-col">
       <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
         Документ
       </h3>
 
-      {items.map(({ text, onClick, disabled = false, hidden = false, className }) => (
-        <button
-          key={text}
-          className={twMerge(
-            'px-2 py-2 text-center text-base transition-colors enabled:hover:bg-bg-hover enabled:active:bg-bg-active disabled:text-text-disabled',
-            className
-          )}
-          onClick={onClick}
-          disabled={disabled}
-          hidden={hidden}
-        >
-          {text}
-        </button>
-      ))}
+      {items.map(({ text, onClick, disabled = false, hidden = false, className, badge, hint }) => {
+        if (hint) {
+          return (
+            <WithHint key={text} hint={hint ?? ''}>
+              {(props) => renderButton(text, onClick, disabled, hidden, className, badge, props)}
+            </WithHint>
+          );
+        } else {
+          return renderButton(text, onClick, disabled, hidden, className, badge);
+        }
+      })}
 
       <PropertiesModal {...propertiesModalProps} />
       <TextModeModal isOpen={isTextModeModalOpen} onClose={closeTextModeModal} />

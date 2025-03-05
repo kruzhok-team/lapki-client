@@ -7,11 +7,13 @@ import { getAvailablePlatforms } from '@renderer/lib/data/PlatformLoader';
 interface PlatformSelectionProps {
   selectedPlatformIdx: string | null;
   setSelectedPlatformIdx: (value: string) => void;
+  onDoubleClick?: () => void;
 }
 
 export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
   selectedPlatformIdx,
   setSelectedPlatformIdx,
+  onDoubleClick,
 }) => {
   const handleClick = (idx: string) => () => setSelectedPlatformIdx(idx);
 
@@ -33,6 +35,7 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
               'flex cursor-pointer select-none items-center gap-2 p-2 transition-colors duration-75',
               isSelected(idx) && 'bg-bg-active'
             )}
+            onDoubleClick={onDoubleClick}
             onClick={handleClick(idx)}
           >
             {name}

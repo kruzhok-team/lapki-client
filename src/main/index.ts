@@ -12,6 +12,7 @@ import { initDefaultSettings, initSettingsHandlers, settingsChangeSend } from '.
 import { getAllTemplates, getTemplate } from './templates';
 
 import icon from '../../resources/icon.png?asset';
+import { existsSync } from 'fs';
 
 /**
  * Создание главного окна редактора.
@@ -141,8 +142,13 @@ app.whenReady().then(() => {
   ipcMain.handle('checkForUpdates', checkForUpdates(app.getVersion()));
 
   ipcMain.handle('hasAvrdude', async () => {
-    const path = await lookpath('avrdude');
-    return Boolean(path);
+    if (existsSync(ModuleManager.getAvrdudePath())) {
+      return true;
+    } else if (await lookpath('avrdude')) {
+      return true;
+    } else {
+      return false;
+    }
   });
 
   // Горячие клавиши для режима разрабочика:

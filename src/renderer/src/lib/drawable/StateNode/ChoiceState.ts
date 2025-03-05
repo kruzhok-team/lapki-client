@@ -1,10 +1,8 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EdgeHandlers } from '@renderer/lib/drawable';
 import { Shape } from '@renderer/lib/drawable/Shape';
-import theme, { getColor } from '@renderer/theme';
+import { getColor } from '@renderer/theme';
 import { ChoiceState as DataChoiceState } from '@renderer/types/diagram';
-
-const style = theme.colors.diagram.state;
 
 /**
  * Представление псевдосостояния выбора
@@ -19,6 +17,10 @@ export class ChoiceState extends Shape {
     this.data = data;
     this.smId = smId;
     this.edgeHandlers = new EdgeHandlers(this.app as CanvasEditor, this);
+  }
+
+  get tooltipText() {
+    return 'Псевдосостояние выбора';
   }
 
   get position() {
@@ -50,7 +52,7 @@ export class ChoiceState extends Shape {
     const halfWidth = width / 2;
     const halfHeight = height / 2;
 
-    ctx.fillStyle = style.bodyBg;
+    ctx.fillStyle = getColor('primary');
 
     ctx.beginPath();
 

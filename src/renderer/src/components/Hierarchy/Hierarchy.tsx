@@ -142,7 +142,7 @@ export const Hierarchy: React.FC<HierarchyProps> = ({
             data[componentId] = {
               index: componentId,
               isFolder: false,
-              data: { title: componentId, type: 'component' },
+              data: { title: components[componentId].name ?? componentId, type: 'component' },
               children: [],
               canRename: false,
               canMove: false,
@@ -373,7 +373,6 @@ export const Hierarchy: React.FC<HierarchyProps> = ({
 
   useEffect(() => {
     if (!search) {
-      setSelectedItems([]);
       return;
     }
 

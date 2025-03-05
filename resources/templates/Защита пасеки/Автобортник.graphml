@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns">
+  <data key="gFormat">Cyberiada-GraphML-1.0</data>
+  <key attr.name="name" attr.type="string" for="node" id="dName"></key>
+  <key attr.name="data" attr.type="string" for="node" id="dData"></key>
+  <key attr.name="data" attr.type="string" for="edge" id="dData"></key>
+  <key attr.name="initial" attr.type="string" for="node" id="dInitial"></key>
+  <key for="edge" id="dGeometry"></key>
+  <key for="node" id="dGeometry"></key>
+  <key for="edge" id="dColor"></key>
+  <key for="node" id="dNote"></key>
+  <key for="node" id="dColor"></key>
+  <graph id="g">
+    <data key="dStateMachine"></data>
+    <data key="dGeometry">
+      <rect x="0" y="0" width="450" height="100"></rect>
+    </data>
+    <node id="coreMeta">
+      <data key="dNote">formal</data>
+      <data key="dName">CGML_META</data>
+      <data key="dData">platform/ BearlogaDefend-Autoborder
+
+standardVersion/ 1.0
+
+name/ Автобортник
+
+author/ Матросов В.М.
+
+contact/ matrosov@mail.ru
+
+description/ Пример описания схемы, 
+который может быть многострочным, потому что так удобнее
+
+target/ Autoborder
+
+lapkiVisual/ true
+
+platformVersion/ 1.0
+
+</data>
+    </node>
+    <node id="n0">
+      <data key="dName">Бой</data>
+      <data key="dData">entry/
+
+exit/
+
+</data>
+      <data key="dGeometry">
+        <rect x="-815.8449999999984" y="505.137256000001" width="672.532166" height="145"></rect>
+      </data>
+      <data key="dColor">#FFFFFF</data>
+      <graph id="n0">
+        <node id="n0::n1">
+          <data key="dName">Сближение</data>
+          <data key="dData">entry/
+МодульДвижения.ДвигатьсяКЦели()
+
+exit/
+
+</data>
+          <data key="dGeometry">
+            <rect x="83.60999999999956" y="158.85000000000025" width="468" height="145"></rect>
+          </data>
+          <data key="dColor">#FFFFFF</data>
+        </node>
+        <node id="n0::n2">
+          <data key="dName">Атака</data>
+          <data key="dData">entry/
+ОружиеЦелевое.АтаковатьЦель()
+
+</data>
+          <data key="dGeometry">
+            <rect x="83.87999999999981" y="413.623189" width="468" height="95"></rect>
+          </data>
+          <data key="dColor">#FFFFFF</data>
+        </node>
+      </graph>
+    </node>
+    <node id="n3">
+      <data key="dName">Скан</data>
+      <data key="dData">entry/
+Сенсор.ПоискВрагаПоДистанции(мин)
+
+exit/
+Сенсор.ОстановкаПоиска()
+
+</data>
+      <data key="dGeometry">
+        <rect x="-1540.20857" y="540.6875590000004" width="468" height="145"></rect>
+      </data>
+      <data key="dColor">#FFFFFF</data>
+    </node>
+    <node id="init">
+      <data key="dVertex">initial</data>
+      <data key="dGeometry">
+        <rect x="-1480.4985699999997" y="448.677559" width="-1" height="-1"></rect>
+      </data>
+    </node>
+    <edge id="init-n3" source="init" target="n3"></edge>
+    <edge id="n0-n3" source="n0" target="n3">
+      <data key="dData">АнализаторЦели.ЦельПотеряна/
+
+</data>
+      <data key="dColor">#3b1a08</data>
+      <data key="dLabelGeometry">
+        <point x="-1002.3499999999991" y="550.2099999999995"></point>
+      </data>
+    </edge>
+    <edge id="n3-n0::n1" source="n3" target="n0::n1">
+      <data key="dData">Сенсор.ЦельПолучена/
+
+</data>
+      <data key="dColor">#531a77</data>
+      <data key="dLabelGeometry">
+        <point x="-1201.4000000000008" y="737.5300000000002"></point>
+      </data>
+    </edge>
+    <edge id="n0::n1-n0::n2" source="n0::n1" target="n0::n2">
+      <data key="dData">ОружиеЦелевое.ЦельВошлаВЗонуАтаки/
+
+</data>
+      <data key="dColor">#3fe09a</data>
+      <data key="dLabelGeometry">
+        <point x="102.41999999999996" y="326.7399999999995"></point>
+      </data>
+    </edge>
+    <edge id="n0::n2-n0::n1" source="n0::n2" target="n0::n1">
+      <data key="dData">ОружиеЦелевое.ЦельВышлаИзЗоныАтаки/
+
+</data>
+      <data key="dColor">#554a3b</data>
+      <data key="dLabelGeometry">
+        <point x="404.5899999999996" y="323.2899999999993"></point>
+      </data>
+    </edge>
+    <edge id="lnjmwqsafxzhjthzfyly" source="n0" target="n3">
+      <data key="dData">АнализаторЦели.ЦельУничтожена/
+
+</data>
+      <data key="dLabelGeometry">
+        <point x="-996.856784999999" y="658.9924075000007"></point>
+      </data>
+    </edge>
+  </graph>
+</graphml>

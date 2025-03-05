@@ -22,13 +22,13 @@ export const useTabs = create<TabsState>((set) => ({
   },
   openTab: (modelController, tab) =>
     set(({ items }) => {
+      if (tab.type === 'editor') {
+        modelController.model.changeHeadControllerId(tab.canvasId);
+      }
+
       // Если пытаемся открыть одну и ту же вкладку
       if (items.find(({ name }) => name === tab.name)) {
         return { activeTab: tab.name };
-      }
-
-      if (tab.type === 'editor') {
-        modelController.model.changeHeadControllerId(tab.canvasId);
       }
 
       return {

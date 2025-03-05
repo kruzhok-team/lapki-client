@@ -4,7 +4,7 @@ import { Component as ComponentData } from '@renderer/types/diagram';
 import { ComponentProto } from '@renderer/types/platform';
 import { formatArgType, validators } from '@renderer/utils';
 
-import { nameError } from './ComponentEditModal';
+import { idError } from './ComponentEditModal';
 import { ComponentFormFieldLabel } from './ComponentFormFieldLabel';
 import { ColorInput, Select } from './UI';
 
@@ -14,9 +14,10 @@ interface ComponentFormFieldsProps {
   protoInitializationParameters: ComponentProto['initializationParameters'];
   parameters: ComponentData['parameters'];
   setParameters: (data: ComponentData['parameters']) => void;
-  name: string;
+  name: string | undefined;
+  id: string;
   setName: (data: string) => void;
-
+  setComponentId: (data: string) => void;
   errors: Record<string, string>;
   setErrors: React.Dispatch<React.SetStateAction<Record<string, string>>>;
 }
@@ -29,6 +30,8 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
   name,
   setParameters,
   setName,
+  id,
+  setComponentId,
   errors,
   setErrors,
 }) => {
@@ -54,18 +57,22 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
   };
 
   const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setName(event.target.value);
+  };
+
+  const handleIdChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     // очищаем предыдущий статус ошибки
-    setErrors((p) => ({ ...p, [nameError]: '' }));
+    setErrors((p) => ({ ...p, [idError]: '' }));
     // динамическая замена пробелов
-    let name = event.target.value;
+    let id = event.target.value;
     const caret = event.target.selectionStart;
     const element = event.target;
     window.requestAnimationFrame(() => {
       element.selectionStart = caret;
       element.selectionEnd = caret;
     });
-    name = name.replaceAll(' ', '_');
-    setName(name);
+    id = id.replaceAll(' ', '_');
+    setComponentId(id);
   };
   const protoParametersArray = Object.entries(allParameters);
 
@@ -89,23 +96,39 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
         <>
           <ComponentFormFieldLabel
             label="Название:"
+            placeholder="Введите название..."
             maxLength={20}
+            hint="Человекочитаемое название, которое будет отображаться в интерфейсе вместо технического. До 20 символов."
             value={name}
             onChange={(e) => handleNameChange(e)}
-            error={errors[nameError]}
             autoFocus
           />
 
           <ComponentFormFieldLabel
-            label="Метка:"
-            hint="До 3-х символов. Метка нужна для различения разных компонентов одного типа."
+            placeholder="Введите идентификатор..."
+            label={
+              <>
+                Техническое <br /> название:
+              </>
+            }
+            maxLength={20}
+            hint="Уникальное техническое название, которое будет использоваться в коде. До 20 символов, среди которых – латинские буквы, цифры и знаки подчёркивания. Не должно начинаться с цифры."
+            value={id}
+            onChange={(e) => handleIdChange(e)}
+            error={errors[idError]}
+            autoFocus
+          />
+
+          <ComponentFormFieldLabel
+            label="Подпись:"
+            hint="До 3-х символов. Подпись нужна для различения иконок разных компонентов одного типа на схеме."
             value={parameters['label'] ?? ''}
             name="label"
             maxLength={3}
             onChange={(e) => handleInputChange('label', e.target.value)}
           />
 
-          <ComponentFormFieldLabel label="Цвет метки:" name="labelColor" as="div">
+          <ComponentFormFieldLabel label="Цвет подписи:" name="labelColor" as="div">
             <ColorInput
               clearable={false}
               value={parameters['labelColor'] ?? '#FFFFFF'}

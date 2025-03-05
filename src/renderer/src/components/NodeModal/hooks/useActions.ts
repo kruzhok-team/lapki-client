@@ -5,20 +5,31 @@ import { useModal } from '@renderer/hooks/useModal';
 import { serializeActions } from '@renderer/lib/data/GraphmlBuilder';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { useModelContext } from '@renderer/store/ModelContext';
-import { Action } from '@renderer/types/diagram';
+import { Action, Component } from '@renderer/types/diagram';
 
-export const useActions = (smId: string, controller: CanvasController) => {
+export const useActions = (
+  smId: string,
+  controller: CanvasController,
+  defaultActions: string | Action[] | null
+) => {
   const modelController = useModelContext();
-  const componentsData = modelController.model.useData(smId, 'elements.components');
-  const visual = controller.useData('visual');
+  const componentsData = modelController.model.useData(smId, 'elements.components') as {
+    [id: string]: Component;
+  };
+  const visual = controller.useData('visual') as boolean;
 
   const [isActionsModalOpen, openActionsModal, closeActionsModal] = useModal(false);
   const [actionsModalData, setActionsModalData] = useState<ActionsModalData>();
 
   const [tabValue, setTabValue] = useState(0);
 
-  const [actions, setActions] = useState<Action[]>([]);
-  const [text, setText] = useState('');
+  const [actions, setActions] = useState<Action[]>(
+    typeof defaultActions !== 'string' && defaultActions ? defaultActions : []
+  );
+
+  const [text, setText] = useState<string>(
+    typeof defaultActions === 'string' ? defaultActions : ''
+  );
 
   const handleAddAction = () => {
     setActionsModalData(undefined);
@@ -61,6 +72,13 @@ export const useActions = (smId: string, controller: CanvasController) => {
     }
 
     closeActionsModal();
+  };
+
+  const getComponentName = (id: string) => {
+    const component = componentsData[id];
+    if (!component) return id;
+
+    return visual && component.name ? component.name : id;
   };
 
   const clear = () => {
@@ -112,6 +130,7 @@ export const useActions = (smId: string, controller: CanvasController) => {
       initialData: actionsModalData,
     },
     smId,
+    getComponentName,
     controller,
     parse,
     clear,

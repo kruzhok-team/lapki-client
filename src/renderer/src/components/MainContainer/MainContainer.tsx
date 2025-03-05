@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import { useDropzone } from 'react-dropzone';
 import { Toaster } from 'sonner';
@@ -12,9 +12,11 @@ import {
   Sidebar,
   UpdateModal,
   DiagramContextMenu,
+  EditorSettings,
+  Tooltip,
 } from '@renderer/components';
 import { hideLoadingOverlay } from '@renderer/components/utils/OverlayControl';
-import { useErrorModal, useFileOperations } from '@renderer/hooks';
+import { useErrorModal, useFileOperations, useSettings } from '@renderer/hooks';
 import { useAppTitle } from '@renderer/hooks/useAppTitle';
 import { useModal } from '@renderer/hooks/useModal';
 import {
@@ -27,21 +29,32 @@ import { useModelContext } from '@renderer/store/ModelContext';
 
 import { Tabs } from './Tabs';
 
+import { RestoreDataModal } from '../RestoreDataModal';
+
 export const MainContainer: React.FC = () => {
   const modelController = useModelContext();
   const headControllerId = modelController.model.useData('', 'headControllerId');
   const controller = modelController.controllers[headControllerId];
   const isMounted = controller.useData('isMounted') as boolean;
   const [isCreateSchemeModalOpen, openCreateSchemeModal, closeCreateSchemeModal] = useModal(false);
+  const [autoSaveSettings] = useSettings('autoSave');
+  const [restoreSession] = useSettings('restoreSession');
+  const [isReservedDataPresent, setIsReservedPresent] = useState<boolean>(false); // Схема без названия сохранена, либо загружена
+  const [isRestoreDataModalOpen, openRestoreDataModal, closeRestoreDataModal] = useModal(false);
+  const isStale = modelController.model.useData('', 'isStale');
+  const isInitialized = modelController.model.useData('', 'isInitialized');
+  const basename = modelController.model.useData('', 'basename');
 
   const { errorModalProps, openLoadError, openPlatformError, openSaveError, openImportError } =
     useErrorModal();
-  const { saveModalProps, operations, performNewFile, handleOpenFromTemplate } = useFileOperations({
-    openLoadError,
-    openCreateSchemeModal,
-    openSaveError,
-    openImportError,
-  });
+  const { saveModalProps, operations, performNewFile, handleOpenFromTemplate, tempSaveOperations } =
+    useFileOperations({
+      openLoadError,
+      openCreateSchemeModal,
+      openSaveError,
+      openImportError,
+    });
+  const isSaveModalOpen = saveModalProps.isOpen;
 
   useAppTitle();
   const onDrop = useCallback(
@@ -74,6 +87,77 @@ export const MainContainer: React.FC = () => {
     });
   }, [openPlatformError]);
 
+  const restoreData = async () => {
+    //  (Roundabout) TODO: обработка ошибок загрузки
+    await tempSaveOperations.loadTempSave();
+    setIsReservedPresent(true);
+  };
+
+  const cancelRestoreData = async () => {
+    await tempSaveOperations.deleteTempSave();
+    setIsReservedPresent(true);
+  };
+
+  // автосохранение
+  useEffect(() => {
+    if (autoSaveSettings === null || restoreSession === null || isSaveModalOpen) return;
+
+    if (autoSaveSettings.disabled) {
+      if (restoreSession) {
+        cancelRestoreData();
+      }
+      return;
+    }
+
+    if (isInitialized && !isReservedDataPresent) {
+      setIsReservedPresent(true);
+      return;
+    }
+
+    if (!basename && restoreSession && !isReservedDataPresent) {
+      if (!isRestoreDataModalOpen) {
+        openRestoreDataModal();
+      }
+      return;
+    }
+
+    if (basename && isInitialized) {
+      if (!isReservedDataPresent) {
+        setIsReservedPresent(true);
+      }
+      if (restoreSession) {
+        tempSaveOperations.deleteTempSave();
+      }
+    }
+
+    if (!isStale || !isInitialized) return;
+
+    const ms = autoSaveSettings.interval * 1000;
+    let interval: NodeJS.Timeout;
+    if (basename) {
+      interval = setInterval(async () => {
+        await operations.onRequestSaveFile();
+      }, ms);
+    } else {
+      interval = setInterval(async () => {
+        console.log('temp save...');
+        await tempSaveOperations.tempSave();
+        if (!isReservedDataPresent) setIsReservedPresent(true);
+      }, ms);
+    }
+
+    //Clearing the intervals
+    return () => clearInterval(interval);
+  }, [
+    autoSaveSettings,
+    isStale,
+    isInitialized,
+    basename,
+    restoreSession,
+    isReservedDataPresent,
+    isSaveModalOpen,
+  ]);
+
   return (
     <div className="h-screen select-none">
       <div className="flex h-full w-full flex-row overflow-x-hidden">
@@ -90,11 +174,22 @@ export const MainContainer: React.FC = () => {
           <input {...getInputProps()} />
 
           <Tabs />
-
-          <Documentation topOffset={!!isMounted} />
+          <div
+            className={twMerge(
+              'absolute right-0 top-0 flex h-full',
+              !!isMounted && 'top-[44.19px] h-[calc(100vh-44.19px)]'
+            )}
+          >
+            <Documentation />
+            <EditorSettings />
+          </div>
         </div>
 
-        {isMounted && <DiagramContextMenu />}
+        {isMounted && (
+          <>
+            <DiagramContextMenu /> <Tooltip controller={controller} />
+          </>
+        )}
       </div>
 
       <SaveRemindModal {...saveModalProps} />
@@ -112,10 +207,17 @@ export const MainContainer: React.FC = () => {
         toastOptions={{
           classNames: {
             error: 'bg-error text-text-primary border-none text-[0.875rem]',
-            success: 'bg-success',
+            success: 'bg-[#9bcb64]',
           },
         }}
       />
+
+      <RestoreDataModal
+        isOpen={isRestoreDataModalOpen}
+        onClose={closeRestoreDataModal}
+        onRestore={restoreData}
+        onCancelRestore={cancelRestoreData}
+      ></RestoreDataModal>
     </div>
   );
 };

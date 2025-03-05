@@ -3,8 +3,8 @@ import { useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import { CodeEditor, DiagramEditor } from '@renderer/components';
-import { ManagerMSTab } from '@renderer/components/ManagerMS';
-import { SerialMonitorTab } from '@renderer/components/SerialMonitor';
+import { FlasherTab } from '@renderer/components/Sidebar/Flasher/Flasher';
+import { SerialMonitorTab } from '@renderer/components/Sidebar/Flasher/SerialMonitor';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { useTabs } from '@renderer/store/useTabs';
 import { Tab as TabType } from '@renderer/types/tabs';
@@ -36,7 +36,11 @@ export const Tabs: React.FC = () => {
   };
 
   if (items.length === 0) {
-    return <NotInitialized />;
+    return (
+      <div className="flex h-full w-full flex-row items-center justify-center overflow-auto align-middle scrollbar-thin scrollbar-track-transparent scrollbar-thumb-current">
+        <NotInitialized />
+      </div>
+    );
   }
 
   const selectTab = (item: TabType) => {
@@ -58,7 +62,7 @@ export const Tabs: React.FC = () => {
       case 'serialMonitor':
         return <SerialMonitorTab />;
       case 'managerMS':
-        return <ManagerMSTab />;
+        return <FlasherTab />;
       default:
         return undefined;
     }

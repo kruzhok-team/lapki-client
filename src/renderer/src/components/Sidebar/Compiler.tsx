@@ -2,19 +2,19 @@ import React, { useEffect, useState } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
-import { ReactComponent as Setting } from '@renderer/assets/icons/settings.svg';
+import { ReactComponent as ConnectionStatus } from '@renderer/assets/icons/circle.svg';
+import { ReactComponent as OkIcon } from '@renderer/assets/icons/mark-check.svg';
+import { ReactComponent as NotOkIcon } from '@renderer/assets/icons/mark-cross.svg';
 import { Compiler } from '@renderer/components/Modules/Compiler';
-import { useErrorModal, useFileOperations, useSettings } from '@renderer/hooks';
-import { getPlatform } from '@renderer/lib/data/PlatformLoader';
+import { useErrorModal, useFileOperations, useModal, useSettings } from '@renderer/hooks';
 import { useModelContext } from '@renderer/store/ModelContext';
-import { SidebarIndex, useSidebar } from '@renderer/store/useSidebar';
 import { useTabs } from '@renderer/store/useTabs';
 import { CompileCommandResult, CompilerResult } from '@renderer/types/CompilerTypes';
 import { Elements, StateMachine } from '@renderer/types/diagram';
-import { languageMappers } from '@renderer/utils';
+import { getDefaultSmSelection, languageMappers } from '@renderer/utils';
 
-import { CompilerStatus, CompilerNoDataStatus } from '../Modules/Websocket/ClientStatus';
-import { Select } from '../UI/Select/Select';
+import { CompilerStatus } from '../Modules/Websocket/ClientStatus';
+import { SelectStateMachinesModal } from '../SelectStateMachinesModal';
 
 export interface CompilerProps {
   openData: [boolean, string | null, string | null, string] | undefined;
@@ -23,12 +23,10 @@ export interface CompilerProps {
   compilerStatus: string;
   setCompilerStatus: React.Dispatch<React.SetStateAction<string>>;
   openImportError: (error: string) => void;
-  openCompilerSettings: () => void;
 }
 
 export const CompilerTab: React.FC<CompilerProps> = ({
   openData,
-  openCompilerSettings,
   compilerData,
   setCompilerData,
   compilerStatus,
@@ -42,11 +40,10 @@ export const CompilerTab: React.FC<CompilerProps> = ({
     openCreateSchemeModal: () => undefined,
     openImportError,
   });
+
+  const [isOpen, open, close] = useModal(false);
   const [compilerSetting] = useSettings('compiler');
   const [importData, setImportData] = useState<Elements | undefined>(undefined);
-  const [compilerNoDataStatus, setCompilerNoDataStatus] = useState<string>(
-    CompilerNoDataStatus.DEFAULT
-  );
   const stateMachines = modelController.model.useData('', 'elements.stateMachinesId') as {
     [id: string]: StateMachine;
   };
@@ -57,16 +54,12 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   // секунд до переподключения, null - означает, что отчёт до переподключения не ведётся
   const [secondsUntilReconnect, setSecondsUntilReconnect] = useState<number | null>(null);
   const openTab = useTabs((state) => state.openTab);
-  const changeSidebarTab = useSidebar((state) => state.changeTab);
 
+  const [selectedStateMachines, setSelectedStateMachines] = useState<{ [id: string]: boolean }>(
+    getDefaultSmSelection(stateMachines, {})
+  );
   const name = modelController.model.useData('', 'name');
   const isInitialized = modelController.model.useData('', 'isInitialized');
-
-  const [hasBinary, setHasBinary] = useState<boolean>(false);
-
-  const handleFlashButton = () => {
-    changeSidebarTab(SidebarIndex.Flasher);
-  };
 
   const handleSaveBinaryIntoFolder = async () => {
     if (!smId) return;
@@ -89,9 +82,17 @@ export const CompilerTab: React.FC<CompilerProps> = ({
 
   const handleCompile = async () => {
     if (!name) return;
+    const selectedElements: Elements = {
+      stateMachines: {},
+    };
 
+    for (const smId in selectedStateMachines) {
+      if (selectedStateMachines[smId]) {
+        selectedElements.stateMachines[smId] = stateMachines[smId];
+      }
+    }
     Compiler.filename = name;
-    modelController.files.compile();
+    modelController.files.compile(selectedElements);
   };
 
   const handleSaveSourceIntoFolder = async () => {
@@ -109,11 +110,18 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   };
 
   const handleAddStdoutTab = () => {
-    if (!smId || !compilerData) return;
+    if (!compilerData) return;
+    const commands = Object.entries(compilerData.state_machines)
+      .map(([id, sm]) => {
+        return (
+          `Машина состояний ${stateMachines[id].name ?? id}:\n` + commandsResultToStr(sm.commands)
+        );
+      })
+      .join('----------\n\n');
     openTab(modelController, {
       type: 'code',
       name: 'compilerLog',
-      code: commandsResultToStr(compilerData.state_machines[smId].commands),
+      code: commands,
       language: 'txt',
     });
   };
@@ -137,6 +145,10 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   };
 
   useEffect(() => {
+    setSelectedStateMachines(getDefaultSmSelection(stateMachines, selectedStateMachines));
+  }, [stateMachines]);
+
+  useEffect(() => {
     if (importData && openData) {
       initImportData(importData, openData);
       setImportData(undefined);
@@ -148,55 +160,13 @@ export const CompilerTab: React.FC<CompilerProps> = ({
 
     const { host, port } = compilerSetting;
 
-    Compiler.bindReact(
-      setCompilerData,
-      setCompilerStatus,
-      setImportData,
-      setCompilerNoDataStatus,
-      setSecondsUntilReconnect
-    );
+    Compiler.bindReact(setCompilerData, setCompilerStatus, setImportData, setSecondsUntilReconnect);
     Compiler.connect(host, port);
   }, [compilerSetting]);
 
-  useEffect(() => {
-    if (compilerData === undefined) {
-      setHasBinary(false);
-      return;
-    }
-    setHasBinary(
-      [...Object.values(compilerData?.state_machines)].some((result) => {
-        return result.binary !== undefined && result.binary.length > 0;
-      })
-    );
-  }, [compilerData]);
-
   const button = [
     {
-      name: 'Показать журнал компиляции',
-      handler: handleAddStdoutTab,
-      disabled:
-        !smId ||
-        compilerData?.state_machines[smId]?.commands === undefined ||
-        compilerData?.state_machines[smId]?.commands.length === 0,
-    },
-    {
-      name: 'Сохранить результат',
-      handler: handleSaveBinaryIntoFolder,
-      disabled:
-        !smId ||
-        compilerData?.state_machines[smId]?.binary === undefined ||
-        compilerData.state_machines[smId]?.binary.length === 0,
-    },
-    {
-      name: 'Сохранить код',
-      handler: handleSaveSourceIntoFolder,
-      disabled:
-        !smId ||
-        compilerData?.state_machines[smId]?.source === undefined ||
-        compilerData?.state_machines[smId]?.source.length === 0,
-    },
-    {
-      name: 'Показать код',
+      name: 'Посмотреть код',
       handler: handleShowSource,
       disabled:
         !smId ||
@@ -204,63 +174,53 @@ export const CompilerTab: React.FC<CompilerProps> = ({
         compilerData?.state_machines[smId]?.source.length === 0,
     },
     {
-      name: 'Прошить...',
-      handler: handleFlashButton,
-      disabled: !hasBinary,
+      name: 'Экспорт прошивки',
+      handler: handleSaveBinaryIntoFolder,
+      disabled:
+        !smId ||
+        compilerData?.state_machines[smId]?.binary === undefined ||
+        compilerData.state_machines[smId]?.binary.length === 0,
+    },
+    {
+      name: 'Экспорт кода',
+      handler: handleSaveSourceIntoFolder,
+      disabled:
+        !smId ||
+        compilerData?.state_machines[smId]?.source === undefined ||
+        compilerData?.state_machines[smId]?.source.length === 0,
     },
   ];
   const processing =
     compilerStatus == CompilerStatus.COMPILATION || compilerStatus == CompilerStatus.CONNECTING;
   const canCompile = compilerStatus == CompilerStatus.CONNECTED && isInitialized;
   const disabled =
-    processing || (!processing && !canCompile && compilerStatus !== CompilerStatus.NO_CONNECTION);
+    processing ||
+    (!processing && !canCompile && compilerStatus !== CompilerStatus.NO_CONNECTION) ||
+    Object.values(selectedStateMachines).find((val) => val === true) === undefined;
   const showReconnectTime = () => {
     if (secondsUntilReconnect == null) return;
     return <p>До подключения: {secondsUntilReconnect} сек.</p>;
   };
-  const getSmOption = (id: string, sm: StateMachine) => {
-    return { value: id, label: sm.name ?? id, hint: getPlatform(sm.platform)?.name ?? '' };
-  };
-  const stateMachinesOptions = () => {
-    const options = [...Object.entries(stateMachines)]
-      .map(([id, sm]) => {
-        return getSmOption(id, sm);
-      })
-      .filter((item) => item.value);
-    return options;
-  };
 
-  const getCompilerResult = () => {
-    if (!compilerData) {
-      return compilerNoDataStatus;
-    }
-    if (compilerData.result === 'NOTOK') {
-      const failedSms = Object.entries(compilerData.state_machines)
-        .filter(([smId, sm]) => sm.result === 'NOTOK' && stateMachines[smId])
-        .map(([smId]) => stateMachines[smId].name ?? smId)
-        .join(', ');
-      return `NOTOK(${failedSms})`;
-    }
-
-    return compilerData.result;
-  };
-
-  const getSelectMachineStateOption = () => {
-    if (!smId) return null;
-    const sm = stateMachines[smId];
-    if (!sm) {
-      setSmId(undefined);
-      return null;
-    }
-    return getSmOption(smId, sm);
+  const saveRequestedSm = (selected: { [id: string]: boolean }) => {
+    setSelectedStateMachines({ ...selected });
   };
 
   return (
     <section>
-      <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
-        Компилятор
+      <h3 className="mx-4 mb-3 flex flex-row items-center border-b border-border-primary py-2 text-center text-lg">
+        <div className="w-full">Компилятор</div>
+        <div className="relative right-5">
+          <ConnectionStatus
+            className={twMerge(
+              compilerStatus === CompilerStatus.NO_CONNECTION && 'fill-error',
+              compilerStatus === CompilerStatus.CONNECTED && 'fill-success'
+            )}
+            width="10px"
+            height="10px"
+          />
+        </div>
       </h3>
-
       <div className="flex flex-col px-4">
         <div className="mb-2 flex rounded">
           <button
@@ -272,8 +232,8 @@ export const CompilerTab: React.FC<CompilerProps> = ({
               ? 'Скомпилировать'
               : 'Переподключиться'}
           </button>
-          <button className="btn-primary px-2" onClick={openCompilerSettings}>
-            <Setting width="1.5rem" height="1.5rem" />
+          <button className="btn-primary px-2" onClick={open}>
+            <span className="size-[1.5rem]">...</span>
           </button>
         </div>
 
@@ -288,36 +248,59 @@ export const CompilerTab: React.FC<CompilerProps> = ({
             </button>
           </div>
         ) : undefined}
-        <p>
+        <p className="my-1">
           Статус:{' '}
           <span
-            className={twMerge(
-              'text-primary',
-              compilerStatus === CompilerStatus.NO_CONNECTION && 'text-error'
-            )}
+            className={twMerge('text-primary', compilerData?.result === 'NOTOK' && 'text-error')}
           >
-            {compilerStatus}
+            {compilerData?.result ?? 'Нет данных'}
           </span>
         </p>
         {showReconnectTime()}
-        <div className="mb-4 min-h-[350px] select-text overflow-y-auto break-words rounded bg-bg-primary p-2">
-          Результат компиляции: {getCompilerResult()}
+        <button className="btn-primary" onClick={handleAddStdoutTab} disabled={!compilerData}>
+          Журнал компиляции
+        </button>
+        <div className="mb-1 mt-20"> Машины состояний: </div>
+        <div className="mb-4 flex h-[200px] select-text flex-col overflow-y-auto break-words rounded bg-bg-primary scrollbar-thin">
+          {compilerData?.state_machines ? (
+            Object.entries(compilerData.state_machines).map(([id, sm]) => (
+              <div
+                key={id}
+                onClick={() => setSmId(id)}
+                className={twMerge(
+                  'cursor-pointer hover:bg-bg-hover',
+                  smId === id && 'bg-bg-hover'
+                )}
+              >
+                <div className="flex h-auto w-auto items-center p-2">
+                  {sm.result === 'OK' ? (
+                    <OkIcon className="size-5 fill-current" />
+                  ) : (
+                    <NotOkIcon className="size-5 fill-error" />
+                  )}
+                  <span className="ml-2 flex">{stateMachines[id]?.name ?? id}</span>
+                </div>
+                <hr className="h-[1px] w-auto border-bg-hover opacity-70" />
+              </div>
+            ))
+          ) : (
+            <div className="p-2">Нет скомпилированных МС...</div>
+          )}
         </div>
-        <Select
-          className="mb-2"
-          isSearchable={false}
-          placeholder="Выберите машину состояний..."
-          options={stateMachinesOptions()}
-          value={getSelectMachineStateOption()}
-          onChange={(opt) => setSmId(opt?.value)}
-          noOptionsMessage={() => 'Машины состояний отсутствуют'}
-        />
+
         {button.map(({ name, handler, disabled }, i) => (
           <button key={i} className="btn-primary mb-2" onClick={handler} disabled={disabled}>
             {name}
           </button>
         ))}
       </div>
+      <SelectStateMachinesModal
+        defaultSelected={selectedStateMachines}
+        onSubmit={saveRequestedSm}
+        stateMachines={stateMachines}
+        close={close}
+        isOpen={isOpen}
+      />
     </section>
   );
 };

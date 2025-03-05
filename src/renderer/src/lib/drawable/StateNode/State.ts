@@ -27,6 +27,10 @@ export class State extends Shape {
     this.edgeHandlers = new EdgeHandlers(this.app as CanvasEditor, this);
   }
 
+  get tooltipText() {
+    return undefined;
+  }
+
   get scale() {
     return this.app.controller.scale;
   }
@@ -53,15 +57,13 @@ export class State extends Shape {
     };
   }
 
-  draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
+  draw(ctx: CanvasRenderingContext2D) {
     this.drawBody(ctx);
     this.drawTitle(ctx);
     this.drawPen(ctx);
     this.eventBox.draw(ctx);
 
-    if (!this.children.isEmpty) {
-      this.drawChildren(ctx, canvas);
-    }
+    this.drawOutline(ctx);
 
     if (this.isSelected) {
       this.drawSelection(ctx);
@@ -87,7 +89,6 @@ export class State extends Shape {
       (this.children.isEmpty ? 6 : 0) / this.scale,
     ]);
     ctx.fill();
-
     ctx.closePath();
   }
 
@@ -131,7 +132,26 @@ export class State extends Shape {
         fontFamily: 'Fira Sans',
       },
     });
+    ctx.closePath();
+  }
 
+  // Прорисовка обводки состояния в общем случае
+  private drawOutline(ctx: CanvasRenderingContext2D) {
+    const { x, y, width, height, childrenHeight } = this.drawBounds;
+
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = style.bodyBg;
+    ctx.beginPath();
+    ctx.roundRect(x, y, width, childrenHeight !== 0 ? childrenHeight : height, 6 / this.scale);
+    ctx.stroke();
+    ctx.closePath();
+
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = this.data.color ?? getColor('default-state-outline');
+
+    ctx.beginPath();
+    ctx.roundRect(x, y, width, childrenHeight !== 0 ? childrenHeight : height, 6 / this.scale);
+    ctx.stroke();
     ctx.closePath();
   }
 
@@ -139,11 +159,17 @@ export class State extends Shape {
   private drawSelection(ctx: CanvasRenderingContext2D) {
     const { x, y, width, height, childrenHeight } = this.drawBounds;
 
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = this.data.color ?? getColor('default-state-outline');
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = getColor('primaryActive');
 
     ctx.beginPath();
-    ctx.roundRect(x, y, width, height + childrenHeight, 6 / this.scale);
+    ctx.roundRect(
+      x - 2,
+      y - 2,
+      width + 4,
+      (childrenHeight !== 0 ? childrenHeight : height) + 4,
+      6 / this.scale
+    );
     ctx.stroke();
     ctx.closePath();
 
@@ -182,35 +208,15 @@ export class State extends Shape {
 
   private drawHighlight(ctx: CanvasRenderingContext2D) {
     const { x, y, width, height, childrenHeight } = this.drawBounds;
-    ctx.canvas.hidden;
 
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = getColor('primaryActive');
-
-    ctx.beginPath();
-    ctx.roundRect(x, y, width, height + childrenHeight, 6 / this.scale);
-    ctx.stroke();
-    ctx.closePath();
-  }
-
-  //Дополнять внешними border при добавлении дочерних состояний
-  private drawChildren(ctx: CanvasRenderingContext2D, _canvas: HTMLCanvasElement) {
-    const { x, y, width, height, childrenHeight } = this.drawBounds;
-
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = style.bodyBg;
+    ctx.globalAlpha = 0.6;
+    ctx.fillStyle = getColor('primaryActive');
 
     ctx.beginPath();
-
-    ctx.roundRect(x + 1, y + height, width - 2, childrenHeight, [
-      0,
-      0,
-      6 / this.scale,
-      6 / this.scale,
-    ]);
-    ctx.stroke();
-
+    ctx.roundRect(x, y, width, childrenHeight !== 0 ? childrenHeight : height, 6 / this.scale);
+    ctx.fill();
     ctx.closePath();
+    ctx.globalAlpha = 1;
   }
 
   private drawPen(ctx: CanvasRenderingContext2D) {

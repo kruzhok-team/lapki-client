@@ -15,6 +15,8 @@ import {
   HandleFileSaveReturn,
   HandleFileSaveAsReturn,
   HandleBinFileOpenReturn,
+  HandleFileSelectReturn,
+  HandleFileReadReturn,
 } from './handlersTypes';
 
 /**
@@ -98,15 +100,18 @@ export async function handleGetPlatforms(directory: string): HandleGetPlatformsR
           resolve([false, err.message]);
         });
     } else {
-      resolve([false, `${directory} doesn't exists!`]);
-      console.log(`${directory} doesn't exists!`);
+      resolve([false, `${directory} doesn't exist`]);
+      console.log(`${directory} doesn't exist`);
     }
   });
 }
 
 export async function searchPlatforms(): SearchPlatformsReturn {
   const basePath = path.join(__dirname, '../../resources').replace('app.asar', 'app.asar.unpacked');
-  const DEFAULT_PATH = [basePath + '/platform', app.getPath('userData') + '/platform'];
+  const DEFAULT_PATH = [
+    path.join(basePath, 'platform'),
+    path.join(app.getPath('userData'), 'platform'),
+  ];
 
   return new Promise(async (resolve) => {
     const platformsPaths = new Array<string>();
@@ -236,6 +241,41 @@ export async function handleBinFileOpen(): HandleBinFileOpenReturn {
     } else {
       resolve([false, null, null, '']);
     }
+  });
+}
+
+/**
+ * Асинхронный диалог для получения пути к выбранному файлу.
+ */
+export async function handleFileSelect(
+  fileNames: string = '',
+  extensions: string[] = ['*']
+): HandleFileSelectReturn {
+  return new Promise(async (resolve) => {
+    const { canceled, filePaths } = await dialog.showOpenDialog({
+      filters: [{ name: fileNames, extensions: extensions }],
+      properties: ['openFile'],
+    });
+    if (canceled) {
+      return resolve([true, '', '']);
+    } else {
+      return resolve([false, filePaths[0], basename(filePaths[0])]);
+    }
+  });
+}
+
+/**
+ * Асинхронное чтение указанного файла.
+ */
+export async function handleFileRead(filePath: string): HandleFileReadReturn {
+  return new Promise(async (resolve) => {
+    fs.readFile(filePath, (err, data) => {
+      if (err) {
+        resolve([null, err.message]);
+      } else {
+        resolve([data, null]);
+      }
+    });
   });
 }
 

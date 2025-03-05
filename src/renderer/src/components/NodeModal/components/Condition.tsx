@@ -1,14 +1,14 @@
-import React, { useMemo, useRef, memo } from 'react';
+import React, { useMemo, useRef, memo, useLayoutEffect } from 'react';
 
 import CodeMirror, { ReactCodeMirrorRef, Transaction, EditorState } from '@uiw/react-codemirror';
 import throttle from 'lodash.throttle';
 import { twMerge } from 'tailwind-merge';
 
-import { Checkbox, Select, TabPanel, Tabs, TextField } from '@renderer/components/UI';
+import { AttributeConstSwitch } from '@renderer/components/AttributeConstSwitch';
+import { Select, TabPanel, Tabs, TextField } from '@renderer/components/UI';
 import { useModelContext } from '@renderer/store/ModelContext';
 
 import { useCondition } from '../hooks';
-
 import '../style.css';
 
 const operand = [
@@ -49,7 +49,6 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
   const {
     show,
     handleChangeConditionShow,
-
     tabValue,
     onTabChange,
 
@@ -84,6 +83,11 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
     onChangeText,
 
     errors,
+    condition,
+    parse,
+
+    isElse,
+    handleElseChange,
   } = props;
 
   const editor = useModelContext();
@@ -92,6 +96,10 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
   const visual = controller.useData('visual');
 
   const editorRef = useRef<ReactCodeMirrorRef | null>(null);
+
+  useLayoutEffect(() => {
+    parse(condition);
+  }, [condition, parse]);
 
   const handleTabChange = (tab: number) => {
     onTabChange(tab);
@@ -132,6 +140,16 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
           />
           <span>{show ? 'Убрать условие' : 'Добавить условие'}</span>
         </label>
+        {visual && (
+          <div className={twMerge('flex flex-row', !show && 'hidden')}>
+            <AttributeConstSwitch
+              hint="Если не выполняются другие условия для данного триггера"
+              checked={isElse}
+              onCheckedChange={handleElseChange}
+            />
+            <span className="ml-2">else</span>
+          </div>
+        )}
 
         {!visual && (
           <Tabs
@@ -147,38 +165,54 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
         <TabPanel value={0} tabValue={tabValue}>
           <div className="flex flex-col gap-2">
             <div className="flex items-start">
-              <Checkbox
-                checked={!isParamOneInput1}
-                onCheckedChange={(v) => handleParamOneInput1(!v)}
-                className="mr-2 mt-[9px]"
-              />
+              <div className="mr-2 mt-[6px]">
+                <AttributeConstSwitch
+                  checked={isParamOneInput1}
+                  onCheckedChange={() => handleParamOneInput1(!isParamOneInput1)}
+                  hint={
+                    isParamOneInput1
+                      ? 'Переключиться на константу'
+                      : 'Переключиться на атрибут компонента'
+                  }
+                  isDisabled={isElse}
+                  className={twMerge(isElse && 'cursor-default opacity-50')}
+                />
+              </div>
               {isParamOneInput1 ? (
-                <div className="flex w-full gap-2">
+                <div className="flex gap-2">
                   <Select
-                    containerClassName="w-full"
+                    containerClassName={twMerge('w-[290px]', isElse && 'opacity-50')}
                     options={componentOptionsParam1}
                     onChange={handleComponentParam1Change}
                     value={
                       componentOptionsParam1.find((o) => o.value === selectedComponentParam1) ??
                       null
                     }
+                    isDisabled={isElse}
                     isSearchable={false}
                     error={errors.selectedComponentParam1 || ''}
+                    placeholder="Выберите компонент..."
+                    noOptionsMessage={() => 'Нет подходящих компонентов'}
                   />
                   <Select
-                    containerClassName="w-full"
+                    containerClassName={twMerge('w-[290px]', isElse && 'opacity-50')}
                     options={methodOptionsParam1}
                     onChange={handleMethodParam1Change}
                     value={
                       methodOptionsParam1.find((o) => o.value === selectedMethodParam1) ?? null
                     }
+                    isDisabled={isElse}
                     isSearchable={false}
                     error={errors.selectedMethodParam1 || ''}
+                    placeholder="Выберите атрибут..."
+                    noOptionsMessage={() => 'Нет подходящих атрибутов'}
                   />
                 </div>
               ) : (
                 <TextField
                   label=""
+                  containerClassName={twMerge(isElse && 'opacity-50')}
+                  disabled={isElse}
                   placeholder="Напишите параметр"
                   onChange={(e) => handleArgsParam1Change(e.target.value)}
                   value={argsParam1 ?? ''}
@@ -189,25 +223,34 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
             </div>
 
             <Select
-              containerClassName="pl-7"
+              containerClassName={twMerge('pl-[50px]', isElse && 'opacity-50')}
               className="max-w-[220px]"
               placeholder="Выберите оператор"
               options={operand}
+              isDisabled={isElse}
               onChange={handleConditionOperatorChange}
               value={operand.find((opt) => opt.value === conditionOperator) ?? null}
               error={errors.conditionOperator || ''}
             />
 
             <div className="flex items-start">
-              <Checkbox
-                checked={!isParamOneInput2}
-                onCheckedChange={(v) => handleParamOneInput2(!v)}
-                className="mr-2 mt-[9px]"
-              />
+              <div className="mr-2 mt-[6px]">
+                <AttributeConstSwitch
+                  checked={isParamOneInput2}
+                  onCheckedChange={() => handleParamOneInput2(!isParamOneInput2)}
+                  hint={
+                    isParamOneInput2
+                      ? 'Переключиться на константу'
+                      : 'Переключиться на атрибут компонента'
+                  }
+                  isDisabled={isElse}
+                  className={twMerge(isElse && 'cursor-default opacity-50')}
+                />
+              </div>
               {isParamOneInput2 ? (
-                <div className="flex w-full gap-2">
+                <div className="flex gap-2">
                   <Select
-                    containerClassName="w-full"
+                    containerClassName={twMerge('w-[290px]', isElse && 'opacity-50')}
                     options={componentOptionsParam2}
                     onChange={handleComponentParam2Change}
                     value={
@@ -215,25 +258,33 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
                       null
                     }
                     isSearchable={false}
+                    isDisabled={isElse}
                     error={errors.selectedComponentParam2 || ''}
+                    placeholder="Выберите компонент..."
+                    noOptionsMessage={() => 'Нет подходящих компонентов'}
                   />
                   <Select
-                    containerClassName="w-full"
+                    containerClassName={twMerge('w-[290px]', isElse && 'opacity-50')}
                     options={methodOptionsParam2}
                     onChange={handleMethodParam2Change}
                     value={
                       methodOptionsParam2.find((o) => o.value === selectedMethodParam2) ?? null
                     }
+                    isDisabled={isElse}
                     isSearchable={false}
                     error={errors.selectedMethodParam2 || ''}
+                    placeholder="Выберите атрибут..."
+                    noOptionsMessage={() => 'Нет подходящих атрибутов'}
                   />
                 </div>
               ) : (
                 <TextField
                   label=""
+                  containerClassName={twMerge(isElse && 'opacity-50')}
                   placeholder="Напишите параметр"
                   onChange={(e) => handleArgsParam2Change(e.target.value)}
                   value={argsParam2 ?? ''}
+                  disabled={isElse}
                   error={!!errors.argsParam2}
                   errorMessage={errors.argsParam2 || ''}
                 />
@@ -241,7 +292,6 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
             </div>
           </div>
         </TabPanel>
-
         {!visual && (
           <TabPanel value={1} tabValue={tabValue}>
             <CodeMirror

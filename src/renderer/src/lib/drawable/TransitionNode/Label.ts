@@ -92,7 +92,7 @@ export class Label implements Drawable {
     ctx.font = `${fontSize}px/${stateStyle.titleLineHeight} ${stateStyle.titleFontFamily}`;
     ctx.fillStyle = stateStyle.eventColor;
     ctx.textBaseline = stateStyle.eventBaseLine;
-    ctx.fillStyle = 'rgb(23, 23, 23)';
+    ctx.fillStyle = 'rgb(100, 100, 100)'; // ТУТ ЦВЕТ ПЕРЕХОДА
 
     ctx.beginPath();
     ctx.roundRect(x, y, width, height, 8 / this.app.controller.scale);
@@ -118,17 +118,20 @@ export class Label implements Drawable {
     }
 
     //Здесь начинается прорисовка действий и условий для связей
-    if (label.condition && typeof label.condition !== 'string') {
+    if (label.condition) {
+      const ax = 1;
+      const ay = 0;
+      const aX =
+        px +
+        (eventMargin + (this.app.view.picto.eventWidth + eventMargin) * ax) /
+          this.app.controller.scale;
+      const aY = py + (ay * yDx) / this.app.controller.scale;
+      if (label.condition === 'else') {
+        platform[this.parent.smId].drawText(ctx, 'else', aX, aY, opacity);
+      }
       //TODO: Требуется допиливание прорисовки условий
       ctx.beginPath();
-      if (label.condition) {
-        const ax = 1;
-        const ay = 0;
-        const aX =
-          px +
-          (eventMargin + (this.app.view.picto.eventWidth + eventMargin) * ax) /
-            this.app.controller.scale;
-        const aY = py + (ay * yDx) / this.app.controller.scale;
+      if (label.condition && typeof label.condition !== 'string') {
         platform[this.parent.smId].drawCondition(ctx, label.condition, aX, aY, opacity);
       }
       ctx.closePath();

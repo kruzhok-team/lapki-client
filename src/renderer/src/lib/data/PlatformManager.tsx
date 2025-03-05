@@ -260,7 +260,7 @@ export class PlatformManager {
   drawEvent(ctx: CanvasRenderingContext2D, ev: Event, x: number, y: number) {
     let leftIcon: string | MarkedIconData | undefined = undefined;
     let rightIcon = 'unknown';
-    const bgColor = '#3a426b';
+    const bgColor = '#494949';
     const fgColor = '#fff';
     let argQuery: string = '';
     const compoData = this.resolveComponent(ev.component);
@@ -289,13 +289,13 @@ export class PlatformManager {
       const paramValue = ev.args[argQuery];
       if (typeof paramValue === 'undefined') {
         parameter = '?!';
-      } else if (typeof paramValue === 'string') {
-        parameter = paramValue;
+      } else if (typeof paramValue.value === 'string') {
+        parameter = paramValue.value;
       } else if (
         typeof parameterList[0].type === 'string' &&
         parameterList[0].type.startsWith('Matrix')
       ) {
-        parameter = paramValue;
+        parameter = paramValue.value;
         drawFunction = this.picto.drawMatrix;
       } else {
         // FIXME
@@ -322,7 +322,7 @@ export class PlatformManager {
   drawAction(ctx: CanvasRenderingContext2D, ac: Action, x: number, y: number, alpha?: number) {
     let leftIcon: string | MarkedIconData | undefined = undefined;
     let rightIcon = 'unknown';
-    const bgColor = '#5b5f73';
+    const bgColor = '#5f5f5f';
     const fgColor = '#fff';
     const opacity = alpha ?? 1.0;
     let argQuery: string = '';
@@ -355,17 +355,17 @@ export class PlatformManager {
         } else {
           parameter = '?!';
         }
-      } else if (typeof paramValue === 'string') {
-        parameter = paramValue;
+      } else if (typeof paramValue.value === 'string') {
+        parameter = paramValue.value;
       } else if (
         typeof parameterList[0].type === 'string' &&
         parameterList[0].type.startsWith('Matrix')
       ) {
-        parameter = paramValue;
+        parameter = paramValue.value;
         drawFunction = this.picto.drawMatrix;
-      } else if (isVariable(paramValue)) {
+      } else if (isVariable(paramValue.value)) {
         drawFunction = this.drawParameterPicto;
-        parameter = paramValue;
+        parameter = paramValue.value;
       } else {
         // FIXME
         console.log(['PlatformManager.drawAction', 'Variable!', ac]);
@@ -436,6 +436,19 @@ export class PlatformManager {
     }
     console.log(['PlatformManager.measureCondition', 'wtf', ac]);
     return this.picto.eventWidth;
+  }
+
+  drawText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, alpha?: number) {
+    const bgColor = '#5b7173';
+    const fgColor = '#fff';
+    const opacity = alpha ?? 1.0;
+
+    this.picto.drawText(ctx, x, y, {
+      rightIcon: text,
+      bgColor,
+      fgColor,
+      opacity,
+    });
   }
 
   drawCondition(

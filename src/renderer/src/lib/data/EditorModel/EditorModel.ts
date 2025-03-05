@@ -1,7 +1,6 @@
 import { useSyncExternalStore } from 'react';
 
 import { EventSelection } from '@renderer/lib/drawable';
-import { stateStyle } from '@renderer/lib/styles';
 import {
   emptyEditorData,
   emptyDataListeners,
@@ -80,7 +79,6 @@ export class EditorModel {
     this.data.elements.stateMachines[''] = emptyStateMachine();
     this.data.isInitialized = true;
     this.initPlatform(); // TODO(bryzZz) Платформа непонятно где вообще в архитектуре, судя по всему ее нужно переносить в данные
-    this.triggerDataUpdate('elements.meta', 'basename', 'name', 'elements', 'isInitialized');
   }
 
   triggerSave(basename: string | null, name: string | null) {
@@ -144,7 +142,7 @@ export class EditorModel {
               act.component = newComponentId;
             }
             for (const argId in act.args) {
-              const arg = act.args[argId];
+              const arg = act.args[argId].value;
               if (typeof arg === 'string') {
                 arg.replace(oldComponentId, newComponentId);
               } else if (isVariable(arg)) {
@@ -154,6 +152,9 @@ export class EditorModel {
               }
             }
           }
+        }
+        if (typeof ev.condition !== 'string' && ev.condition) {
+          this.renameCondition(ev.condition, oldComponentId, newComponentId);
         }
       }
     }
@@ -177,7 +178,7 @@ export class EditorModel {
               act.component = newComponentId;
             }
             for (const argId in act.args) {
-              const arg = act.args[argId];
+              const arg = act.args[argId].value;
               if (typeof arg === 'string') {
                 arg.replace(oldComponentId, newComponentId);
               } else if (isVariable(arg)) {
@@ -283,14 +284,15 @@ export class EditorModel {
       placeInCenter = false,
       color,
       smId,
+      dimensions,
     } = args;
+
     let position = args.position;
-    const { width, height } = stateStyle;
 
     const centerPosition = () => {
       return {
-        x: position.x - width / 2,
-        y: position.y - height / 2,
+        x: position.x - dimensions.width / 2,
+        y: position.y - dimensions.height / 2,
       };
     };
 
@@ -298,7 +300,7 @@ export class EditorModel {
 
     this.data.elements.stateMachines[smId].states[id] = {
       position,
-      dimensions: { width, height },
+      dimensions: { ...dimensions },
       events: events,
       name,
       parentId,
@@ -730,7 +732,7 @@ export class EditorModel {
   }
 
   createComponent(args: CreateComponentParams) {
-    const { smId, name, type, placeInCenter = false, position, parameters } = args;
+    const { smId, name, type, id, placeInCenter = false, position, parameters } = args;
 
     const centerPosition = () => {
       const size = 50;
@@ -740,8 +742,8 @@ export class EditorModel {
       };
     };
 
-    if (this.data.elements.stateMachines[smId].components.hasOwnProperty(name)) {
-      console.error(['bad new component', name, type]);
+    if (this.data.elements.stateMachines[smId].components.hasOwnProperty(id)) {
+      console.error(['bad new component', id, name, type]);
       return name;
     }
 
@@ -755,8 +757,9 @@ export class EditorModel {
       return Math.max(...orders) + 1;
     };
 
-    this.data.elements.stateMachines[smId].components[name] = {
+    this.data.elements.stateMachines[smId].components[id] = {
       type,
+      name: name,
       position: placeInCenter ? centerPosition() : position,
       parameters,
       order: getOrder(),
@@ -766,25 +769,25 @@ export class EditorModel {
     return name;
   }
 
-  editComponent(smId: string, name: string, parameters: Component['parameters']) {
-    const component = this.data.elements.stateMachines[smId].components[name];
+  editComponent(smId: string, id: string, parameters: Component['parameters'], name?: string) {
+    const component = this.data.elements.stateMachines[smId].components[id];
     if (!component) return false;
 
     component.parameters = parameters;
-
+    component.name = name;
     this.triggerDataUpdate('elements.components');
 
     return true;
   }
 
-  changeComponentName(smId: string, name: string, newName: string) {
-    const component = this.data.elements.stateMachines[smId].components[name];
+  changeComponentName(smId: string, id: string, newId: string) {
+    const component = this.data.elements.stateMachines[smId].components[id];
     if (!component) return false;
 
-    this.data.elements.stateMachines[smId].components[newName] = component;
+    this.data.elements.stateMachines[smId].components[newId] = component;
 
-    delete this.data.elements.stateMachines[smId].components[name];
-    this.renameComponentInEvents(this.data.elements.stateMachines[smId], name, newName);
+    delete this.data.elements.stateMachines[smId].components[id];
+    this.renameComponentInEvents(this.data.elements.stateMachines[smId], id, newId);
     this.triggerDataUpdate('elements.components');
 
     return true;

@@ -34,7 +34,7 @@ export const MatrixLed: React.FC<MatrixLedProps> = ({
         width: ledWidth * 4,
       }}
       className={twMerge(
-        `border-1 border-border-contrast`,
+        'border-2 border-border-primary',
         value === 0 && 'bg-matrix-inactive',
         value >= 1 && 'bg-matrix-active',
         isRounded && 'rounded'

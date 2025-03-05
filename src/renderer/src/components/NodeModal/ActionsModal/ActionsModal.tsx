@@ -4,6 +4,7 @@ import { SingleValue } from 'react-select';
 
 import { Modal, Select, SelectOption } from '@renderer/components/UI';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
+import { PlatformManager } from '@renderer/lib/data/PlatformManager';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { ArgList, Component, Action } from '@renderer/types/diagram';
 import { ArgumentProto } from '@renderer/types/platform';
@@ -37,7 +38,7 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
 }) => {
   const modelController = useModelContext();
   const model = modelController.model;
-  const platforms = controller.useData('platform');
+  const platforms = controller.useData('platform') as { [id: string]: PlatformManager };
   const visual = controller.useData('visual');
   const componentsData = model.useData(smId, 'elements.components') as {
     [id: string]: Component;
@@ -50,37 +51,55 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
   const [parameters, setParameters] = useState<ArgList>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const componentOptions: SelectOption[] = useMemo(() => {
-    if (!platforms[smId]) return [];
-
-    const getComponentOption = (id: string) => {
-      if (!platforms[smId]) {
-        return {
-          value: id,
-          label: id,
-          hint: undefined,
-          icon: undefined,
-        };
-      }
-      const proto = platforms[smId].getComponent(id);
-
+  const getComponentOption = (id: string, excludeIfEmpty: 'methods' | 'signals' | 'variables') => {
+    if (!controller.platform[smId]) {
       return {
         value: id,
         label: id,
-        hint: proto?.description,
-        icon: platforms[smId].getFullComponentIcon(id, 'mr-1 h-7 w-7'),
+        hint: undefined,
+        icon: undefined,
       };
-    };
+    }
+    const proto = controller.platform[smId]?.getComponent(id);
 
-    const result = Object.entries(componentsData)
-      .sort((a, b) => a[1].order - b[1].order)
-      .map(([idx]) => getComponentOption(idx));
+    if (proto && Object.keys(proto[excludeIfEmpty]).length === 0) {
+      return;
+    }
+
+    const name =
+      componentsData[id] && visual && componentsData[id].name ? componentsData[id].name : id;
+    return {
+      value: id,
+      label: name,
+      hint: proto?.description,
+      icon: controller.platform[smId]?.getFullComponentIcon(id, 'mr-1 h-7 w-7'),
+    };
+  };
+
+  const getComponentOptions = (excludeIfEmpty: 'methods' | 'signals' | 'variables') => {
+    if (!platforms[smId]) return [];
+
+    const sortedComponents = Object.entries(componentsData).sort((a, b) => a[1].order - b[1].order);
+    const result: Exclude<ReturnType<typeof getComponentOption>, undefined>[] = [];
+    for (const [componentId] of sortedComponents) {
+      const option = getComponentOption(componentId, excludeIfEmpty);
+      if (option) {
+        result.push(option);
+      }
+    }
 
     if (isEditingEvent) {
-      result.unshift(getComponentOption('System'));
+      const system = getComponentOption('System', excludeIfEmpty);
+      if (system) {
+        result.unshift(system);
+      }
     }
 
     return result;
+  };
+
+  const componentOptions: SelectOption[] = useMemo(() => {
+    return getComponentOptions('methods');
   }, [smId, platforms, componentsData, isEditingEvent, visual]);
 
   const methodOptions: SelectOption[] = useMemo(() => {
@@ -181,9 +200,10 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
 
     const platform = controller.platform[smId];
     if (
-      !protoParameters.every((proto) => {
+      !protoParameters.every((proto, idx) => {
         const { name, type = '' } = proto;
-        const value = parameters[name] ?? '';
+        const parameter = parameters[name] ?? { value: '', order: idx };
+        const value = parameter.value;
         if (Array.isArray(value)) {
           return true;
         }
@@ -284,18 +304,26 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
           options={componentOptions}
           value={componentOptions.find((o) => o.value === selectedComponent) ?? null}
           onChange={handleComponentChange}
+          placeholder="Выберите компонент..."
           isMulti={false}
           isClearable={false}
           isSearchable={false}
+          noOptionsMessage={() => <div>Отсутствуют подходящие компоненты</div>}
         />
         <Select
           className="w-full"
           options={methodOptions}
           value={methodOptions.find((o) => o.value === selectedMethod) ?? null}
           onChange={handleMethodChange}
+          placeholder="Выберите действие..."
           isMulti={false}
           isClearable={false}
           isSearchable={false}
+          noOptionsMessage={() => (
+            <div>
+              У компонента отсутствуют действия <br /> Выберите другой компонент
+            </div>
+          )}
         />
       </div>
 
@@ -305,7 +333,7 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
         setParameters={setParameters}
         errors={errors}
         setErrors={setErrors}
-        componentOptions={componentOptions}
+        componentOptions={getComponentOptions('variables')}
         controller={controller}
         smId={smId}
         methodOptionsSearch={methodOptionsSearch}

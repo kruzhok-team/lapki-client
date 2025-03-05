@@ -1,0 +1,3 @@
+.event:has(+ .event:hover) hr {
+    border-color: transparent;
+}

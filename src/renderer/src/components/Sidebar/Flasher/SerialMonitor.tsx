@@ -272,7 +272,7 @@ export const SerialMonitorTab: React.FC = () => {
         </div>
       </div>
       <div
-        className="mx-2 h-full select-text overflow-y-auto whitespace-break-spaces bg-bg-primary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
+        className="mx-2 h-full select-text overflow-y-auto whitespace-break-spaces break-words bg-bg-primary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
         ref={deviceMessageContainerRef}
       >
         {deviceMessages}
@@ -281,7 +281,7 @@ export const SerialMonitorTab: React.FC = () => {
       <hr></hr>
       <br></br>
       <div
-        className="mx-2 h-full select-text overflow-y-auto whitespace-break-spaces bg-bg-primary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
+        className="mx-2 h-full select-text overflow-y-auto whitespace-break-spaces break-words bg-bg-primary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
         ref={logContainerRef}
       >
         {log.map((msg, index) => (

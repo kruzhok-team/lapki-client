@@ -11,6 +11,7 @@ import {
   handleGetFileMetadata,
   handleFileSelect,
   handleFileRead,
+  handleFileExists,
 } from './handlers';
 
 /**
@@ -30,6 +31,7 @@ const handlers = {
   getMetadata: handleGetFileMetadata,
   selectFile: handleFileSelect,
   readFile: handleFileRead,
+  existsFile: handleFileExists,
 };
 
 /**

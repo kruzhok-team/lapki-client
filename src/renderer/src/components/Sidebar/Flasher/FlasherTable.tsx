@@ -57,10 +57,10 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
     return stateMachineOption(stateMachinesId[source], source);
   };
 
-  const platformWithoutVersion = (platform: string | undefined) => {
-    if (!platform) return '';
-    return platform.slice(0, platform.lastIndexOf('-'));
-  };
+  // const platformWithoutVersion = (platform: string | undefined) => {
+  //   if (!platform) return '';
+  //   return platform.slice(0, platform.lastIndexOf('-'));
+  // };
 
   const stateMachineOptions = new Map<string, SelectOption[]>();
   const allAddressOptions: SelectOption[] = [];
@@ -71,7 +71,7 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
     if (!smId) return;
     let key: string = '';
     if (sm.platform.startsWith('tjc')) {
-      key = platformWithoutVersion(sm.platform);
+      key = sm.platform;
     } else {
       key = sm.platform;
     }
@@ -249,7 +249,7 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
       }
       displayName = addressData.name ? addressData.name : 'Не указано';
       displayType = addressData.type ? addressData.type : 'Неизвестно';
-      typeId = addressData.type ? platformWithoutVersion(addressData.type) : undefined;
+      typeId = addressData.type ? addressData.type : undefined;
       displayAddress = addressData.address;
     } else if (tableItem.targetType === FirmwareTargetType.arduino) {
       const dev = devices.get(tableItem.targetId as string);

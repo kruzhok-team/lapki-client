@@ -9,6 +9,7 @@ import { useModelContext } from '@renderer/store/ModelContext';
 import { useTabs } from '@renderer/store/useTabs';
 import { noTextMode } from '@renderer/version';
 
+import { OpenRecentModal } from '../OpenRecentModal';
 import { Badge, WithHint } from '../UI';
 
 interface MenuItem {
@@ -23,7 +24,7 @@ interface MenuItem {
 
 export interface MenuProps {
   onRequestNewFile: () => void;
-  onRequestOpenFile: () => void;
+  onRequestOpenFile: (path?: string) => void;
   onRequestSaveFile: () => void;
   onRequestSaveAsFile: () => void;
   onRequestImport: (setOpenData: Dispatch<[boolean, string | null, string | null, string]>) => void;
@@ -46,6 +47,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
   const isInitialized = modelController.model.useData('', 'isInitialized');
   const { propertiesModalProps, openPropertiesModal } = useProperties(controller);
   const [isTextModeModalOpen, openTextModeModal, closeTextModeModal] = useModal(false);
+  const [isRecentModalOpen, openRecentModal, closeRecentModal] = useModal(false);
   const visual = controller.useData('visual');
 
   const items: MenuItem[] = [
@@ -56,6 +58,10 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
     {
       text: 'Открыть...',
       onClick: () => props.onRequestOpenFile(), // Если передавать просто функцию, в параметры может попасть то что не нужно
+    },
+    {
+      text: 'Открыть недавние...',
+      onClick: () => openRecentModal(), // Если передавать просто функцию, в параметры может попасть то что не нужно
     },
     {
       text: 'Сохранить',
@@ -203,6 +209,11 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
 
       <PropertiesModal {...propertiesModalProps} />
       <TextModeModal isOpen={isTextModeModalOpen} onClose={closeTextModeModal} />
+      <OpenRecentModal
+        isOpen={isRecentModalOpen}
+        onClose={closeRecentModal}
+        onSubmit={(filePath) => props.onRequestOpenFile(filePath)}
+      />
     </section>
   );
 };

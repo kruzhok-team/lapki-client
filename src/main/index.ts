@@ -3,16 +3,16 @@ import { app, shell, BrowserWindow, ipcMain } from 'electron';
 import settings from 'electron-settings';
 import { lookpath } from 'lookpath';
 
+import { existsSync } from 'fs';
 import { join } from 'path';
 
 import { checkForUpdates } from './checkForUpdates';
 import { initFileHandlersIPC } from './file-handlers';
 import { ModuleName, ModuleManager } from './modules/ModuleManager';
-import { initDefaultSettings, initSettingsHandlers, settingsChangeSend } from './settings';
+import { initSettings, initSettingsHandlers, settingsChangeSend } from './settings';
 import { getAllTemplates, getTemplate } from './templates';
 
 import icon from '../../resources/icon.png?asset';
-import { existsSync } from 'fs';
 
 /**
  * Создание главного окна редактора.
@@ -113,7 +113,7 @@ function createWindow(): BrowserWindow {
 const startFlasher = async () => {
   ModuleManager.startLocalModule('lapki-flasher');
 };
-initDefaultSettings();
+initSettings();
 startFlasher();
 
 // Выполняется после инициализации Electron

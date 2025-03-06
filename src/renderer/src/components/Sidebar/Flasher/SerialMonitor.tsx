@@ -176,7 +176,7 @@ export const SerialMonitorTab: React.FC = () => {
   };
 
   return (
-    <section className="mr-3 flex h-full flex-col bg-bg-secondary">
+    <section className="mr-3 flex h-full flex-col overflow-auto bg-bg-secondary">
       <div className="m-2 flex justify-between">
         <button
           className="btn-primary"

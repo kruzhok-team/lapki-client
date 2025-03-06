@@ -40,6 +40,21 @@ class LineBreakOptions {
   };
 }
 
+// опции выбора режима текста
+// при изменение данных здесь, нужно не забыть проверить стандартные настройки (setting.ts)
+class TextModeOptions {
+  static text = {
+    label: 'Текст',
+    value: 'text',
+    hint: 'Перевод в режим текста',
+  };
+  static hex = {
+    label: 'HEX',
+    value: 'hex',
+    hint: 'Перевод в режим HEX',
+  };
+}
+
 export const SerialMonitorTab: React.FC = () => {
   const [monitorSetting, setMonitorSetting] = useSettings('serialmonitor');
 
@@ -90,8 +105,14 @@ export const SerialMonitorTab: React.FC = () => {
     }
   }, [device]);
 
+  if (!monitorSetting) {
+    return null;
+  }
+
+  type TextModeType = typeof monitorSetting.textMode;
+
   const handleSend = () => {
-    if (inputValue.trim() && device !== undefined && monitorSetting !== null) {
+    if (inputValue.trim() && device !== undefined) {
       // Отправляем сообщение через SerialMonitor
       SerialMonitor.sendMessage(
         device?.deviceID,
@@ -123,7 +144,7 @@ export const SerialMonitorTab: React.FC = () => {
   };
 
   const handleConnectionButton = () => {
-    if (device === undefined || monitorSetting === null) {
+    if (device === undefined) {
       return;
     }
     if (connectionStatus === SERIAL_MONITOR_CONNECTED) {
@@ -134,7 +155,6 @@ export const SerialMonitorTab: React.FC = () => {
   };
 
   const settingLineBreak = (newBreakLine: LineBreakType) => {
-    if (!monitorSetting) return;
     let settingValue: typeof monitorSetting.lineBreak;
     switch (newBreakLine) {
       case 'Без':
@@ -149,17 +169,19 @@ export const SerialMonitorTab: React.FC = () => {
     });
   };
 
+  const settingTextMode = (newTextMode: TextModeType) => {
+    setMonitorSetting({
+      ...monitorSetting,
+      textMode: newTextMode,
+    });
+  };
+
   const settingBaudRate = (newBaudRate: number) => {
-    if (!monitorSetting) return;
     setMonitorSetting({
       ...monitorSetting,
       baudRate: newBaudRate,
     });
   };
-
-  if (!monitorSetting) {
-    return null;
-  }
 
   const handleAddDevice = (deviceIds: string[]) => {
     if (deviceIds.length === 0) return;
@@ -198,6 +220,19 @@ export const SerialMonitorTab: React.FC = () => {
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
         />
+        <div className="mr-2 w-48">
+          <Select
+            isSearchable={false}
+            value={TextModeOptions[monitorSetting.textMode]}
+            placeholder="Режим..."
+            onChange={(option) => {
+              if (option) {
+                settingTextMode(option.value as TextModeType);
+              }
+            }}
+            options={[TextModeOptions.text, TextModeOptions.hex]}
+          />
+        </div>
         <div className="mr-2 w-48">
           <Select
             isSearchable={false}

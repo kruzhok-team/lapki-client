@@ -65,6 +65,7 @@ export const useFlasherHooks = () => {
     device: serialMonitorDevice,
     setDevice: setSerialMonitorDevice,
     addDeviceMessage: addSerialDeviceMessage,
+    addBytesFromDevice: addBytesFromSerial,
     setConnectionStatus: setSerialConnectionStatus,
     setLog: setSerialLog,
   } = useSerialMonitor();
@@ -484,7 +485,7 @@ export const useFlasherHooks = () => {
       }
       case 'serial-device-read': {
         const serialRead = flasherMessage.payload as SerialRead;
-        SerialMonitor.addDeviceMessage(Buffer.from(serialRead.msg, 'base64').toString('utf-8'));
+        addBytesFromSerial(Buffer.from(serialRead.msg, 'base64'));
         break;
       }
       case 'flash-open-serial-monitor':

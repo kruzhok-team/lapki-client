@@ -64,6 +64,7 @@ export const defaultSettings = {
      * Если true, то будет автоматическая прокрутка окна с логами
      */
     autoScroll: true,
+    textMode: 'text' as 'text' | 'hex',
   },
   platformsPath: '',
   theme: 'light' as 'light' | 'dark',

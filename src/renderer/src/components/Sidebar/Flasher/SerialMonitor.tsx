@@ -130,13 +130,23 @@ export const SerialMonitorTab: React.FC = () => {
 
   type TextModeType = typeof monitorSetting.textMode;
 
+  // Отправляем сообщение через SerialMonitor
   const handleSend = () => {
-    if (inputValue.trim() && device !== undefined) {
-      // Отправляем сообщение через SerialMonitor
-      SerialMonitor.sendMessage(
-        device?.deviceID,
-        inputValue + LineBreakOptions[monitorSetting?.lineBreak].value
-      );
+    if (inputValue !== '' && device !== undefined) {
+      let msgToSend: Buffer;
+      const lineBreak = LineBreakOptions[monitorSetting.lineBreak].value;
+      switch (monitorSetting.textMode) {
+        case 'text':
+          msgToSend = Buffer.from(inputValue + lineBreak);
+          break;
+        case 'hex':
+          msgToSend = Buffer.from(inputValue.replaceAll(' ', ''), 'hex');
+          msgToSend = Buffer.concat([msgToSend, Buffer.from(lineBreak)]);
+          break;
+        default:
+          return;
+      }
+      SerialMonitor.sendMessage(device.deviceID, msgToSend);
       setInputValue('');
     }
   };

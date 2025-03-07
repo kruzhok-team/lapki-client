@@ -46,10 +46,10 @@ export class SerialMonitor {
     });
   }
 
-  static sendMessage(deviceID: string, message: string) {
+  static sendMessage(deviceID: string, buffer: Buffer) {
     Flasher.send('serial-send', {
       deviceID: deviceID,
-      msg: Buffer.from(message, 'utf-8').toString('base64'),
+      msg: buffer.toString('base64'),
     });
   }
 

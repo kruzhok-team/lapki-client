@@ -48,12 +48,12 @@ class TextModeOptions {
   static text = {
     label: 'Текст',
     value: 'text',
-    hint: 'Перевод в режим текста',
+    hint: 'Перевод в режим текста. В этом режиме байты, полученные с устройства, автоматически конвертируются в текст. Введённый текст тоже преобразуется в байты при отправке на устройство.',
   };
   static hex = {
     label: 'HEX',
     value: 'hex',
-    hint: 'Перевод в режим HEX',
+    hint: 'Перевод в режим HEX. В этом режиме байты, полученные с устройства, отображаются в виде двузначных шестнадцатеричных чисел. Чтобы передать данные на устройство ввод необходимо написать в таком же формате.',
   };
 }
 
@@ -120,8 +120,13 @@ export const SerialMonitorTab: React.FC = () => {
       case 'text':
         setMessages(SerialMonitor.toText(bytesFromDevice));
         break;
+      default:
+        console.log('Неизвестный режим монитора порта! Перевод в режим текста...');
+        settingTextMode('text');
+        return;
     }
     setInputError('');
+    SerialMonitor.addLog(`Перевод в режим «${TextModeOptions[monitorSetting.textMode].label}».`);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [monitorSetting?.textMode]);
 
@@ -148,7 +153,6 @@ export const SerialMonitorTab: React.FC = () => {
           const bytes = inputValue.replaceAll('0x', '').split(' ');
           const hexBuffers: Buffer[] = [];
           let hasErr = false;
-          //'В режиме «hex» строка должна состоять из двузначных шестнадцатеричных чисел, разделённых пробелами. Каждое число представляет один байт.';
           for (const byte of bytes) {
             if (byte.length != 2) {
               hasErr = true;
@@ -162,8 +166,9 @@ export const SerialMonitorTab: React.FC = () => {
             hexBuffers.push(Buffer.from(byte, 'hex'));
           }
           if (hasErr) {
-            const errorText =
-              'Неправильный ввод. В режиме «hex» строка должна состоять из двузначных шестнадцатеричных чисел, разделённых пробелами. Каждое число представляет один байт.';
+            const errorText = `Неправильный ввод. В режиме «${
+              TextModeOptions[monitorSetting.textMode].label
+            }» строка должна состоять из двузначных шестнадцатеричных чисел, разделённых пробелами. Каждое число представляет один байт.`;
             setInputError(errorText);
             SerialMonitor.addLog(errorText);
             return;

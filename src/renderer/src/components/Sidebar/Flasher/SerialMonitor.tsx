@@ -14,7 +14,7 @@ import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
 
 import { DeviceList } from './DeviceList';
 
-import { Select, Switch, TextInput } from '../../UI';
+import { Select, Switch, TextInput, WithHint } from '../../UI';
 
 type LineBreakType = 'LF' | 'CR' | 'CRLF' | 'Без';
 // опции выбора символа окончания строки
@@ -59,7 +59,6 @@ class TextModeOptions {
 
 export const SerialMonitorTab: React.FC = () => {
   const [monitorSetting, setMonitorSetting] = useSettings('serialmonitor');
-  const textMode = monitorSetting?.textMode;
 
   const {
     deviceMessages,
@@ -88,6 +87,7 @@ export const SerialMonitorTab: React.FC = () => {
   ].map(makeOption);
 
   const [inputValue, setInputValue] = useState<string>('');
+  const [inputError, setInputError] = useState<string>('');
 
   const deviceMessageContainerRef = useRef<HTMLDivElement>(null);
   const logContainerRef = useRef<HTMLDivElement>(null);
@@ -112,8 +112,8 @@ export const SerialMonitorTab: React.FC = () => {
   }, [device]);
 
   useEffect(() => {
-    if (!textMode) return;
-    switch (textMode) {
+    if (!monitorSetting?.textMode) return;
+    switch (monitorSetting.textMode) {
       case 'hex':
         setMessages(SerialMonitor.toHex(bytesFromDevice));
         break;
@@ -121,8 +121,13 @@ export const SerialMonitorTab: React.FC = () => {
         setMessages(SerialMonitor.toText(bytesFromDevice));
         break;
     }
+    setInputError('');
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [textMode]);
+  }, [monitorSetting?.textMode]);
+
+  useEffect(() => {
+    setInputError('');
+  }, [connectionStatus]);
 
   if (!monitorSetting) {
     return null;
@@ -139,15 +144,40 @@ export const SerialMonitorTab: React.FC = () => {
         case 'text':
           msgToSend = Buffer.from(inputValue + lineBreak);
           break;
-        case 'hex':
-          msgToSend = Buffer.from(inputValue.replaceAll(' ', ''), 'hex');
-          msgToSend = Buffer.concat([msgToSend, Buffer.from(lineBreak)]);
+        case 'hex': {
+          const bytes = inputValue.replaceAll('0x', '').split(' ');
+          const hexBuffers: Buffer[] = [];
+          let hasErr = false;
+          //'В режиме «hex» строка должна состоять из двузначных шестнадцатеричных чисел, разделённых пробелами. Каждое число представляет один байт.';
+          for (const byte of bytes) {
+            if (byte.length != 2) {
+              hasErr = true;
+              break;
+            }
+            const re = /[0-9A-Fa-f]{2}/g;
+            if (!re.test(byte)) {
+              hasErr = true;
+              break;
+            }
+            hexBuffers.push(Buffer.from(byte, 'hex'));
+          }
+          if (hasErr) {
+            const errorText =
+              'Неправильный ввод. В режиме «hex» строка должна состоять из двузначных шестнадцатеричных чисел, разделённых пробелами. Каждое число представляет один байт.';
+            setInputError(errorText);
+            SerialMonitor.addLog(errorText);
+            return;
+          }
+          hexBuffers.push(Buffer.from(lineBreak));
+          msgToSend = Buffer.concat(hexBuffers);
           break;
+        }
         default:
           return;
       }
       SerialMonitor.sendMessage(device.deviceID, msgToSend);
       setInputValue('');
+      setInputError('');
     }
   };
 
@@ -243,13 +273,24 @@ export const SerialMonitorTab: React.FC = () => {
         {`${handleCurrentDeviceDisplay()}`}
       </div>
       <div className="m-2 flex">
-        <TextInput
-          className="mr-2 max-w-full"
-          placeholder="Напишите значение"
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          onKeyDown={handleKeyDown}
-        />
+        <WithHint hint={inputError}>
+          {(hintProps) => (
+            <TextInput
+              {...hintProps}
+              className="mr-2 max-w-full"
+              placeholder="Напишите значение"
+              value={inputValue}
+              onChange={(e) => {
+                setInputValue(e.target.value);
+                if (e.target.value === '') {
+                  setInputError('');
+                }
+              }}
+              onKeyDown={handleKeyDown}
+              error={inputError !== ''}
+            />
+          )}
+        </WithHint>
         <div className="mr-2 w-48">
           <Select
             isSearchable={false}

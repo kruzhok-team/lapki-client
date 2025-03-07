@@ -1,5 +1,6 @@
 import React, { useId } from 'react';
 
+import { toast } from 'sonner';
 import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as Arrow } from '@renderer/assets/icons/arrow-down.svg';
@@ -63,6 +64,19 @@ const HistoryWithEditor: React.FC = () => {
   const modelController = useModelContext();
   const { undoStack, redoStack } = modelController.history.use();
 
+  const exportHistory = async () => {
+    const json = JSON.stringify({
+      undo: undoStack,
+      redo: redoStack,
+    });
+    const [isCanceled, , err] = await window.api.fileHandlers.saveAsFile('history', json, [
+      { name: 'json', extensions: ['json'] },
+    ]);
+    if (!isCanceled && err !== null) {
+      toast.error(`Ошибка экспорта истории изменений: ${err}`);
+    }
+  };
+
   return (
     <div>
       <div className="mb-4 flex gap-1">
@@ -73,6 +87,9 @@ const HistoryWithEditor: React.FC = () => {
           Вперёд
         </button>
       </div>
+      <button className="btn-secondary mb-4 w-full" onClick={() => exportHistory()}>
+        Экспорт истории
+      </button>
 
       <div>
         <h3 className="mb-3 font-semibold">Сделано</h3>

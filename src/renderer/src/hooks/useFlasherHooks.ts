@@ -35,6 +35,8 @@ export const useFlasherHooks = () => {
   const basename = modelController.model.useData('', 'basename');
 
   const [flasherSetting, setFlasherSetting] = useSettings('flasher');
+  const [monitorSetting, setMonitorSetting] = useSettings('serialmonitor');
+
   const {
     flasherMessage,
     setFlasherMessage,
@@ -485,7 +487,16 @@ export const useFlasherHooks = () => {
       }
       case 'serial-device-read': {
         const serialRead = flasherMessage.payload as SerialRead;
-        addBytesFromSerial(Buffer.from(serialRead.msg, 'base64'));
+        const buffer = Buffer.from(serialRead.msg, 'base64');
+        addBytesFromSerial(buffer);
+        switch (monitorSetting?.textMode) {
+          case 'text':
+            addSerialDeviceMessage(SerialMonitor.toText(buffer));
+            break;
+          case 'hex':
+            addSerialDeviceMessage(SerialMonitor.toHex(buffer));
+            break;
+        }
         break;
       }
       case 'flash-open-serial-monitor':

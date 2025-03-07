@@ -63,4 +63,17 @@ export class SerialMonitor {
       baud: baud,
     });
   }
+
+  static toHex(buffer: Buffer): string {
+    const hex = buffer.toString('hex');
+    let spacedHex = '';
+    for (let i = 0; i < hex.length; i += 2) {
+      spacedHex += hex[i] + hex[i + 1] + ' ';
+    }
+    return spacedHex;
+  }
+
+  static toText(buffer: Buffer): string {
+    return buffer.toString('utf-8');
+  }
 }

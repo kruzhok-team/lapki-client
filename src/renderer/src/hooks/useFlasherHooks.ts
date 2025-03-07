@@ -35,7 +35,7 @@ export const useFlasherHooks = () => {
   const basename = modelController.model.useData('', 'basename');
 
   const [flasherSetting, setFlasherSetting] = useSettings('flasher');
-  const [monitorSetting, setMonitorSetting] = useSettings('serialmonitor');
+  const [monitorSetting] = useSettings('serialmonitor');
 
   const {
     flasherMessage,

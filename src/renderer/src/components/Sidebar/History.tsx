@@ -80,10 +80,16 @@ const HistoryWithEditor: React.FC = () => {
   return (
     <div>
       <div className="mb-4 flex gap-1">
-        <button className="btn-secondary" onClick={() => modelController.history.undo()}>
+        <button
+          className="btn-secondary w-full px-7"
+          onClick={() => modelController.history.undo()}
+        >
           Назад
         </button>
-        <button className="btn-secondary" onClick={() => modelController.history.redo()}>
+        <button
+          className="btn-secondary w-full px-7"
+          onClick={() => modelController.history.redo()}
+        >
           Вперёд
         </button>
       </div>

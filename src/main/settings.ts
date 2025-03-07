@@ -128,6 +128,11 @@ export const initSettings = () => {
     }
   }
   checkRecentFiles();
+  // (Roundabout1): костыль, нужно будет реализовать проверку наличия всех значений для ключей при инициализации.
+  const monitorSettings = settings.getSync('serialmonitor' as SettingsKey);
+  if (monitorSettings && !monitorSettings['textMode']) {
+    settings.setSync('serialmonitor.textMode', 'text');
+  }
 };
 
 export const initSettingsHandlers = (webContents: WebContents) => {

@@ -121,12 +121,12 @@ const checkRecentFiles = () => {
 };
 
 export const initSettings = () => {
-  checkRecentFiles();
   for (const key in defaultSettings) {
     if (!settings.hasSync(key)) {
       settings.setSync(key, defaultSettings[key]);
     }
   }
+  checkRecentFiles();
 };
 
 export const initSettingsHandlers = (webContents: WebContents) => {

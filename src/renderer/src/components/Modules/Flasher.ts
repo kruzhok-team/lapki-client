@@ -1,5 +1,7 @@
 import Websocket from 'isomorphic-ws';
 
+import { Buffer } from 'buffer';
+
 import { Device, ArduinoDevice } from '@renderer/components/Modules/Device';
 import { Binary } from '@renderer/types/CompilerTypes';
 import { FlasherMessage, FlasherPayload, FlasherType } from '@renderer/types/FlasherTypes';

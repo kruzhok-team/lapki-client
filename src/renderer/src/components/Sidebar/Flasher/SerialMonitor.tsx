@@ -1,4 +1,6 @@
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+
+import { Buffer } from 'buffer';
 
 import {
   SERIAL_MONITOR_CONNECTED,
@@ -57,10 +59,13 @@ class TextModeOptions {
 
 export const SerialMonitorTab: React.FC = () => {
   const [monitorSetting, setMonitorSetting] = useSettings('serialmonitor');
+  const textMode = monitorSetting?.textMode;
 
   const {
     deviceMessages,
     setDeviceMessages: setMessages,
+    bytesFromDevice,
+    setBytesFromDevice,
     device,
     setDevice,
     connectionStatus,
@@ -103,7 +108,21 @@ export const SerialMonitorTab: React.FC = () => {
     if (deviceMessages !== '' && deviceMessages[deviceMessages.length - 1] !== '\n') {
       SerialMonitor.addDeviceMessage('\n');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [device]);
+
+  useEffect(() => {
+    if (!textMode) return;
+    switch (textMode) {
+      case 'hex':
+        setMessages(SerialMonitor.toHex(bytesFromDevice));
+        break;
+      case 'text':
+        setMessages(SerialMonitor.toText(bytesFromDevice));
+        break;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [textMode]);
 
   if (!monitorSetting) {
     return null;
@@ -129,6 +148,7 @@ export const SerialMonitorTab: React.FC = () => {
   };
 
   const handleClear = () => {
+    setBytesFromDevice(Buffer.from(''));
     setMessages('');
     setLog(() => []);
   };

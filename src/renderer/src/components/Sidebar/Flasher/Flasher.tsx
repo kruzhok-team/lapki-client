@@ -67,6 +67,7 @@ export const FlasherTab: React.FC = () => {
     setFlashTableData,
     hasAvrdude,
     errorMessage,
+    addToFlashTable: addToTable,
   } = useFlasher();
 
   const [managerMSSetting, setManagerMSSetting] = useSettings('managerMS');
@@ -136,18 +137,6 @@ export const FlasherTab: React.FC = () => {
       logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight;
     }
   }, [log, managerMSSetting]);
-
-  const addToTable = (item: FlashTableItem) => {
-    if (
-      flashTableData.find((v) => {
-        return v.targetId === item.targetId;
-      }) !== undefined
-    ) {
-      return false;
-    }
-    setFlashTableData([...flashTableData, item]);
-    return true;
-  };
 
   const removeFromTable = (ID: number) => {
     const tableIndex = flashTableData.findIndex((v) => {

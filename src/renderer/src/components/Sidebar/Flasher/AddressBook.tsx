@@ -4,6 +4,8 @@ import { useForm } from 'react-hook-form';
 
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/add.svg';
 import { ReactComponent as SubtractIcon } from '@renderer/assets/icons/subtract.svg';
+import { MSDevice } from '@renderer/components/Modules/Device';
+import { ManagerMS } from '@renderer/components/Modules/ManagerMS';
 import { Modal } from '@renderer/components/UI';
 import { AddressData } from '@renderer/types/FlasherTypes';
 
@@ -19,6 +21,7 @@ interface AddressBookModalProps {
   getID: (index: number) => string | null;
   addressEnrtyEdit: (data: AddressData) => void;
   openAddressEnrtyAdd: () => void;
+  deviceMS: MSDevice | undefined;
 }
 
 /**
@@ -33,6 +36,7 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
   onSubmit,
   addressEnrtyEdit,
   openAddressEnrtyAdd,
+  deviceMS,
   ...props
 }) => {
   // выбранная запись с адресом, undefined означает, что ни одна запись не выбрана;
@@ -73,6 +77,21 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
     }
   });
 
+  const handleAutoAddBoards = () => {
+    if (!addressBookSetting) return;
+    if (!deviceMS) {
+      ManagerMS.addLog(
+        'Не удалось добавить платы по адресной книге, так как центральная плата МС-ТЮК не подключена или не выбрана.'
+      );
+      onClose();
+      return;
+    }
+    const addresses = addressBookSetting.map((entry) => entry.address);
+    ManagerMS.getConnectedBoards(deviceMS.deviceID, addresses);
+    ManagerMS.addLog('Добавление подключённых плат по адресной книге...');
+    onClose();
+  };
+
   return (
     <div>
       <Modal
@@ -82,6 +101,8 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
         onSubmit={handleSubmit}
         submitDisabled={selectedEntry === undefined}
         submitLabel="Добавить в таблицу прошивок"
+        middleLabel="Автоподключение"
+        onMiddle={() => handleAutoAddBoards()}
       >
         <div className="flex gap-2 pl-4">
           <div className="flex h-60 w-full flex-col overflow-y-auto break-words rounded border border-border-primary bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">

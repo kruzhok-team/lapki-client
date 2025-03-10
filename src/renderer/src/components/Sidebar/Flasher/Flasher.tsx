@@ -790,6 +790,7 @@ export const FlasherTab: React.FC = () => {
         onSwapEntries={onSwapEntries}
         addressEnrtyEdit={addressEnrtyEdit}
         openAddressEnrtyAdd={openAddressEnrtyAdd}
+        deviceMS={deviceMs}
       />
       <AddressEntryEditModal
         addressBookSetting={addressBookSetting}

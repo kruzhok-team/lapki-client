@@ -58,6 +58,9 @@ export type FlasherType =
   | 'ms-device'
   | 'ms-reset'
   | 'ms-reset-result'
+  | 'ms-get-connected-boards'
+  | 'ms-connected-boards'
+  | 'ms-get-connected-boards-error'
   | 'ms-get-meta-data'
   | 'ms-meta-data'
   | 'ms-meta-data-error'
@@ -80,6 +83,7 @@ export type FlasherPayload =
   | MSAddressAction
   | MetaData
   | FlashBacktrackMs
+  | MSAddresses
   | MSAddressAndMeta;
 export type FlasherMessage = {
   type: FlasherType;
@@ -275,4 +279,9 @@ export type AddressAndMeta = {
   address?: string;
   type?: string;
   meta?: MetaData;
+};
+
+export type MSAddresses = {
+  deviceID: string;
+  addresses: string[];
 };

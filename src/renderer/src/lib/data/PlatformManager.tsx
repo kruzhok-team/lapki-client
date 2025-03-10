@@ -349,7 +349,7 @@ export class PlatformManager {
       | undefined = undefined;
     if (argQuery && ac.args && parameterList) {
       const paramValue = ac.args[argQuery];
-      if (typeof paramValue.value === 'undefined') {
+      if (paramValue === undefined || typeof paramValue.value === 'undefined') {
         if (parameterList[0].optional) {
           parameter = '';
         } else {

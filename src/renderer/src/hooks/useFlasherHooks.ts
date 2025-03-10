@@ -744,7 +744,7 @@ export const useFlasherHooks = () => {
           .map((address) => {
             return {
               isFile: false,
-              isSelected: false,
+              isSelected: true,
               targetId: address,
               targetType: FirmwareTargetType.tjc_ms,
             } as FlashTableItem;

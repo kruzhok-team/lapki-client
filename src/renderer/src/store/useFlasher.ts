@@ -79,4 +79,3 @@ export const useFlasher = create<FlasherState>((set, get) => ({
   hasAvrdude: false,
   setHasAvrdude: (newHasAvrdude: boolean) => set({ hasAvrdude: newHasAvrdude }),
 }));
-//state.flashTableData.concat(newFlashTableData.filter((item) => item.isFile))

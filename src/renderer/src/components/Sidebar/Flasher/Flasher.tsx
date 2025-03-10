@@ -48,16 +48,8 @@ export const FlasherTab: React.FC = () => {
     addressAndMeta,
     setAddressAndMeta,
   } = useManagerMS();
-  const {
-    addressBookSetting,
-    onEdit,
-    getID,
-    getEntryById,
-    onAdd,
-    onRemove,
-    onSwapEntries,
-    idCounter,
-  } = useAddressBook();
+  const { addressBookSetting, onEdit, getID, getEntryById, onAdd, onRemove, onSwapEntries } =
+    useAddressBook();
   const {
     connectionStatus,
     secondsUntilReconnect,
@@ -67,6 +59,7 @@ export const FlasherTab: React.FC = () => {
     setFlashTableData,
     hasAvrdude,
     errorMessage,
+    addToFlashTable: addToTable,
   } = useFlasher();
 
   const [managerMSSetting, setManagerMSSetting] = useSettings('managerMS');
@@ -137,21 +130,9 @@ export const FlasherTab: React.FC = () => {
     }
   }, [log, managerMSSetting]);
 
-  const addToTable = (item: FlashTableItem) => {
-    if (
-      flashTableData.find((v) => {
-        return v.targetId === item.targetId;
-      }) !== undefined
-    ) {
-      return false;
-    }
-    setFlashTableData([...flashTableData, item]);
-    return true;
-  };
-
-  const removeFromTable = (ID: number) => {
+  const removeFromTable = (targetId: string, targetType: FirmwareTargetType) => {
     const tableIndex = flashTableData.findIndex((v) => {
-      return v.targetId === ID;
+      return v.targetType === targetType && v.targetId === targetId;
     });
     if (tableIndex === -1) return;
     setFlashTableData(flashTableData.toSpliced(tableIndex, 1));
@@ -195,7 +176,6 @@ export const FlasherTab: React.FC = () => {
     const index = addressBookSetting.findIndex((v) => {
       return v.address === address;
     });
-    let ID: number | null;
     if (index === -1) {
       onAdd({
         address: address,
@@ -203,15 +183,7 @@ export const FlasherTab: React.FC = () => {
         name: '',
         type: type ?? '',
       });
-      ID = idCounter;
     } else {
-      ID = getID(index);
-      if (ID === null) {
-        ManagerMS.addLog(
-          'Ошибка подключения платы! Индекс записи присутствует в таблице, но её ID не удалось определить!'
-        );
-        return;
-      }
       if (meta || type) {
         const entry = addressBookSetting[index];
         onEdit(
@@ -227,7 +199,7 @@ export const FlasherTab: React.FC = () => {
     const isAdded = addToTable({
       isFile: false,
       isSelected: true,
-      targetId: ID,
+      targetId: address,
       targetType: FirmwareTargetType.tjc_ms,
     });
     if (!isAdded && index !== -1) {
@@ -239,6 +211,7 @@ export const FlasherTab: React.FC = () => {
     }
   };
 
+  // TODO: перенести в useFlasherHooks
   useEffect(() => {
     if (addressAndMeta === undefined || addressBookSetting === null) return;
     setAddressAndMeta(undefined);
@@ -299,7 +272,7 @@ export const FlasherTab: React.FC = () => {
     for (const item of flashTableData) {
       if (item.isSelected) {
         if (item.targetType === FirmwareTargetType.tjc_ms) {
-          const addr = getEntryById(item.targetId as number);
+          const addr = getEntryById(item.targetId);
           if (addr === undefined) {
             ManagerMS.addLog('Ошибка! Не удалось найти адрес в адресной книге.');
             continue;
@@ -363,7 +336,7 @@ export const FlasherTab: React.FC = () => {
             );
             continue;
           }
-          address = getEntryById(item.targetId as number);
+          address = getEntryById(item.targetId);
           if (!address) {
             notFound = true;
             break;
@@ -792,7 +765,7 @@ export const FlasherTab: React.FC = () => {
       <AddressBookModal
         isOpen={isAddressBookOpen}
         onClose={closeAddressBook}
-        onSubmit={(entryId: number) => {
+        onSubmit={(entryId: string) => {
           const isAdded = addToTable({
             targetId: entryId,
             isFile: false,
@@ -810,13 +783,14 @@ export const FlasherTab: React.FC = () => {
         onRemove={(index) => {
           const id = getID(index);
           if (id !== null) {
-            removeFromTable(id);
+            removeFromTable(id, FirmwareTargetType.tjc_ms);
           }
           onRemove(index);
         }}
         onSwapEntries={onSwapEntries}
         addressEnrtyEdit={addressEnrtyEdit}
         openAddressEnrtyAdd={openAddressEnrtyAdd}
+        deviceMS={deviceMs}
       />
       <AddressEntryEditModal
         addressBookSetting={addressBookSetting}

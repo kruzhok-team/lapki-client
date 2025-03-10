@@ -222,4 +222,11 @@ export class ManagerMS {
     this.nextOperation();
     return op;
   }
+
+  static getConnectedBoards(deviceID: string, addresses: string[]) {
+    Flasher.send('ms-get-connected-boards', {
+      deviceID: deviceID,
+      addresses: addresses,
+    });
+  }
 }

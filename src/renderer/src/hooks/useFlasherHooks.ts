@@ -17,11 +17,15 @@ import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
 import {
   AddressData,
   DeviceCommentCode,
+  FirmwareTargetType,
   FlashBacktrackMs,
   FlashResult,
+  FlashTableItem,
   FlashUpdatePort,
   MetaDataID,
   MSAddressAndMeta,
+  MSAddresses,
+  MSGetConnectedBoardsBackTrack,
   SerialRead,
   UpdateDelete,
 } from '@renderer/types/FlasherTypes';
@@ -48,6 +52,7 @@ export const useFlasherHooks = () => {
     setHasAvrdude,
     flashTableData,
     setFlashTableData,
+    inFlashTableData,
   } = useFlasher();
 
   const {
@@ -727,6 +732,70 @@ export const useFlasherHooks = () => {
             }
             break;
           }
+        }
+        break;
+      }
+      case 'ms-connected-boards': {
+        const payload = flasherMessage.payload as MSAddresses;
+        if (payload.addresses.length === 0) {
+          ManagerMS.addLog('Не удалось найти подключённые платы по адресной книге.');
+          break;
+        }
+        const newItems = payload.addresses
+          .map((address) => {
+            return {
+              isFile: false,
+              isSelected: true,
+              targetId: address,
+              targetType: FirmwareTargetType.tjc_ms,
+            } as FlashTableItem;
+          })
+          .filter((item) => !inFlashTableData(item));
+        setFlashTableData(flashTableData.concat(newItems));
+        ManagerMS.addLog('Добавлены подключенные платы по адресной книге.');
+        break;
+      }
+      case 'ms-get-connected-boards-error': {
+        const payload = flasherMessage.payload as DeviceCommentCode;
+        const errorPostfix = payload.comment ? ` Текст ошибки: ${payload.comment}` : '';
+        switch (payload.code) {
+          case 1:
+            ManagerMS.addLog(
+              'Произошла ошибка при попытке получить подключённые платы по адресной книге.' +
+                errorPostfix
+            );
+            break;
+          case 2:
+            ManagerMS.addLog(
+              'Не удалось получить подключённые платы по адресной книге, так как устройство центральная плата МС-ТЮК не найдена.'
+            );
+            break;
+          case 3:
+            ManagerMS.addLog(
+              `Не удалось получить подключённые платы по адресной книге, так как подключенное устройство (${
+                devices.get(payload.deviceID) ?? 'неизвестое устройство'
+              }) не поддерживает эту операцию.`
+            );
+            break;
+        }
+        break;
+      }
+      case 'ms-get-connected-boards-backtrack': {
+        const payload = flasherMessage.payload as MSGetConnectedBoardsBackTrack;
+        // TODO: брать название и тип из адресной книги
+        switch (payload.code) {
+          case 0:
+            ManagerMS.addLog(`Отправка пинга на плату по адресу ${payload.address}...`);
+            break;
+          case 1:
+            ManagerMS.addLog(`Плата с адресом ${payload.address} ответила на пинг.`);
+            break;
+          case 2:
+            ManagerMS.addLog(`Плата с адресом ${payload.address} не ответила на пинг.`);
+            break;
+          case 3:
+            ManagerMS.addLog(`Адрес ${payload.address} не является корректным.`);
+            break;
         }
         break;
       }

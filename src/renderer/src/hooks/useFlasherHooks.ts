@@ -10,6 +10,7 @@ import {
   SerialMonitor,
 } from '@renderer/components/Modules/SerialMonitor';
 import { ClientStatus } from '@renderer/components/Modules/Websocket/ClientStatus';
+import { useModelContext } from '@renderer/store/ModelContext';
 import { useFlasher } from '@renderer/store/useFlasher';
 import { useManagerMS } from '@renderer/store/useManagerMS';
 import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
@@ -28,6 +29,9 @@ import {
 import { useSettings } from './useSettings';
 
 export const useFlasherHooks = () => {
+  const modelController = useModelContext();
+  const basename = modelController.model.useData('', 'basename');
+
   const [flasherSetting, setFlasherSetting] = useSettings('flasher');
   const {
     flasherMessage,
@@ -42,6 +46,8 @@ export const useFlasherHooks = () => {
     connectionStatus,
     setErrorMessage,
     setHasAvrdude,
+    flashTableData,
+    setFlashTableData,
   } = useFlasher();
 
   const {
@@ -221,6 +227,18 @@ export const useFlasherHooks = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [connectionStatus]);
+
+  useEffect(() => {
+    setFlashTableData(
+      flashTableData.map((item) => {
+        return {
+          ...item,
+          source: undefined,
+          isFile: false,
+        };
+      })
+    );
+  }, [basename]);
 
   useEffect(() => {
     if (flasherMessage === null) return;

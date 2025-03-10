@@ -66,7 +66,10 @@ export const useFlasher = create<FlasherState>((set, get) => ({
     set({ flashTableData: newFlashTableData }),
   inFlashTableData: (flashTableItem: FlashTableItem) => {
     const flashTableData = get().flashTableData;
-    return flashTableData.some((item) => item.targetId === flashTableItem.targetId);
+    return flashTableData.some(
+      (item) =>
+        item.targetType === flashTableItem.targetType && item.targetId === flashTableItem.targetId
+    );
   },
   addToFlashTable: (flashTableItem: FlashTableItem) => {
     const isInTable = get().inFlashTableData(flashTableItem);

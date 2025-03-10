@@ -130,9 +130,9 @@ export const FlasherTab: React.FC = () => {
     }
   }, [log, managerMSSetting]);
 
-  const removeFromTable = (ID: string) => {
+  const removeFromTable = (targetId: string, targetType: FirmwareTargetType) => {
     const tableIndex = flashTableData.findIndex((v) => {
-      return v.targetId === ID;
+      return v.targetType === targetType && v.targetId === targetId;
     });
     if (tableIndex === -1) return;
     setFlashTableData(flashTableData.toSpliced(tableIndex, 1));
@@ -783,7 +783,7 @@ export const FlasherTab: React.FC = () => {
         onRemove={(index) => {
           const id = getID(index);
           if (id !== null) {
-            removeFromTable(id);
+            removeFromTable(id, FirmwareTargetType.tjc_ms);
           }
           onRemove(index);
         }}

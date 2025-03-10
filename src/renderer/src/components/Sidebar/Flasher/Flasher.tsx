@@ -502,7 +502,6 @@ export const FlasherTab: React.FC = () => {
   };
 
   const handleAddDevice = (deviceIds: string[]) => {
-    const newFlashTableData: FlashTableItem[] = [];
     for (const devId of deviceIds) {
       const dev = devices.get(devId);
       if (!dev) continue;
@@ -510,14 +509,20 @@ export const FlasherTab: React.FC = () => {
         handleGetAddressAndMeta();
         continue;
       }
-      newFlashTableData.push({
-        isFile: false,
-        isSelected: true,
-        targetId: devId,
-        targetType: FirmwareTargetType.arduino,
-      });
+      if (dev.isArduinoDevice()) {
+        const isAdded = addToTable({
+          targetId: devId,
+          isFile: false,
+          isSelected: true,
+          targetType: FirmwareTargetType.arduino,
+        });
+        if (!isAdded) {
+          ManagerMS.addLog(`${dev.displayName()}: устройство уже было добавлено ранее в таблицу.`);
+        }
+      } else {
+        throw Error('Неизвестный тип устройства!');
+      }
     }
-    setFlashTableData(flashTableData.concat(newFlashTableData));
   };
 
   // добавление вкладки с serial monitor

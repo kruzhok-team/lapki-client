@@ -17,11 +17,14 @@ import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
 import {
   AddressData,
   DeviceCommentCode,
+  FirmwareTargetType,
   FlashBacktrackMs,
   FlashResult,
+  FlashTableItem,
   FlashUpdatePort,
   MetaDataID,
   MSAddressAndMeta,
+  MSAddresses,
   SerialRead,
   UpdateDelete,
 } from '@renderer/types/FlasherTypes';
@@ -48,6 +51,7 @@ export const useFlasherHooks = () => {
     setHasAvrdude,
     flashTableData,
     setFlashTableData,
+    inFlashTableData,
   } = useFlasher();
 
   const {
@@ -729,6 +733,45 @@ export const useFlasherHooks = () => {
           }
         }
         break;
+      }
+      case 'ms-connected-boards': {
+        const payload = flasherMessage.payload as MSAddresses;
+        const newItems = payload.addresses
+          .map((address) => {
+            return {
+              isFile: false,
+              isSelected: false,
+              targetId: address,
+              targetType: FirmwareTargetType.tjc_ms,
+            } as FlashTableItem;
+          })
+          .filter((item) => !inFlashTableData(item));
+        setFlashTableData(flashTableData.concat(newItems));
+        break;
+      }
+      case 'ms-get-connected-boards-error': {
+        const payload = flasherMessage.payload as DeviceCommentCode;
+        const errorPostfix = payload.comment ? ` Текст ошибки: ${payload.comment}` : '';
+        switch (payload.code) {
+          case 1:
+            ManagerMS.addLog(
+              'Произошла ошибка при попытке получить подключённые платы по адресной книге.' +
+                errorPostfix
+            );
+            break;
+          case 2:
+            ManagerMS.addLog(
+              'Не удалось получить подключённые платы по адресной книге, так как устройство центральная плата МС-ТЮК не найдена.'
+            );
+            break;
+          case 3:
+            ManagerMS.addLog(
+              `Не удалось получить подключённые платы по адресной книге, так как подключенное устройство (${
+                devices.get(payload.deviceID) ?? 'неизвестое устройство'
+              }) не поддерживает эту операцию.`
+            );
+            break;
+        }
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -10,7 +10,7 @@ import { StateMachine } from '@renderer/types/diagram';
 import { AddressData, FirmwareTargetType, FlashTableItem } from '@renderer/types/FlasherTypes';
 
 interface FlasherTableProps {
-  getEntryById: (ID: number) => AddressData | undefined;
+  getEntryById: (ID: string) => AddressData | undefined;
   addressEnrtyEdit: (data: AddressData) => void;
 }
 
@@ -243,7 +243,7 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
     let displayAddress: string = '…';
     let addressData: AddressData | undefined = undefined;
     if (tableItem.targetType === FirmwareTargetType.tjc_ms) {
-      addressData = getEntryById(tableItem.targetId as number);
+      addressData = getEntryById(tableItem.targetId);
       if (!addressData) {
         return;
       }

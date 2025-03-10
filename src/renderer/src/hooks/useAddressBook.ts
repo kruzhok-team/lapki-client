@@ -13,11 +13,10 @@ export type addressBookReturn = {
   onRemove: (index: number) => void;
   onEdit: (data: AddressData, index: number) => void;
   onSwapEntries: (index1: number, index2: number) => void;
-  getID: (index: number) => number | null;
-  getIndex: (id: number) => number | undefined;
-  getEntryById: (id: number) => AddressData | undefined;
+  getID: (index: number) => string | null;
+  getIndex: (id: string) => number | undefined;
+  getEntryById: (id: string) => AddressData | undefined;
   displayEntry: (index: number) => string | null;
-  idCounter: number;
 };
 
 export const useAddressBook = (): addressBookReturn => {
@@ -25,23 +24,15 @@ export const useAddressBook = (): addressBookReturn => {
 
   const [selectedAddressIndex, setSelectedAddressIndex] = useState<number | null>(null);
 
-  const [indexToId, setIndexToId] = useState<number[]>([]);
-  const [idToIndex, setIdToIndex] = useState<Map<number, number>>(new Map());
-  const [idCounter, setIdCounter] = useState<number>(0);
+  const [idToIndex, setIdToIndex] = useState<Map<string, number>>(new Map());
 
   useEffect(() => {
-    if (addressBookSetting === null || indexToId.length >= addressBookSetting.length) return;
-    let id = idCounter;
-    const newIndexToId: number[] = [];
+    if (addressBookSetting === null || idToIndex.size >= addressBookSetting.length) return;
     const newIdToIndex = new Map(idToIndex);
-    for (let i = indexToId.length; i < addressBookSetting.length; i++) {
-      newIdToIndex.set(id, i);
-      newIndexToId.push(id);
-      id++;
+    for (let i = idToIndex.size; i < addressBookSetting.length; i++) {
+      newIdToIndex.set(addressBookSetting[i].address, i);
     }
-    setIndexToId(indexToId.concat(newIndexToId));
     setIdToIndex(newIdToIndex);
-    setIdCounter(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [addressBookSetting]);
 
@@ -51,23 +42,23 @@ export const useAddressBook = (): addressBookReturn => {
    * @returns ID, соответствующий элементу адресной книги, либо null, если индекс некорректный или адресная книга отсутствует (равняется null)
    */
   const getID = (index: number) => {
-    if (addressBookSetting === null || index >= indexToId.length) {
+    if (addressBookSetting === null || index >= addressBookSetting.length) {
       return null;
     }
-    return indexToId[index];
+    return addressBookSetting[index].address;
   };
   /**
    * Позволяет найти индекс адресной книги по ID соответствующей записи
    * @param ID запси адресной книги
    * @returns индекс адресной книги, соответствующий ID элемента, либо null, если его не удалось найти
    */
-  const getIndex = (ID: number) => {
+  const getIndex = (ID: string) => {
     if (addressBookSetting === null) {
       return undefined;
     }
     return idToIndex.get(ID);
   };
-  const getEntryById = (ID: number) => {
+  const getEntryById = (ID: string) => {
     const index = getIndex(ID);
     if (index === undefined || addressBookSetting === null) {
       return undefined;
@@ -100,7 +91,7 @@ export const useAddressBook = (): addressBookReturn => {
     }
     setIdToIndex((oldMap) => {
       const newMap = new Map(oldMap);
-      newMap.delete(indexToId[index]);
+      newMap.delete(getID[index]);
       oldMap.forEach((v, k) => {
         if (v > index) {
           newMap.set(k, v - 1);
@@ -108,7 +99,6 @@ export const useAddressBook = (): addressBookReturn => {
       });
       return newMap;
     });
-    setIndexToId(indexToId.toSpliced(index, 1));
     setAddressBookSetting(addressBookSetting.toSpliced(index, 1));
   };
   const onSwapEntries = (index1: number, index2: number) => {
@@ -127,17 +117,13 @@ export const useAddressBook = (): addressBookReturn => {
       return v;
     });
     const newIdToIndex = new Map(idToIndex);
-    newIdToIndex.set(indexToId[index1], index2);
-    newIdToIndex.set(indexToId[index2], index1);
-    const newIndexToId = indexToId.map((v, i) => {
-      if (i === index1) {
-        return indexToId[index2];
-      }
-      if (i === index2) {
-        return indexToId[index1];
-      }
-      return v;
-    });
+    const ID1 = getID(index1);
+    const ID2 = getID(index2);
+    if (!ID1 || !ID2) {
+      throw new Error("Address Book error: can't find ID");
+    }
+    newIdToIndex.set(ID1, index2);
+    newIdToIndex.set(ID2, index1);
     if (index1 === selectedAddressIndex) {
       setSelectedAddressIndex(index2);
     } else if (index2 === selectedAddressIndex) {
@@ -145,7 +131,6 @@ export const useAddressBook = (): addressBookReturn => {
     }
     setAddressBookSetting(newBook);
     setIdToIndex(newIdToIndex);
-    setIndexToId(newIndexToId);
   };
 
   const selectedAddress = () => {
@@ -206,6 +191,5 @@ export const useAddressBook = (): addressBookReturn => {
     getIndex,
     getEntryById,
     displayEntry,
-    idCounter, // TODO: костыль!
   };
 };

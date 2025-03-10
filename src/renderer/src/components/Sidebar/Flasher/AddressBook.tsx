@@ -13,10 +13,10 @@ interface AddressBookModalProps {
   addressBookSetting: AddressData[] | null;
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (entryId: number) => void;
+  onSubmit: (entryId: string) => void;
   onRemove: (index: number) => void;
   onSwapEntries: (index1: number, index2: number) => void;
-  getID: (index: number) => number | null;
+  getID: (index: number) => string | null;
   addressEnrtyEdit: (data: AddressData) => void;
   openAddressEnrtyAdd: () => void;
 }

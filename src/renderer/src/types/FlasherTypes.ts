@@ -232,7 +232,7 @@ export type FirmwaresType = {
 
 export type FlashTableItem = {
   isSelected: boolean;
-  targetId: number | string;
+  targetId: string;
   targetType: FirmwareTargetType;
   source?: string; // id машины состояний или путь к файлу
   isFile: boolean;

@@ -187,6 +187,17 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
     return undefined;
   };
 
+  const handleDisplayBaseName = (filepath: string | undefined) => {
+    if (filepath === undefined) return 'Ошибка!';
+    let index = 0;
+    for (index = filepath.length - 1; index >= 0; index--) {
+      if (filepath[index] === '\\' || filepath[index] === '/') {
+        break;
+      }
+    }
+    return filepath.slice(index + 1);
+  };
+
   const cellRender = (content: string | JSX.Element, mergeClassName: string) => {
     return (
       <div
@@ -275,7 +286,7 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
               'rounded border border-border-primary bg-transparent px-[9px] py-[6px] text-text-primary outline-none transition-colors'
             )}
           >
-            {tableItem.source ?? 'Ошибка!'}
+            {handleDisplayBaseName(tableItem.source)}
           </div>
         ) : (
           <Select

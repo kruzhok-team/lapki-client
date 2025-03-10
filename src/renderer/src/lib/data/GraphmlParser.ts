@@ -113,6 +113,7 @@ function initArgList(args: (string | Variable)[]): ArgList {
       argList[index] = { value: value, order: index };
     }
   });
+  console.log(structuredClone(args));
   return argList;
 }
 
@@ -433,7 +434,14 @@ function labelParameters(args: ArgList, method: MethodProto): ArgList {
       };
       return;
     }
-    labeledArgs[element.name] = args[index];
+    if (!args[index]) {
+      labeledArgs[element.name] = {
+        value: undefined,
+        order: index,
+      };
+    } else {
+      labeledArgs[element.name] = args[index];
+    }
   });
   return labeledArgs;
 }
@@ -657,7 +665,7 @@ export function importGraphml(
       platforms[platformName] = platform;
     }
     validateElements(elements, platforms);
-
+    console.log(structuredClone(elements));
     return elements;
   } catch (error) {
     console.error(error);

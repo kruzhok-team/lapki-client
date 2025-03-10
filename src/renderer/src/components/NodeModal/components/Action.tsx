@@ -51,7 +51,7 @@ export const Action: React.FC<ActionProps> = (props) => {
     onChange();
   };
 
-  const sortedComponent = useMemo(() => {
+  const sortedParameters = useMemo(() => {
     if (!data.args) return [];
 
     return Object.entries(data.args).sort(([, param], [, param2]) => param.order - param2.order);
@@ -79,7 +79,7 @@ export const Action: React.FC<ActionProps> = (props) => {
         <div>{data.method}</div>
         <div>(</div>
         <div className="flex items-center gap-[2px]">
-          {sortedComponent.map(([id, value], index) => {
+          {sortedParameters.map(([id, value], index) => {
             const protoComponent =
               platform.data.components[platform.resolveComponentType(data.component)];
             if (!protoComponent) {

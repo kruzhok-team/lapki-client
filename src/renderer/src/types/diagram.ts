@@ -2,7 +2,7 @@ import { Dimensions, Point } from '@renderer/lib/types';
 
 export type ArgList = {
   [key: string]: {
-    value: string | number[][] | Variable;
+    value: string | number[][] | Variable | undefined;
     order: number;
   };
 };

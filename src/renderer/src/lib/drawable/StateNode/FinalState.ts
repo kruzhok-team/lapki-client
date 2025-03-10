@@ -1,22 +1,30 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { Shape } from '@renderer/lib/drawable/Shape';
+import { Layer } from '@renderer/lib/types';
 import { drawCircle } from '@renderer/lib/utils';
 import { getColor } from '@renderer/theme';
 import { FinalState as FinalStateData } from '@renderer/types/diagram';
+
+import { PseudoStateName } from './PseudoStateName';
 /**
  * Класс для отрисовки конечного состояния
  */
 export class FinalState extends Shape {
   data: FinalStateData;
   smId: string;
+  label: PseudoStateName;
+  defaultName = 'Конечное состояние';
   constructor(app: CanvasEditor, id: string, smId: string, data: FinalStateData, parent?: Shape) {
     super(app, id, parent);
     this.data = data;
     this.smId = smId;
+    data.name = !data.name ? this.defaultName : data.name;
+    this.label = new PseudoStateName(app, id, this, !data.name ? this.defaultName : data.name);
+    this.app.view.children.add(this.label, Layer.FinalStates);
   }
 
   get tooltipText() {
-    return 'Конечное состояние';
+    return this.label.text;
   }
 
   get position() {
@@ -31,6 +39,12 @@ export class FinalState extends Shape {
   }
   set dimensions(_value) {
     throw new Error('FinalState does not have dimensions');
+  }
+
+  updateLabel(value: string) {
+    const name = !value ? this.defaultName : value;
+    this.label.text = name;
+    this.data.name = name;
   }
 
   draw(ctx: CanvasRenderingContext2D) {

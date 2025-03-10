@@ -11,6 +11,7 @@ import {
   ChangeNoteText,
   ChangeNoteTextColorParams,
   ChangePosition,
+  ChangePseudoStateNameParams,
   ChangeSelectionParams,
   ChangeStateNameParams,
   ChangeStateParams,
@@ -148,6 +149,7 @@ export type CanvasControllerEvents = {
   unlinkState: UnlinkStateParams;
   unlinkChoiceState: UnlinkStateParams;
   changeStateName: ChangeStateNameParams;
+  changePseudoStateName: ChangePseudoStateNameParams;
   changeFinalStatePosition: ChangePosition;
   deleteEventAction: DeleteEventParams;
   deleteStateMachine: DeleteStateMachineParams;
@@ -199,6 +201,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
   type: CanvasControllerType;
   visual = true;
   hierarchyViews: CanvasSubscribeAttribute[];
+  showPseudoStatesName = true;
   constructor(
     id: string,
     type: CanvasControllerType,
@@ -253,6 +256,11 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     this.transitions.updateAll();
     this.triggerDataUpdate('visual');
   }
+
+  setShowPseudoStatesNames = (value: boolean) => {
+    this.showPseudoStatesName = value;
+    this.view.isDirty = true;
+  };
 
   triggerDataUpdate<T extends ControllerDataPropertyName>(...propertyNames: T[]) {
     for (const name of propertyNames) {
@@ -963,6 +971,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     this.model.on('deleteStateMachine', this.deleteStateMachine);
     this.model.on('loadData', this.loadData);
     this.model.on('initEvents', this.transitions.initEvents);
+    this.model.on('changePseudoStateName', this.states.changePseudoStateName);
     this.model.on('deleteSelected', this.deleteSelected);
   }
 

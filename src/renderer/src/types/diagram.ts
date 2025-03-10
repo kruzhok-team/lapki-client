@@ -37,10 +37,10 @@ interface BaseState {
   parentId?: string;
   dimensions: Dimensions;
   position: Point;
+  name: string;
 }
 
 export interface State extends BaseState {
-  name: string;
   events: EventData[];
   dimensions: Dimensions;
   color?: string;

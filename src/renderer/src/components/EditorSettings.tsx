@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { ReactComponent as FontSizeIcon } from '@renderer/assets/icons/font_size.svg';
 import { ReactComponent as Grid } from '@renderer/assets/icons/grid.svg';
 import { ReactComponent as Redo } from '@renderer/assets/icons/redo.svg';
 import { ReactComponent as ZoomIn } from '@renderer/assets/icons/zoom-in.svg';
@@ -56,6 +57,10 @@ export const EditorSettings: React.FC = () => {
     });
   };
 
+  const handleShowNames = () => {
+    controller.setShowPseudoStatesNames(!controller.showPseudoStatesName);
+  };
+
   if (!isMounted || !canvasSettings) return null;
 
   const buttons: SettingsItem[] = [
@@ -70,6 +75,12 @@ export const EditorSettings: React.FC = () => {
       hint: 'Вернуть отменённое действие',
       content: <Redo width={20} height={20} />,
       onClick: handleRedo,
+    },
+    {
+      className: defaultItemClassName,
+      hint: 'Показывать имена псевдосостояний',
+      content: <FontSizeIcon width={20} height={20} />,
+      onClick: handleShowNames,
     },
     {
       className: defaultItemClassName,

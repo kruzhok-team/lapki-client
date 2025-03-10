@@ -1,8 +1,11 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EdgeHandlers } from '@renderer/lib/drawable';
 import { Shape } from '@renderer/lib/drawable/Shape';
+import { Layer } from '@renderer/lib/types';
 import { getColor } from '@renderer/theme';
 import { ChoiceState as DataChoiceState } from '@renderer/types/diagram';
+
+import { PseudoStateName } from './PseudoStateName';
 
 /**
  * Представление псевдосостояния выбора
@@ -12,15 +15,20 @@ export class ChoiceState extends Shape {
   edgeHandlers!: EdgeHandlers;
   data: DataChoiceState;
   smId: string;
+  label: PseudoStateName;
+  defaultName = 'Псевдосостояние выбора';
   constructor(app: CanvasEditor, id: string, smId: string, data: DataChoiceState, parent?: Shape) {
     super(app, id, parent);
     this.data = data;
     this.smId = smId;
     this.edgeHandlers = new EdgeHandlers(this.app as CanvasEditor, this);
+    data.name = !data.name ? this.defaultName : data.name;
+    this.label = new PseudoStateName(app, id, this, data.name);
+    this.app.view.children.add(this.label, Layer.ChoiceStates);
   }
 
   get tooltipText() {
-    return 'Псевдосостояние выбора';
+    return this.label.text;
   }
 
   get position() {
@@ -44,6 +52,13 @@ export class ChoiceState extends Shape {
       this.drawSelection(ctx);
       this.edgeHandlers.draw(ctx);
     }
+  }
+
+  updateLabel(value: string) {
+    // debugger;
+    const name = !value ? this.defaultName : value;
+    this.label.text = name;
+    this.data.name = name;
   }
 
   // TODO(bryzZz) Закруглить углы

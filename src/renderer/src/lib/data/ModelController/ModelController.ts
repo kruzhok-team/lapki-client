@@ -14,6 +14,7 @@ import {
   CopyType,
   EditComponentParams,
   LinkStateParams,
+  PseudoStateType,
   SelectDrawable,
   StatesControllerDataStateType,
   UnlinkStateParams,
@@ -1096,6 +1097,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       parentId: target.parentId,
       dimensions: { width: 50, height: 50 },
       id: prevId,
+      name: '',
     });
 
     if (canUndo) {
@@ -1162,6 +1164,28 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.model.changeState(args);
     this.emit('changeState', args);
   }
+
+  changePseudoStateName = (
+    pseudoStateType: PseudoStateType,
+    smId: string,
+    id: string,
+    name: string,
+    canUndo = true
+  ) => {
+    const state = this.model.data.elements.stateMachines[smId][pseudoStateType][id];
+
+    if (!state) return;
+
+    if (canUndo) {
+      this.history.do({
+        type: 'changePseudoStateName',
+        args: { pseudoStateType, smId, id, name, prevName: state.name },
+      });
+    }
+
+    this.model.changePseudoStateName(pseudoStateType, smId, id, name);
+    this.emit('changePseudoStateName', { pseudoStateType, smId, id, name });
+  };
 
   changeStateName = (smId: string, id: string, name: string, canUndo = true) => {
     const state = this.model.data.elements.stateMachines[smId].states[id];

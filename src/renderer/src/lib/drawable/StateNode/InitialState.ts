@@ -3,6 +3,7 @@ import { Shape } from '@renderer/lib/drawable/Shape';
 import { drawCircle } from '@renderer/lib/utils';
 import { getColor } from '@renderer/theme';
 import { InitialState as DataInitialState } from '@renderer/types/diagram';
+
 /**
  * Класс для отрисовки начального состояния
  * плотно завязан на данные в EditorModel, то есть

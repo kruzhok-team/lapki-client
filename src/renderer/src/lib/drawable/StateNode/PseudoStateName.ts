@@ -38,7 +38,7 @@ export class PseudoStateName extends Shape {
   }
 
   get dimensions() {
-    if (!this.parent) return { width: 0, height: 0 };
+    if (!this.parent || !this.app.controller.showPseudoStatesName) return { width: 0, height: 0 };
     const { textP, fontSize, fontFamily, lineHeight } = this.style;
     const textWidth =
       getTextWidth(this.text, `${fontSize}px/${lineHeight} '${fontFamily}'`) + textP * 2;
@@ -62,7 +62,7 @@ export class PseudoStateName extends Shape {
   }
 
   draw(ctx: CanvasRenderingContext2D) {
-    if (!this.parent) return;
+    if (!this.parent || !this.app.controller.showPseudoStatesName) return;
 
     const { x, y, height, width } = this.drawBounds;
     const textP = this.style.textP / this.app.controller.scale; // паддинг текста внутри метки

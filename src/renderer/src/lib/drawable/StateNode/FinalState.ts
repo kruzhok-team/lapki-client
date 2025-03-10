@@ -24,7 +24,7 @@ export class FinalState extends Shape {
   }
 
   get tooltipText() {
-    return 'Конечное состояние';
+    return this.label.text;
   }
 
   get position() {

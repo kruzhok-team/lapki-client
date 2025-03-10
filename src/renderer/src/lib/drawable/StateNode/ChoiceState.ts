@@ -28,7 +28,7 @@ export class ChoiceState extends Shape {
   }
 
   get tooltipText() {
-    return 'Псевдосостояние выбора';
+    return this.label.text;
   }
 
   get position() {

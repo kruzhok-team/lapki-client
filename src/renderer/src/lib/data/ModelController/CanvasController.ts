@@ -201,6 +201,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
   type: CanvasControllerType;
   visual = true;
   hierarchyViews: CanvasSubscribeAttribute[];
+  showPseudoStatesName = true;
   constructor(
     id: string,
     type: CanvasControllerType,
@@ -255,6 +256,11 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     this.transitions.updateAll();
     this.triggerDataUpdate('visual');
   }
+
+  setShowPseudoStatesNames = (value: boolean) => {
+    this.showPseudoStatesName = value;
+    this.view.isDirty = true;
+  };
 
   triggerDataUpdate<T extends ControllerDataPropertyName>(...propertyNames: T[]) {
     for (const name of propertyNames) {

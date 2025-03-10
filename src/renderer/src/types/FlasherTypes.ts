@@ -230,6 +230,9 @@ export type FirmwaresType = {
   isFile: boolean;
 };
 
+// Маловероятно, но в теории возможно совпадение адреса платы МС-ТЮК серийным номером устройства другого типа,
+// в таком случае будет две записи с одним targetId.
+// Поэтому в таблице необходимо делать поиск по targetId и targetType, чтобы не перепутать разные устройства.
 export type FlashTableItem = {
   isSelected: boolean;
   targetId: string;

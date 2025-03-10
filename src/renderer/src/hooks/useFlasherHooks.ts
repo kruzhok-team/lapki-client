@@ -25,6 +25,7 @@ import {
   MetaDataID,
   MSAddressAndMeta,
   MSAddresses,
+  MSGetConnectedBoardsBackTrack,
   SerialRead,
   UpdateDelete,
 } from '@renderer/types/FlasherTypes';
@@ -777,6 +778,26 @@ export const useFlasherHooks = () => {
             );
             break;
         }
+        break;
+      }
+      case 'ms-get-connected-boards-backtrack': {
+        const payload = flasherMessage.payload as MSGetConnectedBoardsBackTrack;
+        // TODO: брать название и тип из адресной книги
+        switch (payload.code) {
+          case 0:
+            ManagerMS.addLog(`Отправка пинга на плату по адресу ${payload.address}...`);
+            break;
+          case 1:
+            ManagerMS.addLog(`Плата с адресом ${payload.address} ответила на пинг.`);
+            break;
+          case 2:
+            ManagerMS.addLog(`Плата с адресом ${payload.address} не ответила на пинг.`);
+            break;
+          case 3:
+            ManagerMS.addLog(`Адрес ${payload.address} не является корректным.`);
+            break;
+        }
+        break;
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

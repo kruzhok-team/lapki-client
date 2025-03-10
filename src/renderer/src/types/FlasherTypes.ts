@@ -61,6 +61,7 @@ export type FlasherType =
   | 'ms-get-connected-boards'
   | 'ms-connected-boards'
   | 'ms-get-connected-boards-error'
+  | 'ms-get-connected-boards-backtrack'
   | 'ms-get-meta-data'
   | 'ms-meta-data'
   | 'ms-meta-data-error'
@@ -84,6 +85,7 @@ export type FlasherPayload =
   | MetaData
   | FlashBacktrackMs
   | MSAddresses
+  | MSGetConnectedBoardsBackTrack
   | MSAddressAndMeta;
 export type FlasherMessage = {
   type: FlasherType;
@@ -287,4 +289,9 @@ export type AddressAndMeta = {
 export type MSAddresses = {
   deviceID: string;
   addresses: string[];
+};
+
+export type MSGetConnectedBoardsBackTrack = {
+  address: string;
+  code: number;
 };

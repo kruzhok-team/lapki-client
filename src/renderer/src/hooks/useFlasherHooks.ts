@@ -736,6 +736,10 @@ export const useFlasherHooks = () => {
       }
       case 'ms-connected-boards': {
         const payload = flasherMessage.payload as MSAddresses;
+        if (payload.addresses.length === 0) {
+          ManagerMS.addLog('Не удалось найти подключённые платы по адресной книге.');
+          break;
+        }
         const newItems = payload.addresses
           .map((address) => {
             return {
@@ -747,6 +751,7 @@ export const useFlasherHooks = () => {
           })
           .filter((item) => !inFlashTableData(item));
         setFlashTableData(flashTableData.concat(newItems));
+        ManagerMS.addLog('Добавлены подключенные платы по адресной книге.');
         break;
       }
       case 'ms-get-connected-boards-error': {

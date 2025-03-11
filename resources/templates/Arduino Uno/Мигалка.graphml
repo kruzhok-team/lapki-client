@@ -16,8 +16,9 @@
 
 <data key="gFormat">Cyberiada-GraphML-1.0</data>
 
-<graph id="G" edgedefault="directed">
+<graph id="ArduinoUno1" edgedefault="directed">
     <data key="dStateMachine"/>
+    <data key="dName">Мигалка</data>
     <node id="coreMeta">
         <data key="dNote">formal</data>
         <data key="dName">CGML_META</data>

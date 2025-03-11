@@ -150,7 +150,11 @@ export const SerialMonitorTab: React.FC = () => {
           msgToSend = Buffer.from(inputValue + lineBreak);
           break;
         case 'hex': {
-          const bytes = inputValue.replaceAll('0x', '').split(' ');
+          const bytes =
+            inputValue
+              .replaceAll('0x', '')
+              .replaceAll(' ', '')
+              .match(/.{1,2}/g) || [];
           const hexBuffers: Buffer[] = [];
           let hasErr = false;
           for (const byte of bytes) {

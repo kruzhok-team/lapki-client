@@ -1,7 +1,6 @@
 import {
   CGMLElements,
   parseCGML,
-  CGMLInitialState,
   CGMLState,
   CGMLTransition,
   CGMLComponent,
@@ -19,16 +18,14 @@ import {
   Condition,
   Elements,
   EventData,
-  InitialState,
   State,
   Transition,
   Event,
-  FinalState,
-  ChoiceState,
   emptyElements,
   emptyStateMachine,
   Note,
   Variable,
+  BaseState,
 } from '@renderer/types/diagram';
 import { Platform, ComponentProto, MethodProto, SignalProto } from '@renderer/types/platform';
 import { getMatrixDimensions, isString, parseMatrixFromString } from '@renderer/utils';
@@ -217,58 +214,22 @@ function parseActions(unsplitedActions: string): Action[] | string | undefined {
   return resultActions;
 }
 
-function getFinals(rawFinalStates: { [id: string]: CGMLVertex }): { [id: string]: FinalState } {
-  const finalStates: { [id: string]: FinalState } = {};
-  for (const finalId in rawFinalStates) {
-    const final = rawFinalStates[finalId];
-    finalStates[finalId] = {
-      position: final.position
+function getVertexes(rawVertexes: { [id: string]: CGMLVertex }): { [id: string]: BaseState } {
+  const vertexes: { [id: string]: BaseState } = {};
+  for (const vertexId in rawVertexes) {
+    const vertex = rawVertexes[vertexId];
+    vertexes[vertexId] = {
+      position: vertex.position
         ? {
-            x: final.position.x,
-            y: final.position.y,
+            x: vertex.position.x,
+            y: vertex.position.y,
           }
         : { x: -1, y: -1 },
-      parentId: final.parent,
+      parentId: vertex.parent,
       dimensions: { width: 100, height: 50 },
     };
   }
-  return finalStates;
-}
-
-function getInitialStates(rawInitialStates: { [id: string]: CGMLInitialState }): {
-  [id: string]: InitialState;
-} {
-  const initialStates: { [id: string]: InitialState } = {};
-  for (const initialId in rawInitialStates) {
-    const rawInitial = rawInitialStates[initialId];
-    if (!rawInitial.position) {
-      throw new Error(`Не указана позиция начального состояния с идентификатором ${initialId}`);
-    }
-    initialStates[initialId] = {
-      position: rawInitial.position,
-      parentId: rawInitial.parent,
-      dimensions: { width: 100, height: 50 },
-    };
-  }
-  return initialStates;
-}
-
-function getChoices(rawChoices: { [id: string]: CGMLVertex }): {
-  [id: string]: InitialState;
-} {
-  const choices: { [id: string]: ChoiceState } = {};
-  for (const choiceId in rawChoices) {
-    const rawChoice = rawChoices[choiceId];
-    if (!rawChoice.position) {
-      throw new Error(`Не указана позиция псевдосостояния выбора с идентификатором ${choiceId}`);
-    }
-    choices[choiceId] = {
-      position: rawChoice.position,
-      parentId: rawChoice.parent,
-      dimensions: { width: 100, height: 50 },
-    };
-  }
-  return choices;
+  return vertexes;
 }
 
 function getStates(rawStates: { [id: string]: CGMLState }): [boolean, { [id: string]: State }] {
@@ -632,8 +593,8 @@ export function importGraphml(
         sm.components = getComponents(rawSm.components);
       }
       sm.meta = rawSm.meta.values;
-      sm.initialStates = getInitialStates(rawSm.initialStates);
-      sm.finalStates = getFinals(rawSm.finals);
+      sm.initialStates = getVertexes(rawSm.initialStates);
+      sm.finalStates = getVertexes(rawSm.finals);
       sm.notes = getNotes(rawSm.notes);
       const [stateVisual, states] = getStates(rawSm.states);
       sm.states = states;
@@ -649,15 +610,16 @@ export function importGraphml(
           sm.components
         );
       }
+      sm.shallowHistory = getVertexes(rawSm.shallowHistory);
       sm.platform = platformName;
-      sm.choiceStates = getChoices(rawSm.choices);
+      sm.choiceStates = getVertexes(rawSm.choices);
       sm.name = rawSm.name;
       sm.position = rawSm.position ?? { x: 0, y: 0 };
       elements.stateMachines[smId] = sm;
       platforms[platformName] = platform;
     }
-    validateElements(elements, platforms);
 
+    validateElements(elements, platforms);
     return elements;
   } catch (error) {
     console.error(error);

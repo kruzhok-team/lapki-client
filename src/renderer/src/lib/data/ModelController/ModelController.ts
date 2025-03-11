@@ -186,6 +186,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     controller.subscribe(smId, 'note', sm.notes);
     controller.subscribe(smId, 'initialState', sm.initialStates);
     controller.subscribe(smId, 'component', sm.components);
+    controller.subscribe(smId, 'shallowHistory', sm.shallowHistory);
     controller.subscribe(smId, 'transition', sm.transitions);
     controller.watch();
 
@@ -602,7 +603,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       },
       this,
       // Порядок важен!
-      ['state', 'choice', 'final', 'initialState', 'note', 'transition']
+      ['state', 'choice', 'final', 'initialState', 'shallowHistory', 'note', 'transition']
     );
     editor.setController(controller);
     this.controllers[canvasId] = controller;
@@ -1419,6 +1420,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       | 'position'
       | 'compilerSettings'
     > = {
+      shallowHistory: {},
       states: {},
       initialStates: {},
       finalStates: {},

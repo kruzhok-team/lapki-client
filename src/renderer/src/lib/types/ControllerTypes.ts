@@ -1,4 +1,10 @@
-import { State, InitialState, FinalState, ChoiceState } from '@renderer/lib/drawable';
+import {
+  State,
+  InitialState,
+  FinalState,
+  ChoiceState,
+  ShallowHistory,
+} from '@renderer/lib/drawable';
 import {
   Component as ComponentData,
   State as StateData,
@@ -126,6 +132,7 @@ export const getStatesControllerDefaultData = () => {
     initialStates: new Map<string, InitialState>(),
     finalStates: new Map<string, FinalState>(),
     choiceStates: new Map<string, ChoiceState>(),
+    shallowHistory: new Map<string, ShallowHistory>(),
   } as const;
 };
 

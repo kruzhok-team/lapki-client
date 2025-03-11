@@ -11,6 +11,7 @@ import {
   StateMachine,
   Action,
   Event,
+  ShallowHistory,
 } from '@renderer/types/diagram';
 
 import { EventSelection } from '../drawable';
@@ -68,6 +69,15 @@ export type CreateFinalStateParams = FinalStateData & {
   id?: string;
   placeInCenter?: boolean;
   smId: string;
+  // Поля ниже нужны для коректной отмены этого действия с помощью истории
+  linkByPoint?: boolean;
+};
+
+export type CreateShallowHistoryParams = ShallowHistory & {
+  id?: string;
+  smId: string;
+  placeInCenter?: boolean;
+
   // Поля ниже нужны для коректной отмены этого действия с помощью истории
   linkByPoint?: boolean;
 };

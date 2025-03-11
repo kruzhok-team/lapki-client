@@ -13,6 +13,7 @@ export enum Layer {
   Components,
   ChoiceStates,
   InitialStates,
+  ShallowHistory,
   FinalStates,
   Transitions,
   GhostTransition,

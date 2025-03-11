@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useEffect, useMemo } from 'react';
+
+import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as Grid } from '@renderer/assets/icons/grid.svg';
 import { ReactComponent as Redo } from '@renderer/assets/icons/redo.svg';
@@ -15,6 +17,7 @@ interface SettingsItem {
   onClick: () => void;
   hint: string;
   className: string;
+  disabled?: boolean;
 }
 
 const defaultItemClassName = 'px-2 outline-none hover:bg-bg-hover active:bg-bg-active';
@@ -23,6 +26,7 @@ export const EditorSettings: React.FC = () => {
   const [activeTabName, items] = useTabs((state) => [state.activeTab, state.items]);
   const activeTab = items.find((tab) => tab.name === activeTabName);
   const modelController = useModelContext();
+  const { redoStack, undoStack } = modelController.history.use();
   const headControllerId = modelController.model.useData('', 'headControllerId');
   const controller = modelController.controllers[headControllerId];
   const scale = controller.useData('scale');
@@ -31,22 +35,27 @@ export const EditorSettings: React.FC = () => {
 
   const handleZoomOut = () => {
     controller.view.changeScale(0.1);
+    controller.view.app.focus();
   };
 
   const handleZoomIn = () => {
     controller.view.changeScale(-0.1);
+    controller.view.app.focus();
   };
 
   const handleReset = () => {
     controller.view.changeScale(1, true);
+    controller.view.app.focus();
   };
 
   const handleUndo = () => {
     modelController.history.undo();
+    controller.view.app.focus();
   };
 
   const handleRedo = () => {
     modelController.history.redo();
+    controller.view.app.focus();
   };
 
   const handleCanvasGrid = () => {
@@ -54,9 +63,8 @@ export const EditorSettings: React.FC = () => {
       ...canvasSettings!,
       grid: !canvasSettings?.grid,
     });
+    controller.view.app.focus();
   };
-
-  if (!isMounted || !canvasSettings) return null;
 
   const buttons: SettingsItem[] = [
     {
@@ -64,16 +72,18 @@ export const EditorSettings: React.FC = () => {
       hint: 'Отменить действие',
       content: <Redo width={20} height={20} />,
       onClick: handleUndo,
+      disabled: undoStack.length === 0,
     },
     {
       className: defaultItemClassName,
       hint: 'Вернуть отменённое действие',
       content: <Redo width={20} height={20} />,
       onClick: handleRedo,
+      disabled: redoStack.length === 0,
     },
     {
       className: defaultItemClassName,
-      hint: canvasSettings.grid ? 'Выключить сетку' : 'Включить сетку',
+      hint: canvasSettings && canvasSettings.grid ? 'Выключить сетку' : 'Включить сетку',
       content: <Grid width={20} height={20} />,
       onClick: handleCanvasGrid,
     },
@@ -97,13 +107,23 @@ export const EditorSettings: React.FC = () => {
     },
   ];
 
+  if (!isMounted || !canvasSettings) return null;
+
   return (
     activeTab?.type === 'editor' && (
       <div className="absolute -left-[280px] bottom-3 flex items-stretch overflow-hidden rounded bg-bg-secondary">
-        {buttons.map(({ className, content, hint, onClick }, index) => (
+        {buttons.map(({ className, content, hint, onClick, disabled }, index) => (
           <WithHint key={index} hint={hint}>
             {(props) => (
-              <button {...props} className={className} onClick={onClick}>
+              <button
+                {...props}
+                // Подсказка  не появляется, если кнопка залочена, поэтому делаем ее "залоченной" вручную
+                className={twMerge(
+                  className,
+                  disabled && 'cursor-default opacity-50 hover:bg-transparent active:bg-transparent'
+                )}
+                onClick={!disabled ? onClick : () => undefined}
+              >
                 {content}
               </button>
             )}

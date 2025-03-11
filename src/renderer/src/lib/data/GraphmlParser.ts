@@ -113,7 +113,7 @@ function initArgList(args: (string | Variable)[]): ArgList {
       argList[index] = { value: value, order: index };
     }
   });
-  console.log(structuredClone(args));
+
   return argList;
 }
 
@@ -665,7 +665,7 @@ export function importGraphml(
       platforms[platformName] = platform;
     }
     validateElements(elements, platforms);
-    console.log(structuredClone(elements));
+
     return elements;
   } catch (error) {
     console.error(error);

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
@@ -58,9 +58,11 @@ export const EditorSettings: React.FC = () => {
     controller.view.app.focus();
   };
 
+  if (!isMounted || !canvasSettings) return null;
+
   const handleCanvasGrid = () => {
     setCanvasSettings({
-      ...canvasSettings!,
+      ...canvasSettings,
       grid: !canvasSettings?.grid,
     });
     controller.view.app.focus();
@@ -106,8 +108,6 @@ export const EditorSettings: React.FC = () => {
       onClick: handleZoomIn,
     },
   ];
-
-  if (!isMounted || !canvasSettings) return null;
 
   return (
     activeTab?.type === 'editor' && (

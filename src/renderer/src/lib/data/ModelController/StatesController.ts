@@ -811,6 +811,9 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     for (const state of this.data.states.values()) {
       this.bindEdgeHandlers(state);
     }
+    for (const state of this.data.shallowHistory.values()) {
+      this.bindEdgeHandlers(state);
+    }
   }
 
   unwatch(state: StateVariant) {

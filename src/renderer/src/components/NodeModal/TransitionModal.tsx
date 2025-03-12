@@ -12,6 +12,7 @@ import {
   Condition as ConditionData,
   Event,
   EventData,
+  ShallowHistory,
   Transition,
 } from '@renderer/types/diagram';
 
@@ -30,6 +31,9 @@ export const TransitionModal: React.FC<TransitionModalProps> = ({ smId, controll
   const choiceStates = modelController.model.useData(smId, 'elements.choiceStates');
   const transitions = modelController.model.useData(smId, 'elements.transitions') as {
     [id: string]: Transition;
+  };
+  const shallowHistory = modelController.model.useData(smId, 'elements.shallowHistory') as {
+    [id: string]: ShallowHistory;
   };
   const [error, setError] = useState<string | undefined>(undefined);
   const [isOpen, open, close] = useModal(false);

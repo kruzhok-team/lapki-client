@@ -254,11 +254,20 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     sourceId: string;
     targetId: string;
   }) => {
-    if (this.model.data.elements.stateMachines[args.smId].notes[args.sourceId]) {
-      this.createTransition({ ...args });
-    } else {
-      this.emit('openCreateTransitionModal', args);
+    const sm = this.model.data.elements.stateMachines[args.smId];
+    if (sm.notes[args.sourceId]) {
+      return this.createTransition({ ...args });
     }
+
+    if (sm.shallowHistory[args.sourceId]) {
+      if (!this.getBySourceId(args.smId, args.sourceId)) {
+        this.createTransition({ ...args });
+      } else {
+        // TODO (L140-beep): тостер с информацией о неудачном создани
+      }
+      return;
+    }
+    this.emit('openCreateTransitionModal', args);
   };
 
   initPlatform() {
@@ -457,13 +466,15 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       sm.states[sourceId] ||
       sm.notes[sourceId] ||
       sm.initialStates[sourceId] ||
-      sm.choiceStates[sourceId];
+      sm.choiceStates[sourceId] ||
+      sm.shallowHistory[sourceId];
     const target =
       sm.states[targetId] ||
       sm.notes[targetId] ||
       sm.choiceStates[targetId] ||
       sm.transitions[targetId] ||
-      sm.finalStates[targetId];
+      sm.finalStates[targetId] ||
+      sm.shallowHistory[targetId];
 
     if (!source || !target) return;
 

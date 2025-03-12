@@ -259,7 +259,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
   handleMouseUpOnState = (state: State | ChoiceState | ShallowHistory) => {
     if (!this.ghost?.source) return;
     // TODO (L140-beep): И что с этим делать?
-    if (this.ghost.source instanceof Note) {
+    if (this.ghost.source instanceof Note || this.ghost.source instanceof ShallowHistory) {
       this.createTransition({
         smId: this.ghost.source.smId,
         sourceId: this.ghost?.source.id,

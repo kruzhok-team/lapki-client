@@ -22,7 +22,7 @@ export class ShallowHistory extends Shape {
   }
 
   get tooltipText() {
-    return 'Псевдосостояние выбора';
+    return 'Локальная история';
   }
 
   get position() {

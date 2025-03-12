@@ -2362,7 +2362,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (parentId) {
       this.linkShallowHistory(smId, id, parentId);
     } else if (linkByPoint && parent && computedParentId) {
-      const parentCompoundPosition = this.compoundPosition(smId, computedParentId);
+      const parentCompoundPosition = this.compoundStatePosition(smId, computedParentId, 'states');
       const newPosition = {
         x: state.position.x - parentCompoundPosition.x,
         y: state.position.y - parentCompoundPosition.y - parent.dimensions.height,

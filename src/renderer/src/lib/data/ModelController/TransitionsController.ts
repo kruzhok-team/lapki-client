@@ -8,6 +8,7 @@ import {
   GhostTransition,
   State,
   Transition,
+  ShallowHistory,
 } from '@renderer/lib/drawable';
 import { Layer } from '@renderer/lib/types';
 import { Point } from '@renderer/lib/types/graphics';
@@ -217,7 +218,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     this.controller.states.on('mouseUpOnFinalState', this.handleMouseUpOnFinalState);
   }
 
-  handleStartNewTransition = (node: State | ChoiceState | Note) => {
+  handleStartNewTransition = (node: State | ChoiceState | Note | ShallowHistory) => {
     this.ghost?.setSource(node);
   };
 
@@ -255,7 +256,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     this.view.isDirty = true;
   };
 
-  handleMouseUpOnState = (state: State | ChoiceState) => {
+  handleMouseUpOnState = (state: State | ChoiceState | ShallowHistory) => {
     if (!this.ghost?.source) return;
     // TODO (L140-beep): И что с этим делать?
     if (this.ghost.source instanceof Note) {

@@ -1,7 +1,9 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EdgeHandlers } from '@renderer/lib/drawable';
 import { Shape } from '@renderer/lib/drawable/Shape';
-import { getColor } from '@renderer/theme';
+import { drawCircle } from '@renderer/lib/utils';
+import { drawText } from '@renderer/lib/utils/text';
+import theme, { getColor } from '@renderer/theme';
 import { ChoiceState as DataChoiceState } from '@renderer/types/diagram';
 
 /**
@@ -31,7 +33,7 @@ export class ShallowHistory extends Shape {
   }
 
   get dimensions() {
-    return { width: 100, height: 100 };
+    return { width: 50, height: 50 };
   }
   set dimensions(_value) {
     throw new Error('ShallowHistory does not have dimensions');
@@ -48,45 +50,43 @@ export class ShallowHistory extends Shape {
 
   // TODO(bryzZz) Закруглить углы
   private drawBody(ctx: CanvasRenderingContext2D) {
-    const { x, y, width, height } = this.drawBounds;
-    const halfWidth = width / 2;
-    const halfHeight = height / 2;
+    const { x, y, width } = this.drawBounds;
+    const radius = width / 2;
+    const position = { x: x + radius, y: y + radius };
+    const lineWidth = 3 / this.app.controller.scale;
 
-    ctx.fillStyle = getColor('primary');
+    drawCircle(ctx, {
+      position,
+      radius,
+      lineWidth,
+      strokeStyle: getColor('primary'),
+    });
 
-    ctx.beginPath();
+    const fontSize = 46 / this.app.controller.scale;
 
-    ctx.moveTo(x + halfWidth, y);
-    ctx.lineTo(x + width, y + halfHeight);
-    ctx.lineTo(x + halfWidth, y + height);
-    ctx.lineTo(x, y + halfHeight);
-    ctx.lineTo(x + halfWidth, y);
-
-    ctx.fill();
-
-    ctx.closePath();
+    drawText(ctx, 'H', {
+      x: position.x,
+      y: position.y - fontSize / 2 - lineWidth * 3,
+      textAlign: 'center',
+      color: getColor('primary'),
+      font: {
+        fontSize,
+        fontFamily: 'Fira Sans',
+      },
+    });
   }
 
   private drawSelection(ctx: CanvasRenderingContext2D) {
-    const { x, y, width, height } = this.drawBounds;
-    const halfWidth = width / 2;
-    const halfHeight = height / 2;
-
-    ctx.lineWidth = 2 / this.app.controller.scale;
-    // TODO(L140-beep): Пользовательский цвет обводки
-    ctx.strokeStyle = getColor('default-state-outline');
-
-    ctx.beginPath();
-
-    ctx.moveTo(x + halfWidth, y);
-    ctx.lineTo(x + width, y + halfHeight);
-    ctx.lineTo(x + halfWidth, y + height);
-    ctx.lineTo(x, y + halfHeight);
-    ctx.lineTo(x + halfWidth, y);
-
-    ctx.stroke();
-
-    ctx.closePath();
+    const { x, y, width } = this.drawBounds;
+    const radius = width / 2;
+    const position = { x: x + radius, y: y + radius };
+    const lineWidth = 3 / this.app.controller.scale;
+    drawCircle(ctx, {
+      position,
+      radius: radius + lineWidth,
+      lineWidth,
+      strokeStyle: '#FFFFFF',
+    });
   }
 
   setIsSelected(value: boolean) {

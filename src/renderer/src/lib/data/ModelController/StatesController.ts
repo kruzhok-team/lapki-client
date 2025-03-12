@@ -25,12 +25,10 @@ import {
   ChangeEventParams,
   ChangePosition,
   ChangeStateParams,
-  CreateChoiceStateParams,
   CreateEventActionParams,
   CreateEventParams,
-  CreateFinalStateParams,
-  CreateShallowHistoryParams,
   CreateStateParams,
+  CreateVertexParams,
   DeleteDrawableParams,
   DeleteEventParams,
 } from '@renderer/lib/types/ModelTypes';
@@ -45,10 +43,10 @@ type DragInfo = {
 } | null;
 
 interface StatesControllerEvents {
-  mouseUpOnState: State | ChoiceState;
+  mouseUpOnState: State | ChoiceState | ShallowHistory;
   mouseUpOnInitialState: InitialState;
   mouseUpOnFinalState: FinalState;
-  startNewTransitionState: State | ChoiceState;
+  startNewTransitionState: State | ChoiceState | ShallowHistory;
   changeState: State;
   changeStateName: State;
   stateContextMenu: { state: State; position: Point };
@@ -267,7 +265,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.view.isDirty = true;
   };
 
-  createFinalState = (params: CreateFinalStateParams) => {
+  createFinalState = (params: CreateVertexParams) => {
     const { id, smId } = params;
     if (!id) return;
     const state = new FinalState(this.app, id, smId, { ...params });
@@ -316,7 +314,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.view.isDirty = true;
   };
 
-  initChoiceState = (params: CreateChoiceStateParams) => {
+  initChoiceState = (params: CreateVertexParams) => {
     const { id, smId } = params;
     if (!id) return;
     const state = new ChoiceState(this.app, id, smId, { ...params });
@@ -331,7 +329,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     return state;
   };
 
-  createChoiceState = (params: CreateChoiceStateParams) => {
+  createChoiceState = (params: CreateVertexParams) => {
     const state = this.initChoiceState(params);
     if (!state) return;
 
@@ -755,7 +753,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.view.isDirty = true;
   };
 
-  initShallowHistory = (params: CreateShallowHistoryParams) => {
+  initShallowHistory = (params: CreateVertexParams) => {
     const { id, smId } = params;
     if (!id) return;
     const state = new ShallowHistory(this.app, id, smId, { ...params });
@@ -770,7 +768,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     return state;
   };
 
-  createShallowHistory = (params: CreateShallowHistoryParams) => {
+  createShallowHistory = (params: CreateVertexParams) => {
     const state = this.initShallowHistory(params);
     if (!state) return;
 

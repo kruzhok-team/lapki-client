@@ -49,9 +49,13 @@ export interface State extends BaseState {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface InitialState extends BaseState {}
+export interface InitialState extends BaseState {
+  selection?: boolean;
+}
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface FinalState extends BaseState {}
+export interface FinalState extends BaseState {
+  selection?: boolean;
+}
 
 export interface ChoiceState extends BaseState {
   selection?: boolean;

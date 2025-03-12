@@ -14,11 +14,10 @@ import {
   ChangeStateParams,
   CreateNoteParams,
   Point,
-  CreateInitialStateParams,
-  CreateFinalStateParams,
-  CreateChoiceStateParams,
   SwapComponentsParams,
   StateMachineData,
+  CreateVertexParams,
+  VertexFields,
 } from '@renderer/lib/types';
 import { generateId, isVariable } from '@renderer/lib/utils';
 import {
@@ -33,6 +32,7 @@ import {
   emptyStateMachine,
   Condition,
   Variable,
+  ShallowHistory,
 } from '@renderer/types/diagram';
 
 import { Serializer } from './Serializer';
@@ -395,173 +395,6 @@ export class EditorModel {
     delete this.data.elements.stateMachines[smId].states[id];
 
     this.triggerDataUpdate('elements.states');
-
-    return true;
-  }
-
-  createInitialState(args: CreateInitialStateParams) {
-    const { id = generateId(this.getNodeIds()), smId, ...other } = args;
-
-    this.data.elements.stateMachines[smId].initialStates[id] = other;
-
-    this.triggerDataUpdate('elements.initialStates');
-
-    return id;
-  }
-
-  deleteInitialState(smId: string, id: string) {
-    const state = this.data.elements.stateMachines[smId].initialStates[id];
-    if (!state) return false;
-
-    delete this.data.elements.stateMachines[smId].initialStates[id];
-
-    this.triggerDataUpdate('elements.initialStates');
-
-    return true;
-  }
-
-  changeInitialStatePosition(smId: string, id: string, position: Point) {
-    const state = this.data.elements.stateMachines[smId].initialStates[id];
-    if (!state) return false;
-
-    state.position = position;
-
-    this.triggerDataUpdate('elements.initialStates');
-
-    return true;
-  }
-
-  createFinalState(args: CreateFinalStateParams) {
-    const {
-      smId,
-      id = generateId(this.getNodeIds()),
-      placeInCenter = false,
-      position,
-      ...other
-    } = args;
-
-    const centerPosition = () => {
-      const size = 50;
-      return {
-        x: position.x - size / 2,
-        y: position.y - size / 2,
-      };
-    };
-
-    this.data.elements.stateMachines[smId].finalStates[id] = {
-      ...other,
-      position: placeInCenter ? centerPosition() : position,
-    };
-
-    this.triggerDataUpdate('elements.finalStates');
-
-    return id;
-  }
-
-  deleteFinalState(smId: string, id: string) {
-    const state = this.data.elements.stateMachines[smId].finalStates[id];
-    if (!state) return false;
-
-    delete this.data.elements.stateMachines[smId].finalStates[id];
-
-    this.triggerDataUpdate('elements.finalStates');
-
-    return true;
-  }
-
-  changeFinalStatePosition(smId: string, id: string, position: Point) {
-    const state = this.data.elements.stateMachines[smId].finalStates[id];
-    if (!state) return false;
-
-    state.position = position;
-
-    this.triggerDataUpdate('elements.finalStates');
-
-    return true;
-  }
-
-  linkFinalState(smId: string, stateId: string, parentId: string) {
-    const state = this.data.elements.stateMachines[smId].finalStates[stateId];
-    const parent = this.data.elements.stateMachines[smId].states[parentId];
-
-    if (!state || !parent) return false;
-
-    state.parentId = parentId;
-
-    this.triggerDataUpdate('elements.finalStates');
-
-    return true;
-  }
-
-  createChoiceState(args: CreateChoiceStateParams) {
-    const {
-      smId,
-      id = generateId(this.getNodeIds()),
-      placeInCenter = false,
-      position,
-      ...other
-    } = args;
-
-    const centerPosition = () => {
-      const size = 50;
-      return {
-        x: position.x - size / 2,
-        y: position.y - size / 2,
-      };
-    };
-
-    this.data.elements.stateMachines[smId].choiceStates[id] = {
-      ...other,
-      position: placeInCenter ? centerPosition() : position,
-    };
-
-    this.triggerDataUpdate('elements.choiceStates');
-
-    return id;
-  }
-
-  deleteChoiceState(smId: string, id: string) {
-    const state = this.data.elements.stateMachines[smId].choiceStates[id];
-    if (!state) return false;
-
-    delete this.data.elements.stateMachines[smId].choiceStates[id];
-
-    this.triggerDataUpdate('elements.choiceStates');
-
-    return true;
-  }
-
-  changeChoiceStatePosition(smId: string, id: string, position: Point) {
-    const state = this.data.elements.stateMachines[smId].choiceStates[id];
-    if (!state) return false;
-
-    state.position = position;
-
-    this.triggerDataUpdate('elements.choiceStates');
-
-    return true;
-  }
-
-  linkChoiceState(smId: string, stateId: string, parentId: string) {
-    const state = this.data.elements.stateMachines[smId].choiceStates[stateId];
-    const parent = this.data.elements.stateMachines[smId].states[parentId];
-
-    if (!state || !parent) return false;
-
-    state.parentId = parentId;
-
-    this.triggerDataUpdate('elements.choiceStates');
-
-    return true;
-  }
-
-  changeChoiceStateSelection(smId: string, id: string, selection: boolean) {
-    const state = this.data.elements.stateMachines[smId].choiceStates[id];
-    if (!state) return false;
-
-    state.selection = selection;
-
-    this.triggerDataUpdate('elements.choiceStates');
 
     return true;
   }
@@ -958,6 +791,83 @@ export class EditorModel {
     this.data.elements.stateMachines[smId].visual = false;
 
     this.triggerDataUpdate('elements.visual');
+
+    return true;
+  }
+
+  createVertex(args: CreateVertexParams, type: VertexFields) {
+    const {
+      smId,
+      id = generateId(this.getNodeIds()),
+      placeInCenter = false,
+      position,
+      ...other
+    } = args;
+
+    const centerPosition = () => {
+      const size = 50;
+      return {
+        x: position.x - size / 2,
+        y: position.y - size / 2,
+      };
+    };
+
+    if (!this.data.elements.stateMachines[smId][type]) throw new Error('фывфывфвфвфвы');
+
+    this.data.elements.stateMachines[smId][type][id] = {
+      ...other,
+      position: placeInCenter ? centerPosition() : position,
+    };
+
+    this.triggerDataUpdate(`elements.${type}`);
+
+    return id;
+  }
+
+  deleteVertex(smId: string, id: string, type: VertexFields) {
+    if (!this.data.elements.stateMachines[smId][type]) throw new Error('фывфывфвфвфвы');
+
+    const state = this.data.elements.stateMachines[smId][type][id];
+    if (!state) return false;
+
+    delete this.data.elements.stateMachines[smId][type][id];
+
+    this.triggerDataUpdate(`elements.${type}`);
+
+    return true;
+  }
+
+  changeVertexPosition(smId: string, id: string, position: Point, type: VertexFields) {
+    const state = this.data.elements.stateMachines[smId][type][id];
+    if (!state) return false;
+
+    state.position = position;
+
+    this.triggerDataUpdate(`elements.${type}`);
+
+    return true;
+  }
+
+  linkVertex(smId: string, stateId: string, parentId: string, type: VertexFields) {
+    const state = this.data.elements.stateMachines[smId][type][stateId];
+    const parent = this.data.elements.stateMachines[smId].states[parentId];
+
+    if (!state || !parent) return false;
+
+    state.parentId = parentId;
+
+    this.triggerDataUpdate(`elements.${type}`);
+
+    return true;
+  }
+
+  changeVertexSelection(smId: string, id: string, selection: boolean, type: VertexFields) {
+    const state = this.data.elements.stateMachines[smId][type][id];
+    if (!state) return false;
+
+    state.selection = selection;
+
+    this.triggerDataUpdate(`elements.${type}`);
 
     return true;
   }

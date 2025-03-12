@@ -27,14 +27,13 @@ import {
   ChangePosition,
   ChangeStateParams,
   ChangeTransitionParams,
-  CreateChoiceStateParams,
   CreateComponentParams,
   CreateEventActionParams,
   CreateEventParams,
-  CreateFinalStateParams,
   CreateNoteParams,
   CreateStateParams,
   CreateTransitionParams,
+  CreateVertexParams,
   DeleteDrawableParams,
   DeleteEventParams,
   StateMachineData,
@@ -686,7 +685,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       });
     }
 
-    this.model.changeInitialStatePosition(smId, id, endPosition);
+    this.model.changeVertexPosition(smId, id, endPosition, 'initialStates');
     this.emit('changeInitialPosition', {
       smId,
       id,
@@ -753,7 +752,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       (transitionId) => sm.transitions[transitionId].sourceId == id
     );
     if (!transitionId) return;
-    this.model.deleteInitialState(smId, id); // Удаляем модель
+    this.model.deleteVertex(smId, id, 'finalStates'); // Удаляем модель
     if (canUndo) {
       this.history.do({
         type: 'deleteInitialState',
@@ -1091,13 +1090,16 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       y: target.position.y - INITIAL_STATE_OFFSET.y,
     };
 
-    const id = this.model.createInitialState({
-      smId,
-      position: position ?? newPosition,
-      parentId: target.parentId,
-      dimensions: { width: 50, height: 50 },
-      id: prevId,
-    });
+    const id = this.model.createVertex(
+      {
+        smId,
+        position: position ?? newPosition,
+        parentId: target.parentId,
+        dimensions: { width: 50, height: 50 },
+        id: prevId,
+      },
+      'initialStates'
+    );
 
     if (canUndo) {
       this.history.do({
@@ -1576,7 +1578,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const parent = this.model.data.elements.stateMachines[smId].states[parentId];
     if (!state || !parent) return;
 
-    this.model.linkFinalState(smId, stateId, parentId);
+    this.model.linkVertex(smId, stateId, parentId, 'finalStates');
 
     this.emit('linkFinalState', { smId, childId: stateId, parentId });
   }
@@ -1603,7 +1605,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         numberOfConnectedActions,
       });
     }
-    this.model.deleteFinalState(smId, id); // Удаляем модель
+    this.model.deleteVertex(smId, id, 'finalStates'); // Удаляем модель
 
     this.emit('deleteFinal', args);
   }
@@ -1614,13 +1616,13 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const parent = sm.states[parentId];
     if (!state || !parent) return;
 
-    this.model.linkChoiceState(smId, stateId, parentId);
+    this.model.linkVertex(smId, stateId, parentId, 'choiceStates');
     this.emit('linkChoiceState', { smId, childId: stateId, parentId });
   }
 
-  createChoiceState(params: CreateChoiceStateParams, canUndo = true) {
+  createChoiceState(params: CreateVertexParams, canUndo = true) {
     const { smId, parentId, position, linkByPoint = true } = params;
-    const id = this.model.createChoiceState(params);
+    const id = this.model.createVertex(params, 'choiceStates');
     this.emit('createChoice', { ...params, id: id });
     const state = this.model.data.elements.stateMachines[smId].choiceStates[id];
 
@@ -1674,12 +1676,12 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         numberOfConnectedActions,
       });
     }
-    this.model.deleteChoiceState(smId, id); // Удаляем модель
+    this.model.deleteVertex(smId, id, 'choiceStates'); // Удаляем модель
     this.emit('deleteChoice', args);
   }
 
   changeFinalStatePosition = (args: ChangePosition, canUndo = true) => {
-    this.model.changeFinalStatePosition(args.smId, args.id, args.endPosition);
+    this.model.changeVertexPosition(args.smId, args.id, args.endPosition, 'finalStates');
     const { startPosition } = args;
     if (canUndo && startPosition !== undefined) {
       this.history.do({
@@ -1691,7 +1693,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   };
 
   changeChoiceStatePosition = (args: ChangePosition, canUndo = true) => {
-    this.model.changeChoiceStatePosition(args.smId, args.id, args.endPosition);
+    this.model.changeVertexPosition(args.smId, args.id, args.endPosition, 'choiceStates');
     this.emit('changeChoicePosition', args);
     const { startPosition } = args;
     if (canUndo && startPosition !== undefined) {
@@ -1702,7 +1704,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     }
   };
 
-  createFinalState(params: CreateFinalStateParams, canUndo = true) {
+  createFinalState(params: CreateVertexParams, canUndo = true) {
     const { smId, parentId, linkByPoint = true } = params;
     let computedParentId: string | undefined = undefined;
     // Проверка на то что в скоупе уже есть конечное состояние
@@ -1717,7 +1719,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         parent = possibleParent[1];
       }
     }
-    const id = this.model.createFinalState(params);
+    const id = this.model.createVertex(params, 'finalStates');
     const state = this.model.data.elements.stateMachines[smId].finalStates[id];
     this.emit('createFinal', { ...params, id });
 
@@ -2157,7 +2159,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
     this.removeSelection([id]);
 
-    this.model.changeChoiceStateSelection(smId, id, true);
+    this.model.changeVertexSelection(smId, id, true, 'choiceStates');
 
     // this.emit('selectChoice', { smId: '', id: id });
   };
@@ -2222,7 +2224,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       Object.keys(sm.choiceStates)
         .filter((value) => !exclude.includes(value))
         .forEach((id) => {
-          this.model.changeChoiceStateSelection(smId, id, false);
+          this.model.changeVertexSelection(smId, id, false, 'choiceStates');
           this.emit('changeChoiceSelection', { smId, id, value: false });
         });
 

@@ -1,4 +1,4 @@
-import { optimizer, is } from '@electron-toolkit/utils';
+import { is } from '@electron-toolkit/utils';
 import { app, shell, BrowserWindow, ipcMain, globalShortcut } from 'electron';
 import settings from 'electron-settings';
 import { lookpath } from 'lookpath';
@@ -149,14 +149,6 @@ app.whenReady().then(() => {
     } else {
       return false;
     }
-  });
-
-  // Горячие клавиши для режима разрабочика:
-  // - F12 – инструменты разработки
-  // - CmdOrCtrl + R – перезагрузить страницу
-  // См. https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
-  app.on('browser-window-created', (_, window) => {
-    optimizer.watchWindowShortcuts(window);
   });
 
   // отключение перезагрузки по CmdOrCtrl + R

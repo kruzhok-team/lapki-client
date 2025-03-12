@@ -1,3 +1,4 @@
+import { Checkbox } from '@radix-ui/react-checkbox';
 import { twMerge } from 'tailwind-merge';
 
 import { AddressData } from '@renderer/types/FlasherTypes';
@@ -7,13 +8,16 @@ import { TextInput } from '../../UI/TextInput';
 interface AddressBookRowProps {
   data: AddressData;
   isSelected: boolean;
+  isChecked: boolean;
   onSelect: () => void;
   onEdit: () => void;
   onDragStart: () => void;
   onDrop: () => void;
+  onCheckChange: () => void;
 }
 export const AddressBookRow: React.FC<AddressBookRowProps> = (props) => {
-  const { data, onSelect, isSelected, onEdit, onDragStart, onDrop } = props;
+  const { data, onSelect, isSelected, onEdit, onDragStart, onDrop, isChecked, onCheckChange } =
+    props;
   const labelClassName = twMerge('flex w-full', isSelected && 'bg-bg-active');
   return (
     <div
@@ -24,6 +28,7 @@ export const AddressBookRow: React.FC<AddressBookRowProps> = (props) => {
       onDragStart={onDragStart}
       onDrop={onDrop}
     >
+      <Checkbox checked={isChecked} onCheckedChange={onCheckChange} />
       <label className={labelClassName}>
         <TextInput value={data.name ?? ''} disabled={true} placeholder="Название" />
       </label>

@@ -40,6 +40,11 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
   // индекс записи для переноса при начале drag
   const [dragIndex, setDragIndex] = useState<number | undefined>(undefined);
 
+  // выбрано всё
+  const [checkedAll, setCheckedAll] = useState<boolean>(true);
+  // отмеченные адреса
+  const [checks, setChecks] = useState<Map<number, boolean>>(new Map());
+
   /**
    * замена двух записей при drag&drop
    * @param index - индекс второй записи, при drop, первая запись берётся из {@link dragIndex}
@@ -73,6 +78,10 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
     }
   });
 
+  const handleChangeCheckedAll = () => {
+    throw new Error('Function not implemented.');
+  };
+
   return (
     <div>
       <Modal
@@ -98,13 +107,15 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
                 onEdit={() => undefined}
                 onDragStart={() => undefined}
                 onDrop={() => undefined}
+                isChecked={checkedAll}
+                onCheckChange={handleChangeCheckedAll}
               />
             )}
             {addressBookSetting?.map((field, index) => {
               const ID = getID(index);
               if (ID === null) return;
               return (
-                <div key={getID(index)}>
+                <div key={ID}>
                   <AddressBookRow
                     isSelected={index === selectedEntry}
                     data={field}
@@ -112,6 +123,8 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
                     onEdit={() => handleEdit(field, index)}
                     onDragStart={() => setDragIndex(index)}
                     onDrop={() => handleSwapEntries(index)}
+                    isChecked={true}
+                    onCheckChange={() => 0}
                   />
                 </div>
               );

@@ -355,13 +355,16 @@ export const FlasherTab: React.FC = () => {
             break;
           }
           devName = dev.displayName();
+          if (managerMSSetting?.verification) {
+            ManagerMS.addLog(
+              `${devName}: верификация прошивки для данного устройства не поддерживается.`
+            );
+          }
           break;
         }
         case FirmwareTargetType.tjc_ms: {
           if (!addressBookSetting) {
-            ManagerMS.addLog(
-              `${ManagerMS.displayDeviceInfo}: Ошибка! Адресная книга не загрузилась!`
-            );
+            ManagerMS.addLog(`Ошибка! Адресная книга не загрузилась!`);
             continue;
           }
           address = getEntryById(item.targetId as number);

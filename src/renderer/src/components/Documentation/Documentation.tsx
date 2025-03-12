@@ -113,7 +113,7 @@ export const Documentation: React.FC = () => {
         <div className="relative mb-3 flex items-center justify-between border-b border-border-primary pb-1">
           <h1 className="text-2xl font-bold">Документация</h1>
           <button
-            className="rounded-full p-3 transition-colors hover:bg-bg-hover active:bg-bg-active"
+            className="rounded-full p-3 outline-none transition-colors hover:bg-bg-hover active:bg-bg-active"
             onClick={() => onDocumentationToggle()}
           >
             <Close width="1rem" height="1rem" />

@@ -52,6 +52,7 @@ interface StatesControllerEvents {
   stateContextMenu: { state: State; position: Point };
   finalStateContextMenu: { state: FinalState; position: Point };
   choiceStateContextMenu: { state: ChoiceState; position: Point };
+  shallowHistoryContextMenu: { state: ShallowHistory; position: Point };
   changeEvent: {
     state: State;
     eventSelection: EventSelection;
@@ -757,6 +758,16 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.bindEdgeHandlers(state);
   };
 
+  handleShallowHistoryContextMenu = (stateId: string, e: { event: MyMouseEvent }) => {
+    const item = this.data.shallowHistory.get(stateId);
+    if (!item) return;
+    this.controller.selectShallowHistory({ smId: item.smId, id: stateId });
+    this.emit('shallowHistoryContextMenu', {
+      state: item,
+      position: { x: e.event.nativeEvent.clientX, y: e.event.nativeEvent.clientY },
+    });
+  };
+
   watch(state: StateVariant) {
     if (state instanceof State) {
       return this.watchState(state);
@@ -842,7 +853,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     state.on('mousedown', this.handleShallowHistoryMouseDown.bind(this, state));
     state.on('mouseup', this.handleMouseUpOnState.bind(this, state));
     // state.on('dblclick', this.handleStateDoubleClick.bind(this, state));
-    state.on('contextmenu', this.handleContextMenu.bind(this, state.id));
+    state.on('contextmenu', this.handleShallowHistoryContextMenu.bind(this, state.id));
     // state.on('longpress', this.handleStateLongPress.bind(this, state));
   }
 

@@ -20,6 +20,7 @@ import {
   CHOICE_STATE_DIMENSIONS,
   DEFAULT_STATE_DIMENSIONS,
   FINAL_STATE_DIMENSIONS,
+  INITIAL_STATE_DIMENSIONS,
 } from '@renderer/lib/constants';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import {
@@ -29,6 +30,7 @@ import {
   FinalState,
   State,
   Transition,
+  ShallowHistory,
 } from '@renderer/lib/drawable';
 import { Point } from '@renderer/lib/types';
 import { useModelContext } from '@renderer/store/ModelContext';
@@ -45,7 +47,8 @@ type MenuVariant =
   | { type: 'choiceState'; state: ChoiceState }
   | { type: 'event'; state: State; event: EventSelection }
   | { type: 'transition'; transition: Transition; position: Point }
-  | { type: 'note'; note: Note; position: Point };
+  | { type: 'note'; note: Note; position: Point }
+  | { type: 'shallowHistory'; state: ShallowHistory };
 
 interface StateMachineContextMenuProps {
   smId: string;
@@ -112,10 +115,16 @@ export const StateMachineContextMenu: React.FC<StateMachineContextMenuProps> = (
     const handleNoteContextMenu = ({ position, note }: { position: Point; note: Note }) => {
       handleEvent({ type: 'note', note, position }, position);
     };
+    const handleShallowHistoryContextMenu = (data: { state: ShallowHistory; position: Point }) => {
+      const { state, position } = data;
+
+      handleEvent({ type: 'shallowHistory', state }, position);
+    };
 
     // контекстное меню для пустого поля
     controller.view.on('contextMenu', handleViewContextMenu);
     // контекстное меню для состояний
+    controller.states.on('shallowHistoryContextMenu', handleShallowHistoryContextMenu);
     controller.states.on('stateContextMenu', handleStateContextMenu);
     controller.states.on('finalStateContextMenu', handleFinalStateContextMenu);
     controller.states.on('choiceStateContextMenu', handleChoiceStateContextMenu);
@@ -191,6 +200,18 @@ export const StateMachineContextMenu: React.FC<StateMachineContextMenuProps> = (
             }
           >
             <ChoiceStateIcon className="size-6 flex-shrink-0" /> Вставить состояние выбора
+          </MenuItem>
+          <MenuItem
+            onClick={() =>
+              modelController.createShallowState({
+                smId: smId,
+                dimensions: INITIAL_STATE_DIMENSIONS,
+                position: canvasPos,
+                placeInCenter: true,
+              })
+            }
+          >
+            <ChoiceStateIcon className="size-6 flex-shrink-0" /> Вставить локальную историю
           </MenuItem>
           <MenuItem
             onClick={() => {
@@ -460,6 +481,22 @@ export const StateMachineContextMenu: React.FC<StateMachineContextMenuProps> = (
           note={note}
           position={position}
         />
+      );
+    }
+
+    if (menuVariant.type === 'shallowHistory') {
+      return (
+        <ContextMenu onClose={close}>
+          <MenuItem
+            className="enabled:hover:bg-error"
+            onClick={() =>
+              modelController.deleteShallowHistory({ smId: smId, id: menuVariant.state.id })
+            }
+          >
+            <DeleteIcon className="size-6 flex-shrink-0" /> Удалить
+            <span className="ml-auto">Del</span>
+          </MenuItem>
+        </ContextMenu>
       );
     }
 

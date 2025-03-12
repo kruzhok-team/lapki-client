@@ -13,11 +13,10 @@ import {
   ChangeTransitionParams,
   CreateNoteParams,
   CreateStateParams,
-  CreateFinalStateParams,
-  CreateChoiceStateParams,
   SwapComponentsParams,
   CreateComponentParams,
   DeleteDrawableParams,
+  CreateVertexParams,
 } from '@renderer/lib/types/ModelTypes';
 import { roundPoint } from '@renderer/lib/utils';
 import {
@@ -72,13 +71,22 @@ export type PossibleActions = {
   createStateMachine: { smId: string } & StateMachine;
   deleteStateMachine: { smId: string } & StateMachine;
 
-  createFinalState: CreateFinalStateParams;
+  createFinalState: CreateVertexParams;
   deleteFinalState: { smId: string; id: string; stateData: FinalStateData };
   changeFinalStatePosition: { smId: string; id: string; startPosition: Point; endPosition: Point };
 
-  createChoiceState: CreateChoiceStateParams;
+  createChoiceState: CreateVertexParams;
   deleteChoiceState: { smId: string; id: string; stateData: ChoiceStateData };
   changeChoiceStatePosition: { smId: string; id: string; startPosition: Point; endPosition: Point };
+
+  createShallowHistory: CreateVertexParams;
+  deleteShallowHistory: { smId: string; id: string; stateData: ChoiceStateData };
+  changeShallowHistoryPosition: {
+    smId: string;
+    id: string;
+    startPosition: Point;
+    endPosition: Point;
+  };
 
   createTransition: { smId: string; id: string; params: CreateTransitionParams };
   deleteTransition: { smId: string; id: string; prevData: TransitionData };
@@ -338,6 +346,43 @@ export const actionFunctions: ActionFunctions = {
   changeChoiceStatePosition: (sM, { smId, id, startPosition, endPosition }) => ({
     redo: sM.changeChoiceStatePosition.bind(sM, { smId, id, startPosition, endPosition }, false),
     undo: sM.changeChoiceStatePosition.bind(
+      sM,
+      {
+        smId,
+        id,
+        startPosition: endPosition,
+        endPosition: startPosition,
+      },
+      false
+    ),
+  }),
+
+  createShallowHistory: (sM, args) => ({
+    redo: sM.createShallowState.bind(
+      sM,
+      { ...args, id: args.id, linkByPoint: false, canBeInitial: false },
+      false
+    ),
+    undo: sM.deleteShallowHistory.bind(sM, { ...args, id: args.id!, smId: args.smId }, false),
+  }),
+  deleteShallowHistory: (sM, { id, smId, stateData }) => ({
+    redo: sM.deleteShallowHistory.bind(sM, { smId: smId, id }, false),
+    undo: sM.createShallowState.bind(
+      sM,
+      {
+        smId,
+        dimensions: stateData.dimensions,
+        id,
+        position: stateData.position,
+        parentId: stateData.parentId,
+        linkByPoint: false,
+      },
+      false
+    ),
+  }),
+  changeShallowHistoryPosition: (sM, { smId, id, startPosition, endPosition }) => ({
+    redo: sM.changeShallowHistoryPosition.bind(sM, { smId, id, startPosition, endPosition }, false),
+    undo: sM.changeShallowHistoryPosition.bind(
       sM,
       {
         smId,
@@ -635,6 +680,21 @@ export const actionDescriptions: ActionDescriptions = {
   }),
   changeChoiceStatePosition: (args) => ({
     name: 'Перемещение состояния выбора',
+    description: `Было: "${JSON.stringify(
+      roundPoint(args.startPosition)
+    )}"\nСтало: ${JSON.stringify(roundPoint(args.endPosition))}`,
+  }),
+
+  createShallowHistory: () => ({
+    name: 'Создание локальной истории',
+    description: ``,
+  }),
+  deleteShallowHistory: () => ({
+    name: 'Удаление локальной истории',
+    description: ``,
+  }),
+  changeShallowHistoryPosition: (args) => ({
+    name: 'Перемещение локальной истории',
     description: `Было: "${JSON.stringify(
       roundPoint(args.startPosition)
     )}"\nСтало: ${JSON.stringify(roundPoint(args.endPosition))}`,

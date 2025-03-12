@@ -80,7 +80,7 @@ export class ShallowHistory extends Shape {
     const { x, y, width } = this.drawBounds;
     const radius = width / 2;
     const position = { x: x + radius, y: y + radius };
-    const lineWidth = 3 / this.app.controller.scale;
+    const lineWidth = 2 / this.app.controller.scale;
     drawCircle(ctx, {
       position,
       radius: radius + lineWidth,

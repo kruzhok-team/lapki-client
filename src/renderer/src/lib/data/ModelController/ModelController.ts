@@ -2313,10 +2313,10 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.model.changeVertexPosition(args.smId, args.id, args.endPosition, 'shallowHistory');
     const { startPosition } = args;
     if (canUndo && startPosition !== undefined) {
-      // this.history.do({
-      //   type: 'changeFinalStatePosition',
-      //   args: { ...args, startPosition: startPosition },
-      // });
+      this.history.do({
+        type: 'changeShallowHistoryPosition',
+        args: { ...args, startPosition: startPosition },
+      });
     }
     this.emit('changeShallowHistoryPosition', args);
   };
@@ -2373,11 +2373,11 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     }
 
     if (canUndo) {
-      // this.history.do({
-      //   type: 'createFinalState',
-      //   args: { ...args, ...state, id: id },
-      //   numberOfConnectedActions: 0,
-      // });
+      this.history.do({
+        type: 'createShallowHistory',
+        args: { ...args, ...state, id: id },
+        numberOfConnectedActions: 0,
+      });
     }
 
     return state;
@@ -2401,7 +2401,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const state = this.model.data.elements.stateMachines[smId].shallowHistory[id];
     if (!state) return;
 
-    const parentId = state.parentId;
     let numberOfConnectedActions = 0;
 
     // Удаляем зависимые переходы
@@ -2415,11 +2414,11 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     });
 
     if (canUndo) {
-      // this.history.do({
-      //   type: 'deleteChoiceState',
-      //   args: { smId, id, stateData: { ...structuredClone(state), parentId } },
-      //   numberOfConnectedActions,
-      // });
+      this.history.do({
+        type: 'deleteShallowHistory',
+        args: { smId, id, stateData: { ...structuredClone(state), parentId: state.parentId } },
+        numberOfConnectedActions,
+      });
     }
     this.model.deleteVertex(smId, id, 'shallowHistory'); // Удаляем модель
     this.emit('deleteShallowHistory', args);

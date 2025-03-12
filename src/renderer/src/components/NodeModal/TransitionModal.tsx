@@ -12,7 +12,6 @@ import {
   Condition as ConditionData,
   Event,
   EventData,
-  ShallowHistory,
   Transition,
 } from '@renderer/types/diagram';
 

@@ -121,10 +121,11 @@ export const Documentation: React.FC = () => {
           </button>
           <button
             className={twMerge(
-              'rounded border border-primary p-2',
+              'rounded border border-primary p-2 disabled:cursor-not-allowed disabled:opacity-30',
               activeTab === 1 && 'bg-primary text-text-secondary'
             )}
             onClick={() => setActiveTab(1)}
+            disabled={!currentItem}
           >
             Просмотр
           </button>

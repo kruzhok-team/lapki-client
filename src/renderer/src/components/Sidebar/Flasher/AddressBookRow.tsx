@@ -5,6 +5,8 @@ import { AddressData } from '@renderer/types/FlasherTypes';
 
 import { TextInput } from '../../UI/TextInput';
 
+const cellHeight = 'h-[38px]';
+
 interface AddressBookRowProps {
   data: AddressData;
   isSelected: boolean;
@@ -18,7 +20,7 @@ interface AddressBookRowProps {
 export const AddressBookRow: React.FC<AddressBookRowProps> = (props) => {
   const { data, onSelect, isSelected, onEdit, onDragStart, onDrop, isChecked, onCheckChange } =
     props;
-  const labelClassName = twMerge('flex w-full', isSelected && 'bg-bg-active');
+  const labelClassName = twMerge('flex w-full', isSelected && 'bg-bg-active', cellHeight);
   return (
     <div
       className="flex items-start"
@@ -28,7 +30,12 @@ export const AddressBookRow: React.FC<AddressBookRowProps> = (props) => {
       onDragStart={onDragStart}
       onDrop={onDrop}
     >
-      <Checkbox checked={isChecked} onCheckedChange={onCheckChange} />
+      {/* <TextInput className="w-1" value={'f'} disabled={true} placeholder="f" /> */}
+      <Checkbox
+        checked={isChecked}
+        onCheckedChange={onCheckChange}
+        className={twMerge('w-[76px] rounded border border-border-primary', cellHeight)}
+      />
       <label className={labelClassName}>
         <TextInput value={data.name ?? ''} disabled={true} placeholder="Название" />
       </label>

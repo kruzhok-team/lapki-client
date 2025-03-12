@@ -1799,6 +1799,13 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
           this.deleteComponent({ smId, id: key });
         }
       });
+
+      Object.keys(sm.shallowHistory).forEach((key) => {
+        const shallowHistory = sm.shallowHistory[key];
+        if (shallowHistory.selection) {
+          this.deleteShallowHistory({ smId, id: key });
+        }
+      });
       this.emit('deleteSelected', smId);
     }
   };

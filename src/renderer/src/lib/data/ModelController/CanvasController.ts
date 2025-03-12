@@ -833,6 +833,12 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
       this.states.deleteChoiceState({ smId: smId, id: state.id });
     });
 
+    this.states.data.shallowHistory.forEach((state) => {
+      if (!state.isSelected) return;
+
+      this.states.deleteShallowHistory({ smId: smId, id: state.id });
+    });
+
     this.transitions.forEach((transition) => {
       if (!transition.isSelected) return;
 

@@ -16,17 +16,15 @@ import {
   ChangeStateParams,
   ChangeTransitionParams,
   ControllerDataPropertyName,
-  CreateChoiceStateParams,
   CreateComponentParams,
   CreateEventActionParams,
   CreateEventParams,
-  CreateFinalStateParams,
   CreateInitialStateControllerParams,
   CreateNoteParams,
-  CreateShallowHistoryParams,
   CreateStateMachineParams,
   CreateStateParams,
   CreateTransitionParams,
+  CreateVertexParams,
   DeleteDrawableParams,
   DeleteEventParams,
   DeleteStateMachineParams,
@@ -98,10 +96,10 @@ export type CanvasControllerEvents = {
   deleteInitialState: DeleteDrawableParams;
   createTransition: CreateTransitionParams;
   changeTransition: ChangeTransitionParams;
-  createChoice: CreateChoiceStateParams;
+  createChoice: CreateVertexParams;
   createState: CreateStateParams;
   changeStatePosition: ChangePosition;
-  createFinal: CreateFinalStateParams;
+  createFinal: CreateVertexParams;
   createNote: CreateNoteParams;
   createInitial: CreateInitialStateControllerParams;
   changeInitialPosition: ChangePosition;
@@ -164,12 +162,14 @@ export type CanvasControllerEvents = {
   changeChoicePositionFromController: ChangePosition;
   changeFinalPositionFromController: ChangePosition;
 
-  createShallowHistory: CreateShallowHistoryParams;
+  createShallowHistory: CreateVertexParams;
   deleteShallowHistory: DeleteDrawableParams;
   changeShallowHistoryPosition: ChangePosition;
   changeShallowHistorySelection: ChangeSelectionParams;
   linkShallowHistory: LinkStateParams;
   unlinkShallowHistoryParams: UnlinkStateParams;
+  changeShallowHistoryPositionFromController: ChangePosition;
+  selectShallowHistory: SelectDrawable;
 };
 
 export type CanvasData = {
@@ -718,14 +718,6 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
           )
         );
         this.model.on(
-          'changeShallowHistorySelection',
-          this.bindHelper(
-            'shallowHistory',
-            'changeShallowHistorySelection',
-            this.selectShallowHistory
-          )
-        );
-        this.model.on(
           'linkShallowHistory',
           this.bindHelper(
             'shallowHistory',
@@ -1067,6 +1059,10 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     this.app.controller.states.forEachState((state) => {
       state.setIsSelected(false);
       state.eventBox.selection = undefined;
+    });
+    // debugger;
+    this.app.controller.states.data.shallowHistory.forEach((state) => {
+      state.setIsSelected(false);
     });
 
     this.app.controller.transitions.forEach((transition) => {

@@ -52,6 +52,7 @@ import {
   emptyStateMachine,
   Action,
   Component,
+  ShallowHistory,
 } from '@renderer/types/diagram';
 
 import { CanvasController, CanvasControllerEvents } from './CanvasController';
@@ -217,6 +218,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     controller.on('changeComponentPosition', this.changeComponentPosition);
     controller.on('changeTransitionPositionFromController', this.changeTransitionPosition);
     controller.on('changeStateMachinePosition', this.changeStateMachinePosition);
+    controller.on('selectShallowHistory', this.selectShallowHistory);
+    controller.on('changeShallowHistoryPositionFromController', this.changeShallowHistoryPosition);
   }
 
   private openChangeTransitionModal = (args: { smId: string; id: string }) => {
@@ -513,8 +516,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     stateId: string | undefined,
     parentId: string | undefined | null,
     stateType: StatesControllerDataStateType = 'states'
-  ): [(State | ChoiceState | InitialState)[], string[]] {
-    const siblings: (State | ChoiceState | InitialState)[] = [];
+  ): [(State | ChoiceState | InitialState | ShallowHistory)[], string[]] {
+    const siblings: (State | ChoiceState | InitialState | ShallowHistory)[] = [];
     const siblingIds: string[] = [];
     for (const value of Object.entries(this.model.data.elements.stateMachines[smId][stateType])) {
       const [id, state] = value;
@@ -2255,6 +2258,13 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
           this.model.changeComponentSelection(smId, id, false);
           this.emit('changeComponentSelection', { smId, id, value: false });
         });
+
+      Object.keys(sm.shallowHistory)
+        .filter((value) => !exclude.includes(value))
+        .forEach((id) => {
+          this.model.changeVertexSelection(smId, id, false, 'shallowHistory');
+          this.emit('changeShallowHistorySelection', { smId, id, value: false });
+        });
     }
   }
 
@@ -2264,14 +2274,16 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       const sm = this.model.data.elements.stateMachines[smId];
       const sourceType = sm.states[args.source]
         ? 'states'
-        : sm.choiceStates
+        : sm.choiceStates[args.source]
         ? 'choiceStates'
-        : 'finalStates';
+        : 'shallowHistory';
 
       const targetType = sm.states[args.source]
         ? 'states'
-        : sm.choiceStates
+        : sm.choiceStates[args.source]
         ? 'choiceStates'
+        : sm.shallowHistory[args.source]
+        ? 'shallowHistory'
         : 'finalStates';
       const sourceSm = this.getSmIdByElementId(args.source, sourceType);
       const targetSm = this.getSmIdByElementId(args.target, targetType);
@@ -2285,4 +2297,79 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       });
     }
   }
+
+  changeShallowHistoryPosition = (args: ChangePosition, canUndo = true) => {
+    this.model.changeVertexPosition(args.smId, args.id, args.endPosition, 'shallowHistory');
+    const { startPosition } = args;
+    if (canUndo && startPosition !== undefined) {
+      // this.history.do({
+      //   type: 'changeFinalStatePosition',
+      //   args: { ...args, startPosition: startPosition },
+      // });
+    }
+    this.emit('changeShallowHistoryPosition', args);
+  };
+
+  private linkShallowHistory(smId: string, stateId: string, parentId: string) {
+    const state = this.model.data.elements.stateMachines[smId].shallowHistory[stateId];
+    const parent = this.model.data.elements.stateMachines[smId].states[parentId];
+    if (!state || !parent) return;
+
+    this.model.linkVertex(smId, stateId, parentId, 'shallowHistory');
+
+    this.emit('linkShallowHistory', { smId, childId: stateId, parentId });
+  }
+
+  createShallowState = (args: CreateVertexParams, canUndo = true) => {
+    const { smId, parentId, linkByPoint = true } = args;
+    let { id } = args;
+    const computedParentId: string | undefined = undefined;
+    // Проверка на то что в скоупе уже есть конечное состояние
+    // Страшно, очень страшно
+    const parent = parentId ? this.model.data.elements.stateMachines[smId].states[parentId] : null;
+    const siblingsIds = this.getSiblings(smId, id, parentId, 'shallowHistory')[1];
+
+    if (siblingsIds.length > 0) return;
+
+    id = this.model.createVertex(args, 'shallowHistory');
+    const state = this.model.data.elements.stateMachines[smId].shallowHistory[id];
+    this.emit('createShallowHistory', { ...args, id });
+
+    if (parentId) {
+      this.linkShallowHistory(smId, id, parentId);
+    } else if (linkByPoint && parent && computedParentId) {
+      // const [parentId, parentItem] = computedParent;
+      const parentCompoundPosition = this.compoundPosition(smId, computedParentId);
+      const newPosition = {
+        x: state.position.x - parentCompoundPosition.x,
+        y: state.position.y - parentCompoundPosition.y - parent.dimensions.height,
+      };
+
+      this.linkShallowHistory(smId, id, computedParentId);
+      this.changeFinalStatePosition({ smId, id, endPosition: newPosition }, false);
+    }
+
+    if (canUndo) {
+      // this.history.do({
+      //   type: 'createFinalState',
+      //   args: { ...args, ...state, id: id },
+      //   numberOfConnectedActions: 0,
+      // });
+    }
+
+    return state;
+  };
+
+  selectShallowHistory = (args: SelectDrawable) => {
+    const { id, smId } = args;
+
+    const state = this.model.data.elements.stateMachines[smId].shallowHistory[id];
+    if (!state) return;
+
+    this.removeSelection([id]);
+
+    this.model.changeVertexSelection(smId, id, true, 'shallowHistory');
+
+    // this.emit('selectChoice', { smId: '', id: id });
+  };
 }

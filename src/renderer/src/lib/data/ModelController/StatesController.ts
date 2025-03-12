@@ -439,7 +439,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.emit('startNewTransitionState', state);
   };
 
-  handleMouseUpOnState = (state: State | ChoiceState) => {
+  handleMouseUpOnState = (state: State | ChoiceState | ShallowHistory) => {
     this.emit('mouseUpOnState', state);
   };
 
@@ -696,35 +696,17 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
       startPosition: e.dragStartPosition,
       endPosition: e.dragEndPosition,
     });
-    // this.controller.emit('changeChoicePositionFromController', {
-    //   smId: state.smId,
-    //   id: state.id,
-    //   startPosition: e.dragStartPosition,
-    //   endPosition: e.dragEndPosition,
-    // });
-  };
-
-  handleShallowHistoryDragend = (
-    state: ShallowHistory,
-    e: { dragStartPosition: Point; dragEndPosition: Point }
-  ) => {
-    this.changeShallowHistoryPosition({
+    this.controller.emit('changeShallowHistoryPositionFromController', {
       smId: state.smId,
       id: state.id,
       startPosition: e.dragStartPosition,
       endPosition: e.dragEndPosition,
     });
-    // this.controller.emit('changeChoicePositionFromController', {
-    //   smId: state.smId,
-    //   id: state.id,
-    //   startPosition: e.dragStartPosition,
-    //   endPosition: e.dragEndPosition,
-    // });
   };
 
   handleShallowHistoryMouseDown = (state: ShallowHistory) => {
     this.controller.selectShallowHistory({ smId: state.smId, id: state.id });
-    // this.controller.emit('selectChoice', { smId: state.smId, id: state.id });
+    this.controller.emit('selectShallowHistory', { smId: state.smId, id: state.id });
   };
 
   linkShallowHistory = (args: LinkStateParams) => {
@@ -857,9 +839,8 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
   private watchShallowHistory(state: ShallowHistory) {
     state.on('dragend', this.handleShallowHistoryDragEnd.bind(this, state));
-    // state.on('click', this.handleStateClick.bind(this, state));
     state.on('mousedown', this.handleShallowHistoryMouseDown.bind(this, state));
-    // state.on('mouseup', this.handleMouseUpOnState.bind(this, state));
+    state.on('mouseup', this.handleMouseUpOnState.bind(this, state));
     // state.on('dblclick', this.handleStateDoubleClick.bind(this, state));
     state.on('contextmenu', this.handleContextMenu.bind(this, state.id));
     // state.on('longpress', this.handleStateLongPress.bind(this, state));

@@ -32,7 +32,6 @@ import {
   emptyStateMachine,
   Condition,
   Variable,
-  ShallowHistory,
 } from '@renderer/types/diagram';
 
 import { Serializer } from './Serializer';

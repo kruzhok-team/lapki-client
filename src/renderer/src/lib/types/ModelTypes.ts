@@ -4,14 +4,10 @@ import {
   EventData,
   State as StateData,
   Transition as TransitionData,
-  InitialState as InitialStateData,
-  FinalState as FinalStateData,
-  ChoiceState as ChoiceStateData,
   Component as ComponentData,
   StateMachine,
   Action,
   Event,
-  ShallowHistory,
   BaseState,
 } from '@renderer/types/diagram';
 

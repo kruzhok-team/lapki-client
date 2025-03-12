@@ -3,7 +3,7 @@ import { EdgeHandlers } from '@renderer/lib/drawable';
 import { Shape } from '@renderer/lib/drawable/Shape';
 import { drawCircle } from '@renderer/lib/utils';
 import { drawText } from '@renderer/lib/utils/text';
-import theme, { getColor } from '@renderer/theme';
+import { getColor } from '@renderer/theme';
 import { ChoiceState as DataChoiceState } from '@renderer/types/diagram';
 
 /**

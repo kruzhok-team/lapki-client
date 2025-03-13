@@ -4,7 +4,6 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
 
 import { AvrdudeGuideModal } from '@renderer/components/AvrdudeGuide';
 import { ErrorModal, ErrorModalData } from '@renderer/components/ErrorModal';
@@ -653,6 +652,25 @@ export const FlasherTab: React.FC = () => {
     }
   };
 
+  const handleAddressBookSubmit = (entryIds: (string | number)[]) => {
+    const addedItems: FlashTableItem[] = [];
+    for (const entryId of entryIds) {
+      // TODO: использовать функцию из useFlasher
+      const isNew = !flashTableData.some(
+        (item) => item.targetType === FirmwareTargetType.tjc_ms && item.targetId === entryId
+      );
+      if (isNew) {
+        addedItems.push({
+          isFile: false,
+          isSelected: true,
+          targetId: entryId,
+          targetType: FirmwareTargetType.tjc_ms,
+        });
+      }
+    }
+    setFlashTableData(flashTableData.concat(addedItems));
+  };
+
   if (!managerMSSetting) {
     return null;
   }
@@ -792,19 +810,7 @@ export const FlasherTab: React.FC = () => {
       <AddressBookModal
         isOpen={isAddressBookOpen}
         onClose={closeAddressBook}
-        onSubmit={(entryId: number) => {
-          const isAdded = addToTable({
-            targetId: entryId,
-            isFile: false,
-            isSelected: true,
-            targetType: FirmwareTargetType.tjc_ms,
-          });
-          if (isAdded) {
-            toast.info('Добавлена плата в таблицу прошивок!');
-          } else {
-            toast.info('Выбранная плата была добавлена в таблицу прошивок ранее');
-          }
-        }}
+        onSubmit={handleAddressBookSubmit}
         addressBookSetting={addressBookSetting}
         getID={getID}
         onRemove={(index) => {

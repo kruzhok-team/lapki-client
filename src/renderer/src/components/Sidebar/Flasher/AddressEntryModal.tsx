@@ -156,6 +156,7 @@ export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (prop
                     onChange={(v) => onChange(v?.value ?? '')}
                     options={typeOptions}
                     value={typeOptions.find((opt) => opt.value === value)}
+                    isSearchable={false}
                   />
                 </ComponentFormFieldLabel>
               );

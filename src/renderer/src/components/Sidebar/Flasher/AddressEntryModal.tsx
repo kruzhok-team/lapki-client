@@ -135,11 +135,20 @@ export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (prop
                 <ComponentFormFieldLabel label={label} hint={hint} value={value} disabled={true} />
               );
             } else {
-              const typeOptions: SelectOption[] = getAvailablePlatforms()
-                .filter((v) => v.idx.startsWith('tjc'))
-                .map((v) => {
-                  return { label: v.idx, value: v.idx, hint: v.name } as SelectOption;
-                });
+              const typeOptions: SelectOption[] = [
+                {
+                  label: 'Отсутствует в списке',
+                  value: '',
+                  hint: 'Выберите этот вариант, если подходящей платы нет в списке.',
+                },
+              ];
+              typeOptions.push(
+                ...getAvailablePlatforms()
+                  .filter((v) => v.idx.startsWith('tjc'))
+                  .map((v) => {
+                    return { label: v.idx, value: v.idx, hint: v.name } as SelectOption;
+                  })
+              );
               return (
                 <ComponentFormFieldLabel label={label} hint={hint} as="div">
                   <Select

@@ -15,7 +15,6 @@ import {
   Action,
   StateMachine,
   State,
-  Event,
   ArgList,
   EventData,
 } from '@renderer/types/diagram';

@@ -1,6 +1,6 @@
 import { Point } from '@renderer/lib/types';
 
-import { Action, ArgList, Condition, Event, Variable } from './diagram';
+import { Condition, Variable } from './diagram';
 
 export type CompilerElements = {
   transitions: CompilerTransition[];

@@ -84,7 +84,7 @@ export const Component: React.FC<ComponentProps> = (props) => {
           {...props}
         >
           <div className="size-8">{icon ?? ''}</div>
-          <p className="ml-2 line-clamp-1"> {name}</p>
+          <p className="ml-2 line-clamp-1 text-left"> {name}</p>
         </button>
       )}
     </WithHint>

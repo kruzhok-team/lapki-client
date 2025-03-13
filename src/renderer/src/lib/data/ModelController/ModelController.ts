@@ -465,9 +465,11 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (!source || !target) return;
 
     if (label && !label.position) {
+      const sourceCompoundPosition = this.compoundPosition(smId, sourceId);
+      const targetCompoundPosition = this.compoundPosition(smId, targetId);
       label.position = {
-        x: (source.position.x + target.position.x) / 2,
-        y: (source.position.y + target.position.y) / 2,
+        x: (sourceCompoundPosition.x + targetCompoundPosition.x) / 2,
+        y: (sourceCompoundPosition.y + targetCompoundPosition.y) / 2,
       };
     }
 
@@ -855,7 +857,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   private getDrawBounds(smId: string, stateId: string) {
     return {
-      ...this.getComputedPosition(smId, stateId, 'states'),
+      ...this.getComputedPosition(smId, stateId),
       ...this.getComputedDimensions(smId, stateId, 'states'),
     };
   }
@@ -910,19 +912,16 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     return [possibleParentId, possibleParent];
   }
 
-  compoundStatePosition(
-    smId: string,
-    id: string,
-    type: 'states' | 'finalStates' | 'choiceStates' | 'initialStates'
-  ) {
-    const state = this.model.data.elements.stateMachines[smId][type][id];
+  compoundPosition(smId: string, id: string) {
+    const sm = this.model.data.elements.stateMachines[smId];
+    const state =
+      sm.states[id] || sm.finalStates[id] || sm.choiceStates[id] || sm.initialStates[id];
     let { x, y } = state.position;
     if (state.parentId) {
-      const parent = this.model.data.elements.stateMachines[smId].states[state.parentId];
-      const { x: px, y: py } = this.compoundStatePosition(smId, state.parentId, 'states');
+      const { x: px, y: py } = this.compoundPosition(smId, state.parentId);
 
-      x += px + CHILDREN_PADDING;
-      y += py + parent.dimensions.height + CHILDREN_PADDING;
+      x += px;
+      y += py;
     }
 
     return { x, y };
@@ -961,7 +960,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     }
 
     // Вычисляем новую координату, потому что после отсоединения родителя не сможем.
-    const newPosition = { ...this.compoundStatePosition(smId, id, 'states') }; // ??
+    const newPosition = { ...this.compoundPosition(smId, id) };
     const prevPosition = { ...state.position };
     this.changeStatePosition(
       { smId, id, startPosition: state.position, endPosition: newPosition },
@@ -1030,14 +1029,15 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     }
 
     this.model.linkState(smId, parentId, childId);
+    const parentCompoundPosition = this.compoundPosition(smId, parentId);
     this.changeStatePosition(
       {
         smId,
         id: childId,
         startPosition: child.position,
         endPosition: {
-          x: absolute ? dragEndPos.x : dragEndPos.x - parent.position.x,
-          y: absolute ? dragEndPos.y : Math.max(0, dragEndPos.y - parent.position.y),
+          x: absolute ? dragEndPos.x : dragEndPos.x - parentCompoundPosition.x,
+          y: absolute ? dragEndPos.y : Math.max(0, dragEndPos.y - parentCompoundPosition.y),
         },
       },
       false
@@ -1493,7 +1493,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   }
 
   getComputedHeight(object: State | InitialState | FinalState | ChoiceState) {
-    return object.dimensions.height / this.controllers[this.model.data.headControllerId].scale;
+    return object.dimensions.height;
   }
 
   getComputedDimensions(smId: string, stateId: string, stateType: StateType) {
@@ -1505,16 +1505,12 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     return { width, height, childrenHeight };
   }
 
-  getComputedPosition(
-    smId: string,
-    stateId: string,
-    stateType: 'states' | 'finalStates' | 'initialStates' | 'choiceStates'
-  ) {
-    const { x, y } = this.compoundStatePosition(smId, stateId, stateType);
+  getComputedPosition(smId: string, stateId: string) {
+    const { x, y } = this.compoundPosition(smId, stateId);
 
     return {
-      x: (x + this.model.data.offset.x) / this.controllers[this.model.data.headControllerId].scale,
-      y: (y + this.model.data.offset.y) / this.controllers[this.model.data.headControllerId].scale,
+      x: x,
+      y: y,
     };
   }
 
@@ -1557,11 +1553,11 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       let rightChildrenType = rightChildren[1];
       for (const childrenType in Object.keys(children)) {
         for (const childId in children[childrenType]) {
-          const x = this.getComputedPosition(smId, childId, childrenType as StateType).x;
+          const x = this.getComputedPosition(smId, childId).x;
           const width = this.getComputedWidth(smId, childId, childrenType as StateType);
           if (
             x + width >
-            this.getComputedPosition(smId, rightChildrenId, rightChildrenType).x +
+            this.getComputedPosition(smId, rightChildrenId).x +
               this.getComputedWidth(smId, rightChildrenId, rightChildrenType)
           ) {
             rightChildrenId = childId;
@@ -1570,8 +1566,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         }
       }
 
-      const x = this.getComputedPosition(smId, stateId, stateType).x;
-      const cx = this.getComputedPosition(smId, rightChildrenId, rightChildrenType).x;
+      const x = this.getComputedPosition(smId, stateId).x;
+      const cx = this.getComputedPosition(smId, rightChildrenId).x;
 
       width = Math.max(
         width,
@@ -1643,7 +1639,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     } else if (linkByPoint) {
       const [computedParentId, parentItem] = this.getPossibleParentState(smId, position);
       if (computedParentId && parentItem) {
-        const parentCompoundPosition = this.compoundStatePosition(smId, computedParentId, 'states');
+        const parentCompoundPosition = this.compoundPosition(smId, computedParentId);
         if (parentItem) {
           const newPosition = {
             x: state.position.x - parentCompoundPosition.x,
@@ -1739,7 +1735,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       this.linkFinalState(smId, id, parentId);
     } else if (linkByPoint && parent && computedParentId) {
       // const [parentId, parentItem] = computedParent;
-      const parentCompoundPosition = this.compoundStatePosition(smId, computedParentId, 'states');
+      const parentCompoundPosition = this.compoundPosition(smId, computedParentId);
       const newPosition = {
         x: state.position.x - parentCompoundPosition.x,
         y: state.position.y - parentCompoundPosition.y - parent.dimensions.height,

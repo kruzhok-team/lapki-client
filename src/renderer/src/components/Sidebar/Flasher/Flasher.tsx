@@ -4,7 +4,6 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
 
 import { AvrdudeGuideModal } from '@renderer/components/AvrdudeGuide';
 import { ErrorModal, ErrorModalData } from '@renderer/components/ErrorModal';

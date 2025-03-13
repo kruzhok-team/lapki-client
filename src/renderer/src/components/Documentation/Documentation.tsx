@@ -4,6 +4,7 @@ import { Resizable } from 're-resizable';
 import { toast } from 'sonner';
 import { twMerge } from 'tailwind-merge';
 
+import { ReactComponent as Close } from '@renderer/assets/icons/close.svg';
 import { useFetch, useSettings } from '@renderer/hooks';
 import { useDoc } from '@renderer/store/useDoc';
 import { File } from '@renderer/types/documentation';
@@ -109,6 +110,15 @@ export const Documentation: React.FC = () => {
 
     return (
       <section className="flex h-full select-none flex-col px-2 pt-4">
+        <div className="relative mb-3 flex items-center justify-between border-b border-border-primary pb-1">
+          <h1 className="text-2xl font-bold">Документация</h1>
+          <button
+            className="rounded-full p-3 outline-none transition-colors hover:bg-bg-hover active:bg-bg-active"
+            onClick={() => onDocumentationToggle()}
+          >
+            <Close width="1rem" height="1rem" />
+          </button>
+        </div>
         <div className="grid grid-cols-2 gap-1 pb-2">
           <button
             className={twMerge(
@@ -121,10 +131,11 @@ export const Documentation: React.FC = () => {
           </button>
           <button
             className={twMerge(
-              'rounded border border-primary p-2',
+              'rounded border border-primary p-2 disabled:cursor-not-allowed disabled:opacity-30',
               activeTab === 1 && 'bg-primary text-text-secondary'
             )}
             onClick={() => setActiveTab(1)}
+            disabled={!currentItem}
           >
             Просмотр
           </button>

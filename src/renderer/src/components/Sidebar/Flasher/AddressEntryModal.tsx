@@ -146,6 +146,7 @@ export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (prop
                     placeholder={'Выберите тип платы'}
                     onChange={(v) => onChange(v?.value ?? '')}
                     options={typeOptions}
+                    value={typeOptions.find((opt) => opt.value === value)}
                   />
                 </ComponentFormFieldLabel>
               );

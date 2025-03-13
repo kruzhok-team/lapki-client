@@ -81,6 +81,8 @@ export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (prop
     }
     sendSubmit();
   });
+  const addressEditBlock = getValues('addressEditBlock');
+  const typeEditBlock = getValues('typeEditBlock');
   return (
     <Modal
       title="Адрес устройства"
@@ -118,8 +120,9 @@ export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (prop
                 value={value}
                 error={errors.address?.message}
                 onChange={onChange}
-                disabled={getValues('addressEditBlock')}
+                disabled={addressEditBlock}
                 maxLength={16}
+                className={addressEditBlock ? 'disabled:opacity-70' : ''}
               />
             );
           }}
@@ -133,7 +136,16 @@ export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (prop
             const hint = `Тип платы. Это значение нельзя изменить после сохранения (если не выбран вариант «${noneOption}»)!`;
             if (getValues('typeEditBlock')) {
               return (
-                <ComponentFormFieldLabel label={label} hint={hint} value={value} disabled={true} />
+                <ComponentFormFieldLabel
+                  label={label}
+                  hint={hint}
+                  value={value}
+                  disabled={true}
+                  // Альтернативы:
+                  // border-b border-l-0 border-r-0 border-t-0 pb-1
+                  // border-none
+                  className="disabled:opacity-70"
+                />
               );
             } else {
               const typeOptions: SelectOption[] = [

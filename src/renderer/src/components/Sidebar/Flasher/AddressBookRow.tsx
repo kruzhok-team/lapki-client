@@ -1,6 +1,6 @@
-import { Checkbox } from '@radix-ui/react-checkbox';
 import { twMerge } from 'tailwind-merge';
 
+import { Checkbox } from '@renderer/components/UI';
 import { AddressData } from '@renderer/types/FlasherTypes';
 
 import { TextInput } from '../../UI/TextInput';
@@ -30,7 +30,6 @@ export const AddressBookRow: React.FC<AddressBookRowProps> = (props) => {
       onDragStart={onDragStart}
       onDrop={onDrop}
     >
-      {/* <TextInput className="w-1" value={'f'} disabled={true} placeholder="f" /> */}
       <Checkbox
         checked={isChecked}
         onCheckedChange={onCheckChange}

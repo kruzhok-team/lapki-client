@@ -1,33 +1,40 @@
-import { UseFormReturn } from 'react-hook-form';
+import { Controller, UseFormReturn } from 'react-hook-form';
 
+import { ComponentFormFieldLabel } from '@renderer/components/ComponentFormFieldLabel';
+import { getAvailablePlatforms } from '@renderer/lib/data/PlatformLoader';
 import { AddressData } from '@renderer/types/FlasherTypes';
 
-import { Modal } from '../../UI';
-import { TextInput } from '../../UI/TextInput';
+import { Modal, Select, SelectOption } from '../../UI';
+
+export type AddressEntryForm = {
+  name: string;
+  address: string;
+  addressEditBlock: boolean;
+  type: string;
+  typeEditBlock: boolean;
+};
 
 interface AddressEntryEditModalProps {
   addressBookSetting: AddressData[] | null;
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: AddressData) => void;
+  onSubmit: (data: AddressEntryForm) => void;
   submitLabel: string;
-  form: UseFormReturn<AddressData>;
-  allowAddressEdit: boolean;
+  form: UseFormReturn<AddressEntryForm>;
 }
 
 /**
  * Модальное окно для добавления или редактирования записи в адресной книге МС-ТЮК
  */
 export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (props) => {
-  const { addressBookSetting, isOpen, onClose, onSubmit, submitLabel, form, allowAddressEdit } =
-    props;
+  const { addressBookSetting, isOpen, onClose, onSubmit, submitLabel, form } = props;
   const {
     handleSubmit: hookHandleSubmit,
-    register,
     formState: { errors, dirtyFields },
     setError,
     clearErrors,
     getValues,
+    control,
   } = form;
   const handleSubmit = hookHandleSubmit((submitData) => {
     if (addressBookSetting === null) return;
@@ -74,7 +81,6 @@ export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (prop
     }
     sendSubmit();
   });
-  const meta = getValues('meta');
   return (
     <Modal
       title="Адрес устройства"
@@ -83,34 +89,71 @@ export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (prop
       onSubmit={handleSubmit}
       submitLabel={submitLabel}
     >
-      <div className="flex items-start gap-1">
-        <label className="flex w-full flex-col">
-          <TextInput placeholder="Название" {...register('name')} />
-          <p className="text-sm text-error">{errors.name?.message}</p>
-        </label>
-
-        <label className="flex w-full flex-col">
-          <TextInput
-            error={!!errors.address?.message}
-            maxLength={16}
-            placeholder="Адрес"
-            className="w-full max-w-full"
-            disabled={!allowAddressEdit}
-            {...register('address')}
-          />
-          <p className="text-sm text-error">{errors.address?.message}</p>
-        </label>
-
-        <label className="flex w-full flex-col">
-          <TextInput
-            placeholder="Тип"
-            className="w-full max-w-full"
-            disabled={true}
-            {...register('type')}
-          />
-        </label>
+      <div className="flex flex-col gap-2">
+        <Controller
+          control={control}
+          name="name"
+          render={({ field: { value, onChange } }) => {
+            return (
+              <ComponentFormFieldLabel
+                label="Название:"
+                placeholder="Введите название..."
+                hint="Человекочитаемое название, которое будет отображаться в интерфейсе вместо адреса."
+                value={value}
+                error={errors.name?.message}
+                onChange={onChange}
+              />
+            );
+          }}
+        />
+        <Controller
+          control={control}
+          name="address"
+          render={({ field: { value, onChange } }) => {
+            return (
+              <ComponentFormFieldLabel
+                label="Адрес:"
+                placeholder="Введите адрес..."
+                hint="Адрес платы МС-ТЮК. Это значение нельзя изменить!"
+                value={value}
+                error={errors.address?.message}
+                onChange={onChange}
+                disabled={getValues('addressEditBlock')}
+                maxLength={16}
+              />
+            );
+          }}
+        />
+        <Controller
+          control={control}
+          name="type"
+          render={({ field: { value, onChange } }) => {
+            const label = 'Тип:';
+            const hint = 'Тип платы. Это значение нельзя изменить!';
+            if (getValues('typeEditBlock')) {
+              return (
+                <ComponentFormFieldLabel label={label} hint={hint} value={value} disabled={true} />
+              );
+            } else {
+              const typeOptions: SelectOption[] = getAvailablePlatforms()
+                .filter((v) => v.idx.startsWith('tjc'))
+                .map((v) => {
+                  return { label: v.idx, value: v.idx, hint: v.name } as SelectOption;
+                });
+              return (
+                <ComponentFormFieldLabel label={label} hint={hint} as="div">
+                  <Select
+                    placeholder={'Выберите тип платы'}
+                    onChange={(v) => onChange(v?.value ?? '')}
+                    options={typeOptions}
+                  />
+                </ComponentFormFieldLabel>
+              );
+            }
+          }}
+        />
       </div>
-      <br></br>
+      {/* <br></br>
       {meta && (
         <div className="mb-2 flex flex-col gap-1">
           <h3 className="mb-1 text-xl">Метаданные</h3>
@@ -140,7 +183,7 @@ export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (prop
           </div>
         </div>
       )}
-      {!meta && <p className="mb-1 text-xl opacity-60">Метаданных нет</p>}
+      {!meta && <p className="mb-1 text-xl opacity-60">Метаданных нет</p>} */}
     </Modal>
   );
 };

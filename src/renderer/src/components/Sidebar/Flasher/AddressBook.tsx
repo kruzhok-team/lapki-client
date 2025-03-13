@@ -73,8 +73,6 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
 
   const handleSubmit = hookHandleSubmit(() => {
     if (addressBookSetting === null) return;
-    // const entryIds = checked.keys().toArray();
-    // console.log(entryIds);
     onSubmit(Array.from(checked));
     onClose();
   });

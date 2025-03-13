@@ -43,7 +43,8 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
   // выбрано всё
   const [checkedAll, setCheckedAll] = useState<boolean>(true);
   // отмеченные адреса
-  const [checks, setChecks] = useState<Map<number, boolean>>(new Map());
+  // TODO: переделать тип ключа на string после мёржа PR
+  const [checks, setChecks] = useState<Map<number | string, boolean>>(new Map());
 
   /**
    * замена двух записей при drag&drop
@@ -79,7 +80,30 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
   });
 
   const handleChangeCheckedAll = () => {
-    throw new Error('Function not implemented.');
+    if (addressBookSetting === null) return;
+    setCheckedAll(!checkedAll);
+    if (!checkedAll) {
+      setChecks(new Map());
+      return;
+    }
+    const newChecks = new Map();
+    for (let i = 0; i < addressBookSetting.length; i++) {
+      const ID = getID(i);
+      if (ID === null) continue;
+      newChecks.set(ID, false);
+    }
+    setChecks(newChecks);
+  };
+
+  const handleChangeChecked = (ID: number | string, isChecked: boolean) => {
+    setChecks((oldMap) => {
+      const newMap = new Map(oldMap);
+      newMap.set(ID, !isChecked);
+      return newMap;
+    });
+    if (checkedAll) {
+      setCheckedAll(!checkedAll);
+    }
   };
 
   return (
@@ -103,28 +127,29 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
                 // заголовок таблицы
                 isSelected={false}
                 data={{ name: 'Название', address: 'Адрес', type: 'Тип', meta: undefined }}
+                isChecked={checkedAll}
                 onSelect={() => undefined}
                 onEdit={() => undefined}
                 onDragStart={() => undefined}
                 onDrop={() => undefined}
-                isChecked={checkedAll}
                 onCheckChange={handleChangeCheckedAll}
               />
             )}
             {addressBookSetting?.map((field, index) => {
               const ID = getID(index);
               if (ID === null) return;
+              const isChecked = checks.get(ID) ?? true;
               return (
                 <div key={ID}>
                   <AddressBookRow
                     isSelected={index === selectedEntry}
                     data={field}
+                    isChecked={isChecked}
                     onSelect={() => setSelectedEntry(index)}
                     onEdit={() => handleEdit(field, index)}
                     onDragStart={() => setDragIndex(index)}
                     onDrop={() => handleSwapEntries(index)}
-                    isChecked={true}
-                    onCheckChange={() => 0}
+                    onCheckChange={() => handleChangeChecked(ID, isChecked)}
                   />
                 </div>
               );

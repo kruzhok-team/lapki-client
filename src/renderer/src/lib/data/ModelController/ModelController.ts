@@ -1003,7 +1003,9 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const parent = this.model.data.elements.stateMachines[smId].states[parentId];
     const child = this.model.data.elements.stateMachines[smId].states[childId];
     if (!parent || !child) return;
+
     const prevParentId = child.parentId;
+    const prevPosition = structuredClone(child.position);
 
     let numberOfConnectedActions = 0;
 
@@ -1015,8 +1017,15 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         this.model.data.elements.stateMachines[smId].initialStates[sourceId] !== undefined
     );
 
+    const siblingIds = this.getSiblings(smId, childId, prevParentId, 'states')[1];
+    // Если есть переход из начального состояния, то переключаем его на первого попавшегося
+    // сиблинга, если таковых не имеется, то удаляем начальное ПС
     if (transitionFromInitialState) {
-      this.setInitialState(smId, parentId, canUndo);
+      if (siblingIds.length === 0) {
+        this.deleteInitialStateWithTransition(smId, transitionFromInitialState.sourceId, canUndo);
+      } else {
+        this.setInitialState(smId, siblingIds[0], canUndo);
+      }
       numberOfConnectedActions += 1;
     }
 
@@ -1061,13 +1070,20 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       if (!prevParentId) {
         this.history.do({
           type: 'linkState',
-          args: { smId, parentId, childId, dragEndPos: child.position },
+          args: { smId, parentId, childId, dragEndPos: child.position, prevPosition: prevPosition },
           numberOfConnectedActions,
         });
       } else {
         this.history.do({
           type: 'linkStateToAnotherParent',
-          args: { smId, parentId, prevParentId, childId, dragEndPos: child.position },
+          args: {
+            smId,
+            parentId,
+            prevParentId,
+            childId,
+            dragEndPos: child.position,
+            prevPosition: prevPosition,
+          },
           numberOfConnectedActions,
         });
       }

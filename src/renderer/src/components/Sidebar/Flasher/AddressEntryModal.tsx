@@ -114,7 +114,7 @@ export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (prop
               <ComponentFormFieldLabel
                 label="Адрес:"
                 placeholder="Введите адрес..."
-                hint="Адрес платы МС-ТЮК. Это значение нельзя изменить!"
+                hint="Адрес платы МС-ТЮК. Это значение нельзя изменить после сохранения!"
                 value={value}
                 error={errors.address?.message}
                 onChange={onChange}
@@ -129,7 +129,8 @@ export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (prop
           name="type"
           render={({ field: { value, onChange } }) => {
             const label = 'Тип:';
-            const hint = 'Тип платы. Это значение нельзя изменить!';
+            const noneOption = 'Отсутствует';
+            const hint = `Тип платы. Это значение нельзя изменить после сохранения (если не выбран вариант «${noneOption}»)!`;
             if (getValues('typeEditBlock')) {
               return (
                 <ComponentFormFieldLabel label={label} hint={hint} value={value} disabled={true} />
@@ -137,9 +138,9 @@ export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (prop
             } else {
               const typeOptions: SelectOption[] = [
                 {
-                  label: 'Отсутствует в списке',
+                  label: noneOption,
                   value: '',
-                  hint: 'Выберите этот вариант, если подходящей платы нет в списке.',
+                  hint: 'Выберите этот вариант, если подходящей платы нет в списке. Этот выбор можно будет изменить после сохранения.',
                 },
               ];
               typeOptions.push(

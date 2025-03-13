@@ -260,7 +260,7 @@ function serializeStates(
 }
 
 function isVariable(operand: any): operand is Variable {
-  return operand['component'] !== undefined;
+  return operand && operand['component'] !== undefined;
 }
 
 function isConditionArray(value: unknown): value is Condition[] {

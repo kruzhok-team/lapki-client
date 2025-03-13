@@ -113,6 +113,7 @@ function initArgList(args: (string | Variable)[]): ArgList {
       argList[index] = { value: value, order: index };
     }
   });
+
   return argList;
 }
 
@@ -433,7 +434,14 @@ function labelParameters(args: ArgList, method: MethodProto): ArgList {
       };
       return;
     }
-    labeledArgs[element.name] = args[index];
+    if (!args[index]) {
+      labeledArgs[element.name] = {
+        value: undefined,
+        order: index,
+      };
+    } else {
+      labeledArgs[element.name] = args[index];
+    }
   });
   return labeledArgs;
 }

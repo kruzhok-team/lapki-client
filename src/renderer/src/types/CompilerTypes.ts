@@ -1,6 +1,6 @@
 import { Point } from '@renderer/lib/types';
 
-import { Action, ArgList, Condition, Event } from './diagram';
+import { Condition, Variable } from './diagram';
 
 export type CompilerElements = {
   transitions: CompilerTransition[];
@@ -14,7 +14,7 @@ export type CompilerElements = {
 export type CompilerState = {
   name: string;
   bounds: CompilerBounds;
-  events: CompilerAction[];
+  events: CompilerEvent[];
   parent?: string;
 };
 
@@ -25,9 +25,9 @@ export type CompilerBounds = {
   height: number;
 };
 
-export type CompilerAction = {
-  trigger: Event;
-  do: Event[];
+export type CompilerEvent = {
+  trigger: CompilerAction;
+  do: CompilerAction[];
 };
 
 export type CompilerComponent = {
@@ -72,18 +72,18 @@ export type CompilerRequest = CompilerResult & {
   state_machines: { [id: string]: CompilerRequestStateMachine };
 };
 
-export type CompilerEvent = {
+export type CompilerAction = {
   component: string;
   method: string;
-  args?: ArgList;
+  args?: { [id: string]: Variable | string };
 };
 
 export type CompilerTransition = {
   source: string;
   target: string;
   condition: Condition | null;
-  trigger: CompilerEvent;
-  do: Action[];
+  trigger: CompilerAction;
+  do: CompilerAction[];
   color: string;
   position: Point;
 };

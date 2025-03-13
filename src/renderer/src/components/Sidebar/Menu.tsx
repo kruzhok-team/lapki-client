@@ -121,7 +121,10 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
         !visual ||
         !isInitialized ||
         controller.type === 'scheme' ||
-        (activeTab && activeTab.type !== 'editor'),
+        (activeTab && activeTab.type !== 'editor') ||
+        Object.values(controller.platform).find((platform) =>
+          platform.data.id.startsWith('BearlogaDefend')
+        ) !== undefined,
     },
     // {
     //   text: 'Примеры',

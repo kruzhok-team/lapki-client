@@ -356,7 +356,8 @@ export class PlatformManager {
           parameter = '?!';
         }
       } else if (typeof paramValue.value === 'string') {
-        parameter = paramValue.value;
+        parameter =
+          paramValue.value.length > 15 ? paramValue.value.slice(0, 12) + '...' : paramValue.value;
       } else if (
         typeof parameterList[0].type === 'string' &&
         parameterList[0].type.startsWith('Matrix')

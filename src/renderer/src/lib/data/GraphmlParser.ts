@@ -53,30 +53,37 @@ const operatorAlias = {
   '<=': 'lessOrEqual',
 };
 
-function checkConditionTokenType(token: string): Condition {
-  if (token.includes('.')) {
-    const [component, method] = token.split('.');
-    return {
-      type: 'component',
-      value: {
-        component: component,
-        method: method,
-        args: {},
-      },
-    };
-  }
-  return {
-    type: 'value',
-    value: token,
+function checkConditionTokenType(token: string, platform: Platform): Condition {
+  const split = (delimeter: string) => {
+    if (token.includes(delimeter)) {
+      const [component, method] = token.split(delimeter);
+      return {
+        type: 'component',
+        value: {
+          component: component,
+          method: method,
+          args: {},
+        },
+      };
+    }
+    return null;
   };
+
+  return (
+    split('.') ||
+    split(platform.staticActionDelimeter) || {
+      type: 'value',
+      value: token,
+    }
+  );
 }
 
-function parseCondition(condition: string): Condition | string {
+function parseCondition(condition: string, platform: Platform): Condition | string {
   const tokens = condition.split(' ');
   if (tokens.length != 3) return condition;
-  const lval = checkConditionTokenType(tokens[0]);
+  const lval = checkConditionTokenType(tokens[0], platform);
   const operator = operatorAlias[tokens[1]];
-  const rval = checkConditionTokenType(tokens[2]);
+  const rval = checkConditionTokenType(tokens[2], platform);
   if (operator !== undefined) {
     return {
       type: operator,
@@ -119,7 +126,8 @@ function initArgList(args: (string | Variable)[]): ArgList {
 const pictoRegex: RegExp = /.+(\.|::).+\(.*\)/;
 export const variableRegex: RegExp = /(?<component>.+)(\.|::)(?<method>.+)/;
 function splitArgs(argString: string): (string | Variable)[] {
-  // split по запятой, но не внутри скобок
+  const stringSymbols = ["'", '"'];
+  // split по запятой, но не внутри скобок и кавычек
   const args: (string | Variable)[] = [];
   let currentArg = '';
   let bracketCount = 0;
@@ -134,13 +142,17 @@ function splitArgs(argString: string): (string | Variable)[] {
       args.push(currentArg);
     }
   };
+  let isString = false;
   for (const char of argString) {
     if (char === '{') {
       bracketCount++;
     } else if (char === '}') {
       bracketCount--;
     }
-    if (char === ',' && bracketCount === 0) {
+    if (bracketCount === 0 && stringSymbols.includes(char)) {
+      isString = !isString;
+    }
+    if (char === ',' && bracketCount === 0 && !isString) {
       pushCurrentArg();
       currentArg = '';
     } else {
@@ -271,12 +283,15 @@ function getChoices(rawChoices: { [id: string]: CGMLVertex }): {
   return choices;
 }
 
-function getStates(rawStates: { [id: string]: CGMLState }): [boolean, { [id: string]: State }] {
+function getStates(
+  rawStates: { [id: string]: CGMLState },
+  platform: Platform
+): [boolean, { [id: string]: State }] {
   const states: { [id: string]: State } = {};
   let visual = true;
   for (const rawStateId in rawStates) {
     const rawState = rawStates[rawStateId];
-    const [isVisual, events] = actionsToEventData(rawState.actions);
+    const [isVisual, events] = actionsToEventData(rawState.actions, platform);
     // FIXME: здесь нужно пробросить предупреждение о переходе в тестовый режим
     if (!isVisual) {
       visual = false;
@@ -301,7 +316,8 @@ function getStates(rawStates: { [id: string]: CGMLState }): [boolean, { [id: str
 }
 
 function actionsToEventData(
-  rawActions: Array<CGMLAction | CGMLTransitionAction>
+  rawActions: Array<CGMLAction | CGMLTransitionAction>,
+  platform: Platform
 ): [boolean, EventData[]] {
   const eventDataArr: EventData[] = [];
   let visual = true;
@@ -338,7 +354,7 @@ function actionsToEventData(
       }
     }
     if (action.trigger?.condition) {
-      const condition = parseCondition(action.trigger.condition);
+      const condition = parseCondition(action.trigger.condition, platform);
       if (typeof condition === 'string' && condition !== 'else') {
         visual = true;
       }
@@ -350,7 +366,8 @@ function actionsToEventData(
 }
 
 function getTransitions(
-  rawTransitions: Record<string, CGMLTransition>
+  rawTransitions: Record<string, CGMLTransition>,
+  platform: Platform
 ): [boolean, Record<string, Transition>] {
   const transitions: Record<string, Transition> = {};
   let visual = true;
@@ -365,7 +382,7 @@ function getTransitions(
       continue;
     }
     // В данный момент поддерживается только один триггер на переход
-    const [isVisual, eventData] = actionsToEventData(rawTransition.actions);
+    const [isVisual, eventData] = actionsToEventData(rawTransition.actions, platform);
     if (!isVisual) {
       visual = isVisual;
     }
@@ -635,9 +652,9 @@ export function importGraphml(
       sm.initialStates = getInitialStates(rawSm.initialStates);
       sm.finalStates = getFinals(rawSm.finals);
       sm.notes = getNotes(rawSm.notes);
-      const [stateVisual, states] = getStates(rawSm.states);
+      const [stateVisual, states] = getStates(rawSm.states, platform);
       sm.states = states;
-      const [transitionVisual, transitions] = getTransitions(rawSm.transitions);
+      const [transitionVisual, transitions] = getTransitions(rawSm.transitions, platform);
       sm.visual = getVisualFlag(rawSm.meta, platform.visual, stateVisual && transitionVisual);
       sm.transitions = transitions;
 

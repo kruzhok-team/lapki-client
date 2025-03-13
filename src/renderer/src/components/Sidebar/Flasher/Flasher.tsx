@@ -485,8 +485,9 @@ export const FlasherTab: React.FC = () => {
     addressEntryEditForm.reset({
       ...data,
       addressEditBlock: true,
-      typeEditBlock: data.type !== '',
+      typeEditBlock: data.type !== '' && data.type !== undefined,
     });
+    console.log('type', data.type);
     openAddressEnrtyEdit();
   };
 

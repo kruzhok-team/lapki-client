@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/add.svg';
+import { ReactComponent as EditIcon } from '@renderer/assets/icons/edit.svg';
 import { ReactComponent as SubtractIcon } from '@renderer/assets/icons/subtract.svg';
 import { Modal } from '@renderer/components/UI';
 import { AddressData } from '@renderer/types/FlasherTypes';
@@ -133,6 +134,14 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
               disabled={selectedEntry === undefined}
             >
               <SubtractIcon />
+            </button>
+            <button
+              type="button"
+              className="btn-secondary p-1"
+              onClick={() => addressEnrtyEdit(addressBookSetting![selectedEntry!])}
+              disabled={selectedEntry === undefined}
+            >
+              <EditIcon />
             </button>
           </div>
         </div>

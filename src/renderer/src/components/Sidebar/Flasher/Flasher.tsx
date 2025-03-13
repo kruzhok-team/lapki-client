@@ -487,7 +487,6 @@ export const FlasherTab: React.FC = () => {
       addressEditBlock: true,
       typeEditBlock: data.type !== '' && data.type !== undefined,
     });
-    console.log('type', data.type);
     openAddressEnrtyEdit();
   };
 

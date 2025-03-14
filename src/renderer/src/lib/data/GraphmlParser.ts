@@ -663,7 +663,8 @@ export function importGraphml(
 
     return elements;
   } catch (error) {
-    console.error(error);
+    console.log('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
+    console.log(error);
     openImportError((error as any).message);
     return;
   }

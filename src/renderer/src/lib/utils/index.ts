@@ -129,7 +129,6 @@ export const getLine = (params: GetLineParams) => {
   };
 
   if (!params.end || !params.start) {
-    debugger;
     if (sectorV === 'center') {
       // get straight lines
       result.start.x = sectorH === 'left' ? rect1Right : rect1Left;

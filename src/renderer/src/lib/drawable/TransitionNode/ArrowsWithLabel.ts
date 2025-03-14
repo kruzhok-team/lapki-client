@@ -20,27 +20,49 @@ export class ArrowsWithLabel implements Drawable {
   start?: Point;
   end?: Point;
   prevLabelPosition = { x: 0, y: 0 };
-
+  prevSourcePosition = { x: 0, y: 0 };
+  prevTargetPosition = { x: 0, y: 0 };
   constructor(private parent: Transition, private app: CanvasEditor) {
-    this.prevLabelPosition = { x: 0, y: 0 };
+    this.prevLabelPosition = { ...this.parent.position };
+    if (!this.data.sourcePoint) {
+      this.data.sourcePoint = {
+        ...this.parent.source.position,
+      };
+    }
+    if (!this.data.targetPoint) {
+      this.data.targetPoint = {
+        ...this.parent.target.position,
+      };
+    }
+    this.prevSourcePosition = { ...this.data.sourcePoint };
+    this.prevTargetPosition = { ...this.data.targetPoint };
   }
+
   children?: Children | undefined;
 
   get data() {
     return this.parent.data;
   }
 
-  recalculatePoint = (point: Point | undefined): Point | undefined => {
+  private isEqualPoints = (point: Point, point2: Point) => {
+    return point.x == point2.x && point.y === point2.y;
+  };
+  checkChange = (): boolean => {
+    return (
+      !this.isEqualPoints(this.prevSourcePosition, this.parent.source.position) &&
+      !this.isEqualPoints(this.prevTargetPosition, this.parent.target.position) &&
+      !this.isEqualPoints(this.prevLabelPosition, this.parent.position)
+    );
+  };
+
+  recalculatePoint = (point: Point | undefined, point2: Point): Point | undefined => {
     if (!point) return;
 
-    if (
-      this.prevLabelPosition.x === this.data.label?.position.x &&
-      this.prevLabelPosition.y === this.data.label?.position.y
-    ) {
+    if (point.x === point2.x && point.y === point2.y) {
       // debugger;
       return undefined;
     }
-    debugger;
+    // debugger;
     return {
       x: (point.x + this.app.controller.offset.x) / this.app.controller.scale,
       y: (point.y + this.app.controller.offset.y) / this.app.controller.scale,
@@ -51,6 +73,23 @@ export class ArrowsWithLabel implements Drawable {
     const sourceBounds = this.parent.source.drawBounds;
     const targetBounds = this.parent.target.drawBounds;
 
+    let start: undefined | Point = undefined;
+    let end: undefined | Point = undefined;
+    start = {
+      x: (this.data.sourcePoint!.x + this.app.controller.offset.x) / this.app.controller.scale,
+      y: (this.data.sourcePoint!.y + this.app.controller.offset.y) / this.app.controller.scale,
+    };
+    end = {
+      x: (this.data.sourcePoint!.x + this.app.controller.offset.x) / this.app.controller.scale,
+      y: (this.data.sourcePoint!.y + this.app.controller.offset.y) / this.app.controller.scale,
+    };
+
+    if (this.checkChange()) {
+      console.log('пересчитали!');
+      start = undefined;
+      end = undefined;
+    }
+
     const sourceLine = getLine({
       rect1: {
         ...sourceBounds,
@@ -59,8 +98,8 @@ export class ArrowsWithLabel implements Drawable {
       },
       rect2: this.parent.drawBounds,
       rectPadding: 10,
-      start: this.recalculatePoint(this.data.sourcePoint),
-      end: this.recalculatePoint(this.data.targetPoint),
+      start,
+      end,
     });
     this.start = sourceLine.start;
     this.end = sourceLine.end;
@@ -73,8 +112,8 @@ export class ArrowsWithLabel implements Drawable {
       },
       rect2: this.parent.drawBounds,
       rectPadding: 10,
-      start: this.recalculatePoint(this.data.targetPoint),
-      end: this.recalculatePoint(this.data.sourcePoint),
+      start: end,
+      end: start,
       // start: this.data.targetPoint
       //   ? {
       //       x: (this.data.targetPoint.x + this.app.controller.offset.x) / this.app.controller.scale,
@@ -91,6 +130,8 @@ export class ArrowsWithLabel implements Drawable {
     if (this.data.label?.position) {
       this.prevLabelPosition = { ...this.data.label?.position };
     }
+    this.prevSourcePosition = { ...this.parent.source.position };
+    this.prevTargetPosition = { ...this.parent.target.position };
     const data = this.parent.data;
     const fillStyle = data.color ?? getColor('default-transition-color');
 

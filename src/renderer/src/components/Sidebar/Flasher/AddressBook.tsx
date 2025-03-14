@@ -165,9 +165,7 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
               type="button"
               className="btn-secondary p-1"
               onClick={() => openMetaData()}
-              disabled={
-                selectedEntry === undefined || addressBookSetting![selectedEntry].meta === undefined
-              }
+              disabled={selectedEntry === undefined}
             >
               <LensIcon />
             </button>

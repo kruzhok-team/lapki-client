@@ -48,6 +48,7 @@ cybergene REF_PROTOCOL: ${meta.RefCgProtocol}`;
       isOpen={isOpen}
       onRequestClose={onClose}
       onSubmit={(e) => handleSubmit(e)}
+      submitDisabled={!meta}
       submitLabel={'Скопировать метаданные'}
       sideClassName="rounded px-4 py-2 text-icon-active transition-colors hover:opacity-50"
       sideLabel="О метаданных..."

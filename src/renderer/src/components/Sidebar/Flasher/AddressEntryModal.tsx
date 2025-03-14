@@ -43,11 +43,11 @@ export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (prop
       clearErrors();
       onClose();
     };
-    if (submitData.address != '' && !dirtyFields.address && !dirtyFields.name) {
+    if (submitData.address && !dirtyFields.address && !dirtyFields.name) {
       sendSubmit();
       return;
     }
-    if (submitData.address == '') {
+    if (!submitData.address) {
       setError('address', { message: 'Необходимо указать адрес' });
       return;
     }

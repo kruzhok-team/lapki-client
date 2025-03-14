@@ -6,6 +6,7 @@ import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 're
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
+import { ReactComponent as QuestionMark } from '@renderer/assets/icons/question-mark.svg';
 import { AvrdudeGuideModal } from '@renderer/components/AvrdudeGuide';
 import { ErrorModal, ErrorModalData } from '@renderer/components/ErrorModal';
 import { Device, MSDevice } from '@renderer/components/Modules/Device';
@@ -357,13 +358,16 @@ export const FlasherTab: React.FC = () => {
             break;
           }
           devName = dev.displayName();
+          if (managerMSSetting?.verification) {
+            ManagerMS.addLog(
+              `${devName}: верификация прошивки для данного устройства не поддерживается.`
+            );
+          }
           break;
         }
         case FirmwareTargetType.tjc_ms: {
           if (!addressBookSetting) {
-            ManagerMS.addLog(
-              `${ManagerMS.displayDeviceInfo}: Ошибка! Адресная книга не загрузилась!`
-            );
+            ManagerMS.addLog(`Ошибка! Адресная книга не загрузилась!`);
             continue;
           }
           address = getEntryById(item.targetId as number);
@@ -505,7 +509,6 @@ export const FlasherTab: React.FC = () => {
   };
 
   const handleAddDevice = (deviceIds: string[]) => {
-    const newFlashTableData: FlashTableItem[] = [];
     for (const devId of deviceIds) {
       const dev = devices.get(devId);
       if (!dev) continue;
@@ -513,14 +516,20 @@ export const FlasherTab: React.FC = () => {
         handleGetAddressAndMeta();
         continue;
       }
-      newFlashTableData.push({
-        isFile: false,
-        isSelected: true,
-        targetId: devId,
-        targetType: FirmwareTargetType.arduino,
-      });
+      if (dev.isArduinoDevice()) {
+        const isAdded = addToTable({
+          targetId: devId,
+          isFile: false,
+          isSelected: true,
+          targetType: FirmwareTargetType.arduino,
+        });
+        if (!isAdded) {
+          ManagerMS.addLog(`${dev.displayName()}: устройство уже было добавлено ранее в таблицу.`);
+        }
+      } else {
+        throw Error('Неизвестный тип устройства!');
+      }
     }
-    setFlashTableData(flashTableData.concat(newFlashTableData));
   };
 
   // добавление вкладки с serial monitor
@@ -759,7 +768,7 @@ export const FlasherTab: React.FC = () => {
         >
           Прошить!
         </button>
-        <div className="mr-4 flex w-40 items-center justify-between">
+        <div className="mr-4 flex items-center justify-between gap-1">
           <Switch
             checked={managerMSSetting.verification}
             onCheckedChange={() =>
@@ -770,6 +779,17 @@ export const FlasherTab: React.FC = () => {
             }
           />
           Верификация
+          <WithHint
+            hint={
+              'Дополнительная проверка целостности загруженной прошивки. Увеличивает общее время загрузки.'
+            }
+          >
+            {(hintProps) => (
+              <div className="shrink-0" {...hintProps}>
+                <QuestionMark className="h-5 w-5" />
+              </div>
+            )}
+          </WithHint>
         </div>
         <button
           className="btn-primary mr-4"
@@ -816,7 +836,9 @@ export const FlasherTab: React.FC = () => {
         ref={logContainerRef}
       >
         {log.map((msg, index) => (
-          <div key={index}>{msg}</div>
+          <div key={index} className="select-text">
+            {msg}
+          </div>
         ))}
       </div>
       <div className="m-2 flex flex-row-reverse">

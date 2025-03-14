@@ -53,7 +53,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   const [smId, setSmId] = useState<string | undefined>(undefined);
   // секунд до переподключения, null - означает, что отчёт до переподключения не ведётся
   const [secondsUntilReconnect, setSecondsUntilReconnect] = useState<number | null>(null);
-  const openTab = useTabs((state) => state.openTab);
+  const [openTab, closeTab] = useTabs((state) => [state.openTab, state.closeTab]);
 
   const [selectedStateMachines, setSelectedStateMachines] = useState<{ [id: string]: boolean }>(
     getDefaultSmSelection(stateMachines, {})
@@ -118,9 +118,11 @@ export const CompilerTab: React.FC<CompilerProps> = ({
         );
       })
       .join('----------\n\n');
+    const tabName = 'compilerLog';
+    closeTab(tabName, modelController);
     openTab(modelController, {
       type: 'code',
-      name: 'compilerLog',
+      name: tabName,
       code: commands,
       language: 'txt',
     });
@@ -131,9 +133,11 @@ export const CompilerTab: React.FC<CompilerProps> = ({
     const sm = compilerData?.state_machines[smId];
     if (!sm) return;
     sm.source.forEach((element) => {
+      const tabName = `${element.filename}.${element.extension}`;
+      closeTab(tabName, modelController);
       openTab(modelController, {
         type: 'code',
-        name: `${element.filename}.${element.extension}`,
+        name: tabName,
         code: element.fileContent,
         language: languageMappers[element.extension] ?? element.extension,
       });

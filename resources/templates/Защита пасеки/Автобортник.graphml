@@ -10,8 +10,9 @@
   <key for="edge" id="dColor"></key>
   <key for="node" id="dNote"></key>
   <key for="node" id="dColor"></key>
-  <graph id="g">
+  <graph id="Autoborder1">
     <data key="dStateMachine"></data>
+    <data key="dName">Автобортник</data>
     <data key="dGeometry">
       <rect x="0" y="0" width="450" height="100"></rect>
     </data>

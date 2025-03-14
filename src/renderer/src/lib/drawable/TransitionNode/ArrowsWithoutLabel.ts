@@ -1,6 +1,7 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { Transition } from '@renderer/lib/drawable';
 import { transitionStyle } from '@renderer/lib/styles';
+import { Point } from '@renderer/lib/types';
 import { Drawable } from '@renderer/lib/types/drawable';
 import {
   degrees_to_radians,
@@ -16,6 +17,8 @@ import { getColor } from '@renderer/theme';
  * от комментария к блоку назначения.
  */
 export class ArrowsWithoutLabel implements Drawable {
+  start?: Point;
+  end?: Point;
   constructor(private parent: Transition, private app: CanvasEditor) {}
 
   draw(ctx: CanvasRenderingContext2D) {

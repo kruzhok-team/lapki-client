@@ -709,12 +709,19 @@ export class EditorModel {
     return true;
   }
 
-  changeTransitionPosition(smId: string, id: string, position: Point) {
+  changeTransitionPosition(
+    smId: string,
+    id: string,
+    position: Point,
+    sourcePoint?: Point,
+    targetPoint?: Point
+  ) {
     const transition = this.data.elements.stateMachines[smId].transitions[id];
     if (!transition || !transition.label) return false;
 
     transition.label.position = position;
-
+    transition.sourcePoint = sourcePoint;
+    transition.targetPoint = targetPoint;
     this.triggerDataUpdate('elements.transitions');
 
     return true;

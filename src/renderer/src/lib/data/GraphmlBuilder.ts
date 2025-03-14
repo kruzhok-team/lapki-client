@@ -341,6 +341,8 @@ function serializeTransitions(
       color: transition.color,
       labelPosition: transition.label?.position,
       actions: [],
+      sourcePoint: transition.sourcePoint,
+      targetPoint: transition.targetPoint,
     };
     if (transition.label === undefined) {
       cgmlTransitions[id] = cgmlTransition;

@@ -1,7 +1,8 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { Transition } from '@renderer/lib/drawable';
 import { transitionStyle } from '@renderer/lib/styles';
-import { Drawable } from '@renderer/lib/types/drawable';
+import { Point } from '@renderer/lib/types';
+import { Children, Drawable } from '@renderer/lib/types/drawable';
 import {
   degrees_to_radians,
   drawCircle,
@@ -16,11 +17,78 @@ import { getColor } from '@renderer/theme';
  * источник, назначение, а также условие перехода.
  */
 export class ArrowsWithLabel implements Drawable {
-  constructor(private parent: Transition, private app: CanvasEditor) {}
+  start?: Point;
+  end?: Point;
+  prevLabelPosition = { x: 0, y: 0 };
+  prevSourcePosition = { x: 0, y: 0 };
+  prevTargetPosition = { x: 0, y: 0 };
+  constructor(private parent: Transition, private app: CanvasEditor) {
+    this.prevLabelPosition = { ...this.parent.position };
+    if (!this.data.sourcePoint) {
+      this.data.sourcePoint = {
+        ...this.parent.source.position,
+      };
+    }
+    if (!this.data.targetPoint) {
+      this.data.targetPoint = {
+        ...this.parent.target.position,
+      };
+    }
+    this.prevSourcePosition = { ...this.data.sourcePoint };
+    this.prevTargetPosition = { ...this.data.targetPoint };
+  }
+
+  children?: Children | undefined;
+
+  get data() {
+    return this.parent.data;
+  }
+
+  private isEqualPoints = (point: Point, point2: Point) => {
+    return point.x == point2.x && point.y === point2.y;
+  };
+  checkChange = (): boolean => {
+    return (
+      !this.isEqualPoints(this.prevSourcePosition, this.parent.source.position) &&
+      !this.isEqualPoints(this.prevTargetPosition, this.parent.target.position) &&
+      !this.isEqualPoints(this.prevLabelPosition, this.parent.position)
+    );
+  };
+
+  recalculatePoint = (point: Point | undefined, point2: Point): Point | undefined => {
+    if (!point) return;
+
+    if (point.x === point2.x && point.y === point2.y) {
+      // debugger;
+      return undefined;
+    }
+    // debugger;
+    return {
+      x: (point.x + this.app.controller.offset.x) / this.app.controller.scale,
+      y: (point.y + this.app.controller.offset.y) / this.app.controller.scale,
+    };
+  };
 
   draw(ctx: CanvasRenderingContext2D) {
     const sourceBounds = this.parent.source.drawBounds;
     const targetBounds = this.parent.target.drawBounds;
+
+    let start: undefined | Point = undefined;
+    let end: undefined | Point = undefined;
+    start = {
+      x: (this.data.sourcePoint!.x + this.app.controller.offset.x) / this.app.controller.scale,
+      y: (this.data.sourcePoint!.y + this.app.controller.offset.y) / this.app.controller.scale,
+    };
+    end = {
+      x: (this.data.sourcePoint!.x + this.app.controller.offset.x) / this.app.controller.scale,
+      y: (this.data.sourcePoint!.y + this.app.controller.offset.y) / this.app.controller.scale,
+    };
+
+    if (this.checkChange()) {
+      console.log('пересчитали!');
+      start = undefined;
+      end = undefined;
+    }
 
     const sourceLine = getLine({
       rect1: {
@@ -30,7 +98,12 @@ export class ArrowsWithLabel implements Drawable {
       },
       rect2: this.parent.drawBounds,
       rectPadding: 10,
+      start,
+      end,
     });
+    this.start = sourceLine.start;
+    this.end = sourceLine.end;
+
     const targetLine = getLine({
       rect1: {
         ...targetBounds,
@@ -39,8 +112,26 @@ export class ArrowsWithLabel implements Drawable {
       },
       rect2: this.parent.drawBounds,
       rectPadding: 10,
+      start: end,
+      end: start,
+      // start: this.data.targetPoint
+      //   ? {
+      //       x: (this.data.targetPoint.x + this.app.controller.offset.x) / this.app.controller.scale,
+      //       y: (this.data.targetPoint.y + this.app.controller.offset.y) / this.app.controller.scale,
+      //     }
+      //   : undefined,
+      // end: this.data.sourcePoint
+      //   ? {
+      //       x: (this.data.sourcePoint.x + this.app.controller.offset.x) / this.app.controller.scale,
+      //       y: (this.data.sourcePoint.y + this.app.controller.offset.y) / this.app.controller.scale,
+      //     }
+      //   : undefined,
     });
-
+    if (this.data.label?.position) {
+      this.prevLabelPosition = { ...this.data.label?.position };
+    }
+    this.prevSourcePosition = { ...this.parent.source.position };
+    this.prevTargetPosition = { ...this.parent.target.position };
     const data = this.parent.data;
     const fillStyle = data.color ?? getColor('default-transition-color');
 

@@ -277,6 +277,21 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
     } else {
       throw Error(`Плата не поддерживается: ${tableItem}`);
     }
+    const devInfoDisplay = (displayInfo: string, column: string) => {
+      return cellRender(
+        <label
+          onDoubleClick={() => {
+            if (addressData) {
+              addressEnrtyEdit(addressData);
+            }
+          }}
+          className={addressData ? 'cursor-pointer' : ''}
+        >
+          {displayInfo}
+        </label>,
+        column
+      );
+    };
     return (
       <div key={tableItem.targetId} className="flex items-start">
         <Checkbox
@@ -284,42 +299,9 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
           checked={checked}
           onCheckedChange={() => onCheckedChangeHandle(tableItem)}
         />
-        {cellRender(
-          <label
-            onDoubleClick={() => {
-              if (addressData) {
-                addressEnrtyEdit(addressData);
-              }
-            }}
-          >
-            {displayName}
-          </label>,
-          nameColumn
-        )}
-        {cellRender(
-          <label
-            onDoubleClick={() => {
-              if (addressData) {
-                addressEnrtyEdit(addressData);
-              }
-            }}
-          >
-            {displayType}
-          </label>,
-          typeColumn
-        )}
-        {cellRender(
-          <label
-            onDoubleClick={() => {
-              if (addressData) {
-                addressEnrtyEdit(addressData);
-              }
-            }}
-          >
-            {displayAddress}
-          </label>,
-          addressColumn
-        )}
+        {devInfoDisplay(displayName, nameColumn)}
+        {devInfoDisplay(displayType, typeColumn)}
+        {devInfoDisplay(displayAddress, addressColumn)}
         {/* (Roundabout1) TODO: центрировать текст опций в выпадающем списке и текстовом поле */}
         {tableItem.isFile ? (
           <div

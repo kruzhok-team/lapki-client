@@ -270,7 +270,7 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
         />
         {cellRender(
           <label
-            onClick={() => {
+            onDoubleClick={() => {
               if (addressData) {
                 addressEnrtyEdit(addressData);
               }
@@ -280,8 +280,30 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
           </label>,
           nameColumn
         )}
-        {cellRender(<label>{displayType}</label>, typeColumn)}
-        {cellRender(<label>{displayAddress}</label>, addressColumn)}
+        {cellRender(
+          <label
+            onDoubleClick={() => {
+              if (addressData) {
+                addressEnrtyEdit(addressData);
+              }
+            }}
+          >
+            {displayType}
+          </label>,
+          typeColumn
+        )}
+        {cellRender(
+          <label
+            onDoubleClick={() => {
+              if (addressData) {
+                addressEnrtyEdit(addressData);
+              }
+            }}
+          >
+            {displayAddress}
+          </label>,
+          addressColumn
+        )}
         {/* (Roundabout1) TODO: центрировать текст опций в выпадающем списке и текстовом поле */}
         {tableItem.isFile ? (
           <div

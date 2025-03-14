@@ -1,3 +1,5 @@
+import { toast } from 'sonner';
+
 import { ComponentFormFieldLabel } from '@renderer/components/ComponentFormFieldLabel';
 import { ManagerMS } from '@renderer/components/Modules/ManagerMS';
 import { Modal } from '@renderer/components/UI';
@@ -14,7 +16,19 @@ export const MetaDataModal: React.FC<MetaDataModalProps> = ({ addressData, isOpe
   const [isHelpOpen, openHelp, onHelpClose] = useModal(false);
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    //TODO
+    const meta = addressData.meta;
+    if (!meta) return;
+    const metaStr = `bootloader REF_HW: ${meta.RefBlHw}
+bootloader REF_FW: ${meta.RefBlFw}
+bootloader REF_CHIP: ${meta.RefBlChip}
+booloader REF_PROTOCOL: ${meta.RefBlProtocol}
+booloader USER_CODE: ${meta.RefBlUserCode}
+cybergene REF_FW: ${meta.RefCgFw}
+cybergene REF_HW: ${meta.RefCgHw}
+cybergene REF_PROTOCOL: ${meta.RefCgProtocol}`;
+    navigator.clipboard
+      .writeText(metaStr)
+      .then(() => toast.info('Метаданные скопированы в буфер обмена'));
     onClose();
   };
   const renderField = (label: string, value: string) => {

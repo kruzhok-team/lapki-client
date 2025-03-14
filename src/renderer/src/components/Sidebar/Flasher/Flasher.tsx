@@ -830,6 +830,7 @@ export const FlasherTab: React.FC = () => {
         openAddressEnrtyAdd={openAddressEnrtyAdd}
       />
       <AddressEntryEditModal
+        title="Редактирование записи"
         addressBookSetting={addressBookSetting}
         form={addressEntryEditForm}
         isOpen={isAddressEnrtyEditOpen}
@@ -838,6 +839,7 @@ export const FlasherTab: React.FC = () => {
         submitLabel="Сохранить"
       />
       <AddressEntryEditModal
+        title="Добавление записи"
         addressBookSetting={addressBookSetting}
         form={addressEntryAddForm}
         isOpen={isAddressEnrtyAddOpen}

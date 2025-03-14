@@ -1,5 +1,7 @@
 import { Controller, UseFormReturn } from 'react-hook-form';
 
+import { title } from 'process';
+
 import { ComponentFormFieldLabel } from '@renderer/components/ComponentFormFieldLabel';
 import { getAvailablePlatforms } from '@renderer/lib/data/PlatformLoader';
 import { AddressData } from '@renderer/types/FlasherTypes';
@@ -15,6 +17,7 @@ export type AddressEntryForm = {
 };
 
 interface AddressEntryEditModalProps {
+  title: string;
   addressBookSetting: AddressData[] | null;
   isOpen: boolean;
   onClose: () => void;
@@ -27,7 +30,7 @@ interface AddressEntryEditModalProps {
  * Модальное окно для добавления или редактирования записи в адресной книге МС-ТЮК
  */
 export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (props) => {
-  const { addressBookSetting, isOpen, onClose, onSubmit, submitLabel, form } = props;
+  const { addressBookSetting, isOpen, onClose, onSubmit, submitLabel, form, title } = props;
   const {
     handleSubmit: hookHandleSubmit,
     formState: { errors, dirtyFields },
@@ -85,7 +88,7 @@ export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (prop
   const typeEditBlock = getValues('typeEditBlock');
   return (
     <Modal
-      title="Адрес устройства"
+      title={title}
       isOpen={isOpen}
       onRequestClose={onClose}
       onSubmit={handleSubmit}

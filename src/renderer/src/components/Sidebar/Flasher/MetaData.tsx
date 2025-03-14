@@ -1,6 +1,7 @@
 import { ComponentFormFieldLabel } from '@renderer/components/ComponentFormFieldLabel';
 import { ManagerMS } from '@renderer/components/Modules/ManagerMS';
 import { Modal } from '@renderer/components/UI';
+import { useModal } from '@renderer/hooks';
 import { AddressData } from '@renderer/types/FlasherTypes';
 
 interface MetaDataModalProps {
@@ -10,6 +11,7 @@ interface MetaDataModalProps {
 }
 
 export const MetaDataModal: React.FC<MetaDataModalProps> = ({ addressData, isOpen, onClose }) => {
+  const [isHelpOpen, openHelp, onHelpClose] = useModal(false);
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     //TODO
@@ -33,6 +35,9 @@ export const MetaDataModal: React.FC<MetaDataModalProps> = ({ addressData, isOpe
       onRequestClose={onClose}
       onSubmit={(e) => handleSubmit(e)}
       submitLabel={'Скопировать метаданные'}
+      sideClassName="rounded px-4 py-2 text-icon-active transition-colors hover:opacity-50"
+      sideLabel="О метаданных..."
+      onSide={() => openHelp()}
     >
       {meta && (
         <div className="flex flex-col gap-2">
@@ -57,6 +62,20 @@ export const MetaDataModal: React.FC<MetaDataModalProps> = ({ addressData, isOpe
         </div>
       )}
       {!meta && <p className="mb-1 text-xl opacity-60">Метаданных нет</p>}
+      <Modal isOpen={isHelpOpen} onRequestClose={onHelpClose} title={'Справка'}>
+        <div>
+          Метаданные — это информация, полученная с платы. С помощью неё определяется тип платы. Эти
+          данные могут быть полезны для разработчиков, в случае, если с платой что-то не так.
+        </div>
+
+        <br />
+        {/* TODO: описать как установить драйвера? */}
+        <div>
+          Метаданные должны автоматически извлечься из платы при подключении из списка устройств. Их
+          также можно получить нажав кнопку «Получить метаданные», соответствующая плата должна быть
+          подключена. Если данные не удаётся получить, то возможно Вам стоит обновить драйвера.
+        </div>
+      </Modal>
     </Modal>
   );
 };

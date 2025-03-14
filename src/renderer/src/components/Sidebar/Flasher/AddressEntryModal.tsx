@@ -1,7 +1,5 @@
 import { Controller, UseFormReturn } from 'react-hook-form';
 
-import { title } from 'process';
-
 import { ComponentFormFieldLabel } from '@renderer/components/ComponentFormFieldLabel';
 import { getAvailablePlatforms } from '@renderer/lib/data/PlatformLoader';
 import { AddressData } from '@renderer/types/FlasherTypes';

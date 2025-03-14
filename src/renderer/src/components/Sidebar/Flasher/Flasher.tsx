@@ -655,6 +655,7 @@ export const FlasherTab: React.FC = () => {
     const [isCreated, directory, error] = await window.api.fileHandlers.createFolder(
       `прошивки-${Date.now()}`
     );
+    // TODO: выскакивает ошибка, если отказаться от выбора папки
     if (error) {
       ManagerMS.addLog(`Ошибка: ${error}`);
       return;

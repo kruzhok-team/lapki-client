@@ -134,7 +134,7 @@ export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (prop
             const label = 'Тип:';
             const noneOption = 'Отсутствует';
             const hint = `Тип платы. Это значение нельзя изменить после сохранения (если не выбран вариант «${noneOption}»)!`;
-            if (getValues('typeEditBlock')) {
+            if (typeEditBlock) {
               return (
                 <ComponentFormFieldLabel
                   label={label}

@@ -78,6 +78,8 @@ export interface Transition {
     condition?: Condition | null | string;
     do?: Action[] | string;
   };
+  targetAngle?: number;
+  sourceAngle?: number;
   targetPoint?: Point;
   sourcePoint?: Point;
   //TODO: В дальнейшем планируется убрать

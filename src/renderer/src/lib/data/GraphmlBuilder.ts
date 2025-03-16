@@ -505,6 +505,8 @@ export function exportCGML(elements: Elements): string {
     }
     cgmlElements.stateMachines[smId] = {
       standardVersion: '1.0',
+      shallowHistory: {},
+      deepHistory: {},
       components: !platform.staticComponents ? serializeComponents(sm.components) : {},
       states: serializeStates(sm.states, platform, sm.components),
       transitions: serializeTransitions(sm.transitions, platform, sm.components),

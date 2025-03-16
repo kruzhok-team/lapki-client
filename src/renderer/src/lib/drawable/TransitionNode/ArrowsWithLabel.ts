@@ -22,18 +22,20 @@ export class ArrowsWithLabel implements Drawable {
   prevLabelPosition = { x: 0, y: 0 };
   prevSourcePosition = { x: 0, y: 0 };
   prevTargetPosition = { x: 0, y: 0 };
-  lapkiGeometry = false;
+  lapkiGeometry = false; // Флаг отвечает за то, пересчитываем ли мы геометрию или нет.
   constructor(private parent: Transition, private app: CanvasEditor) {
     this.prevLabelPosition = { ...this.parent.position };
     if (!this.data.sourcePoint) {
       this.data.sourcePoint = {
         ...this.parent.source.position,
       };
+      this.lapkiGeometry = true;
     }
     if (!this.data.targetPoint) {
       this.data.targetPoint = {
         ...this.parent.target.position,
       };
+      this.lapkiGeometry = true;
     }
     this.prevSourcePosition = { ...this.parent.source.position };
     this.prevTargetPosition = { ...this.parent.target.position };
@@ -128,9 +130,33 @@ export class ArrowsWithLabel implements Drawable {
     if (this.data.label?.position) {
       this.prevLabelPosition = { ...this.data.label?.position };
     }
+
     this.prevSourcePosition = { ...this.parent.source.position };
     this.prevTargetPosition = { ...this.parent.target.position };
     const data = this.parent.data;
+
+    if (this.lapkiGeometry) {
+      data.sourcePoint = {
+        x:
+          sourceLine.start.x / this.app.controller.scale -
+          this.app.controller.offset.x -
+          this.parent.source.compoundPosition.x,
+        y:
+          sourceLine.start.y / this.app.controller.scale -
+          this.app.controller.offset.y -
+          this.parent.source.compoundPosition.y,
+      };
+      data.targetPoint = {
+        x:
+          targetLine.start.x / this.app.controller.scale -
+          this.app.controller.offset.x -
+          this.parent.target.compoundPosition.x,
+        y:
+          targetLine.start.y / this.app.controller.scale -
+          this.app.controller.offset.y -
+          this.parent.target.compoundPosition.y,
+      };
+    }
     const fillStyle = data.color ?? getColor('default-transition-color');
 
     ctx.lineWidth = transitionStyle.width / this.app.controller.scale;

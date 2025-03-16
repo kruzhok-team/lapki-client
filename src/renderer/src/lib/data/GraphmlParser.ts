@@ -360,8 +360,12 @@ function getTransitions(
         sourceId: rawTransition.source,
         targetId: rawTransition.target,
         color: rawTransition.color,
-        sourcePoint: rawTransition.sourcePoint,
-        targetPoint: rawTransition.targetPoint,
+        sourcePoint: rawTransition.sourcePoint
+          ? { x: +rawTransition.sourcePoint.x, y: +rawTransition.sourcePoint.y }
+          : undefined,
+        targetPoint: rawTransition.targetPoint
+          ? { x: +rawTransition.targetPoint.x, y: +rawTransition.targetPoint.y }
+          : undefined,
       };
       continue;
     }
@@ -380,8 +384,12 @@ function getTransitions(
         do: eventData[0].do,
         condition: eventData[0].condition,
       },
-      sourcePoint: rawTransition.sourcePoint,
-      targetPoint: rawTransition.targetPoint,
+      sourcePoint: rawTransition.sourcePoint
+        ? { x: +rawTransition.sourcePoint.x, y: +rawTransition.sourcePoint.y }
+        : undefined,
+      targetPoint: rawTransition.targetPoint
+        ? { x: +rawTransition.targetPoint.x, y: +rawTransition.targetPoint.y }
+        : undefined,
     };
   }
   return [visual, transitions];

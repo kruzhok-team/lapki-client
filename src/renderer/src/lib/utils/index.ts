@@ -124,8 +124,8 @@ export const getLine = (params: GetLineParams) => {
       x: params.end?.x ?? 0,
       y: params.end?.y ?? 0,
     },
-    se: 0,
-    ee: 0,
+    se: params.end && params.start ? 180 : 0,
+    ee: params.end && params.start ? 180 : 0,
   };
 
   if (!params.end || !params.start) {
@@ -205,15 +205,14 @@ export const getLine = (params: GetLineParams) => {
     if (sectorH === 'right' && result.end.x > rect1Left - rectPadding) {
       result.end.x = rect1Left - rectPadding;
     }
+    result.mid = {
+      x: result.end.x,
+      y: result.start.y,
+    };
+
+    result.se = getArrowAngle(result.start, result.mid);
+    result.ee = getArrowAngle(result.end, result.mid);
   }
-
-  result.mid = {
-    x: result.end.x,
-    y: result.start.y,
-  };
-
-  result.se = getArrowAngle(result.start, result.mid);
-  result.ee = getArrowAngle(result.end, result.mid);
 
   return result;
 };

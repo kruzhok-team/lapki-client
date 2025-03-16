@@ -22,6 +22,7 @@ export class ArrowsWithLabel implements Drawable {
   prevLabelPosition = { x: 0, y: 0 };
   prevSourcePosition = { x: 0, y: 0 };
   prevTargetPosition = { x: 0, y: 0 };
+  lapkiGeometry = false;
   constructor(private parent: Transition, private app: CanvasEditor) {
     this.prevLabelPosition = { ...this.parent.position };
     if (!this.data.sourcePoint) {
@@ -34,8 +35,8 @@ export class ArrowsWithLabel implements Drawable {
         ...this.parent.target.position,
       };
     }
-    this.prevSourcePosition = { ...this.data.sourcePoint };
-    this.prevTargetPosition = { ...this.data.targetPoint };
+    this.prevSourcePosition = { ...this.parent.source.position };
+    this.prevTargetPosition = { ...this.parent.target.position };
   }
 
   children?: Children | undefined;
@@ -47,26 +48,13 @@ export class ArrowsWithLabel implements Drawable {
   private isEqualPoints = (point: Point, point2: Point) => {
     return point.x == point2.x && point.y === point2.y;
   };
+
   checkChange = (): boolean => {
     return (
-      !this.isEqualPoints(this.prevSourcePosition, this.parent.source.position) &&
-      !this.isEqualPoints(this.prevTargetPosition, this.parent.target.position) &&
+      !this.isEqualPoints(this.prevSourcePosition, this.parent.source.position) ||
+      !this.isEqualPoints(this.prevTargetPosition, this.parent.target.position) ||
       !this.isEqualPoints(this.prevLabelPosition, this.parent.position)
     );
-  };
-
-  recalculatePoint = (point: Point | undefined, point2: Point): Point | undefined => {
-    if (!point) return;
-
-    if (point.x === point2.x && point.y === point2.y) {
-      // debugger;
-      return undefined;
-    }
-    // debugger;
-    return {
-      x: (point.x + this.app.controller.offset.x) / this.app.controller.scale,
-      y: (point.y + this.app.controller.offset.y) / this.app.controller.scale,
-    };
   };
 
   draw(ctx: CanvasRenderingContext2D) {
@@ -75,19 +63,43 @@ export class ArrowsWithLabel implements Drawable {
 
     let start: undefined | Point = undefined;
     let end: undefined | Point = undefined;
-    start = {
-      x: (this.data.sourcePoint!.x + this.app.controller.offset.x) / this.app.controller.scale,
-      y: (this.data.sourcePoint!.y + this.app.controller.offset.y) / this.app.controller.scale,
-    };
-    end = {
-      x: (this.data.sourcePoint!.x + this.app.controller.offset.x) / this.app.controller.scale,
-      y: (this.data.sourcePoint!.y + this.app.controller.offset.y) / this.app.controller.scale,
-    };
 
+    start =
+      this.data.sourcePoint && !this.lapkiGeometry
+        ? {
+            x:
+              (+this.data.sourcePoint.x +
+                this.parent.source.compoundPosition.x +
+                this.app.controller.offset.x) /
+              this.app.controller.scale,
+            y:
+              (+this.data.sourcePoint.y +
+                this.parent.source.compoundPosition.y +
+                this.app.controller.offset.y) /
+              this.app.controller.scale,
+          }
+        : undefined;
+
+    end =
+      this.data.targetPoint && !this.lapkiGeometry
+        ? {
+            x:
+              (+this.data.targetPoint.x +
+                this.parent.target.compoundPosition.x +
+                this.app.controller.offset.x) /
+              this.app.controller.scale,
+            y:
+              (+this.data.targetPoint.y +
+                this.parent.target.compoundPosition.y +
+                this.app.controller.offset.y) /
+              this.app.controller.scale,
+          }
+        : undefined;
     if (this.checkChange()) {
-      console.log('пересчитали!');
+      // Если поменялись координаты, то пересчитываем на свой лад
       start = undefined;
       end = undefined;
+      this.lapkiGeometry = true;
     }
 
     const sourceLine = getLine({
@@ -101,8 +113,6 @@ export class ArrowsWithLabel implements Drawable {
       start,
       end,
     });
-    this.start = sourceLine.start;
-    this.end = sourceLine.end;
 
     const targetLine = getLine({
       rect1: {
@@ -114,18 +124,6 @@ export class ArrowsWithLabel implements Drawable {
       rectPadding: 10,
       start: end,
       end: start,
-      // start: this.data.targetPoint
-      //   ? {
-      //       x: (this.data.targetPoint.x + this.app.controller.offset.x) / this.app.controller.scale,
-      //       y: (this.data.targetPoint.y + this.app.controller.offset.y) / this.app.controller.scale,
-      //     }
-      //   : undefined,
-      // end: this.data.sourcePoint
-      //   ? {
-      //       x: (this.data.sourcePoint.x + this.app.controller.offset.x) / this.app.controller.scale,
-      //       y: (this.data.sourcePoint.y + this.app.controller.offset.y) / this.app.controller.scale,
-      //     }
-      //   : undefined,
     });
     if (this.data.label?.position) {
       this.prevLabelPosition = { ...this.data.label?.position };

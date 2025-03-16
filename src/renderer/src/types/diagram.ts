@@ -73,7 +73,7 @@ export interface Transition {
   targetId: string;
   color?: string;
   label?: {
-    position: Point;
+    position?: Point;
     trigger?: Event | string;
     condition?: Condition | null | string;
     do?: Action[] | string;

@@ -375,7 +375,7 @@ function getTransitions(
       targetId: rawTransition.target,
       color: rawTransition.color,
       label: {
-        position: rawTransition.labelPosition ?? { x: -1, y: -1 },
+        position: rawTransition.labelPosition,
         trigger: eventData[0].trigger,
         do: eventData[0].do,
         condition: eventData[0].condition,
@@ -663,7 +663,6 @@ export function importGraphml(
 
     return elements;
   } catch (error) {
-    console.log('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
     console.log(error);
     openImportError((error as any).message);
     return;

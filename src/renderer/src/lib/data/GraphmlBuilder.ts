@@ -153,8 +153,11 @@ export function serializeActions(
 
   for (const action of actions) {
     const component = components[action.component];
-    const platformComponent = platform.components[component.type];
-    const actionDelimeter = platformComponent.singletone ? platform.staticActionDelimeter : '.';
+    let actionDelimeter = '.';
+    if (component) {
+      const platformComponent = platform.components[component.type];
+      actionDelimeter = platformComponent.singletone ? platform.staticActionDelimeter : '.';
+    }
     serialized += `${action.component}${actionDelimeter}${action.method}(${serializeArgs(
       components,
       platform,

@@ -492,3 +492,7 @@ export const isPointOnLine = (x: number, y: number, transition: Transition) => {
     return isCheckPointOnLine({ x, y }, line);
   }
 };
+
+export const isEqualPoints = (point: Point, point2: Point) => {
+  return point.x == point2.x && point.y === point2.y;
+};

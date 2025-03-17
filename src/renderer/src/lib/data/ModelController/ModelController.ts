@@ -2047,8 +2047,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         return {
           ...data.label,
           position: {
-            x: data.label.position.x + this.pastePositionOffset,
-            y: data.label.position.y + this.pastePositionOffset,
+            x: data.label.position ? data.label.position.x : 0 + this.pastePositionOffset,
+            y: data.label.position ? data.label.position.y : 0 + this.pastePositionOffset,
           },
         };
       };

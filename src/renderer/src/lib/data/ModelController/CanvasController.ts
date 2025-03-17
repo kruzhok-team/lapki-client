@@ -35,7 +35,6 @@ import {
   emptyControllerListeners,
   LinkStateParams,
   LinkTransitionParams,
-  Point,
   RenameComponentParams,
   SelectDrawable,
   UnlinkStateParams,

@@ -13,7 +13,6 @@ import {
   CGMLNote,
   CGMLDataNode,
   serializeActions as serializeActionsCGML,
-  serialaizeParameters,
 } from '@kruzhok-team/cyberiadaml-js';
 
 import { getPlatform } from '@renderer/lib/data/PlatformLoader';
@@ -341,30 +340,7 @@ function serializeTransitions(
       source: transition.sourceId,
       target: transition.targetId,
       pivot: undefined,
-      unsupportedDataNodes:
-        // transition.sourceAngle && transition.targetAngle
-        //   ? [
-        //       {
-        //         key: 'dLapkiSourceAngle',
-        //         content: serialaizeParameters({
-        //           se: transition.sourceAngle?.se.toString(),
-        //           ee: transition.sourceAngle.ee.toString(),
-        //         }),
-        //         rect: [],
-        //         point: [],
-        //       },
-        //       {
-        //         key: 'dLapkiTargetAngle',
-        //         content: serialaizeParameters({
-        //           se: transition.targetAngle?.se.toString(),
-        //           ee: transition.targetAngle.ee.toString(),
-        //         }),
-        //         rect: [],
-        //         point: [],
-        //       },
-        //     ]
-        //   :
-        [],
+      unsupportedDataNodes: [],
       color: transition.color,
       labelPosition: transition.label?.position,
       actions: [],

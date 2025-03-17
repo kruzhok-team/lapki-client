@@ -80,6 +80,7 @@ export class FilesManager {
           errText = e.message;
         }
         console.error(e);
+        console.log('aaaaaaaaaaa');
         return makeLeft({
           name: openData[1]!,
           content: 'Ошибка формата: ' + errText,
@@ -136,6 +137,8 @@ export class FilesManager {
         } else if (e instanceof Error) {
           errText = e.message;
         }
+        console.error(e);
+        console.log('aaaaaaaaaaa');
         return makeLeft({
           name: openData[1]!,
           content: 'Ошибка формата: ' + errText,

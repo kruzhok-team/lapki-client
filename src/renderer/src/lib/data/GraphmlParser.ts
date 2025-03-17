@@ -1,7 +1,6 @@
 import {
   CGMLElements,
   parseCGML,
-  CGMLInitialState,
   CGMLState,
   CGMLTransition,
   CGMLComponent,
@@ -248,7 +247,7 @@ function getFinals(rawFinalStates: { [id: string]: CGMLVertex }): { [id: string]
   return finalStates;
 }
 
-function getInitialStates(rawInitialStates: { [id: string]: CGMLInitialState }): {
+function getInitialStates(rawInitialStates: { [id: string]: CGMLVertex }): {
   [id: string]: InitialState;
 } {
   const initialStates: { [id: string]: InitialState } = {};
@@ -379,6 +378,12 @@ function getTransitions(
         sourceId: rawTransition.source,
         targetId: rawTransition.target,
         color: rawTransition.color,
+        sourcePoint: rawTransition.sourcePoint
+          ? { x: +rawTransition.sourcePoint.x, y: +rawTransition.sourcePoint.y }
+          : undefined,
+        targetPoint: rawTransition.targetPoint
+          ? { x: +rawTransition.targetPoint.x, y: +rawTransition.targetPoint.y }
+          : undefined,
       };
       continue;
     }
@@ -392,11 +397,17 @@ function getTransitions(
       targetId: rawTransition.target,
       color: rawTransition.color,
       label: {
-        position: rawTransition.labelPosition ?? { x: -1, y: -1 },
+        position: rawTransition.labelPosition,
         trigger: eventData[0].trigger,
         do: eventData[0].do,
         condition: eventData[0].condition,
       },
+      sourcePoint: rawTransition.sourcePoint
+        ? { x: +rawTransition.sourcePoint.x, y: +rawTransition.sourcePoint.y }
+        : undefined,
+      targetPoint: rawTransition.targetPoint
+        ? { x: +rawTransition.targetPoint.x, y: +rawTransition.targetPoint.y }
+        : undefined,
     };
   }
   return [visual, transitions];
@@ -685,7 +696,7 @@ export function importGraphml(
 
     return elements;
   } catch (error) {
-    console.error(error);
+    console.log(error);
     openImportError((error as any).message);
     return;
   }

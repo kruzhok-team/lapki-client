@@ -15,6 +15,7 @@ import {
   ChangeStateNameParams,
   ChangeStateParams,
   ChangeTransitionParams,
+  ChangeTransitionPosition,
   ControllerDataPropertyName,
   CreateChoiceStateParams,
   CreateComponentParams,
@@ -156,7 +157,7 @@ export type CanvasControllerEvents = {
   setTextMode: boolean;
   editStateMachine: EditStateMachine;
   changeStateMachinePosition: ChangePosition;
-  changeTransitionPositionFromController: ChangePosition;
+  changeTransitionPositionFromController: ChangeTransitionPosition;
   changeNotePositionFromController: ChangePosition;
   changeChoicePositionFromController: ChangePosition;
   changeFinalPositionFromController: ChangePosition;

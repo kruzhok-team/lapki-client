@@ -16,6 +16,7 @@ interface ComponentProps {
   onDelete: () => void;
   onDragStart: () => void;
   onDrop: () => void;
+  onDragEnd?: (e: React.DragEvent) => void;
 }
 
 export const Component: React.FC<ComponentProps> = (props) => {
@@ -28,6 +29,7 @@ export const Component: React.FC<ComponentProps> = (props) => {
     onDelete,
     onDragStart,
     onDrop,
+    onDragEnd,
     onCallContextMenu,
     description,
     icon,
@@ -80,6 +82,7 @@ export const Component: React.FC<ComponentProps> = (props) => {
           onDragOver={handleDragOver}
           onDragStart={handleDragStart}
           onDrop={handleDrop}
+          onDragEnd={onDragEnd}
           draggable
           {...props}
         >

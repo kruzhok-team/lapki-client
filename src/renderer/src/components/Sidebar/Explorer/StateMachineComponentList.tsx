@@ -5,8 +5,10 @@ import { ComponentAddModal } from '@renderer/components/ComponentAddModal';
 import { ComponentDeleteModal } from '@renderer/components/ComponentDeleteModal';
 import { ComponentEditModal } from '@renderer/components/ComponentEditModal';
 import { useComponents } from '@renderer/hooks';
+import { DEFAULT_STATE_DIMENSIONS } from '@renderer/lib/constants';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { PlatformManager } from '@renderer/lib/data/PlatformManager';
+import { MyMouseEvent } from '@renderer/lib/types';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { Component as ComponentData } from '@renderer/types/diagram';
 
@@ -68,6 +70,40 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
     const splittedName = name.split('::')[1];
     onSwapComponents(smId, splittedDragName, splittedName);
   };
+  const onDragEndComponent = (name: string, e: React.DragEvent) => {
+    const editorView = controller.app.view;
+    const offset = controller.app.mouse.getOffset();
+    if (e.clientX < offset.x || e.clientY < offset.y) return;
+    const originalPoint = { x: e.clientX, y: e.clientY };
+    const offsetPoint = { x: e.clientX - offset.x, y: e.clientY - offset.y };
+    const node = editorView.getCapturedNode({ position: offsetPoint });
+    if (node) {
+      // const event = {
+      //   x,
+      //   y,
+      //   dx: x - this.px,
+      //   dy: y - this.py,
+      //   left: this.left,
+      //   right: this.right,
+      //   button: e.button,
+      //   nativeEvent: e,
+      // };
+      node.handleMouseDoubleClick({
+        x: offsetPoint.x,
+        y: offsetPoint.y,
+      } as MyMouseEvent);
+    } else {
+      modelController.createState({
+        smId: smId,
+        name: 'Состояние',
+        events: [{ trigger: { component: name.split('::')[1], method: '' }, do: [] }],
+        dimensions: DEFAULT_STATE_DIMENSIONS,
+        position: editorView.windowToWorldCoords(offsetPoint),
+        placeInCenter: true,
+      });
+      //controller.emit('createState', {});
+    }
+  };
   const isDisabled = !isInitialized;
   return (
     <>
@@ -111,6 +147,7 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
                 onDelete={() => onRequestDeleteComponent(smId, components, id)}
                 onDragStart={() => setDragName(key)}
                 onDrop={() => onDropComponent(key)}
+                onDragEnd={(e) => onDragEndComponent(key, e)}
               />
             );
           })

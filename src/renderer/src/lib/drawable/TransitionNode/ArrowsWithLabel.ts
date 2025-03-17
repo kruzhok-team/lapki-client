@@ -97,6 +97,7 @@ export class ArrowsWithLabel implements Drawable {
               this.app.controller.scale,
           }
         : undefined;
+
     if (this.checkChange()) {
       // Если поменялись координаты, то пересчитываем на свой лад
       start = undefined;
@@ -111,9 +112,8 @@ export class ArrowsWithLabel implements Drawable {
           sourceBounds.childrenHeight === 0 ? sourceBounds.height : sourceBounds.childrenHeight,
       },
       rect2: this.parent.drawBounds,
-      rectPadding: 10,
+      rectPadding: this.lapkiGeometry ? 10 : 0,
       start,
-      end,
     });
 
     const targetLine = getLine({
@@ -123,9 +123,8 @@ export class ArrowsWithLabel implements Drawable {
           targetBounds.childrenHeight === 0 ? targetBounds.height : targetBounds.childrenHeight,
       },
       rect2: this.parent.drawBounds,
-      rectPadding: 10,
+      rectPadding: this.lapkiGeometry ? 10 : 0,
       start: end,
-      end: start,
     });
     if (this.data.label?.position) {
       this.prevLabelPosition = { ...this.data.label?.position };

@@ -51,18 +51,24 @@ const getSectors = (
   rect2YCenter: number,
   rectPadding: number
 ) => {
+  // В этой функции мы проверяем, с какой стороны будем
+  // цеплять стрелку к target
   let sectorH: HSector = 'center';
   let sectorV: VSector = 'center';
 
   if (rect2XCenter > rect1Right - rectPadding) {
+    // если центр цели правее source
     sectorH = 'left';
   } else if (rect2XCenter < rect1Left + rectPadding) {
+    // если центр цели левее source
     sectorH = 'right';
   }
 
   if (rect2YCenter > rect1Bottom - rectPadding) {
+    // если центр цели ниже source
     sectorV = 'top';
   } else if (rect2YCenter < rect1Top + rectPadding) {
+    // если центр цели выше source
     sectorV = 'bottom';
   }
 
@@ -74,7 +80,7 @@ const getArrowAngle = (start: Point, end: Point) => {
     return start.y >= end.y ? 90 : 270;
   }
 
-  return start.x >= end.x ? 0 : 180;
+  return start.x >= end.x ? 0 : 180; // разве не должно быть start.x >= end.x ? 180 : 0
 };
 
 interface GetLineParams {
@@ -90,17 +96,17 @@ interface GetLineParams {
 }
 
 export const getLine = (params: GetLineParams) => {
-  const { rect1, rect2, rectPadding } = params;
+  const { rect1, rect2, rectPadding, start, end } = params;
 
-  const rect1Left = rect1.x;
-  const rect1Right = rect1.x + rect1.width;
-  const rect1Top = rect1.y;
-  const rect1Bottom = rect1.y + rect1.height;
+  const rect1Left = start ? start.x : rect1.x; // x левый угол source
+  const rect1Right = start ? start.x : rect1.x + rect1.width; //  x Правый угол source
+  const rect1Top = start ? start.y : rect1.y; // y левый верхний угол source
+  const rect1Bottom = start ? start.y : rect1.y + rect1.height; // y левый нижний угол
 
-  const rect2Left = rect2.x;
-  const rect2Right = rect2.x + rect2.width;
-  const rect2Top = rect2.y;
-  const rect2Bottom = rect2.y + rect2.height;
+  const rect2Left = end ? end.x : rect2.x;
+  const rect2Right = end ? end.x : rect2.x + rect2.width;
+  const rect2Top = end ? end.y : rect2.y;
+  const rect2Bottom = end ? end.y : rect2.y + rect2.height;
   const rect2XCenter = rect2.x + rect2.width / 2;
   const rect2YCenter = rect2.y + rect2.height / 2;
 
@@ -124,18 +130,25 @@ export const getLine = (params: GetLineParams) => {
       x: params.end?.x ?? 0,
       y: params.end?.y ?? 0,
     },
-    se: params.end && params.start ? 180 : 0,
-    ee: params.end && params.start ? 180 : 0,
+    // se/ee используются для отрисовки треугольника на конце стрелок
+    se: 0, // используется при отрисовки обычных стрелок
+    ee: 0, // используется при отрисовки ghost transitions
   };
 
   if (!params.end || !params.start) {
     if (sectorV === 'center') {
       // get straight lines
-      result.start.x = sectorH === 'left' ? rect1Right : rect1Left;
-      result.start.y = rect2YCenter;
-
-      result.end.x = sectorH === 'left' ? rect2Left : rect2Right;
-      result.end.y = result.start.y;
+      if (!start) {
+        // вариант center-center, который может быть,
+        // если source находится прямо в target
+        // считается не очень хорошо
+        result.start.x = sectorH === 'left' ? rect1Right : rect1Left;
+        result.start.y = rect2YCenter;
+      }
+      if (!end) {
+        result.end.x = sectorH === 'left' ? rect2Left : rect2Right;
+        result.end.y = result.start.y;
+      }
 
       result.se = getArrowAngle(result.start, result.end);
       result.ee = getArrowAngle(result.end, result.start);
@@ -144,66 +157,93 @@ export const getLine = (params: GetLineParams) => {
     }
 
     if (sectorH === 'center') {
-      result.start.x = rect2XCenter;
-      result.start.y = sectorV === 'top' ? rect1Bottom : rect1Top;
-      result.end.x = result.start.x;
-      result.end.y = sectorV === 'top' ? rect2Top : rect2Bottom;
+      if (!start) {
+        result.start.x = rect2XCenter;
+        result.start.y = sectorV === 'top' ? rect1Bottom : rect1Top;
+      }
+      if (!end) {
+        result.end.x = result.start.x;
+        result.end.y = sectorV === 'top' ? rect2Top : rect2Bottom;
+      }
 
       result.se = getArrowAngle(result.start, result.end);
       result.ee = getArrowAngle(result.end, result.start);
-
       return result;
     }
 
     // get curve lines
     if (sectorV === 'top') {
-      result.start.y = rect1Bottom - rectPadding;
-      result.end.x = rect2XCenter;
-      result.end.y = rect2Top;
+      if (!start) {
+        result.start.y = rect1Bottom - rectPadding;
+      }
+      if (!end) {
+        result.end.x = rect2XCenter;
+        result.end.y = rect2Top;
+      }
 
       if (sectorH === 'left') {
-        result.start.x = rect1Right;
+        if (!start) {
+          result.start.x = rect1Right;
+        }
 
-        // line in rect restriction
-        if (result.end.x < rect1Right + rectPadding) {
-          result.end.x = rect1Right + rectPadding;
+        if (!end) {
+          // line in rect restriction
+          if (result.end.x < rect1Right + rectPadding) {
+            result.end.x = rect1Right + rectPadding;
+          }
         }
       } else {
-        result.start.x = rect1Left;
+        if (!start) {
+          result.start.x = rect1Left;
+        }
 
-        // line in rect restriction
-        if (result.end.x > rect1Left - rectPadding) {
-          result.end.x = rect1Left - rectPadding;
+        if (!end) {
+          // line in rect restriction
+          if (result.end.x > rect1Left - rectPadding) {
+            result.end.x = rect1Left - rectPadding;
+          }
         }
       }
 
       // line in rect restriction
-      if (result.start.y + rectPadding > rect2Top) {
-        result.start.y = rect2Top - rectPadding;
+      if (!start) {
+        if (result.start.y + rectPadding > rect2Top) {
+          result.start.y = rect2Top - rectPadding;
+        }
       }
     } else {
-      result.start.y = rect1Top + rectPadding;
-      result.end.x = rect2XCenter;
-      result.end.y = rect2Bottom;
-
-      if (sectorH === 'left') {
-        result.start.x = rect1Right;
-      } else {
-        result.start.x = rect1Left;
+      if (!start) {
+        result.start.y = rect1Top + rectPadding;
+      }
+      if (!end) {
+        result.end.x = rect2XCenter;
+        result.end.y = rect2Bottom;
       }
 
-      // line in rect restriction
-      if (result.start.y - rectPadding < rect2Bottom) {
-        result.start.y = rect2Bottom + rectPadding;
+      if (!start) {
+        if (sectorH === 'left') {
+          result.start.x = rect1Right;
+        } else {
+          result.start.x = rect1Left;
+        }
+        // line in rect restriction
+        // Как будто это вызывается только для маленьких объектов
+        // У которых rectPadding больше всей высоты объекта
+        // Как будто мы вообще не должны сюда заходить...
+        if (result.start.y - rectPadding < rect2Bottom) {
+          result.start.y = rect2Bottom + rectPadding;
+        }
       }
     }
 
     // line in rect restriction
-    if (sectorH === 'left' && result.end.x < rect1Right + rectPadding) {
-      result.end.x = rect1Right + rectPadding;
-    }
-    if (sectorH === 'right' && result.end.x > rect1Left - rectPadding) {
-      result.end.x = rect1Left - rectPadding;
+    if (!end) {
+      if (sectorH === 'left' && result.end.x < rect1Right + rectPadding) {
+        result.end.x = rect1Right + rectPadding;
+      }
+      if (sectorH === 'right' && result.end.x > rect1Left - rectPadding) {
+        result.end.x = rect1Left - rectPadding;
+      }
     }
     result.mid = {
       x: result.end.x,
@@ -213,6 +253,11 @@ export const getLine = (params: GetLineParams) => {
     result.se = getArrowAngle(result.start, result.mid);
     result.ee = getArrowAngle(result.end, result.mid);
   }
+
+  // result.mid = {
+  //   x: result.end.x,
+  //   y: result.start.y,
+  // };
 
   return result;
 };

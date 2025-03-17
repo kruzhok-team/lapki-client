@@ -121,11 +121,11 @@ export class ArrowsWithoutLabel implements Drawable {
     if (this.lapkiGeometry) {
       data.sourcePoint = {
         x:
-          line.start.x / this.app.controller.scale -
+          line.end.x / this.app.controller.scale -
           this.app.controller.offset.x -
           this.parent.source.compoundPosition.x,
         y:
-          line.start.y / this.app.controller.scale -
+          line.end.y / this.app.controller.scale -
           this.app.controller.offset.y -
           this.parent.source.compoundPosition.y,
       };

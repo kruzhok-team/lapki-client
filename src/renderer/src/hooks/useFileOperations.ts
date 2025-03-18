@@ -30,7 +30,6 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   const name = modelController.model.useData('', 'name') as string | null;
   const isStale = modelController.model.useData('', 'isStale');
   const [clearTabs, openTab] = useTabs((state) => [state.clearTabs, state.openTab]);
-  const [restoreSession, setRestoreSession] = useSettings('restoreSession');
 
   const [data, setData] = useState<SaveModalData | null>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -200,38 +199,30 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
       openTabs();
     }
   };
-  /**
-   * Временное сохранение схемы в localstorage
-   */
-  const tempSave = async () => {
-    window.localStorage.setItem(tempSaveKey, modelController.model.serializer.getAll('Cyberiada'));
-    if (!restoreSession) {
-      await setRestoreSession(true);
-    }
-  };
 
-  const loadTempSave = async () => {
-    const restoredData = window.localStorage.getItem(tempSaveKey);
-    if (restoredData === null) {
-      return false;
-    }
-    const parsedData = importGraphml(restoredData, openImportError);
+  const loadGraphml = (graphml: string) => {
+    const parsedData = importGraphml(graphml, openImportError);
     if (parsedData === undefined) {
       return false;
     }
     modelController.initData(null, 'Без названия', parsedData, true);
     openTabs();
-    if (!restoreSession) {
-      await setRestoreSession(true);
-    }
     return true;
   };
 
-  const deleteTempSave = async () => {
+  /**
+   * Временное сохранение схемы в localstorage
+   */
+  const tempSave = () => {
+    window.localStorage.setItem(tempSaveKey, modelController.model.serializer.getAll('Cyberiada'));
+  };
+
+  const loadTempSave = () => {
+    return window.localStorage.getItem(tempSaveKey);
+  };
+
+  const deleteTempSave = () => {
     window.localStorage.removeItem(tempSaveKey);
-    if (restoreSession) {
-      await setRestoreSession(false);
-    }
   };
 
   useEffect(() => {
@@ -278,5 +269,6 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
       loadTempSave,
       deleteTempSave,
     },
+    loadGraphml,
   };
 };

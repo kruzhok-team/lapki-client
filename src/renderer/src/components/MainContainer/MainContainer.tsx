@@ -39,7 +39,6 @@ export const MainContainer: React.FC = () => {
   const isMounted = controller.useData('isMounted') as boolean;
   const [isCreateSchemeModalOpen, openCreateSchemeModal, closeCreateSchemeModal] = useModal(false);
   const [autoSaveSettings] = useSettings('autoSave');
-  const [restoreSession] = useSettings('restoreSession');
   const [isReservedDataPresent, setIsReservedPresent] = useState<boolean>(false); // Схема без названия сохранена, либо загружена
   const [isRestoreDataModalOpen, openRestoreDataModal, closeRestoreDataModal] = useModal(false);
   const isStale = modelController.model.useData('', 'isStale');
@@ -48,13 +47,19 @@ export const MainContainer: React.FC = () => {
 
   const { errorModalProps, openLoadError, openPlatformError, openSaveError, openImportError } =
     useErrorModal();
-  const { saveModalProps, operations, performNewFile, handleOpenFromTemplate, tempSaveOperations } =
-    useFileOperations({
-      openLoadError,
-      openCreateSchemeModal,
-      openSaveError,
-      openImportError,
-    });
+  const {
+    saveModalProps,
+    operations,
+    performNewFile,
+    handleOpenFromTemplate,
+    tempSaveOperations,
+    loadGraphml,
+  } = useFileOperations({
+    openLoadError,
+    openCreateSchemeModal,
+    openSaveError,
+    openImportError,
+  });
   const isSaveModalOpen = saveModalProps.isOpen;
 
   useRecentFilesHooks();
@@ -90,47 +95,37 @@ export const MainContainer: React.FC = () => {
     });
   }, [openPlatformError]);
 
+  useEffect(() => {
+    const tempData = tempSaveOperations.loadTempSave();
+    if (tempData) {
+      openRestoreDataModal();
+    }
+  }, []);
+
   const restoreData = async () => {
-    //  (Roundabout) TODO: обработка ошибок загрузки
-    await tempSaveOperations.loadTempSave();
     setIsReservedPresent(true);
+    // (Roundabout) TODO: обработка ошибок загрузки
+    const data = tempSaveOperations.loadTempSave();
+    if (data) {
+      loadGraphml(data);
+      tempSaveOperations.deleteTempSave();
+    } else {
+      throw Error('Не удалось загрузить временное сохранеение');
+    }
   };
 
   const cancelRestoreData = async () => {
-    await tempSaveOperations.deleteTempSave();
+    tempSaveOperations.deleteTempSave();
     setIsReservedPresent(true);
   };
 
   // автосохранение
   useEffect(() => {
-    if (autoSaveSettings === null || restoreSession === null || isSaveModalOpen) return;
+    if (autoSaveSettings === null || isSaveModalOpen) return;
 
-    if (autoSaveSettings.disabled) {
-      if (restoreSession) {
-        cancelRestoreData();
-      }
-      return;
-    }
-
-    if (isInitialized && !isReservedDataPresent) {
+    if (basename && isInitialized && !isReservedDataPresent) {
       setIsReservedPresent(true);
-      return;
-    }
-
-    if (!basename && restoreSession && !isReservedDataPresent) {
-      if (!isRestoreDataModalOpen) {
-        openRestoreDataModal();
-      }
-      return;
-    }
-
-    if (basename && isInitialized) {
-      if (!isReservedDataPresent) {
-        setIsReservedPresent(true);
-      }
-      if (restoreSession) {
-        tempSaveOperations.deleteTempSave();
-      }
+      tempSaveOperations.deleteTempSave();
     }
 
     if (!isStale || !isInitialized) return;
@@ -151,15 +146,7 @@ export const MainContainer: React.FC = () => {
 
     //Clearing the intervals
     return () => clearInterval(interval);
-  }, [
-    autoSaveSettings,
-    isStale,
-    isInitialized,
-    basename,
-    restoreSession,
-    isReservedDataPresent,
-    isSaveModalOpen,
-  ]);
+  }, [autoSaveSettings, isStale, isInitialized, basename, isReservedDataPresent, isSaveModalOpen]);
 
   return (
     <div className="h-screen select-none">

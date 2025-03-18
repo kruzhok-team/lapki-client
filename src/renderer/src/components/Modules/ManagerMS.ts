@@ -214,7 +214,7 @@ export class ManagerMS {
         if (op.addressInfo) {
           this.reset(op.device.deviceID, op.addressInfo.address);
         } else {
-          throw Error('Операция перезагрузки не имплементирована для данного типа устройства.');
+          Flasher.reset(op.device.deviceID);
         }
         this.addLog(
           `${this.displayDeviceInfo(

@@ -20,6 +20,8 @@ export type FlashUpdatePort = {
 
 // TODO: поделить на исходящие и принимающие сообщения
 export type FlasherType =
+  | 'reset'
+  | 'reset-result'
   | 'ping'
   | 'pong'
   | 'get-list'

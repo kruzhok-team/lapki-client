@@ -209,6 +209,12 @@ export class Flasher extends ClientWS {
     });
   }
 
+  static reset(deviceID: string) {
+    this.send('reset', {
+      deviceID: deviceID,
+    });
+  }
+
   static send(type: FlasherType, payload: FlasherPayload) {
     const request = {
       type: type,

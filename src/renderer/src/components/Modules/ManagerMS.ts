@@ -192,7 +192,10 @@ export class ManagerMS {
     if (op === undefined) return;
     switch (op.type) {
       case OperationType.meta:
-        this.getMetaData(op.deviceId, op.addressInfo.address);
+        if (!op.addressInfo) {
+          throw Error('Не указан адрес платы МС-ТЮК.');
+        }
+        this.getMetaData(op.device.deviceID, op.addressInfo.address);
         this.addLog(
           `${this.displayAddressInfo(
             op.addressInfo
@@ -200,13 +203,23 @@ export class ManagerMS {
         );
         break;
       case OperationType.ping:
-        this.ping(op.deviceId, op.addressInfo.address);
-        this.addLog(`${this.displayAddressInfo(op.addressInfo)}: Отправлен пинг.`);
+        if (op.addressInfo) {
+          this.ping(op.device.deviceID, op.addressInfo.address);
+        } else {
+          Flasher.ping(op.device.deviceID);
+        }
+        this.addLog(`${this.displayDeviceInfo(op.addressInfo ?? op.device)}: Отправлен пинг.`);
         break;
       case OperationType.reset:
-        this.reset(op.deviceId, op.addressInfo.address);
+        if (op.addressInfo) {
+          this.reset(op.device.deviceID, op.addressInfo.address);
+        } else {
+          throw Error('Операция перезагрузки не имплементирована для данного типа устройства.');
+        }
         this.addLog(
-          `${this.displayAddressInfo(op.addressInfo)}: Отправлен запрос на перезагрузку платы.`
+          `${this.displayDeviceInfo(
+            op.addressInfo ?? op.device
+          )}: Отправлен запрос на перезагрузку платы.`
         );
         break;
     }
@@ -218,7 +231,7 @@ export class ManagerMS {
       this.addLog(`Неизвестное устройство: ${log}`);
       return undefined;
     }
-    this.addLog(`${this.displayAddressInfo(op.addressInfo)}: ${log}`);
+    this.addLog(`${this.displayDeviceInfo(op.addressInfo ?? op.device)}: ${log}`);
     this.nextOperation();
     return op;
   }

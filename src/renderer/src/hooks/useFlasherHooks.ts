@@ -503,6 +503,7 @@ export const useFlasherHooks = () => {
           );
         }
         break;
+      case 'pong':
       case 'ms-ping-result':
         {
           const pingResult = flasherMessage.payload as DeviceCommentCode;
@@ -527,7 +528,7 @@ export const useFlasherHooks = () => {
             }
             case 3:
               ManagerMS.finishOperation(
-                'Не удалось отправить пинг, так как переданное устройство не является МС-ТЮК.'
+                'Не удалось отправить пинг, так как переданное устройство не поддерживает операцию «Пинг».'
               );
               break;
             case 4: {

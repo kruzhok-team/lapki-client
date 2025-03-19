@@ -269,7 +269,6 @@ export const useFlasherHooks = () => {
         break;
       }
       case 'blg-mb-device': {
-        console.log('hey');
         const device = new Device(flasherMessage.payload as Device, 'blg-mb');
         addDevice(device);
         break;

@@ -11,12 +11,14 @@ export class Device {
     this.type = type;
   }
 
+  // возможно "isDevice" функции стоит убрать и делать проверку чисто через getDevType
+
   isMSDevice(): boolean {
-    return this instanceof MSDevice;
+    return this.getDevType() === 'tjc-ms';
   }
 
   isArduinoDevice(): boolean {
-    return this instanceof ArduinoDevice;
+    return this.getDevType() === 'arduino';
   }
 
   displayName(): string {

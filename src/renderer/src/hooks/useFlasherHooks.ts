@@ -268,6 +268,12 @@ export const useFlasherHooks = () => {
         addDevice(device);
         break;
       }
+      case 'blg-mb-device': {
+        console.log('hey');
+        const device = new Device(flasherMessage.payload as Device, 'blg-mb');
+        addDevice(device);
+        break;
+      }
       case 'device-update-delete': {
         // TODO: нужно что-то сделать, если устройство находится в таблице прошивок
         deleteDevice((flasherMessage.payload as UpdateDelete).deviceID);

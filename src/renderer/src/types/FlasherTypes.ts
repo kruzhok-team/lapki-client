@@ -21,6 +21,7 @@ export type FlashUpdatePort = {
 export type FlasherType =
   | 'get-list'
   | 'device'
+  | 'blg-mb-device'
   | 'device-update-delete'
   | 'device-update-port'
   | 'empty-list'

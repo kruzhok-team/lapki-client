@@ -312,6 +312,80 @@
       "buildFiles": ["Counter.h", "Counter.cpp"],
       "importFiles": ["Counter.h"],
       "singletone": false
+    },
+      
+    "UserSignal": {
+      "description": "Пользовательский сигнал",
+      "img": "arduino/timer.svg",
+      "signals": {
+        "isCalled": {
+          "img": "arduino/timeout.svg",
+          "description": "Сработал сигнал",
+          "checkMethod": "isCalled"
+        }
+      },
+      "constructorParameters": {},
+      "methods": {
+        "call": {
+          "img": "arduino/reset.svg",
+          "description": "Вызов сигнала"
+        }
+      },
+      "buildFiles": ["UserSignal.hpp"],
+      "importFiles": ["UserSignal.hpp"],
+      "singletone": false,
+      "variables": {}
+    },
+
+    "Iterator": {
+      "description": "Итератор",
+      "img": "arduino/timer.svg",
+      "signals": {
+        "onEnd": {
+          "img": "arduino/timeout.svg",
+          "description": "Итерации завершены",
+          "checkMethod": "onEnd"
+        }
+      },
+      "constructorParameters": {},
+      "methods": {
+        "break_": {
+          "img": "arduino/timer-start.svg",
+          "description": "Остановить итератор."
+        },
+        "start": {
+          "img": "arduino/start.svg",
+          "parameters": [
+            {
+              "name": "from",
+              "type": "unsigned long",
+              "description": "Начальное значение."
+            },
+            {
+              "name": "to",
+              "type": "unsigned long",
+              "description": "Конченое значение."
+            },
+            {
+              "name": "step",
+              "type": "unsigned long",
+              "description": "Шаг для изменения значения."
+            }
+          ],
+          "description": "Запустить итератор. Будет сигнал раз в итерацию."
+        }
+      },
+      "buildFiles": ["Iterator.hpp"],
+      "importFiles": ["Iterator.hpp"],
+      "loopActions": ["onIteration"],
+      "singletone": false,
+      "variables": {
+        "index": {
+          "img": "arduino/difference.svg",
+          "type": "unsigned long",
+          "description": "Текущий индекс итерации"
+        }
+      }
     }
   }
 }

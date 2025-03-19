@@ -217,7 +217,7 @@ export type MetaDataID = {
 
 export enum FirmwareTargetType {
   tjc_ms,
-  arduino,
+  dev,
 }
 
 // выбранные для прошивки МС-ТЮК платы

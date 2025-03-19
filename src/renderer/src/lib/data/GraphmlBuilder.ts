@@ -52,6 +52,15 @@ function exportMeta(visual: boolean, meta: Meta, platform: Platform): CGMLMeta {
   };
 }
 
+const invertOperatorAlias = {
+  equals: '==',
+  notEquals: '!=',
+  greater: '>',
+  less: '<',
+  greaterOrEqual: '>=',
+  lessOrEqual: '<=',
+};
+
 /* 
   Клонируем, потому что при экспорте у нас параметры-матрицы превращаются в строку
   и эти параметры меняются глобально
@@ -62,28 +71,32 @@ function serializeArgs(
   platform: Platform,
   args: ArgList | undefined
 ) {
-  const serializedArgs = structuredClone(args);
+  const serializedArgs = Object.entries(structuredClone(args) ?? {}).sort(
+    ([, param1], [, param2]) => param1.order - param2.order
+  );
   if (serializedArgs === undefined) {
     return '';
   }
-  for (const argId in serializedArgs) {
-    const arg = serializedArgs[argId];
+  for (const [, arg] of serializedArgs) {
     if (arg === undefined) continue;
-    if (isVariable(arg)) {
-      const trimmedComponentName = arg.component.trim();
+    const argValue = arg.value;
+    if (isVariable(argValue)) {
+      const trimmedComponentName = argValue.component.trim();
       const component = components[trimmedComponentName];
-      serializedArgs[argId] = `${arg.component}${getActionDelimeter(platform, component.type)}${
-        arg.method
+      arg.value = `${argValue.component}${getActionDelimeter(platform, component.type)}${
+        argValue.method
       }`;
-    } else if (Array.isArray(arg) && Array.isArray(arg[0])) {
-      serializedArgs[argId] = buildMatrix({
-        values: arg,
-        width: arg.length,
-        height: arg[0].length,
+    } else if (Array.isArray(argValue) && Array.isArray(argValue[0])) {
+      arg.value = buildMatrix({
+        values: argValue,
+        width: argValue[0].length,
+        height: argValue.length,
       });
     }
   }
-  return Object.values(serializedArgs).join(', ');
+  return Object.values(serializedArgs)
+    .map(([, arg]) => (arg ? arg.value : ''))
+    .join(', ');
 }
 
 /**
@@ -192,11 +205,13 @@ function serializeTransitionEvents(
   components: { [id: string]: Component },
   platform: Platform
 ): CGMLTransitionAction[] {
+  const serializedTrigger = getTrigger(components, platform, trigger);
+  const serializedCondition = getCondition(condition, platform, components);
   return [
     {
       trigger: {
-        event: getTrigger(components, platform, trigger),
-        condition: getCondition(condition, platform, components),
+        event: serializedTrigger,
+        condition: serializedTrigger ? serializedCondition : serializedCondition ?? 'else',
       },
       action: getActions(doActions, components, platform),
     },
@@ -244,17 +259,8 @@ function serializeStates(
   return cgmlStates;
 }
 
-const invertOperatorAlias = {
-  equals: '==',
-  notEquals: '!=',
-  greater: '>',
-  less: '<',
-  greaterOrEqual: '>=',
-  lessOrEqual: '<=',
-};
-
 function isVariable(operand: any): operand is Variable {
-  return operand['component'] !== undefined;
+  return operand && operand['component'] !== undefined;
 }
 
 function isConditionArray(value: unknown): value is Condition[] {

@@ -44,13 +44,22 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
   smId,
   controller,
 }) => {
-  const handleInputChange = (name: string, value: string | Variable) => {
+  const handleInputChange = (name: string, order: number, value: string | Variable) => {
     setErrors((p) => ({ ...p, [name]: '' }));
-    parameters[name] = value;
+    if (parameters[name]) {
+      parameters[name].value = value;
+    } else {
+      parameters[name] = { value, order };
+    }
     setParameters({ ...parameters });
   };
 
-  const handleComponentAttributeChange = (name: string, component: string, attribute: string) => {
+  const handleComponentAttributeChange = (
+    name: string,
+    order: number,
+    component: string,
+    attribute: string
+  ) => {
     let inputValue: string | Variable = '';
     if (component || attribute) {
       inputValue = {
@@ -62,13 +71,13 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
       //   proto?.singletone || platform.staticComponents ? platform.staticActionDelimeter : '.';
       // inputValue = `${component}${delimiter}${attribute}`;
     }
-    handleInputChange(name, inputValue);
+    handleInputChange(name, order, inputValue);
   };
 
   const [isChecked, setIsChecked] = useState<Map<string, boolean>>(new Map());
 
   const onChange = (parameter: string, row: number, col: number, value: number) => {
-    (parameters[parameter] as number[][])[row][col] = value;
+    (parameters[parameter].value as number[][])[row][col] = value;
     setParameters({
       ...parameters,
     });
@@ -90,9 +99,10 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
   return (
     <div className="flex flex-col gap-2">
       <h3 className="mb-1 text-xl">Параметры:</h3>
-      {protoParameters.map((proto) => {
+      {protoParameters.map((proto, idx) => {
         const { name, description = '', type = '' } = proto;
-        const value = parameters[name] ?? '';
+        const parameter = parameters[name] ?? { value: '', order: idx };
+        const value = parameter.value;
         const error = errors[name];
         const hint =
           description + (type && `${description ? '\n' : ''}Тип: ${formatArgType(type)}`);
@@ -105,7 +115,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                 className="w-[300px] pl-[50px]"
                 options={options}
                 value={options.find((o) => o.value === value)}
-                onChange={(opt) => handleInputChange(name, opt?.value ?? '')}
+                onChange={(opt) => handleInputChange(name, idx, opt?.value ?? '')}
               />
             </ComponentFormFieldLabel>
           );
@@ -114,7 +124,10 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
           const { width, height } = getMatrixDimensions(type);
           if (!value) {
             const newMatrix = createEmptyMatrix(type);
-            parameters[name] = newMatrix.values;
+            parameters[name] = {
+              value: newMatrix.values,
+              order: idx,
+            };
           }
           if (Array.isArray(value) && Array.isArray(value[0])) {
             return (
@@ -131,7 +144,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                   {...{
                     width: width,
                     height: height,
-                    values: parameters[name] as number[][],
+                    values: parameters[name].value as number[][],
                     isClickable: true,
                     style: {
                       ledHeight: 16,
@@ -171,10 +184,10 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
           <div className="flex items-center space-x-2" key={name}>
             <div className="mt-[4px]">
               <AttributeConstSwitch
-                isAttribute={currentChecked}
+                checked={currentChecked}
                 onCheckedChange={() => {
                   setCheckedTo(name, !currentChecked);
-                  handleInputChange(name, '');
+                  handleInputChange(name, idx, '');
                 }}
               />
             </div>
@@ -199,7 +212,9 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                     <Select
                       containerClassName="w-[250px]"
                       options={componentOptions}
-                      onChange={(opt) => handleComponentAttributeChange(name, opt?.value ?? '', '')}
+                      onChange={(opt) =>
+                        handleComponentAttributeChange(name, idx, opt?.value ?? '', '')
+                      }
                       value={
                         componentOptions.find((o) => o.value === selectedParameterComponent) ?? null
                       }
@@ -213,6 +228,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                       onChange={(opt) =>
                         handleComponentAttributeChange(
                           name,
+                          idx,
                           selectedParameterComponent ?? '',
                           opt?.value ?? ''
                         )
@@ -235,7 +251,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                 value={value as string}
                 name={name}
                 placeholder="Введите значение..."
-                onChange={(e) => handleInputChange(name, e.target.value)}
+                onChange={(e) => handleInputChange(name, idx, e.target.value)}
               />
             )}
           </div>

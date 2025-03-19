@@ -13,11 +13,13 @@ import {
   UpdateModal,
   DiagramContextMenu,
   EditorSettings,
+  Tooltip,
 } from '@renderer/components';
 import { hideLoadingOverlay } from '@renderer/components/utils/OverlayControl';
 import { useErrorModal, useFileOperations, useSettings } from '@renderer/hooks';
 import { useAppTitle } from '@renderer/hooks/useAppTitle';
 import { useModal } from '@renderer/hooks/useModal';
+import { useRecentFilesHooks } from '@renderer/hooks/useRecentFilesHooks';
 import {
   getPlatformsErrors,
   preloadPlatforms,
@@ -54,6 +56,8 @@ export const MainContainer: React.FC = () => {
       openImportError,
     });
   const isSaveModalOpen = saveModalProps.isOpen;
+
+  useRecentFilesHooks();
 
   useAppTitle();
   const onDrop = useCallback(
@@ -184,7 +188,11 @@ export const MainContainer: React.FC = () => {
           </div>
         </div>
 
-        {isMounted && <DiagramContextMenu />}
+        {isMounted && (
+          <>
+            <DiagramContextMenu /> <Tooltip controller={controller} />
+          </>
+        )}
       </div>
 
       <SaveRemindModal {...saveModalProps} />
@@ -212,7 +220,7 @@ export const MainContainer: React.FC = () => {
         onClose={closeRestoreDataModal}
         onRestore={restoreData}
         onCancelRestore={cancelRestoreData}
-      ></RestoreDataModal>
+      />
     </div>
   );
 };

@@ -1,14 +1,15 @@
-import { optimizer, is } from '@electron-toolkit/utils';
-import { app, shell, BrowserWindow, ipcMain } from 'electron';
+import { is } from '@electron-toolkit/utils';
+import { app, shell, BrowserWindow, ipcMain, globalShortcut } from 'electron';
 import settings from 'electron-settings';
 import { lookpath } from 'lookpath';
 
+import { existsSync } from 'fs';
 import { join } from 'path';
 
 import { checkForUpdates } from './checkForUpdates';
 import { initFileHandlersIPC } from './file-handlers';
 import { ModuleName, ModuleManager } from './modules/ModuleManager';
-import { initDefaultSettings, initSettingsHandlers, settingsChangeSend } from './settings';
+import { initSettings, initSettingsHandlers, settingsChangeSend } from './settings';
 import { getAllTemplates, getTemplate } from './templates';
 
 import icon from '../../resources/icon.png?asset';
@@ -112,7 +113,7 @@ function createWindow(): BrowserWindow {
 const startFlasher = async () => {
   ModuleManager.startLocalModule('lapki-flasher');
 };
-initDefaultSettings();
+initSettings();
 startFlasher();
 
 // Выполняется после инициализации Electron
@@ -141,16 +142,19 @@ app.whenReady().then(() => {
   ipcMain.handle('checkForUpdates', checkForUpdates(app.getVersion()));
 
   ipcMain.handle('hasAvrdude', async () => {
-    const path = await lookpath('avrdude');
-    return Boolean(path);
+    if (existsSync(ModuleManager.getAvrdudePath())) {
+      return true;
+    } else if (await lookpath('avrdude')) {
+      return true;
+    } else {
+      return false;
+    }
   });
 
-  // Горячие клавиши для режима разрабочика:
-  // - F12 – инструменты разработки
-  // - CmdOrCtrl + R – перезагрузить страницу
-  // См. https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
-  app.on('browser-window-created', (_, window) => {
-    optimizer.watchWindowShortcuts(window);
+  // отключение перезагрузки по CmdOrCtrl + R
+  // перезагрузка по Shift + CmdOrCtrl + R должна работать
+  globalShortcut.register('CommandOrControl+R', () => {
+    console.log('CommandOrControl+R is pressed: Shortcut Disabled');
   });
 
   app.on('activate', function () {

@@ -194,7 +194,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   };
 
   unlinkState = (params: UnlinkStateParams) => {
-    const { id, canUndo } = params;
+    const { id } = params;
 
     const state = this.data.states.get(id);
     if (!state || !state.parent) return;
@@ -202,9 +202,6 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.view.children.add(state, Layer.States);
     state.parent = undefined;
     state.data.parentId = undefined;
-    if (canUndo) {
-      state.addOnceOff('dragend');
-    }
 
     this.view.isDirty = true;
   };

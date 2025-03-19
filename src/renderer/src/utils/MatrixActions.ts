@@ -13,6 +13,10 @@ export const getMatrixDimensions = (matrixType: string): Dimensions => {
 
 export const createEmptyMatrix = (matrixType: string): Matrix => {
   const { width, height } = getMatrixDimensions(matrixType);
+
+  if (!width || !height)
+    throw new Error(`Неправильный тип матрицы ${matrixType}. Требуется MatrixWidthxHeight`);
+
   const emptyMatrixValue: number[][] = [];
   for (let row = 0; row != height; row += 1) {
     emptyMatrixValue.push([]);

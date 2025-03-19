@@ -19,6 +19,10 @@ export class ChoiceState extends Shape {
     this.edgeHandlers = new EdgeHandlers(this.app as CanvasEditor, this);
   }
 
+  get tooltipText() {
+    return 'Псевдосостояние выбора';
+  }
+
   get position() {
     return this.data.position;
   }

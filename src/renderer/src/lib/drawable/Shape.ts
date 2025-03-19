@@ -49,6 +49,8 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
     super();
   }
 
+  abstract get tooltipText(): string | undefined;
+
   abstract get position(): Point;
   abstract set position(value: Point);
 

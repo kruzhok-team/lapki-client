@@ -201,6 +201,14 @@ export class Events {
         );
         ctx.closePath();
       }
+      if (typeof events.condition === 'string') {
+        platform.drawText(
+          ctx,
+          events.condition,
+          eX + (this.picto.eventWidth + 5) / this.picto.scale,
+          eY
+        );
+      }
 
       if (typeof events.do !== 'string') {
         events.do.forEach((act, actIdx) => {

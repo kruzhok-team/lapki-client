@@ -289,13 +289,13 @@ export class PlatformManager {
       const paramValue = ev.args[argQuery];
       if (typeof paramValue === 'undefined') {
         parameter = '?!';
-      } else if (typeof paramValue === 'string') {
-        parameter = paramValue;
+      } else if (typeof paramValue.value === 'string') {
+        parameter = paramValue.value;
       } else if (
         typeof parameterList[0].type === 'string' &&
         parameterList[0].type.startsWith('Matrix')
       ) {
-        parameter = paramValue;
+        parameter = paramValue.value;
         drawFunction = this.picto.drawMatrix;
       } else {
         // FIXME
@@ -349,23 +349,24 @@ export class PlatformManager {
       | undefined = undefined;
     if (argQuery && ac.args && parameterList) {
       const paramValue = ac.args[argQuery];
-      if (typeof paramValue === 'undefined') {
+      if (paramValue === undefined || typeof paramValue.value === 'undefined') {
         if (parameterList[0].optional) {
           parameter = '';
         } else {
           parameter = '?!';
         }
-      } else if (typeof paramValue === 'string') {
-        parameter = paramValue;
+      } else if (typeof paramValue.value === 'string') {
+        parameter =
+          paramValue.value.length > 15 ? paramValue.value.slice(0, 12) + '...' : paramValue.value;
       } else if (
         typeof parameterList[0].type === 'string' &&
         parameterList[0].type.startsWith('Matrix')
       ) {
-        parameter = paramValue;
+        parameter = paramValue.value;
         drawFunction = this.picto.drawMatrix;
-      } else if (isVariable(paramValue)) {
+      } else if (isVariable(paramValue.value)) {
         drawFunction = this.drawParameterPicto;
-        parameter = paramValue;
+        parameter = paramValue.value;
       } else {
         // FIXME
         console.log(['PlatformManager.drawAction', 'Variable!', ac]);
@@ -436,6 +437,19 @@ export class PlatformManager {
     }
     console.log(['PlatformManager.measureCondition', 'wtf', ac]);
     return this.picto.eventWidth;
+  }
+
+  drawText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, alpha?: number) {
+    const bgColor = '#5b7173';
+    const fgColor = '#fff';
+    const opacity = alpha ?? 1.0;
+
+    this.picto.drawText(ctx, x, y, {
+      rightIcon: text,
+      bgColor,
+      fgColor,
+      opacity,
+    });
   }
 
   drawCondition(

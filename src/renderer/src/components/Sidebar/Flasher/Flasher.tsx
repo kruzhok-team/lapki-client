@@ -230,6 +230,7 @@ export const FlasherTab: React.FC = () => {
       isSelected: true,
       targetId: ID,
       targetType: FirmwareTargetType.tjc_ms,
+      extensions: ['bin'],
     });
     if (!isAdded && index !== -1) {
       ManagerMS.addLog(
@@ -513,18 +514,19 @@ export const FlasherTab: React.FC = () => {
         handleGetAddressAndMeta();
         continue;
       }
+      const extensions: string[] = ['bin'];
       if (dev.isArduinoDevice()) {
-        const isAdded = addToTable({
-          targetId: devId,
-          isFile: false,
-          isSelected: true,
-          targetType: FirmwareTargetType.dev,
-        });
-        if (!isAdded) {
-          ManagerMS.addLog(`${dev.displayName()}: устройство уже было добавлено ранее в таблицу.`);
-        }
-      } else {
-        throw Error('Неизвестный тип устройства!');
+        extensions.push('hex');
+      }
+      const isAdded = addToTable({
+        targetId: devId,
+        isFile: false,
+        isSelected: true,
+        targetType: FirmwareTargetType.dev,
+        extensions: extensions,
+      });
+      if (!isAdded) {
+        ManagerMS.addLog(`${dev.displayName()}: устройство уже было добавлено ранее в таблицу.`);
       }
     }
   };
@@ -813,6 +815,7 @@ export const FlasherTab: React.FC = () => {
             isFile: false,
             isSelected: true,
             targetType: FirmwareTargetType.tjc_ms,
+            extensions: ['bin'],
           });
           if (isAdded) {
             toast.info('Добавлена плата в таблицу прошивок!');

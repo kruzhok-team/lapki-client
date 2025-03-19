@@ -233,6 +233,7 @@ export type FlashTableItem = {
   targetType: FirmwareTargetType;
   source?: string; // id машины состояний или путь к файлу
   isFile: boolean;
+  extensions: string[]; // FIXME: расширения для файлов, нужно будет придумать более надёжную систему, например брать расширения из платформы
 };
 
 export type BinariesQueueItem = {

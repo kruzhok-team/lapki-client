@@ -107,13 +107,9 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
   }
 
   const handleSelectFile = async (tableItem: FlashTableItem) => {
-    const extensions = ['bin'];
-    if (tableItem.targetType === FirmwareTargetType.dev) {
-      extensions.push('hex');
-    }
     const [canceled, filePath, basename] = await window.api.fileHandlers.selectFile(
       'прошивки',
-      extensions
+      tableItem.extensions
     );
     if (canceled) return;
     setTableData(

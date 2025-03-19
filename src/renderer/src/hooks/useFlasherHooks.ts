@@ -148,17 +148,19 @@ export const useFlasherHooks = () => {
     setIsFlashing(false);
     let flashResultKey: string = '';
     let addressInfo: AddressData | undefined = undefined;
-    if (Flasher.currentFlashingDevice instanceof ArduinoDevice) {
-      flashResultKey = Flasher.currentFlashingDevice.displayName();
-      // TODO: унификация с flashingAddressEndLog?
-      ManagerMS.addLog(`${flashResultKey}: ${result}`);
-    } else if (Flasher.currentFlashingDevice instanceof MSDevice) {
-      const msDev = Flasher.currentFlashingDevice as MSDevice;
-      flashResultKey = `${ManagerMS.getFlashingAddress()?.name} - ${msDev.displayName()}`;
-      addressInfo = ManagerMS.getFlashingAddress();
-      ManagerMS.flashingAddressEndLog(result);
-    } else {
+    if (!Flasher.currentFlashingDevice) {
       flashResultKey = 'Неизвестное устройство';
+    } else {
+      if (Flasher.currentFlashingDevice.isMSDevice()) {
+        const msDev = Flasher.currentFlashingDevice as MSDevice;
+        flashResultKey = `${ManagerMS.getFlashingAddress()?.name} - ${msDev.displayName()}`;
+        addressInfo = ManagerMS.getFlashingAddress();
+        ManagerMS.flashingAddressEndLog(result);
+      } else {
+        flashResultKey = Flasher.currentFlashingDevice.displayName();
+        // TODO: унификация с flashingAddressEndLog?
+        ManagerMS.addLog(`${flashResultKey}: ${result}`);
+      }
     }
     const flashReport = new FlashResult(
       Flasher.currentFlashingDevice,

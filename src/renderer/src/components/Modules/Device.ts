@@ -1,12 +1,14 @@
+type devType = 'arduino' | 'tjc-ms' | 'blg-mb' | 'common';
+
 export class Device {
   deviceID: string;
   name: string;
-  private devType: 'arduino' | 'tjc-ms' | 'blg-mb' | 'common';
+  private type: devType;
 
-  constructor(device: Device, devType: typeof this.devType) {
+  constructor(device: Device, type: devType) {
     this.deviceID = device.deviceID;
     this.name = device.name;
-    this.devType = devType;
+    this.type = type;
   }
 
   isMSDevice(): boolean {
@@ -26,7 +28,7 @@ export class Device {
   }
 
   getDevType() {
-    return this.devType;
+    return this.type;
   }
 }
 

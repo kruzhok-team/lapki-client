@@ -1,10 +1,12 @@
 export class Device {
   deviceID: string;
   name: string;
+  private devType: 'arduino' | 'tjc-ms' | 'blg-mb' | 'common';
 
-  constructor(device: Device) {
+  constructor(device: Device, devType: typeof this.devType) {
     this.deviceID = device.deviceID;
     this.name = device.name;
+    this.devType = devType;
   }
 
   isMSDevice(): boolean {
@@ -22,6 +24,10 @@ export class Device {
   displaySerialName(): string {
     return this.displayName();
   }
+
+  getDevType() {
+    return this.devType;
+  }
 }
 
 export class ArduinoDevice extends Device {
@@ -31,7 +37,7 @@ export class ArduinoDevice extends Device {
   serialID: string;
 
   constructor(device: ArduinoDevice) {
-    super(device);
+    super(device, 'arduino');
     this.controller = device.controller;
     this.programmer = device.programmer;
     this.portName = device.portName;
@@ -47,7 +53,7 @@ export class MSDevice extends Device {
   portNames: string[];
   //address: string | undefined;
   constructor(device: MSDevice) {
-    super(device);
+    super(device, 'tjc-ms');
     this.portNames = device.portNames;
   }
 

@@ -198,9 +198,10 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
     );
   };
 
-  const getArduinoDevicePlatform = (device: Device) => {
+  const getDevicePlatform = (device: Device) => {
     // TODO: подумать, можно ли найти более надёжный способ сверки платформ на клиенте и сервере
     // названия платформ на загрузчике можно посмотреть здесь: https://github.com/kruzhok-team/lapki-flasher/blob/main/src/device_list.JSON
+    // TODO: поддержка кибермишки
     const name = device.name.toLocaleLowerCase();
     switch (name) {
       case 'arduino micro':
@@ -269,7 +270,7 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
         return;
       }
       displayName = dev.displayName();
-      typeId = getArduinoDevicePlatform(dev);
+      typeId = getDevicePlatform(dev);
     } else {
       throw Error(`Плата не поддерживается: ${tableItem}`);
     }

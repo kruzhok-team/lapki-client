@@ -26,11 +26,15 @@ export class Device {
   }
 
   displaySerialName(): string {
-    return this.displayName();
+    return `${this.name} (${this.getSerialPort() ?? 'Порт не найден'})`;
   }
 
   getDevType() {
     return this.type;
+  }
+
+  getSerialPort(): string | null {
+    return null;
   }
 }
 
@@ -51,6 +55,10 @@ export class ArduinoDevice extends Device {
   displayName(): string {
     return `${this.name} (${this.portName})`;
   }
+
+  getSerialPort(): string | null {
+    return this.portName;
+  }
 }
 
 export class MSDevice extends Device {
@@ -64,7 +72,8 @@ export class MSDevice extends Device {
   displayName(): string {
     return `${this.name} (${this.portNames[0]})`;
   }
-  displaySerialName(): string {
-    return `${this.name} (${this.portNames[3]})`;
+
+  getSerialPort(): string | null {
+    return this.portNames[3];
   }
 }

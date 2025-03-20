@@ -349,14 +349,15 @@ export class PlatformManager {
       | undefined = undefined;
     if (argQuery && ac.args && parameterList) {
       const paramValue = ac.args[argQuery];
-      if (typeof paramValue === 'undefined') {
+      if (paramValue === undefined || typeof paramValue.value === 'undefined') {
         if (parameterList[0].optional) {
           parameter = '';
         } else {
           parameter = '?!';
         }
       } else if (typeof paramValue.value === 'string') {
-        parameter = paramValue.value;
+        parameter =
+          paramValue.value.length > 15 ? paramValue.value.slice(0, 12) + '...' : paramValue.value;
       } else if (
         typeof parameterList[0].type === 'string' &&
         parameterList[0].type.startsWith('Matrix')

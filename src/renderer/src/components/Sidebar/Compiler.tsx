@@ -118,9 +118,11 @@ export const CompilerTab: React.FC<CompilerProps> = ({
         );
       })
       .join('----------\n\n');
+    const tabName = 'compilerLog';
+    closeTab(tabName, modelController);
     openTab(modelController, {
       type: 'code',
-      name: 'compilerLog',
+      name: tabName,
       code: commands,
       language: 'txt',
     });

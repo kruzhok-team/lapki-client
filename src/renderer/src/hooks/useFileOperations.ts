@@ -11,8 +11,6 @@ import { useTabs } from '@renderer/store/useTabs';
 import { Elements } from '@renderer/types/diagram';
 import { isLeft, isRight, unwrapEither } from '@renderer/types/Either';
 
-import { useSettings } from './useSettings';
-
 const tempSaveKey = 'tempSave';
 
 interface useFileOperationsArgs {

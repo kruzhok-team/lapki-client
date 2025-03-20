@@ -39,7 +39,7 @@ export const MainContainer: React.FC = () => {
   const isMounted = controller.useData('isMounted') as boolean;
   const [isCreateSchemeModalOpen, openCreateSchemeModal, closeCreateSchemeModal] = useModal(false);
   const [autoSaveSettings] = useSettings('autoSave');
-  const [isTempSaveStored, setIsTempSaveStored] = useState<boolean>(false); // Схема без названия сохранена, либо загружена
+  const [isTempSaveStored, setIsTempSaveStored] = useState<boolean>(false);
   const [isRestoreDataModalOpen, openRestoreDataModal, closeRestoreDataModal] = useModal(false);
   const isStale = modelController.model.useData('', 'isStale');
   const isInitialized = modelController.model.useData('', 'isInitialized');
@@ -109,6 +109,7 @@ export const MainContainer: React.FC = () => {
     if (data) {
       loadGraphml(data);
       tempSaveOperations.deleteTempSave();
+      setIsTempSaveStored(false);
     } else {
       throw Error('Не удалось загрузить временное сохранеение');
     }
@@ -116,19 +117,19 @@ export const MainContainer: React.FC = () => {
 
   const cancelRestoreData = async () => {
     tempSaveOperations.deleteTempSave();
-    setIsTempSaveStored(true);
+    setIsTempSaveStored(false);
   };
 
   // автосохранение
   useEffect(() => {
-    if (autoSaveSettings === null || isSaveModalOpen) return;
+    if (autoSaveSettings === null || isSaveModalOpen || !isInitialized) return;
 
-    if (basename && isInitialized && !isTempSaveStored) {
-      setIsTempSaveStored(true);
+    if (basename && isInitialized && isTempSaveStored) {
+      setIsTempSaveStored(false);
       tempSaveOperations.deleteTempSave();
     }
 
-    if (!isStale || !isInitialized) return;
+    if (!isStale) return;
 
     const ms = autoSaveSettings.interval * 1000;
     let interval: NodeJS.Timeout;
@@ -137,9 +138,9 @@ export const MainContainer: React.FC = () => {
         await operations.onRequestSaveFile();
       }, ms);
     } else {
-      interval = setInterval(async () => {
+      interval = setInterval(() => {
         console.log('temp save...');
-        await tempSaveOperations.tempSave();
+        tempSaveOperations.tempSave();
         if (!isTempSaveStored) setIsTempSaveStored(true);
       }, ms);
     }

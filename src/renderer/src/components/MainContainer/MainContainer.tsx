@@ -108,8 +108,7 @@ export const MainContainer: React.FC = () => {
     const data = tempSaveOperations.loadTempSave();
     if (data) {
       loadGraphml(data);
-      tempSaveOperations.deleteTempSave();
-      setIsTempSaveStored(false);
+      setIsTempSaveStored(true);
     } else {
       throw Error('Не удалось загрузить временное сохранеение');
     }

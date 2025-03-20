@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import {
   SERIAL_MONITOR_CONNECTED,
@@ -89,6 +89,16 @@ export const SerialMonitorTab: React.FC = () => {
       SerialMonitor.addDeviceMessage('\n');
     }
   }, [device]);
+
+  const serialDevices = useMemo(() => {
+    const serial = new Map() as typeof devices;
+    devices.forEach((dev, id) => {
+      if (dev.getSerialPort()) {
+        serial.set(id, dev);
+      }
+    });
+    return serial;
+  }, [devices]);
 
   const handleSend = () => {
     if (inputValue.trim() && device !== undefined && monitorSetting !== null) {
@@ -294,7 +304,7 @@ export const SerialMonitorTab: React.FC = () => {
         onClose={closeDeviceList}
         onSubmit={handleAddDevice}
         submitLabel="Выбрать"
-        devices={devices}
+        devices={serialDevices}
       />
     </section>
   );

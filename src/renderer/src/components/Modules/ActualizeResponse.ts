@@ -7,8 +7,17 @@ import {
   CompilerElements,
   CompilerState,
   CompilerComponent,
+  CompilerEvent,
 } from '@renderer/types/CompilerTypes';
-import { Component, Elements, InitialState, State, Transition } from '@renderer/types/diagram';
+import {
+  Action,
+  Component,
+  Elements,
+  EventData,
+  InitialState,
+  State,
+  Transition,
+} from '@renderer/types/diagram';
 
 function actualizeTransitions(oldTransitions: CompilerTransition[]): {
   [key: string]: Transition;
@@ -22,14 +31,54 @@ function actualizeTransitions(oldTransitions: CompilerTransition[]): {
       targetId: oldTransition.target,
       color: oldTransition.color,
       label: {
-        trigger: oldTransition.trigger,
+        trigger: { ...oldTransition.trigger, args: {} },
         position: oldTransition.position,
         condition: oldTransition.condition,
-        do: oldTransition.do,
+        do: oldTransition.do.map((action) => {
+          return {
+            ...action,
+            args: Object.fromEntries(
+              Object.keys(action.args ?? {}).map((id, index) => {
+                return [
+                  id,
+                  {
+                    value: action.args![id],
+                    order: index,
+                  },
+                ];
+              })
+            ),
+          };
+        }),
       },
     };
   }
   return newTransitions;
+}
+
+function actualizeEvents(oldEvents: CompilerEvent[]): EventData[] {
+  const events: EventData[] = [];
+  oldEvents.map((event) => {
+    const actions: Action[] = [];
+    const trigger = {
+      ...event.trigger,
+      args: {},
+    };
+    event.do.map((action) => {
+      const args = Object.fromEntries(
+        Object.keys(action.args ?? {}).map((id, index) => {
+          return [id, { value: action.args![id], order: index }];
+        })
+      );
+      actions.push({
+        ...action,
+        args,
+      });
+    });
+    events.push({ ...event, trigger, do: actions });
+  });
+
+  return events;
 }
 
 function actualizeStates(oldStates: { [id: string]: CompilerState }): { [id: string]: State } {
@@ -47,7 +96,7 @@ function actualizeStates(oldStates: { [id: string]: CompilerState }): { [id: str
       },
       name: oldState.name,
       parentId: oldState.parent,
-      events: oldState.events,
+      events: actualizeEvents(oldState.events),
     };
   }
   return states;

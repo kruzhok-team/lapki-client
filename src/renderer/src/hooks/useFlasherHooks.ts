@@ -333,6 +333,20 @@ export const useFlasherHooks = () => {
         );
         break;
       }
+      case 'incorrect-file-size': {
+        flashingEnd(
+          'Ошибка! Указанный размер файла меньше 1 байта. Прошивку начать невозможно.',
+          undefined
+        );
+        break;
+      }
+      case 'file-write-error': {
+        flashingEnd(
+          'Ошибка! Возникла ошибка при записи блока с бинарными данным. Прошивка прекращена.',
+          undefined
+        );
+        break;
+      }
       case 'flash-backtrack-ms': {
         const payload = flasherMessage.payload as FlashBacktrackMs;
         // TODO: пока обратная связь реализована только для МС-ТЮК

@@ -63,7 +63,9 @@ export type FlasherType =
   | 'ms-meta-data'
   | 'ms-meta-data-error'
   | 'ms-get-address-and-meta'
-  | 'ms-address-and-meta';
+  | 'ms-address-and-meta'
+  | 'file-write-error'
+  | 'incorrect-file-size';
 export type FlasherPayload =
   | string
   | Device

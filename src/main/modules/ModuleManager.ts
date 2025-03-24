@@ -152,7 +152,7 @@ export class ModuleManager {
   }
 
   static getAvrdudePath(): string {
-    return `${this.getOsPath()}/avrdude`;
+    return this.getOsExe(`${this.getOsPath()}/avrdude`);
   }
 
   static getConfPath(): string {

@@ -21,6 +21,10 @@ export class Device {
     return this.getDevType() === 'arduino';
   }
 
+  isBlgMbDevice(): boolean {
+    return this.getDevType() === 'blg-mb';
+  }
+
   displayName(): string {
     return this.name;
   }

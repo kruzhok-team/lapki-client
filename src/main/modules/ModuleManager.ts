@@ -167,9 +167,10 @@ export class ModuleManager {
   static getOsExe(executable: string): string {
     if (process.platform === 'win32') {
       return `${executable}.exe`;
-    } else if (process.platform === 'linux' || process.platform === 'darwin') {
-      if (executable.startsWith('./')) return executable;
-      if (executable.startsWith('/')) return '.' + executable;
+    } else if (
+      (process.platform === 'linux' || process.platform === 'darwin') &&
+      !executable.includes('/')
+    ) {
       return './' + executable;
     }
     return executable;

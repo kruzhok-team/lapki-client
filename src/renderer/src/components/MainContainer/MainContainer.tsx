@@ -39,8 +39,7 @@ export const MainContainer: React.FC = () => {
   const isMounted = controller.useData('isMounted') as boolean;
   const [isCreateSchemeModalOpen, openCreateSchemeModal, closeCreateSchemeModal] = useModal(false);
   const [autoSaveSettings] = useSettings('autoSave');
-  const [restoreSession] = useSettings('restoreSession');
-  const [isReservedDataPresent, setIsReservedPresent] = useState<boolean>(false); // Схема без названия сохранена, либо загружена
+  const [isTempSaveStored, setIsTempSaveStored] = useState<boolean>(false);
   const [isRestoreDataModalOpen, openRestoreDataModal, closeRestoreDataModal] = useModal(false);
   const isStale = modelController.model.useData('', 'isStale');
   const isInitialized = modelController.model.useData('', 'isInitialized');
@@ -48,13 +47,19 @@ export const MainContainer: React.FC = () => {
 
   const { errorModalProps, openLoadError, openPlatformError, openSaveError, openImportError } =
     useErrorModal();
-  const { saveModalProps, operations, performNewFile, handleOpenFromTemplate, tempSaveOperations } =
-    useFileOperations({
-      openLoadError,
-      openCreateSchemeModal,
-      openSaveError,
-      openImportError,
-    });
+  const {
+    saveModalProps,
+    operations,
+    performNewFile,
+    handleOpenFromTemplate,
+    tempSaveOperations,
+    loadGraphml,
+  } = useFileOperations({
+    openLoadError,
+    openCreateSchemeModal,
+    openSaveError,
+    openImportError,
+  });
   const isSaveModalOpen = saveModalProps.isOpen;
 
   useRecentFilesHooks();
@@ -90,50 +95,40 @@ export const MainContainer: React.FC = () => {
     });
   }, [openPlatformError]);
 
+  useEffect(() => {
+    const tempData = tempSaveOperations.loadTempSave();
+    if (tempData) {
+      openRestoreDataModal();
+    }
+  }, []);
+
   const restoreData = async () => {
-    //  (Roundabout) TODO: обработка ошибок загрузки
-    await tempSaveOperations.loadTempSave();
-    setIsReservedPresent(true);
+    setIsTempSaveStored(true);
+    // (Roundabout) TODO: обработка ошибок загрузки
+    const data = tempSaveOperations.loadTempSave();
+    if (data) {
+      loadGraphml(data);
+      setIsTempSaveStored(true);
+    } else {
+      throw Error('Не удалось загрузить временное сохранеение');
+    }
   };
 
   const cancelRestoreData = async () => {
-    await tempSaveOperations.deleteTempSave();
-    setIsReservedPresent(true);
+    tempSaveOperations.deleteTempSave();
+    setIsTempSaveStored(false);
   };
 
   // автосохранение
   useEffect(() => {
-    if (autoSaveSettings === null || restoreSession === null || isSaveModalOpen) return;
+    if (autoSaveSettings === null || isSaveModalOpen || !isInitialized) return;
 
-    if (autoSaveSettings.disabled) {
-      if (restoreSession) {
-        cancelRestoreData();
-      }
-      return;
+    if (basename && isInitialized && isTempSaveStored) {
+      setIsTempSaveStored(false);
+      tempSaveOperations.deleteTempSave();
     }
 
-    if (isInitialized && !isReservedDataPresent) {
-      setIsReservedPresent(true);
-      return;
-    }
-
-    if (!basename && restoreSession && !isReservedDataPresent) {
-      if (!isRestoreDataModalOpen) {
-        openRestoreDataModal();
-      }
-      return;
-    }
-
-    if (basename && isInitialized) {
-      if (!isReservedDataPresent) {
-        setIsReservedPresent(true);
-      }
-      if (restoreSession) {
-        tempSaveOperations.deleteTempSave();
-      }
-    }
-
-    if (!isStale || !isInitialized) return;
+    if (!isStale) return;
 
     const ms = autoSaveSettings.interval * 1000;
     let interval: NodeJS.Timeout;
@@ -142,24 +137,16 @@ export const MainContainer: React.FC = () => {
         await operations.onRequestSaveFile();
       }, ms);
     } else {
-      interval = setInterval(async () => {
+      interval = setInterval(() => {
         console.log('temp save...');
-        await tempSaveOperations.tempSave();
-        if (!isReservedDataPresent) setIsReservedPresent(true);
+        tempSaveOperations.tempSave();
+        if (!isTempSaveStored) setIsTempSaveStored(true);
       }, ms);
     }
 
     //Clearing the intervals
     return () => clearInterval(interval);
-  }, [
-    autoSaveSettings,
-    isStale,
-    isInitialized,
-    basename,
-    restoreSession,
-    isReservedDataPresent,
-    isSaveModalOpen,
-  ]);
+  }, [autoSaveSettings, isStale, isInitialized, basename, isTempSaveStored, isSaveModalOpen]);
 
   return (
     <div className="h-screen select-none">

@@ -836,13 +836,6 @@
     "Iterator": {
       "description": "Итератор",
       "img": "arduino/timer.svg",
-      "signals": {
-        "onEnd": {
-          "img": "arduino/timeout.svg",
-          "description": "Итерации завершены",
-          "checkMethod": "onEnd"
-        }
-      },
       "constructorParameters": {},
       "methods": {
         "break_": {
@@ -873,7 +866,6 @@
       },
       "buildFiles": ["Iterator.hpp"],
       "importFiles": ["Iterator.hpp"],
-      "loopActions": ["onIteration"],
       "singletone": false,
       "variables": {
         "index": {

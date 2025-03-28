@@ -423,10 +423,9 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
   }
 
   handleDownNode = () => {
-    if (!this.mouseDownNode) return;
-    console.log('node is down', this.mouseDownNode);
+    if (!this.mouseDownNode || !this.mouseDownNode.isDraggable) return;
 
-    // считаем "крайние координатцы"
+    // считаем "крайние координаты"
     const leftX = this.mouseDownNode.computedPosition.x;
     const upY = this.mouseDownNode.computedPosition.y;
     const rightX = this.mouseDownNode.computedPosition.x + this.mouseDownNode.computedWidth;

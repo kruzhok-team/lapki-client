@@ -137,6 +137,11 @@ export type ChangePosition = {
   endPosition: Point;
 };
 
+export type ChangeTransitionPosition = ChangePosition & {
+  sourcePoint?: Point;
+  endPoint?: Point;
+};
+
 export type ChangeEventParams = {
   smId: string;
   stateId: string;

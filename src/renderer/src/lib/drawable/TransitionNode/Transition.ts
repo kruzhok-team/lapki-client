@@ -53,7 +53,12 @@ export class Transition extends Shape {
   }
 
   get position() {
-    return this.data.label?.position ?? { x: 0, y: 0 };
+    return (
+      this.data.label?.position ?? {
+        x: (this.source.compoundPosition.x + this.target.compoundPosition.x) / 2,
+        y: (this.source.compoundPosition.y + this.target.compoundPosition.y) / 2,
+      }
+    );
   }
 
   set position(value) {

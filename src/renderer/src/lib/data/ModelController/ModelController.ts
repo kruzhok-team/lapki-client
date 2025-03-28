@@ -27,6 +27,7 @@ import {
   ChangePosition,
   ChangeStateParams,
   ChangeTransitionParams,
+  ChangeTransitionPosition,
   CreateChoiceStateParams,
   CreateComponentParams,
   CreateEventActionParams,
@@ -428,12 +429,12 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.model.changeStateMachinePosition(id, endPosition);
   };
 
-  changeTransitionPosition = (args: ChangePosition, canUndo = true) => {
-    const { smId, id, startPosition, endPosition } = args;
+  changeTransitionPosition = (args: ChangeTransitionPosition, canUndo = true) => {
+    const { smId, id, startPosition, endPosition, sourcePoint, endPoint } = args;
     const transition = this.model.data.elements.stateMachines[args.smId].transitions[args.id];
     if (!transition) return;
 
-    this.model.changeTransitionPosition(smId, id, endPosition);
+    this.model.changeTransitionPosition(smId, id, endPosition, sourcePoint, endPoint);
 
     if (canUndo) {
       this.history.do({
@@ -2058,8 +2059,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         return {
           ...data.label,
           position: {
-            x: data.label.position.x + this.pastePositionOffset,
-            y: data.label.position.y + this.pastePositionOffset,
+            x: data.label.position ? data.label.position.x : 0 + this.pastePositionOffset,
+            y: data.label.position ? data.label.position.y : 0 + this.pastePositionOffset,
           },
         };
       };

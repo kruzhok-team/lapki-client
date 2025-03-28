@@ -153,8 +153,11 @@ export function serializeActions(
 
   for (const action of actions) {
     const component = components[action.component];
-    const platformComponent = platform.components[component.type];
-    const actionDelimeter = platformComponent.singletone ? platform.staticActionDelimeter : '.';
+    let actionDelimeter = '.';
+    if (component) {
+      const platformComponent = platform.components[component.type];
+      actionDelimeter = platformComponent.singletone ? platform.staticActionDelimeter : '.';
+    }
     serialized += `${action.component}${actionDelimeter}${action.method}(${serializeArgs(
       components,
       platform,
@@ -341,6 +344,8 @@ function serializeTransitions(
       color: transition.color,
       labelPosition: transition.label?.position,
       actions: [],
+      sourcePoint: transition.sourcePoint,
+      targetPoint: transition.targetPoint,
     };
     if (transition.label === undefined) {
       cgmlTransitions[id] = cgmlTransition;
@@ -500,6 +505,8 @@ export function exportCGML(elements: Elements): string {
     }
     cgmlElements.stateMachines[smId] = {
       standardVersion: '1.0',
+      shallowHistory: {},
+      deepHistory: {},
       components: !platform.staticComponents ? serializeComponents(sm.components) : {},
       states: serializeStates(sm.states, platform, sm.components),
       transitions: serializeTransitions(sm.transitions, platform, sm.components),

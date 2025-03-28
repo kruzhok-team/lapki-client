@@ -43,7 +43,7 @@ function downgradeTransitions(transitions: { [id: string]: Transition }): Compil
       condition: (transition.label?.condition as Condition) ?? null,
       trigger: transition.label.trigger as Event,
       do: (transition.label.do as Action[]) ?? [],
-      position: transition.label.position,
+      position: transition.label.position ?? { x: 0, y: 0 },
     });
   }
   return downgradedTransitions;

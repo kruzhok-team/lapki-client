@@ -32,6 +32,7 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
   private mouseOnNode: Shape | null = null;
   private mouseDownNode: Shape | null = null; // Для оптимизации чтобы на каждый mousemove не искать
   private mouseDownInterval: NodeJS.Timeout | null = null;
+  private isMouseDown: boolean = false;
 
   constructor(public app: CanvasEditor) {
     super();
@@ -164,6 +165,9 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
   handleMouseDown = (e: MyMouseEvent) => {
     if (!e.left || this.isPan) return;
 
+    this.isMouseDown = true;
+    setTimeout(() => this.checkBorders(), 1000);
+
     const node = this.getCapturedNode({ position: e });
 
     if (node) {
@@ -173,7 +177,6 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
       parent.children.moveToTopOnLayer(node);
 
       this.mouseDownNode = node;
-      setTimeout(() => this.checkBorders(), 1000);
     }
   };
 
@@ -181,6 +184,7 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
     this.app.canvas.element.style.cursor = 'default';
     this.mouseDownNode = null;
     this.clearMouseDownInterval();
+    this.isMouseDown = false;
 
     if (!e.left) return;
 
@@ -265,13 +269,15 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
       this.app.canvas.element.style.cursor = 'grabbing';
     }
 
+    this.isMouseDown = true;
+    this.checkBorders();
+
     if (this.isPan) {
       // TODO Много раз такие операции повторяются, нужно переделать на функции
       this.app.controller.offset.x += e.dx * this.app.controller.scale;
       this.app.controller.offset.y += e.dy * this.app.controller.scale;
     } else if (this.mouseDownNode) {
       this.mouseDownNode.handleMouseMove(e);
-      this.checkBorders();
     }
   }
 
@@ -429,9 +435,12 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
 
   checkBorders = () => {
     if (this.mouseDownInterval) return;
-    if (this.mouseDownNode && this.mouseDownNode.isDraggable) {
-      this.mouseDownInterval = setInterval(() => {
-        if (!this.mouseDownNode || !this.mouseDownInterval) {
+    this.mouseDownInterval = setInterval(() => {
+      if (!this.isMouseDown) {
+        this.clearMouseDownInterval();
+      }
+      if (this.mouseDownNode) {
+        if (!this.mouseDownNode.isDraggable) {
           this.clearMouseDownInterval();
           return;
         }
@@ -460,16 +469,16 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
           };
         }
         this.isDirty = true;
-      }, 10);
-    } else {
-      return;
-      // console.log('dvi');
-      // const mousePoint = { x: this.app.mouse.px, y: this.app.mouse.py };
-      // const { dx, dy } = this.borderMover(mousePoint, mousePoint);
-      // if (dx !== 0 || dy !== 0) {
-      //   this.isDirty = true;
-      // }
-    }
+      } else {
+        const mousePoint = { x: this.app.mouse.px, y: this.app.mouse.py };
+        const { dx, dy } = this.borderMover(mousePoint, mousePoint);
+        if (dx === 0 && dy === 0) {
+          this.clearMouseDownInterval();
+          return;
+        }
+        this.isDirty = true;
+      }
+    }, 10);
   };
 
   borderMover = (topLeft: Point, bottomRight: Point, border: number = 20, speed: number = 2.5) => {

@@ -24,6 +24,9 @@
     "ArgumentProto": {
       "additionalProperties": false,
       "properties": {
+        "alias": {
+          "type": "string"
+        },
         "description": {
           "type": "string"
         },
@@ -67,6 +70,9 @@
     "ComponentProto": {
       "additionalProperties": false,
       "properties": {
+        "alias": {
+          "type": "string"
+        },
         "buildFiles": {
           "items": {
             "type": "string"
@@ -112,9 +118,6 @@
           },
           "type": "object"
         },
-        "name": {
-          "type": "string"
-        },
         "signals": {
           "additionalProperties": {
             "$ref": "#/definitions/SignalProto"
@@ -141,6 +144,9 @@
     "MethodProto": {
       "additionalProperties": false,
       "properties": {
+        "alias": {
+          "type": "string"
+        },
         "description": {
           "type": "string"
         },
@@ -159,6 +165,9 @@
     "ParameterProto": {
       "additionalProperties": false,
       "properties": {
+        "alias": {
+          "type": "string"
+        },
         "description": {
           "type": "string"
         },
@@ -296,6 +305,9 @@
     "SignalProto": {
       "additionalProperties": false,
       "properties": {
+        "alias": {
+          "type": "string"
+        },
         "checkMethod": {
           "type": "string"
         },
@@ -317,6 +329,9 @@
     "VariableProto": {
       "additionalProperties": false,
       "properties": {
+        "alias": {
+          "type": "string"
+        },
         "description": {
           "type": "string"
         },

@@ -64,7 +64,8 @@
         "packetReceived": {
           "img": "arduino/byteReceived.svg",
           "description": "Получен байт.",
-          "checkMethod": "packetReceived"
+          "checkMethod": "packetReceived",
+          "alias": "ПакетПолучен"
         }
       },
       "constructorParameters": {},
@@ -77,7 +78,8 @@
         "lastData": {
           "img": "tjc-ms/lastData.svg",
           "type": "uint8_t",
-          "description": "Последний полученный символ."
+          "description": "Последний полученный символ.",
+          "alias": "ПоследниеДанные"
         }
       },
       "methods": {
@@ -87,10 +89,12 @@
             {
               "name": "address",
               "type": "byte",
-              "description": "Новое значение для адреса."
+              "description": "Новое значение для адреса.",
+              "alias": "Адрес"
             }
           ],
-          "description": "Назначить новый адрес для получения пакетов."
+          "description": "Назначить новый адрес для получения пакетов.",
+          "alias": "УстановитьАдрес"
         },
         "sendPacket": {
           "img": "tjc-ms/sendPacket.svg",

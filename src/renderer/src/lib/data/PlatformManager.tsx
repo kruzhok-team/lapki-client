@@ -15,6 +15,7 @@ export type ListEntry = {
   name: string;
   description?: string;
   img?: string;
+  alias?: string;
 };
 
 export type ComponentEntry = {
@@ -35,7 +36,7 @@ export const operatorSet = new Set([
 ]);
 
 export const systemComponent: ComponentProto = {
-  name: 'Система',
+  alias: 'Система',
   description: 'Встроенные платформонезависимые события и методы',
   singletone: true,
   img: 'system',
@@ -139,6 +140,7 @@ export class PlatformManager {
         name: eName,
         description: signals[eName].description,
         img: signals[eName].img,
+        alias: signals[eName].alias,
       });
     }
     return outs;
@@ -154,6 +156,7 @@ export class PlatformManager {
         name: mName,
         description: methods[mName].description,
         img: methods[mName].img,
+        alias: methods[mName].alias,
       });
     }
     return outs;
@@ -169,6 +172,7 @@ export class PlatformManager {
         name: vName,
         description: variables[vName].description,
         img: variables[vName].img,
+        alias: variables[vName].alias,
       });
     }
     return outs;

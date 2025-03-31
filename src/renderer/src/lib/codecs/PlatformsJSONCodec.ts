@@ -242,6 +242,7 @@ const typeMap: any = {
   ),
   ComponentProto: o(
     [
+      { json: 'alias', js: 'alias', typ: u(undefined, '') },
       { json: 'buildFiles', js: 'buildFiles', typ: u(undefined, a('')) },
       {
         json: 'constructorParameters',
@@ -259,7 +260,6 @@ const typeMap: any = {
       },
       { json: 'loopActions', js: 'loopActions', typ: u(undefined, a('')) },
       { json: 'methods', js: 'methods', typ: m(r('MethodProto')) },
-      { json: 'name', js: 'name', typ: u(undefined, '') },
       { json: 'signals', js: 'signals', typ: m(r('SignalProto')) },
       { json: 'singletone', js: 'singletone', typ: u(undefined, true) },
       { json: 'variables', js: 'variables', typ: m(r('VariableProto')) },
@@ -268,6 +268,7 @@ const typeMap: any = {
   ),
   ParameterProto: o(
     [
+      { json: 'alias', js: 'alias', typ: u(undefined, '') },
       { json: 'description', js: 'description', typ: u(undefined, '') },
       { json: 'img', js: 'img', typ: u(undefined, '') },
       { json: 'name', js: 'name', typ: u(undefined, '') },
@@ -278,6 +279,7 @@ const typeMap: any = {
   ),
   MethodProto: o(
     [
+      { json: 'alias', js: 'alias', typ: u(undefined, '') },
       { json: 'description', js: 'description', typ: u(undefined, '') },
       { json: 'img', js: 'img', typ: u(undefined, '') },
       { json: 'parameters', js: 'parameters', typ: u(undefined, a(r('ArgumentProto'))) },
@@ -286,6 +288,7 @@ const typeMap: any = {
   ),
   ArgumentProto: o(
     [
+      { json: 'alias', js: 'alias', typ: u(undefined, '') },
       { json: 'description', js: 'description', typ: u(undefined, '') },
       { json: 'img', js: 'img', typ: u(undefined, '') },
       { json: 'name', js: 'name', typ: '' },
@@ -296,6 +299,7 @@ const typeMap: any = {
   ),
   SignalProto: o(
     [
+      { json: 'alias', js: 'alias', typ: u(undefined, '') },
       { json: 'checkMethod', js: 'checkMethod', typ: u(undefined, '') },
       { json: 'description', js: 'description', typ: u(undefined, '') },
       { json: 'img', js: 'img', typ: u(undefined, '') },
@@ -305,6 +309,7 @@ const typeMap: any = {
   ),
   VariableProto: o(
     [
+      { json: 'alias', js: 'alias', typ: u(undefined, '') },
       { json: 'description', js: 'description', typ: u(undefined, '') },
       { json: 'img', js: 'img', typ: u(undefined, '') },
       { json: 'type', js: 'type', typ: u(undefined, u(a(u(3.14, '')), '')) },

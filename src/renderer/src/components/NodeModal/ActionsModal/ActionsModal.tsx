@@ -51,6 +51,7 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
   const [parameters, setParameters] = useState<ArgList>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // TODO(L140-beep): вынести логику в useActions
   const getComponentOption = (id: string, excludeIfEmpty: 'methods' | 'signals' | 'variables') => {
     if (!controller.platform[smId]) {
       return {
@@ -112,10 +113,10 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
     const getImg = platforms[smId][isEditingEvent ? 'getEventIconUrl' : 'getActionIconUrl'];
 
     // Тут call потому что контекст теряется
-    return getAll.call(platforms[smId], selectedComponent).map(({ name, description }) => {
+    return getAll.call(platforms[smId], selectedComponent).map(({ name, description, alias }) => {
       return {
         value: name,
-        label: name,
+        label: alias ?? name,
         hint: description,
         icon: (
           <img
@@ -133,10 +134,10 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
 
     return platformManager
       .getAvailableVariables(selectedParameterComponent)
-      .map(({ name, description }) => {
+      .map(({ name, description, alias }) => {
         return {
           value: name,
-          label: name,
+          label: alias ?? name,
           hint: description,
           icon: (
             <img

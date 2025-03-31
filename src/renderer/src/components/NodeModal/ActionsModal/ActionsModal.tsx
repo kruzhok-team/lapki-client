@@ -102,6 +102,10 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
     return getComponentOptions('methods');
   }, [smId, platforms, componentsData, isEditingEvent, visual]);
 
+  const componentWithVariablesOptions: SelectOption[] = useMemo(() => {
+    return getComponentOptions('variables');
+  }, [smId, platforms, componentsData, isEditingEvent, visual]);
+
   const methodOptions: SelectOption[] = useMemo(() => {
     if (!selectedComponent || !platforms[smId]) return [];
     const getAll = platforms[smId][isEditingEvent ? 'getAvailableEvents' : 'getAvailableMethods'];
@@ -211,7 +215,7 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
         if (componentAttribute) {
           // существует ли компонент с таким названием
           if (
-            !componentOptions.find((opt) => {
+            !componentWithVariablesOptions.find((opt) => {
               return opt.value === componentAttribute[0];
             })
           ) {
@@ -333,7 +337,7 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
         setParameters={setParameters}
         errors={errors}
         setErrors={setErrors}
-        componentOptions={getComponentOptions('variables')}
+        componentOptions={componentWithVariablesOptions}
         controller={controller}
         smId={smId}
         methodOptionsSearch={methodOptionsSearch}

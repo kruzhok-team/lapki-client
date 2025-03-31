@@ -21,7 +21,6 @@ interface EditorViewEvents {
   contextMenu: Point;
   showToolTip: { position: Point; text: string };
   closeToolTip: undefined;
-  downNode: undefined;
 }
 
 export class EditorView extends EventEmitter<EditorViewEvents> implements Drawable {
@@ -32,6 +31,7 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
   private showTooltipTimer: NodeJS.Timeout | undefined = undefined;
   private mouseOnNode: Shape | null = null;
   private mouseDownNode: Shape | null = null; // Для оптимизации чтобы на каждый mousemove не искать
+  private mouseDownInterval: NodeJS.Timeout | null = null;
 
   constructor(public app: CanvasEditor) {
     super();
@@ -56,8 +56,6 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
     this.app.mouse.on('dblclick', this.handleMouseDoubleClick);
     this.app.mouse.on('wheel', this.handleMouseWheel);
     this.app.mouse.on('rightclick', this.handleRightMouseClick);
-
-    this.on('downNode', this.handleDownNode);
   }
 
   //! Не забывать удалять слушатели
@@ -76,8 +74,6 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
     this.app.mouse.off('dblclick', this.handleMouseDoubleClick);
     this.app.mouse.off('wheel', this.handleMouseWheel);
     this.app.mouse.off('rightclick', this.handleRightMouseClick);
-
-    this.off('downNode', this.handleDownNode);
   }
 
   get isPan() {
@@ -177,13 +173,14 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
       parent.children.moveToTopOnLayer(node);
 
       this.mouseDownNode = node;
-      setTimeout(() => this.emit('downNode', undefined), 1000);
+      setTimeout(() => this.checkBorders(), 1000);
     }
   };
 
   handleMouseUp = (e: MyMouseEvent) => {
     this.app.canvas.element.style.cursor = 'default';
     this.mouseDownNode = null;
+    this.clearMouseDownInterval();
 
     if (!e.left) return;
 
@@ -274,6 +271,7 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
       this.app.controller.offset.y += e.dy * this.app.controller.scale;
     } else if (this.mouseDownNode) {
       this.mouseDownNode.handleMouseMove(e);
+      this.checkBorders();
     }
   }
 
@@ -422,18 +420,34 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
     }
   }
 
-  handleDownNode = () => {
-    if (this.mouseDownNode && this.mouseDownNode.isDraggable) {
-      // считаем "крайние координаты"
-      const leftX = this.mouseDownNode.computedPosition.x;
-      const upY = this.mouseDownNode.computedPosition.y;
-      const rightX = this.mouseDownNode.computedPosition.x + this.mouseDownNode.computedWidth;
-      const downY =
-        this.mouseDownNode.computedPosition.y +
-        Math.max(this.mouseDownNode.childrenContainerHeight, this.mouseDownNode.computedHeight);
+  private clearMouseDownInterval = () => {
+    if (this.mouseDownInterval) {
+      clearInterval(this.mouseDownInterval);
+      this.mouseDownInterval = null;
+    }
+  };
 
-      const { dx, dy } = this.borderMover({ x: leftX, y: upY }, { x: rightX, y: downY });
-      if (dx !== 0 || dy !== 0) {
+  checkBorders = () => {
+    if (this.mouseDownInterval) return;
+    if (this.mouseDownNode && this.mouseDownNode.isDraggable) {
+      this.mouseDownInterval = setInterval(() => {
+        if (!this.mouseDownNode || !this.mouseDownInterval) {
+          this.clearMouseDownInterval();
+          return;
+        }
+        // считаем "крайние координаты"
+        const leftX = this.mouseDownNode.computedPosition.x;
+        const upY = this.mouseDownNode.computedPosition.y;
+        const rightX = this.mouseDownNode.computedPosition.x + this.mouseDownNode.computedWidth;
+        const downY =
+          this.mouseDownNode.computedPosition.y +
+          Math.max(this.mouseDownNode.childrenContainerHeight, this.mouseDownNode.computedHeight);
+
+        const { dx, dy } = this.borderMover({ x: leftX, y: upY }, { x: rightX, y: downY });
+        if (dx === 0 && dy === 0) {
+          this.clearMouseDownInterval();
+          return;
+        }
         this.mouseDownNode.position = {
           x: this.mouseDownNode.position.x - dx * this.app.controller.scale,
           y: this.mouseDownNode.position.y - dy * this.app.controller.scale,
@@ -446,7 +460,7 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
           };
         }
         this.isDirty = true;
-      }
+      }, 10);
     } else {
       return;
       // console.log('dvi');
@@ -456,7 +470,6 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
       //   this.isDirty = true;
       // }
     }
-    setTimeout(() => this.emit('downNode', undefined), 10);
   };
 
   borderMover = (topLeft: Point, bottomRight: Point, border: number = 20, speed: number = 2.5) => {

@@ -209,7 +209,7 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
         }
         const componentAttribute = getComponentAttribute(value, platform);
         if (componentAttribute) {
-          // существует ли компонет с таким названием
+          // существует ли компонент с таким названием
           if (
             !componentOptions.find((opt) => {
               return opt.value === componentAttribute[0];

@@ -219,7 +219,10 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
               return opt.value === componentAttribute[0];
             })
           ) {
-            setErrors((p) => ({ ...p, [name]: `Неправильный формат данных` }));
+            setErrors((p) => ({
+              ...p,
+              [name]: `Ошибка! Не удалось найти компонент с таким названием.`,
+            }));
             return false;
           }
           if (componentAttribute[1] === '') {
@@ -233,7 +236,10 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
               return opt.value === componentAttribute[1];
             })
           ) {
-            setErrors((p) => ({ ...p, [name]: `Неправильный формат данных` }));
+            setErrors((p) => ({
+              ...p,
+              [name]: `Ошибка! Не удалось найти метод с таким названием.`,
+            }));
             return false;
           }
         } else if (type && typeof type === 'string' && validators[type]) {

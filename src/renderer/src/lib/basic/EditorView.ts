@@ -423,53 +423,62 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
   }
 
   handleDownNode = () => {
-    if (!this.mouseDownNode || !this.mouseDownNode.isDraggable) return;
+    if (this.mouseDownNode && this.mouseDownNode.isDraggable) {
+      // считаем "крайние координаты"
+      const leftX = this.mouseDownNode.computedPosition.x;
+      const upY = this.mouseDownNode.computedPosition.y;
+      const rightX = this.mouseDownNode.computedPosition.x + this.mouseDownNode.computedWidth;
+      const downY =
+        this.mouseDownNode.computedPosition.y +
+        Math.max(this.mouseDownNode.childrenContainerHeight, this.mouseDownNode.computedHeight);
 
-    // считаем "крайние координаты"
-    const leftX = this.mouseDownNode.computedPosition.x;
-    const upY = this.mouseDownNode.computedPosition.y;
-    const rightX = this.mouseDownNode.computedPosition.x + this.mouseDownNode.computedWidth;
-    const downY =
-      this.mouseDownNode.computedPosition.y +
-      Math.max(this.mouseDownNode.childrenContainerHeight, this.mouseDownNode.computedHeight);
+      const { dx, dy } = this.borderMover({ x: leftX, y: upY }, { x: rightX, y: downY });
+      if (dx !== 0 || dy !== 0) {
+        this.mouseDownNode.position = {
+          x: this.mouseDownNode.position.x - dx * this.app.controller.scale,
+          y: this.mouseDownNode.position.y - dy * this.app.controller.scale,
+        };
 
-    // граница, определяющая будет ли двигаться канвас или нет
-    const border = 20;
-    // скорость перемещения холста и перетаскиваемого объекта
-    const speed = 2.0;
+        if (this.mouseDownNode.parent) {
+          this.mouseDownNode.position = {
+            x: Math.max(0, this.mouseDownNode.position.x),
+            y: Math.max(0, this.mouseDownNode.position.y),
+          };
+        }
+        this.isDirty = true;
+      }
+    } else {
+      return;
+      // console.log('dvi');
+      // const mousePoint = { x: this.app.mouse.px, y: this.app.mouse.py };
+      // const { dx, dy } = this.borderMover(mousePoint, mousePoint);
+      // if (dx !== 0 || dy !== 0) {
+      //   this.isDirty = true;
+      // }
+    }
+    setTimeout(() => this.emit('downNode', undefined), 10);
+  };
 
+  borderMover = (topLeft: Point, bottomRight: Point, border: number = 20, speed: number = 2.5) => {
     const offsetX = this.app.controller.offset.x;
     const offsetY = this.app.controller.offset.y;
 
-    if (leftX <= border) {
+    if (topLeft.x <= border) {
       this.app.controller.offset.x += speed * this.app.controller.scale;
     }
-    if (upY <= border) {
+    if (topLeft.y <= border) {
       this.app.controller.offset.y += speed * this.app.controller.scale;
     }
-    if (rightX >= this.app.canvas.width - border) {
+    if (bottomRight.x >= this.app.canvas.width - border) {
       this.app.controller.offset.x -= speed * this.app.controller.scale;
     }
-    if (downY >= this.app.canvas.height - border) {
+    if (bottomRight.y >= this.app.canvas.height - border) {
       this.app.controller.offset.y -= speed * this.app.controller.scale;
     }
 
-    const dx = this.app.controller.offset.x - offsetX;
-    const dy = this.app.controller.offset.y - offsetY;
-    if (dx !== 0 || dy !== 0) {
-      this.mouseDownNode.position = {
-        x: this.mouseDownNode.position.x - dx * this.app.controller.scale,
-        y: this.mouseDownNode.position.y - dy * this.app.controller.scale,
-      };
-
-      if (this.mouseDownNode.parent) {
-        this.mouseDownNode.position = {
-          x: Math.max(0, this.mouseDownNode.position.x),
-          y: Math.max(0, this.mouseDownNode.position.y),
-        };
-      }
-      this.isDirty = true;
-    }
-    setTimeout(() => this.emit('downNode', undefined), 10);
+    return {
+      dx: this.app.controller.offset.x - offsetX,
+      dy: this.app.controller.offset.y - offsetY,
+    };
   };
 }

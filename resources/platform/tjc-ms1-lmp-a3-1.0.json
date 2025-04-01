@@ -777,10 +777,10 @@
 
     "UserSignal": {
       "description": "Пользовательский сигнал",
-      "img": "arduino/timer.svg",
+      "img": "common/userSignal.svg",
       "signals": {
         "isCalled": {
-          "img": "arduino/timeout.svg",
+          "img": "common/signalIsCalled.svg",
           "description": "Сработал сигнал",
           "checkMethod": "isCalled"
         }
@@ -788,7 +788,7 @@
       "constructorParameters": {},
       "methods": {
         "call": {
-          "img": "arduino/reset.svg",
+          "img": "common/signalCall.svg",
           "description": "Вызов сигнала"
         }
       },

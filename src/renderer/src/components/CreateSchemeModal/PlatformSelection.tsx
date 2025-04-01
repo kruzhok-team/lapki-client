@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
@@ -11,6 +11,7 @@ interface PlatformSelectionProps {
   setSelectedPlatformIdx: (value: string) => void;
   onDoubleClick?: () => void;
   selectedStateMachines: StateMachinesStackItem[];
+  onAddPlatform: (stateMachine: StateMachinesStackItem) => void;
 }
 
 export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
@@ -18,19 +19,32 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
   selectedPlatformIdx,
   setSelectedPlatformIdx,
   onDoubleClick,
+  onAddPlatform,
 }) => {
   const handleClick = (idx: string) => () => setSelectedPlatformIdx(idx);
 
   const isSelected = (idx: string) => selectedPlatformIdx === idx;
+
+  const [draggedPlatformIdx, setDraggedPlatformIdx] = useState<string | null>(null);
 
   const platforms = getAvailablePlatforms();
   const selectedPlatform = useMemo(
     () => platforms.find(({ idx }) => selectedPlatformIdx === idx),
     [platforms, selectedPlatformIdx]
   );
+  const draggedPlatform = useMemo(
+    () => platforms.find(({ idx }) => draggedPlatformIdx === idx),
+    [platforms, draggedPlatformIdx]
+  );
 
   return (
-    <div className="grid grid-cols-3 gap-4">
+    <div
+      className="grid grid-cols-3 gap-4"
+      onDrop={() => {
+        if (!draggedPlatform) return;
+        onAddPlatform({ platform: draggedPlatform });
+      }}
+    >
       {selectedStateMachines.length > 0 ? (
         <StateMachinesStack selectedStateMachines={selectedStateMachines} />
       ) : (
@@ -47,6 +61,9 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
             )}
             onDoubleClick={onDoubleClick}
             onClick={handleClick(idx)}
+            draggable
+            onDragStart={() => setDraggedPlatformIdx(idx)}
+            onDragEnd={() => setDraggedPlatformIdx(null)}
           >
             {name}
           </div>

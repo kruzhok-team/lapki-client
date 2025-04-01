@@ -57,6 +57,10 @@ export const CreateSchemeModal: React.FC<CreateSchemeModalProps> = ({
     setSelectedPlatformIdx(null);
   };
 
+  const handleAddStateMachine = (stateMachine: StateMachinesStackItem) => {
+    setSelectedStateMachines([...selectedStateMachines, stateMachine]);
+  };
+
   return (
     <Modal
       {...props}
@@ -79,6 +83,7 @@ export const CreateSchemeModal: React.FC<CreateSchemeModalProps> = ({
           selectedPlatformIdx={selectedPlatformIdx}
           setSelectedPlatformIdx={setSelectedPlatformIdx}
           onDoubleClick={submit}
+          onAddPlatform={handleAddStateMachine}
         />
       </TabPanel>
 

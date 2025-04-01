@@ -45,33 +45,40 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
           onAddPlatform({ platform: draggedPlatform });
         }}
       >
+        <h2>Выбранные платформы</h2>
         {selectedStateMachines.length > 0 ? (
           <StateMachinesStack selectedStateMachines={selectedStateMachines} />
         ) : (
           <label className="opacity-70">Перетащите платформы сюда</label>
         )}
       </div>
-      <div className="max-h-[40vh] w-full overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
-        {platforms.map(({ idx, name }) => (
-          <div
-            key={idx}
-            className={twMerge(
-              'flex cursor-pointer select-none items-center gap-2 p-2 transition-colors duration-75',
-              isSelected(idx) && 'bg-bg-active'
-            )}
-            onDoubleClick={onDoubleClick}
-            onClick={handleClick(idx)}
-            draggable
-            onDragStart={() => setDraggedPlatformIdx(idx)}
-            onDragEnd={() => setDraggedPlatformIdx(null)}
-          >
-            {name}
-          </div>
-        ))}
+      <div>
+        Список платформ
+        <div className="max-h-[40vh] w-full overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
+          {platforms.map(({ idx, name }) => (
+            <div
+              key={idx}
+              className={twMerge(
+                'flex cursor-pointer select-none items-center gap-2 p-2 transition-colors duration-75',
+                isSelected(idx) && 'bg-bg-active'
+              )}
+              onDoubleClick={onDoubleClick}
+              onClick={handleClick(idx)}
+              draggable
+              onDragStart={() => setDraggedPlatformIdx(idx)}
+              onDragEnd={() => setDraggedPlatformIdx(null)}
+            >
+              {name}
+            </div>
+          ))}
+        </div>
       </div>
-      <div className={twMerge(selectedPlatform?.description ?? 'opacity-70')}>
-        {selectedPlatform?.description ||
-          'Для начала работы выберите платформу из списка слева. Платформа определяет, для чего создаётся схема и с помощью каких элементов.'}
+      <div>
+        <h2>Описание</h2>
+        <div className={twMerge(selectedPlatform?.description ?? 'opacity-70')}>
+          {selectedPlatform?.description ||
+            'Для начала работы выберите платформу из списка слева. Платформа определяет, для чего создаётся схема и с помощью каких элементов.'}
+        </div>
       </div>
     </div>
   );

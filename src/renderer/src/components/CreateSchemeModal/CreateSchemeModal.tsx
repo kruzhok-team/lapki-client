@@ -61,12 +61,12 @@ export const CreateSchemeModal: React.FC<CreateSchemeModalProps> = ({
       onRequestClose={handleCLose}
       onSubmit={handleSubmit}
       submitDisabled={submitDisabled}
-      title="Создание схемы"
+      title="Создание проекта"
       submitLabel="Создать"
     >
       <Tabs
         className="mb-4"
-        tabs={['Создать пустую', 'Выбрать пример']}
+        tabs={['Платформы', 'Шаблоны']}
         value={tabValue}
         onChange={setTabValue}
       />

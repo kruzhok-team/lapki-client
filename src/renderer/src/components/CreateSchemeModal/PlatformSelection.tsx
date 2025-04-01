@@ -4,13 +4,17 @@ import { twMerge } from 'tailwind-merge';
 
 import { getAvailablePlatforms } from '@renderer/lib/data/PlatformLoader';
 
+import { StateMachinesStack, StateMachinesStackItem } from './StateMachinesStack';
+
 interface PlatformSelectionProps {
   selectedPlatformIdx: string | null;
   setSelectedPlatformIdx: (value: string) => void;
   onDoubleClick?: () => void;
+  selectedStateMachines: StateMachinesStackItem[];
 }
 
 export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
+  selectedStateMachines,
   selectedPlatformIdx,
   setSelectedPlatformIdx,
   onDoubleClick,
@@ -26,7 +30,13 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
   );
 
   return (
-    <div className="grid grid-cols-2 gap-4">
+    <div className="grid grid-cols-3 gap-4">
+      {selectedStateMachines.length > 0 ? (
+        <StateMachinesStack selectedStateMachines={selectedStateMachines} />
+      ) : (
+        <label className="opacity-70">Перетащите платформы сюда</label>
+      )}
+
       <div className="max-h-[40vh] w-full overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
         {platforms.map(({ idx, name }) => (
           <div

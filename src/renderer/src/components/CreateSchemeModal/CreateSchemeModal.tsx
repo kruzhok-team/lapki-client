@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 
 import { PlatformSelection } from './PlatformSelection';
+import { StateMachinesStackItem } from './StateMachinesStack';
 import { TemplateSelection } from './TemplateSelection';
 
 import { Modal } from '../UI/Modal/Modal';
@@ -26,6 +27,7 @@ export const CreateSchemeModal: React.FC<CreateSchemeModalProps> = ({
   const [selectedTemplate, setSelectedTemplate] = useState<{ type: string; name: string } | null>(
     null
   );
+  const [selectedStateMachines, setSelectedStateMachines] = useState<StateMachinesStackItem[]>([]);
 
   const submitDisabled = tabValue === 0 ? !selectedPlatformIdx : !selectedTemplate;
 
@@ -73,6 +75,7 @@ export const CreateSchemeModal: React.FC<CreateSchemeModalProps> = ({
 
       <TabPanel value={0} tabValue={tabValue}>
         <PlatformSelection
+          selectedStateMachines={selectedStateMachines}
           selectedPlatformIdx={selectedPlatformIdx}
           setSelectedPlatformIdx={setSelectedPlatformIdx}
           onDoubleClick={submit}

@@ -38,19 +38,19 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
   );
 
   return (
-    <div
-      className="grid grid-cols-3 gap-4"
-      onDrop={() => {
-        if (!draggedPlatform) return;
-        onAddPlatform({ platform: draggedPlatform });
-      }}
-    >
-      {selectedStateMachines.length > 0 ? (
-        <StateMachinesStack selectedStateMachines={selectedStateMachines} />
-      ) : (
-        <label className="opacity-70">Перетащите платформы сюда</label>
-      )}
-
+    <div className="grid grid-cols-3 gap-4">
+      <div
+        onDrop={() => {
+          if (!draggedPlatform) return;
+          onAddPlatform({ platform: draggedPlatform });
+        }}
+      >
+        {selectedStateMachines.length > 0 ? (
+          <StateMachinesStack selectedStateMachines={selectedStateMachines} />
+        ) : (
+          <label className="opacity-70">Перетащите платформы сюда</label>
+        )}
+      </div>
       <div className="max-h-[40vh] w-full overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
         {platforms.map(({ idx, name }) => (
           <div
@@ -69,7 +69,6 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
           </div>
         ))}
       </div>
-
       <div className={twMerge(selectedPlatform?.description ?? 'opacity-70')}>
         {selectedPlatform?.description ||
           'Для начала работы выберите платформу из списка слева. Платформа определяет, для чего создаётся схема и с помощью каких элементов.'}

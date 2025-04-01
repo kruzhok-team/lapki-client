@@ -480,7 +480,7 @@
       "variables": {},
       "singletone": false
     },
-      
+
     "UserSignal": {
       "description": "Пользовательский сигнал",
       "img": "arduino/timer.svg",
@@ -506,11 +506,11 @@
 
     "Iterator": {
       "description": "Итератор",
-      "img": "arduino/timer.svg",
+      "img": "common/iterator.svg",
       "constructorParameters": {},
       "methods": {
         "break_": {
-          "img": "arduino/timer-start.svg",
+          "img": "arduino/timer-stop.svg",
           "description": "Остановить итератор."
         },
         "start": {
@@ -540,7 +540,7 @@
       "singletone": false,
       "variables": {
         "index": {
-          "img": "arduino/difference.svg",
+          "img": "common/iteratorIndex.svg",
           "type": "unsigned long",
           "description": "Текущий индекс итерации"
         }

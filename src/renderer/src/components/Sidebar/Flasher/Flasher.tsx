@@ -656,7 +656,7 @@ export const FlasherTab: React.FC = () => {
         );
         continue;
       }
-      const entry = getEntryById(item.targetId as number);
+      const entry = getEntryById(item.targetId);
       if (!entry) {
         // Если это произошло, то значит что-то пошло не так на клиенте, такой сценарий не должен быть возможным.
         ManagerMS.addLog(`Ошибка! Не удаётся найти запись с ID ${item.targetId} в адресной книге.`);

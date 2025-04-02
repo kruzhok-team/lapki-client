@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="_Слой_2" data-name="Слой 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52.85 37.83">
+  <defs>
+    <style>
+      .cls-1, .cls-2 {
+        fill: #eaf1f7;
+        stroke: #4a4f4d;
+        stroke-width: .96px;
+      }
+
+      .cls-1, .cls-3 {
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .cls-4 {
+        fill: #71bfe6;
+        fill-rule: evenodd;
+      }
+
+      .cls-2 {
+        stroke-miterlimit: 10;
+      }
+
+      .cls-5 {
+        fill: #9bc765;
+      }
+
+      .cls-3 {
+        fill: none;
+        stroke: #fff;
+        stroke-width: 2.27px;
+      }
+    </style>
+  </defs>
+  <g id="_133" data-name="133">
+    <g id="_4" data-name="4">
+      <g>
+        <path class="cls-4" d="m11.88,21.77c.46,0,.83.37.83.83v1.95l-.11,6.62c0,.43.35.78.78.78h24.31c.43,0,.78-.35.78-.78v-1.59h-.43c-.35,0-1.75.12-1.59-.67.04-.12,1.09-1.72,2.29-3.64q2.29-3.45,2.6-3.45t2.6,3.45c1.24,1.92,2.29,3.52,2.33,3.64.12.78-1.24.67-1.59.67h-.39v5.5c0,1.53-1.24,2.74-2.71,2.74H9.5c-1.51,0-2.71-1.21-2.71-2.74v-3.13l.14-9.37c0-.45.38-.82.83-.82h4.13Z"/>
+        <g>
+          <circle class="cls-5" cx="9.71" cy="9.71" r="9.71"/>
+          <polyline class="cls-3" points="5.1 9.91 8.36 13.17 14.68 6.84"/>
+        </g>
+        <g>
+          <g>
+            <path class="cls-2" d="m30.3,4.05h22.07v13.96c0,.43-.35.77-.77.77h-20.53c-.43,0-.77-.35-.77-.77V4.05h0Z"/>
+            <path class="cls-2" d="m31.27.83h20.12c.54,0,.98.44.98.98v3.31h-22.08V1.8c0-.54.44-.98.98-.98Z"/>
+          </g>
+          <line class="cls-1" x1="32.04" y1="8.96" x2="46.22" y2="8.96"/>
+          <line class="cls-1" x1="32.04" y1="12.05" x2="41.33" y2="12.05"/>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>

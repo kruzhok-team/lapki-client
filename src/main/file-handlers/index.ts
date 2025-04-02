@@ -12,6 +12,8 @@ import {
   handleFileSelect,
   handleFileRead,
   handleFileExists,
+  handleCreateFolder,
+  handleSaveBinaryIntoFile,
 } from './handlers';
 
 /**
@@ -31,6 +33,8 @@ const handlers = {
   getMetadata: handleGetFileMetadata,
   selectFile: handleFileSelect,
   readFile: handleFileRead,
+  createFolder: handleCreateFolder,
+  saveBinaryIntoFile: handleSaveBinaryIntoFile,
   existsFile: handleFileExists,
 };
 

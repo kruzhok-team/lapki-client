@@ -830,7 +830,7 @@
             {
               "name": "to",
               "type": "unsigned long",
-              "description": "Конченое значение."
+              "description": "Конечное значение."
             },
             {
               "name": "step",

@@ -101,7 +101,6 @@ export const defaultSettings = {
     interval: 120,
     disabled: false,
   },
-  restoreSession: false,
   recentFiles: [] as RecentFile[],
 };
 

@@ -507,6 +507,18 @@
     "Iterator": {
       "description": "Итератор",
       "img": "common/iterator.svg",
+      "signals": {
+        "onEnd": {
+          "img": "common/onIterationEnd.svg",
+          "description": "Итерации завершены",
+          "checkMethod": "onEnd"
+        },
+        "onIteration": {
+          "img": "common/onIteration.svg",
+          "description": "Очередная итерация",
+          "checkMethod": "onIteration"
+        }
+      },
       "constructorParameters": {},
       "methods": {
         "break_": {

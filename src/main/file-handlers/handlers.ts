@@ -183,16 +183,20 @@ export async function handleFileSave(fileName: string, data: string): HandleFile
 }
 
 /**
- * Асинхронный диалог сохранения файла схемы.
+ * Асинхронный диалог сохранения файла.
  */
-export async function handleFileSaveAs(filename: string, data: string): HandleFileSaveAsReturn {
+export async function handleFileSaveAs(
+  filename: string,
+  data: string,
+  filters?: Electron.FileFilter[]
+): HandleFileSaveAsReturn {
   return new Promise((resolve) => {
     dialog
       .showSaveDialog({
         title: 'Выберите путь к файлу для сохранения',
         defaultPath: filename ? filename : __dirname, // path.join(__dirname, fileName),
         buttonLabel: 'Сохранить',
-        filters: [{ name: 'graphml', extensions: ['graphml'] }],
+        filters: filters ?? [{ name: 'graphml', extensions: ['graphml'] }],
       })
       .then((file) => {
         if (file.canceled) {

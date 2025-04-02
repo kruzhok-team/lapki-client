@@ -3,6 +3,7 @@ import {
   AddressData,
   BinariesQueueItem,
   FlashBacktrackMs,
+  GetFirmwareQueueItem,
   OperationInfo,
   OperationType,
 } from '@renderer/types/FlasherTypes';
@@ -22,8 +23,10 @@ export class ManagerMS {
     ['PUSH_FIRMWARE', 'загрузка прошивки...'],
     ['PULL_FIRMWARE', 'загрузка записанного кода прошивки для проверки...'],
     ['VERIFY_FIRMWARE', 'проверка целостности загруженной прошивки...'],
+    ['GET_FIRMWARE', 'выгрузка прошивки...'],
   ]);
   private static flashQueue: BinariesQueueItem[] = [];
+  private static getFirmwareQueue: GetFirmwareQueueItem[] = [];
   private static flashingAddress: AddressData | undefined;
   private static lastBacktrackLogIndex: number | null;
   private static lastBacktrackStage: string = '';
@@ -67,6 +70,25 @@ export class ManagerMS {
         fileSize: Flasher.binary.size,
       });
     }
+  }
+  static getFirmwareAdd(getFirmwareRequest: GetFirmwareQueueItem) {
+    this.getFirmwareQueue.push(getFirmwareRequest);
+  }
+  static getFirmwareStart() {
+    const request = this.getFirmwareQueue.shift();
+    if (!request) {
+      return false;
+    }
+    this.flashingAddress = request.addressInfo;
+    ManagerMS.flashingAddressLog('Начат процесс выгрузки прошивки...');
+    const meta = request.addressInfo.meta;
+    Flasher.getFirmware(
+      request.dev,
+      request.addressInfo.address,
+      request.blockSize,
+      meta ? meta.RefBlChip : ''
+    );
+    return true;
   }
   private static ping(deviceID: string, address: string) {
     Flasher.send('ms-ping', {
@@ -121,6 +143,7 @@ export class ManagerMS {
     });
   }
   static backtrack(backtrack: FlashBacktrackMs) {
+    // TODO: адаптировать сообщения под выгрузку
     const uploadStage = this.backtrackMap.get(backtrack.UploadStage);
     const status = 'Статус загрузки';
     if (uploadStage === undefined) {
@@ -174,6 +197,7 @@ export class ManagerMS {
   static clearQueue() {
     this.flashQueue = [];
     this.operationQueue = [];
+    this.getFirmwareQueue = [];
   }
   static getFlashingAddress() {
     return this.flashingAddress;
@@ -221,5 +245,18 @@ export class ManagerMS {
     this.addLog(`${this.displayAddressInfo(op.addressInfo)}: ${log}`);
     this.nextOperation();
     return op;
+  }
+
+  static async writeBinary(path: string, binary: Uint8Array) {
+    if (!this.flashingAddress) {
+      throw Error('No flashing address');
+    }
+    const [error] = await window.api.fileHandlers.saveBinaryIntoFile(
+      `${path}/${this.flashingAddress.address}.bin`,
+      binary
+    );
+    if (error) {
+      this.flashingAddressLog(`ошибка выгрузки прошивки: ${error}`);
+    }
   }
 }

@@ -1,3 +1,5 @@
+import { Buffer } from 'buffer';
+
 import { Device } from './Device';
 import { Flasher } from './Flasher';
 
@@ -44,10 +46,10 @@ export class SerialMonitor {
     });
   }
 
-  static sendMessage(deviceID: string, message: string) {
+  static sendMessage(deviceID: string, buffer: Buffer) {
     Flasher.send('serial-send', {
       deviceID: deviceID,
-      msg: message,
+      msg: buffer.toString('base64'),
     });
   }
 
@@ -60,5 +62,18 @@ export class SerialMonitor {
       deviceID: deviceID,
       baud: baud,
     });
+  }
+
+  static toHex(buffer: Buffer): string {
+    const hex = buffer.toString('hex');
+    let spacedHex = '';
+    for (let i = 0; i < hex.length; i += 2) {
+      spacedHex += hex[i] + hex[i + 1] + ' ';
+    }
+    return spacedHex;
+  }
+
+  static toText(buffer: Buffer): string {
+    return buffer.toString('utf-8');
   }
 }

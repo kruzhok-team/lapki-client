@@ -17,6 +17,8 @@ import {
   HandleBinFileOpenReturn,
   HandleFileSelectReturn,
   HandleFileReadReturn,
+  HandleFolderCreateReturn,
+  handleSaveBinaryIntoFileReturn,
 } from './handlersTypes';
 
 /**
@@ -181,16 +183,20 @@ export async function handleFileSave(fileName: string, data: string): HandleFile
 }
 
 /**
- * Асинхронный диалог сохранения файла схемы.
+ * Асинхронный диалог сохранения файла.
  */
-export async function handleFileSaveAs(filename: string, data: string): HandleFileSaveAsReturn {
+export async function handleFileSaveAs(
+  filename: string,
+  data: string,
+  filters?: Electron.FileFilter[]
+): HandleFileSaveAsReturn {
   return new Promise((resolve) => {
     dialog
       .showSaveDialog({
         title: 'Выберите путь к файлу для сохранения',
         defaultPath: filename ? filename : __dirname, // path.join(__dirname, fileName),
         buttonLabel: 'Сохранить',
-        filters: [{ name: 'graphml', extensions: ['graphml'] }],
+        filters: filters ?? [{ name: 'graphml', extensions: ['graphml'] }],
       })
       .then((file) => {
         if (file.canceled) {
@@ -291,4 +297,47 @@ export function handleGetFileMetadata(absolute_path: string) {
  */
 export function handleFileExists(path: string) {
   return fs.existsSync(path);
+}
+
+/**
+ * Асинхронный диалог для создания папки.
+ */
+export function handleCreateFolder(folderName: string): HandleFolderCreateReturn {
+  return new Promise((resolve) => {
+    dialog
+      .showOpenDialog({
+        properties: ['openDirectory'],
+      })
+      .then((dir) => {
+        const pathToDir = `${dir.filePaths[0]}/${folderName}`;
+        if (fs.existsSync(pathToDir)) {
+          resolve([false, '', `Папка ${pathToDir} уже существует.`]);
+          return;
+        }
+        fs.mkdirSync(pathToDir);
+        if (!fs.existsSync(pathToDir)) {
+          resolve([false, '', `Папку ${pathToDir} не удалось создать.`]);
+          return;
+        }
+        resolve([true, pathToDir, '']);
+      })
+      .catch((err) => {
+        resolve([false, '', err.message]);
+      });
+  });
+}
+
+export function handleSaveBinaryIntoFile(
+  filePath: string,
+  binary: Uint8Array
+): handleSaveBinaryIntoFileReturn {
+  return new Promise((resolve) => {
+    fs.appendFile(filePath, binary, function (err) {
+      if (err) {
+        resolve([err.message]);
+      } else {
+        resolve(['']);
+      }
+    });
+  });
 }

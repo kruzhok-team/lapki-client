@@ -109,7 +109,7 @@ export const useFlasherHooks = () => {
     }
     if (deviceMS && deviceMS.deviceID === deviceID) {
       if (msDevicesCnt === 2) {
-        for (const [, dev] of devices) {
+        for (const [, dev] of newMap) {
           if (dev.isMSDevice()) {
             setDeviceMS(dev as MSDevice);
             break;

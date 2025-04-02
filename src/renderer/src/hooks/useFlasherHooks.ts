@@ -24,6 +24,7 @@ import {
   FlashUpdatePort,
   MetaDataID,
   MSAddressAndMeta,
+  MSOperationReport,
   SerialRead,
   UpdateDelete,
 } from '@renderer/types/FlasherTypes';
@@ -52,6 +53,8 @@ export const useFlasherHooks = () => {
     setHasAvrdude,
     flashTableData,
     setFlashTableData,
+    binaryFolder,
+    setBinaryFolder,
   } = useFlasher();
 
   const {
@@ -114,7 +117,7 @@ export const useFlasherHooks = () => {
     }
     if (deviceMS && deviceMS.deviceID === deviceID) {
       if (msDevicesCnt === 2) {
-        for (const [, dev] of devices) {
+        for (const [, dev] of newMap) {
           if (dev.isMSDevice()) {
             setDeviceMS(dev as MSDevice);
             break;
@@ -250,6 +253,18 @@ export const useFlasherHooks = () => {
 
     // TODO: заменить на map
     switch (flasherMessage.type) {
+      case 'binary-data': {
+        if (binaryFolder) {
+          // async функция
+          ManagerMS.writeBinary(binaryFolder, flasherMessage.payload as Uint8Array);
+          Flasher.send('ms-get-firmware-next-block', null);
+        } else {
+          ManagerMS.flashingAddressLog(
+            'Ошибка! Отсутствует папка для сохранения выгруженных прошивок.'
+          );
+        }
+        break;
+      }
       case 'flash-next-block': {
         setIsFlashing(true);
         Flasher.sendBlob();
@@ -338,6 +353,7 @@ export const useFlasherHooks = () => {
         break;
       }
       case 'event-not-supported': {
+        // TODO: прекращение текущих операций, типа прошивки?
         ManagerMS.addLog('Загрузчик получил неизвестный тип сообщения.');
         break;
       }
@@ -741,6 +757,61 @@ export const useFlasherHooks = () => {
             }
             break;
           }
+        }
+        break;
+      }
+      case 'ms-get-firmware-approve': {
+        Flasher.send('ms-get-firmware-next-block', null);
+        break;
+      }
+      case 'ms-get-firmware-finish': {
+        const result = flasherMessage.payload as MSOperationReport;
+        const errorPostfix = result.comment ? ` Текст ошибки ${result.comment}` : '';
+        switch (result.code) {
+          case 0:
+            ManagerMS.flashingAddressEndLog('Выгрузка завершена.');
+            break;
+          case 1:
+            ManagerMS.flashingAddressEndLog(
+              'Порт для загрузки не найден. Возможно плата не подключена.'
+            );
+            break;
+          case 2:
+            ManagerMS.flashingAddressEndLog(
+              'Возникла ошибка при попытке выгрузить прошивку.' + errorPostfix
+            );
+            break;
+          case 3:
+            ManagerMS.flashingAddressEndLog(
+              'Возникла ошибка при попытке выгрузить прошивку.' + errorPostfix
+            );
+            break;
+          case 4:
+            // Этот лог оставлен на всякий случай. Клиент не должен видеть этот лог, так как кнопки для загрузки/выгрузки должны быть заблокированы в этот момент.
+            ManagerMS.flashingAddressEndLog(
+              'Нельзя начать выгрузку, так как в данный момент IDE занято работой с одним из подключённых устройств.'
+            );
+            break;
+          case 5:
+            ManagerMS.flashingAddressEndLog(
+              'Нельзя начать выгрузку, так как в данный момент порт устройства занят другим клиентом'
+            );
+            break;
+          case 6:
+            ManagerMS.flashingAddressEndLog(
+              `Нельзя начать выгрузку, так как указан не верный размер передаваемых блоков с бинарным файлами: ${result.comment}. Сообщите об этой ошибке разработчикам IDE.`
+            );
+            break;
+          case 7:
+            // это ещё не реализовано на сервере
+            ManagerMS.flashingAddressEndLog(
+              `Выгрузка прекращена, так как истекло время ожидания запроса на бинарные данные от клиента. Сообщите об этой ошибке разработчикам IDE.`
+            );
+            break;
+        }
+        Flasher.currentFlashingDevice = undefined;
+        if (!ManagerMS.getFirmwareStart()) {
+          setBinaryFolder(null);
         }
         break;
       }

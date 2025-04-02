@@ -170,6 +170,20 @@ export class Flasher extends ClientWS {
     });
   }
 
+  static getFirmware(dev: Device, address: string, blockSize: number, RefBlChip?: string) {
+    this.currentFlashingDevice = dev;
+    this.send('ms-get-firmware', {
+      deviceID: dev.deviceID,
+      address: address,
+      blockSize: blockSize,
+      RefBlChip: RefBlChip ?? '',
+    });
+  }
+
+  static endGetFirmware() {
+    this.currentFlashingDevice = undefined;
+  }
+
   // получение адреса в виде строки
   static makeAddress(host: string, port: number): string {
     return `${super.makeAddress(host, port)}/flasher`;
@@ -200,9 +214,20 @@ export class Flasher extends ClientWS {
   }
 
   // обработка входящих через вебсоект сообщений
-  static messageHandler(msg: Websocket.MessageEvent) {
-    const flasherMessage = JSON.parse(msg.data as string) as FlasherMessage;
-    this.setFlasherMessage(flasherMessage);
+  static async messageHandler(msg: Websocket.MessageEvent) {
+    if (typeof msg.data === 'string') {
+      const flasherMessage = JSON.parse(msg.data as string) as FlasherMessage;
+      this.setFlasherMessage(flasherMessage);
+    } else {
+      // бинарные данные
+      let bin: Uint8Array;
+      if (msg.data instanceof Blob) {
+        bin = new Uint8Array(await msg.data.arrayBuffer());
+      } else {
+        bin = new Uint8Array(msg.data as ArrayBuffer);
+      }
+      this.setFlasherMessage({ type: 'binary-data', payload: bin });
+    }
   }
 
   static send(type: FlasherType, payload: FlasherPayload) {

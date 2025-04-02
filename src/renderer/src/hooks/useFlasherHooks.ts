@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
 
+import { Buffer } from 'buffer';
+
 import { ArduinoDevice, Device, MSDevice } from '@renderer/components/Modules/Device';
 import { Flasher } from '@renderer/components/Modules/Flasher';
 import { ManagerMS } from '@renderer/components/Modules/ManagerMS';
@@ -34,6 +36,8 @@ export const useFlasherHooks = () => {
   const basename = modelController.model.useData('', 'basename');
 
   const [flasherSetting, setFlasherSetting] = useSettings('flasher');
+  const [monitorSetting] = useSettings('serialmonitor');
+
   const {
     flasherMessage,
     setFlasherMessage,
@@ -66,6 +70,7 @@ export const useFlasherHooks = () => {
     device: serialMonitorDevice,
     setDevice: setSerialMonitorDevice,
     addDeviceMessage: addSerialDeviceMessage,
+    addBytesFromDevice: addBytesFromSerial,
     setConnectionStatus: setSerialConnectionStatus,
     setLog: setSerialLog,
   } = useSerialMonitor();
@@ -498,7 +503,16 @@ export const useFlasherHooks = () => {
       }
       case 'serial-device-read': {
         const serialRead = flasherMessage.payload as SerialRead;
-        SerialMonitor.addDeviceMessage(serialRead.msg);
+        const buffer = Buffer.from(serialRead.msg, 'base64');
+        addBytesFromSerial(buffer);
+        switch (monitorSetting?.textMode) {
+          case 'text':
+            addSerialDeviceMessage(SerialMonitor.toText(buffer));
+            break;
+          case 'hex':
+            addSerialDeviceMessage(SerialMonitor.toHex(buffer));
+            break;
+        }
         break;
       }
       case 'flash-open-serial-monitor':

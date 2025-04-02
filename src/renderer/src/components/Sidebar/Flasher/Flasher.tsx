@@ -68,6 +68,8 @@ export const FlasherTab: React.FC = () => {
     setFlashTableData,
     hasAvrdude,
     errorMessage,
+    binaryFolder,
+    setBinaryFolder,
   } = useFlasher();
 
   const [managerMSSetting, setManagerMSSetting] = useSettings('managerMS');
@@ -97,6 +99,7 @@ export const FlasherTab: React.FC = () => {
   const noConnection = connectionStatus !== ClientStatus.CONNECTED;
   const commonOperationDisabled =
     noConnection ||
+    // TODO: вынести выбранные платы в отдельную константу?
     flashTableData.find((item) => {
       return item.isSelected;
     }) === undefined;
@@ -659,6 +662,52 @@ export const FlasherTab: React.FC = () => {
     }
   };
 
+  const handleGetFirmware = async () => {
+    const [isCreated, directory, error] = await window.api.fileHandlers.createFolder(
+      `прошивки-${Date.now()}`
+    );
+    // TODO: выскакивает ошибка, если отказаться от выбора папки
+    if (error) {
+      ManagerMS.addLog(`Ошибка: ${error}`);
+      return;
+    }
+    if (!isCreated) {
+      return;
+    }
+    for (const item of flashTableData) {
+      if (!item.isSelected) continue;
+      if (item.targetType !== FirmwareTargetType.tjc_ms) {
+        const dev = devices.get(item.targetId as string);
+        ManagerMS.addLog(
+          `${
+            dev ? dev.displayName() : 'Неизвестное устройство'
+          }: операция выгрузки прошивки не поддерживается.`
+        );
+        continue;
+      }
+      const entry = getEntryById(item.targetId as number);
+      if (!entry) {
+        // Если это произошло, то значит что-то пошло не так на клиенте, такой сценарий не должен быть возможным.
+        ManagerMS.addLog(`Ошибка! Не удаётся найти запись с ID ${item.targetId} в адресной книге.`);
+        continue;
+      }
+      if (!deviceMs) {
+        ManagerMS.addLog(
+          `${ManagerMS.displayAddressInfo(entry)}: подключите центральную плату МС-ТЮК.`
+        );
+        continue;
+      }
+      ManagerMS.getFirmwareAdd({
+        addressInfo: entry,
+        blockSize: 1024,
+        dev: deviceMs,
+      });
+    }
+    if (ManagerMS.getFirmwareStart()) {
+      setBinaryFolder(directory);
+    }
+  };
+
   if (!managerMSSetting) {
     return null;
   }
@@ -773,6 +822,13 @@ export const FlasherTab: React.FC = () => {
           disabled={flashResult.size === 0}
         >
           Результаты прошивки
+        </button>
+        <button
+          className="btn-primary mr-4"
+          onClick={handleGetFirmware}
+          disabled={binaryFolder !== null || commonOperationDisabled}
+        >
+          Выгрузка прошивки...
         </button>
         {avrdudeCheck()}
       </div>

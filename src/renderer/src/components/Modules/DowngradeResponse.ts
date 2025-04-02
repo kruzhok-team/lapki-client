@@ -20,7 +20,11 @@ import {
 } from '@renderer/types/diagram';
 
 function downgradeArgs(argList: ArgList) {
-  return Object.fromEntries(Object.keys(argList).map((id) => [id, argList[id].value.toString()]));
+  // ИНВАРИАНТ: мы работаем со схемами Берлоги, где нет параметров по умолчанию.
+  // Поэтому при undefined мы кладём сюда пустую строку.
+  return Object.fromEntries(
+    Object.keys(argList).map((id) => [id, argList[id].value?.toString() ?? ''])
+  );
 }
 
 function downgradeActions(actions: string | Action[]): CompilerAction[] {

@@ -156,17 +156,19 @@ export const useFlasherHooks = () => {
     setIsFlashing(false);
     let flashResultKey: string = '';
     let addressInfo: AddressData | undefined = undefined;
-    if (Flasher.currentFlashingDevice instanceof ArduinoDevice) {
-      flashResultKey = Flasher.currentFlashingDevice.displayName();
-      // TODO: унификация с flashingAddressEndLog?
-      ManagerMS.addLog(`${flashResultKey}: ${result}`);
-    } else if (Flasher.currentFlashingDevice instanceof MSDevice) {
-      const msDev = Flasher.currentFlashingDevice as MSDevice;
-      flashResultKey = `${ManagerMS.getFlashingAddress()?.name} - ${msDev.displayName()}`;
-      addressInfo = ManagerMS.getFlashingAddress();
-      ManagerMS.flashingAddressEndLog(result);
-    } else {
+    if (!Flasher.currentFlashingDevice) {
       flashResultKey = 'Неизвестное устройство';
+    } else {
+      if (Flasher.currentFlashingDevice.isMSDevice()) {
+        const msDev = Flasher.currentFlashingDevice as MSDevice;
+        flashResultKey = `${ManagerMS.getFlashingAddress()?.name} - ${msDev.displayName()}`;
+        addressInfo = ManagerMS.getFlashingAddress();
+        ManagerMS.flashingAddressEndLog(result);
+      } else {
+        flashResultKey = Flasher.currentFlashingDevice.displayName();
+        // TODO: унификация с flashingAddressEndLog?
+        ManagerMS.addLog(`${flashResultKey}: ${result}`);
+      }
     }
     const flashReport = new FlashResult(
       Flasher.currentFlashingDevice,
@@ -288,6 +290,11 @@ export const useFlasherHooks = () => {
         addDevice(device);
         break;
       }
+      case 'blg-mb-device': {
+        const device = new Device(flasherMessage.payload as Device, 'blg-mb');
+        addDevice(device);
+        break;
+      }
       case 'device-update-delete': {
         // TODO: нужно что-то сделать, если устройство находится в таблице прошивок
         deleteDevice((flasherMessage.payload as UpdateDelete).deviceID);
@@ -342,6 +349,20 @@ export const useFlasherHooks = () => {
       case 'flash-not-started': {
         flashingEnd(
           'Сервер начал получать файл с прошивкой, но процесс загрузки не был инициализирован.',
+          undefined
+        );
+        break;
+      }
+      case 'incorrect-file-size': {
+        flashingEnd(
+          'Ошибка! Указанный размер файла меньше 1 байта. Прошивку начать невозможно.',
+          undefined
+        );
+        break;
+      }
+      case 'file-write-error': {
+        flashingEnd(
+          'Ошибка! Возникла ошибка при записи блока с бинарными данным. Прошивка прекращена.',
           undefined
         );
         break;

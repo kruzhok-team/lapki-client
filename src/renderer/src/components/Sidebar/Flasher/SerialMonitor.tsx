@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import { Buffer } from 'buffer';
 
@@ -110,6 +110,16 @@ export const SerialMonitorTab: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [device]);
+
+  const serialDevices = useMemo(() => {
+    const serial = new Map() as typeof devices;
+    devices.forEach((dev, id) => {
+      if (dev.getSerialPort()) {
+        serial.set(id, dev);
+      }
+    });
+    return serial;
+  }, [devices]);
 
   useEffect(() => {
     if (!monitorSetting?.textMode) return;
@@ -409,7 +419,7 @@ export const SerialMonitorTab: React.FC = () => {
         onClose={closeDeviceList}
         onSubmit={handleAddDevice}
         submitLabel="Выбрать"
-        devices={devices}
+        devices={serialDevices}
       />
     </section>
   );

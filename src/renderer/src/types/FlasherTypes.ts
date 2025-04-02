@@ -21,6 +21,7 @@ export type FlashUpdatePort = {
 export type FlasherType =
   | 'get-list'
   | 'device'
+  | 'blg-mb-device'
   | 'device-update-delete'
   | 'device-update-port'
   | 'empty-list'
@@ -63,6 +64,8 @@ export type FlasherType =
   | 'ms-meta-data-error'
   | 'ms-get-address-and-meta'
   | 'ms-address-and-meta'
+  | 'file-write-error'
+  | 'incorrect-file-size'
   | 'ms-get-firmware'
   | 'ms-get-firmware-approve'
   | 'ms-get-firmware-next-block'
@@ -224,7 +227,7 @@ export type MetaDataID = {
 
 export enum FirmwareTargetType {
   tjc_ms,
-  arduino,
+  dev,
 }
 
 // выбранные для прошивки МС-ТЮК платы
@@ -240,6 +243,7 @@ export type FlashTableItem = {
   targetType: FirmwareTargetType;
   source?: string; // id машины состояний или путь к файлу
   isFile: boolean;
+  extensions: string[]; // FIXME: расширения для файлов, нужно будет придумать более надёжную систему, например брать расширения из платформы
 };
 
 export type BinariesQueueItem = {

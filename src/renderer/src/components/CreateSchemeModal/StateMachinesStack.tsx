@@ -1,10 +1,10 @@
 import { useLayoutEffect, useRef } from 'react';
 
-import { PlatformInfo } from '@renderer/types/platform';
+import { Platform } from '@renderer/types/platform';
 
 export type StateMachinesStackItem = {
   name?: string;
-  platform: PlatformInfo;
+  platform: Platform;
 };
 interface StateMachinesStackProps {
   selectedStateMachines: StateMachinesStackItem[];
@@ -25,8 +25,8 @@ export const StateMachinesStack: React.FC<StateMachinesStackProps> = ({
       {selectedStateMachines.map((sm) => {
         return (
           <div className="flex cursor-pointer items-center gap-2 p-2 transition-colors duration-75">{`${
-            sm.name ?? ''
-          } ${sm.platform.name}`}</div>
+            sm.name ?? sm.platform.nameTag ?? 'noname'
+          } (${sm.platform.name})`}</div>
         );
       })}
     </div>

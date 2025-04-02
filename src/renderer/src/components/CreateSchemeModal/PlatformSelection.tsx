@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
-import { getAvailablePlatforms } from '@renderer/lib/data/PlatformLoader';
+import { getAvailablePlatforms, getPlatform } from '@renderer/lib/data/PlatformLoader';
 
 import { StateMachinesStack, StateMachinesStackItem } from './StateMachinesStack';
 
@@ -32,17 +32,15 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
     () => platforms.find(({ idx }) => selectedPlatformIdx === idx),
     [platforms, selectedPlatformIdx]
   );
-  const draggedPlatform = useMemo(
-    () => platforms.find(({ idx }) => draggedPlatformIdx === idx),
-    [platforms, draggedPlatformIdx]
-  );
 
   return (
     <div className="grid grid-cols-3 gap-4">
       <div
         onDrop={() => {
-          if (!draggedPlatform) return;
-          onAddPlatform({ platform: draggedPlatform });
+          if (!draggedPlatformIdx) return;
+          const platform = getPlatform(draggedPlatformIdx);
+          if (!platform) return;
+          onAddPlatform({ platform: platform });
         }}
       >
         <h2>Выбранные платформы</h2>

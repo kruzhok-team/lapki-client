@@ -8,9 +8,13 @@ export type StateMachinesStackItem = {
 };
 interface StateMachinesStackProps {
   selectedStateMachines: StateMachinesStackItem[];
+  onDragStart: (index: number) => void;
+  onDragEnd: () => void;
 }
 export const StateMachinesStack: React.FC<StateMachinesStackProps> = ({
   selectedStateMachines,
+  onDragStart,
+  onDragEnd,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
@@ -22,11 +26,14 @@ export const StateMachinesStack: React.FC<StateMachinesStackProps> = ({
       className="max-h-[40vh] w-full overflow-y-auto scroll-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
       ref={containerRef}
     >
-      {selectedStateMachines.map((sm) => {
+      {selectedStateMachines.map((sm, index) => {
         return (
-          <div className="flex cursor-pointer items-center gap-2 p-2 transition-colors duration-75">{`${
-            sm.name ?? sm.platform.nameTag ?? 'noname'
-          } (${sm.platform.name})`}</div>
+          <div
+            className="flex cursor-pointer items-center gap-2 p-2 transition-colors duration-75"
+            draggable
+            onDragStart={() => onDragStart(index)}
+            onDragEnd={() => onDragEnd()}
+          >{`${sm.name ?? sm.platform.nameTag ?? 'noname'} (${sm.platform.name})`}</div>
         );
       })}
     </div>

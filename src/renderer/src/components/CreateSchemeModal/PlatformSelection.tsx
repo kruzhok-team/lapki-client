@@ -12,6 +12,7 @@ interface PlatformSelectionProps {
   onDoubleClick?: () => void;
   selectedStateMachines: StateMachinesStackItem[];
   onAddPlatform: (stateMachine: StateMachinesStackItem) => void;
+  onDeletePlatform: (index: number) => void;
 }
 
 export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
@@ -20,6 +21,7 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
   setSelectedPlatformIdx,
   onDoubleClick,
   onAddPlatform,
+  onDeletePlatform,
 }) => {
   const handleClick = (idx: string) => () => setSelectedPlatformIdx(idx);
 
@@ -27,32 +29,46 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
 
   const [draggedPlatformIdx, setDraggedPlatformIdx] = useState<string | null>(null);
 
+  const [draggedStateMachineIndex, setDraggedStateMachineIndex] = useState<number | null>(null);
+
   const platforms = getAvailablePlatforms();
   const selectedPlatform = useMemo(
     () => platforms.find(({ idx }) => selectedPlatformIdx === idx),
     [platforms, selectedPlatformIdx]
   );
 
+  const handleDropPlatformOnStateMachines = () => {
+    if (draggedPlatformIdx === null) return;
+    const platform = getPlatform(draggedPlatformIdx);
+    if (platform === undefined) return;
+    onAddPlatform({ platform: platform });
+  };
+
+  const handleDropStateMachineOnPlatforms = () => {
+    if (draggedStateMachineIndex === null) return;
+    onDeletePlatform(draggedStateMachineIndex);
+  };
+
   return (
     <div className="grid grid-cols-3 gap-4">
-      <div
-        onDrop={() => {
-          if (!draggedPlatformIdx) return;
-          const platform = getPlatform(draggedPlatformIdx);
-          if (!platform) return;
-          onAddPlatform({ platform: platform });
-        }}
-      >
+      <div onDrop={() => handleDropPlatformOnStateMachines()}>
         <h2>Выбранные платформы</h2>
         {selectedStateMachines.length > 0 ? (
-          <StateMachinesStack selectedStateMachines={selectedStateMachines} />
+          <StateMachinesStack
+            selectedStateMachines={selectedStateMachines}
+            onDragStart={(index) => setDraggedStateMachineIndex(index)}
+            onDragEnd={() => setDraggedStateMachineIndex(null)}
+          />
         ) : (
           <label className="opacity-70">Перетащите платформы сюда</label>
         )}
       </div>
       <div>
         Список платформ
-        <div className="max-h-[40vh] w-full overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
+        <div
+          className="max-h-[40vh] w-full overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
+          onDrop={() => handleDropStateMachineOnPlatforms()}
+        >
           {platforms.map(({ idx, name }) => (
             <div
               key={idx}

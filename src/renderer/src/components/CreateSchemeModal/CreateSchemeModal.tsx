@@ -61,6 +61,10 @@ export const CreateSchemeModal: React.FC<CreateSchemeModalProps> = ({
     setSelectedStateMachines([...selectedStateMachines, stateMachine]);
   };
 
+  const handleDeleteStateMachine = (index: number) => {
+    setSelectedStateMachines(selectedStateMachines.toSpliced(index, 1));
+  };
+
   return (
     <Modal
       {...props}
@@ -84,6 +88,7 @@ export const CreateSchemeModal: React.FC<CreateSchemeModalProps> = ({
           setSelectedPlatformIdx={setSelectedPlatformIdx}
           onDoubleClick={submit}
           onAddPlatform={handleAddStateMachine}
+          onDeletePlatform={handleDeleteStateMachine}
         />
       </TabPanel>
 

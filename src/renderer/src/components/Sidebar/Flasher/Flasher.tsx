@@ -6,6 +6,7 @@ import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 're
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
+import { ReactComponent as QuestionMark } from '@renderer/assets/icons/question-mark.svg';
 import { AvrdudeGuideModal } from '@renderer/components/AvrdudeGuide';
 import { ErrorModal, ErrorModalData } from '@renderer/components/ErrorModal';
 import { Device, MSDevice } from '@renderer/components/Modules/Device';
@@ -327,13 +328,16 @@ export const FlasherTab: React.FC = () => {
             break;
           }
           devName = dev.displayName();
+          if (managerMSSetting?.verification) {
+            ManagerMS.addLog(
+              `${devName}: верификация прошивки для данного устройства не поддерживается.`
+            );
+          }
           break;
         }
         case FirmwareTargetType.tjc_ms: {
           if (!addressBookSetting) {
-            ManagerMS.addLog(
-              `${ManagerMS.displayDeviceInfo}: Ошибка! Адресная книга не загрузилась!`
-            );
+            ManagerMS.addLog(`Ошибка! Адресная книга не загрузилась!`);
             continue;
           }
           address = getEntryById(item.targetId);
@@ -688,7 +692,7 @@ export const FlasherTab: React.FC = () => {
         >
           Прошить!
         </button>
-        <div className="mr-4 flex w-40 items-center justify-between">
+        <div className="mr-4 flex items-center justify-between gap-1">
           <Switch
             checked={managerMSSetting.verification}
             onCheckedChange={() =>
@@ -699,6 +703,17 @@ export const FlasherTab: React.FC = () => {
             }
           />
           Верификация
+          <WithHint
+            hint={
+              'Дополнительная проверка целостности загруженной прошивки. Увеличивает общее время загрузки.'
+            }
+          >
+            {(hintProps) => (
+              <div className="shrink-0" {...hintProps}>
+                <QuestionMark className="h-5 w-5" />
+              </div>
+            )}
+          </WithHint>
         </div>
         <button
           className="btn-primary mr-4"

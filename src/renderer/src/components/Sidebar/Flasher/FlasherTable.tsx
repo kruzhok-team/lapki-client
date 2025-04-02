@@ -27,6 +27,9 @@ const selectFileSubColumn = 'w-[2vw]';
 // высота клеток
 const cellHeight = 'h-[38px]';
 
+// список плат МС-ТЮК, которые следует строго проверять на соответствие версий.
+const strictVersionCheck = ['mtrx'];
+
 export const FlasherTable: React.FC<FlasherTableProps> = ({
   getEntryById,
   addressEnrtyEdit,
@@ -56,10 +59,16 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
     return stateMachineOption(stateMachinesId[source], source);
   };
 
-  // const platformWithoutVersion = (platform: string | undefined) => {
-  //   if (!platform) return '';
-  //   return platform.slice(0, platform.lastIndexOf('-'));
-  // };
+  const platformWithoutVersion = (platform: string | undefined) => {
+    if (!platform) return '';
+    return platform.slice(0, platform.lastIndexOf('-'));
+  };
+
+  const isStrictVersionCheck = (platform: string) => {
+    return strictVersionCheck.some((platformType) => {
+      return platform.includes(`-${platformType}-`);
+    });
+  };
 
   const stateMachineOptions = new Map<string, SelectOption[]>();
   const allAddressOptions: SelectOption[] = [];
@@ -70,7 +79,11 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
     if (!smId) return;
     let key: string = '';
     if (sm.platform.startsWith('tjc')) {
-      key = sm.platform;
+      if (isStrictVersionCheck(sm.platform)) {
+        key = sm.platform;
+      } else {
+        key = platformWithoutVersion(sm.platform);
+      }
     } else {
       key = sm.platform;
     }
@@ -244,7 +257,10 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
       }
       displayName = addressData.name ? addressData.name : 'Не указано';
       displayType = addressData.type ? addressData.type : 'Неизвестно';
-      typeId = addressData.type ? addressData.type : undefined;
+      typeId = addressData.type ?? undefined;
+      if (typeId && !isStrictVersionCheck(typeId)) {
+        typeId = platformWithoutVersion(typeId);
+      }
       displayAddress = addressData.address;
     } else if (tableItem.targetType === FirmwareTargetType.arduino) {
       const dev = devices.get(tableItem.targetId as string);

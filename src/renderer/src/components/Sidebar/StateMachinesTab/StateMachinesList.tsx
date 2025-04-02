@@ -80,7 +80,7 @@ export const StateMachinesList: React.FC = () => {
                     key={id}
                     name={sm.name || id}
                     isSelected={id === selectedSm}
-                    icon={<StateMachineIcon className="fill-border-contrast" />}
+                    icon={<StateMachineIcon className="size-8 fill-border-contrast" />}
                     onSelect={() => setSmSelected(id)}
                     onEdit={() => onCallContextMenu(id, sm)}
                     onDelete={() => undefined}

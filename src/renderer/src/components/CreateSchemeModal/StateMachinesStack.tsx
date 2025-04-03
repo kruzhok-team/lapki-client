@@ -1,5 +1,7 @@
 import { useLayoutEffect, useRef } from 'react';
 
+import { twMerge } from 'tailwind-merge';
+
 import { Platform } from '@renderer/types/platform';
 
 export type StateMachinesStackItem = {
@@ -10,11 +12,15 @@ interface StateMachinesStackProps {
   selectedStateMachines: StateMachinesStackItem[];
   onDragStart: (index: number) => void;
   onDragEnd: () => void;
+  isSelected: (index: number) => boolean;
+  onSelect: (index: number) => void;
 }
 export const StateMachinesStack: React.FC<StateMachinesStackProps> = ({
   selectedStateMachines,
   onDragStart,
   onDragEnd,
+  isSelected,
+  onSelect,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
@@ -30,10 +36,14 @@ export const StateMachinesStack: React.FC<StateMachinesStackProps> = ({
         return (
           <div
             key={sm.id}
-            className="cursor-pointer flex-col items-center gap-2 p-2 transition-colors duration-75"
+            className={twMerge(
+              'cursor-pointer  select-none flex-col items-center gap-2 p-2 transition-colors duration-75',
+              isSelected(index) && 'bg-bg-active'
+            )}
             draggable
             onDragStart={() => onDragStart(index)}
             onDragEnd={() => onDragEnd()}
+            onClick={() => onSelect(index)}
           >
             <div className="text-base">{sm.id}</div>
             <div className="text-sm">

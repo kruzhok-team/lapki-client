@@ -30,6 +30,7 @@ export const CreateSchemeModal: React.FC<CreateSchemeModalProps> = ({
   const [selectedTemplate, setSelectedTemplate] = useState<{ type: string; name: string } | null>(
     null
   );
+  const [selectedStateMachineIndex, setSelectedStateMachineIndex] = useState<number | null>(null);
   const [selectedStateMachines, setSelectedStateMachines] = useState<StateMachinesStackItem[]>([]);
 
   const submitDisabled = tabValue === 0 ? selectedStateMachines.length === 0 : !selectedTemplate;
@@ -59,6 +60,7 @@ export const CreateSchemeModal: React.FC<CreateSchemeModalProps> = ({
     onClose();
     setSelectedPlatformIdx(null);
     setSelectedTemplate(null);
+    setSelectedStateMachineIndex(null);
     setSelectedStateMachines([]);
   };
 
@@ -95,6 +97,8 @@ export const CreateSchemeModal: React.FC<CreateSchemeModalProps> = ({
         <PlatformSelection
           selectedStateMachines={selectedStateMachines}
           selectedPlatformIdx={selectedPlatformIdx}
+          selectedStateMachineIndex={selectedStateMachineIndex}
+          setSelectedStateMachineIndex={setSelectedStateMachineIndex}
           setSelectedPlatformIdx={setSelectedPlatformIdx}
           onAddPlatform={handleAddPlatform}
           onDeletePlatform={handleDeleteStateMachine}

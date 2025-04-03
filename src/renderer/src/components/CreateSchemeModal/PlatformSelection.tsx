@@ -9,7 +9,9 @@ import { StateMachinesStack, StateMachinesStackItem } from './StateMachinesStack
 
 interface PlatformSelectionProps {
   selectedPlatformIdx: string | null;
-  setSelectedPlatformIdx: (value: string) => void;
+  setSelectedPlatformIdx: (value: string | null) => void;
+  selectedStateMachineIndex: number | null;
+  setSelectedStateMachineIndex: (value: number | null) => void;
   selectedStateMachines: StateMachinesStackItem[];
   onAddPlatform: (platform: Platform) => void;
   onDeletePlatform: (index: number) => void;
@@ -19,22 +21,38 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
   selectedStateMachines,
   selectedPlatformIdx,
   setSelectedPlatformIdx,
+  selectedStateMachineIndex,
+  setSelectedStateMachineIndex,
   onAddPlatform,
   onDeletePlatform,
 }) => {
-  const handleClickPlatform = (idx: string) => () => setSelectedPlatformIdx(idx);
+  const handleClickPlatform = (idx: string) => {
+    setSelectedPlatformIdx(idx);
+    setSelectedStateMachineIndex(null);
+  };
+  const handleClickStateMachine = (index: number) => {
+    setSelectedPlatformIdx(null);
+    setSelectedStateMachineIndex(index);
+  };
 
   const isPlatformSelected = (idx: string) => selectedPlatformIdx === idx;
+
+  const isStateMachineSelected = (index: number) => selectedStateMachineIndex === index;
 
   const [draggedPlatformIdx, setDraggedPlatformIdx] = useState<string | null>(null);
 
   const [draggedStateMachineIndex, setDraggedStateMachineIndex] = useState<number | null>(null);
 
   const platforms = getAvailablePlatforms();
-  const selectedPlatform = useMemo(
-    () => platforms.find(({ idx }) => selectedPlatformIdx === idx),
-    [platforms, selectedPlatformIdx]
-  );
+  const selectedPlatform = useMemo(() => {
+    if (selectedPlatformIdx !== null) {
+      return getPlatform(selectedPlatformIdx);
+    }
+    if (selectedStateMachineIndex !== null) {
+      return selectedStateMachines[selectedStateMachineIndex].platform;
+    }
+    return null;
+  }, [selectedPlatformIdx, selectedStateMachineIndex]);
 
   const handleAddPlatform = (platformIdx: string) => {
     const platform = getPlatform(platformIdx);
@@ -49,6 +67,9 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
 
   const handleDropStateMachineOnPlatforms = () => {
     if (draggedStateMachineIndex === null) return;
+    if (selectedStateMachineIndex === draggedStateMachineIndex) {
+      setSelectedStateMachineIndex(null);
+    }
     onDeletePlatform(draggedStateMachineIndex);
   };
 
@@ -63,6 +84,8 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
             selectedStateMachines={selectedStateMachines}
             onDragStart={(index) => setDraggedStateMachineIndex(index)}
             onDragEnd={() => setDraggedStateMachineIndex(null)}
+            isSelected={isStateMachineSelected}
+            onSelect={handleClickStateMachine}
           />
         ) : (
           <label className="opacity-70">
@@ -86,7 +109,7 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
                 isPlatformSelected(idx) && 'bg-bg-active'
               )}
               onDoubleClick={() => handleAddPlatform(idx)}
-              onClick={handleClickPlatform(idx)}
+              onClick={() => handleClickPlatform(idx)}
               draggable
               onDragStart={() => setDraggedPlatformIdx(idx)}
               onDragEnd={() => setDraggedPlatformIdx(null)}

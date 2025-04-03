@@ -121,7 +121,7 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
       </div>
       <div className="col-span-2">
         <h2>
-          <b>Описание платформы</b>
+          <b>{selectedPlatform?.name ?? 'Подсказка'}</b>
         </h2>
         <div
           className={twMerge(
@@ -130,7 +130,7 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
           )}
         >
           {selectedPlatform?.description ||
-            'Для начала работы выберите платформу из списка слева. Платформа определяет, для чего создаётся схема и с помощью каких элементов.'}
+            'Выберите платформу из одного из списков сверху, чтобы посмотреть описание платформы.'}
         </div>
       </div>
     </div>

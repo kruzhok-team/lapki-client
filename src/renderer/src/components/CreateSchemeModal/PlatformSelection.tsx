@@ -89,9 +89,9 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
               onSelect={handleClickStateMachine}
             />
           ) : (
-            <label className="opacity-70">
+            <div className="ml-1 opacity-70">
               Добавьте платформы сюда двойным кликом левой кнопкой мыши, либо перетащив их сюда
-            </label>
+            </div>
           )}
         </div>
       </div>

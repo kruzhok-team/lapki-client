@@ -79,7 +79,7 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
         <h2>
           <b>Выбрано</b>
         </h2>
-        <div className="h-[30vh] bg-bg-secondary">
+        <div className="h-[30vh] rounded-md bg-bg-secondary">
           {selectedStateMachines.length > 0 ? (
             <StateMachinesStack
               selectedStateMachines={selectedStateMachines}
@@ -100,7 +100,7 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
           <b>Платформы</b>
         </h2>
         <div
-          className="max-h-[30vh] w-full overflow-y-auto bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
+          className="max-h-[30vh] w-full overflow-y-auto rounded-md bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
           onDrop={() => handleDropStateMachineOnPlatforms()}
         >
           {platforms.map(({ idx, name }) => (

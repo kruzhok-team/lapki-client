@@ -29,7 +29,7 @@ export const StateMachinesStack: React.FC<StateMachinesStackProps> = ({
   }, [selectedStateMachines]);
   return (
     <div
-      className="max-h-[40vh] w-full overflow-y-auto scroll-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
+      className="max-h-[30vh] w-full overflow-y-auto scroll-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
       ref={containerRef}
     >
       {selectedStateMachines.map((sm, index) => {

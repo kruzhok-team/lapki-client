@@ -22,9 +22,9 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
   onAddPlatform,
   onDeletePlatform,
 }) => {
-  const handleClick = (idx: string) => () => setSelectedPlatformIdx(idx);
+  const handleClickPlatform = (idx: string) => () => setSelectedPlatformIdx(idx);
 
-  const isSelected = (idx: string) => selectedPlatformIdx === idx;
+  const isPlatformSelected = (idx: string) => selectedPlatformIdx === idx;
 
   const [draggedPlatformIdx, setDraggedPlatformIdx] = useState<string | null>(null);
 
@@ -83,10 +83,10 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
               key={idx}
               className={twMerge(
                 'flex cursor-pointer select-none items-center gap-2 p-2 transition-colors duration-75',
-                isSelected(idx) && 'bg-bg-active'
+                isPlatformSelected(idx) && 'bg-bg-active'
               )}
               onDoubleClick={() => handleAddPlatform(idx)}
-              onClick={handleClick(idx)}
+              onClick={handleClickPlatform(idx)}
               draggable
               onDragStart={() => setDraggedPlatformIdx(idx)}
               onDragEnd={() => setDraggedPlatformIdx(null)}

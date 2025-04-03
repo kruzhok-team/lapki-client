@@ -186,7 +186,7 @@ export const MainContainer: React.FC = () => {
       <ErrorModal {...errorModalProps} />
       <CreateSchemeModal
         isOpen={isCreateSchemeModalOpen}
-        onCreate={(stateMachines) => console.log(stateMachines)} //TODO
+        onCreate={performNewFile}
         onClose={closeCreateSchemeModal}
         onCreateFromTemplate={handleOpenFromTemplate}
       />

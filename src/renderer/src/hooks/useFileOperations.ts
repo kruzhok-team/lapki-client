@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, Dispatch } from 'react';
 import { toast } from 'sonner';
 
 import { SaveModalData } from '@renderer/components';
+import { StateMachinesStackItem } from '@renderer/components/CreateSchemeModal/StateMachinesStack';
 import { Compiler } from '@renderer/components/Modules/Compiler';
 import { importGraphml } from '@renderer/lib/data/GraphmlParser';
 import { useModelContext } from '@renderer/store/ModelContext';
@@ -114,9 +115,9 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
     }
   };
 
-  const performNewFile = (idx: string) => {
+  const performNewFile = (stateMachines: StateMachinesStackItem[]) => {
     Compiler.setCompilerData(undefined);
-    modelController.files.newFile(idx);
+    modelController.files.newFile(stateMachines);
     clearTabs();
     openTabs();
   };

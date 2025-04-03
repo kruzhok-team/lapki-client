@@ -65,7 +65,9 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
             onDragEnd={() => setDraggedStateMachineIndex(null)}
           />
         ) : (
-          <label className="opacity-70">Перетащите платформы сюда</label>
+          <label className="opacity-70">
+            Добавьте платформы сюда двойным кликом левой кнопкой мыши, либо перетащив их сюда
+          </label>
         )}
       </div>
       <div>

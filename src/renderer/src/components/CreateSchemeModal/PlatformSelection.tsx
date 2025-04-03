@@ -98,7 +98,7 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
       </div>
       <div>
         <h2>
-          <b>Описание платформ</b>
+          <b>Описание платформы</b>
         </h2>
         <div className={twMerge(selectedPlatform?.description ?? 'opacity-70')}>
           {selectedPlatform?.description ||

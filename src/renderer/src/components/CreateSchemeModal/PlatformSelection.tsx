@@ -104,19 +104,22 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
           onDrop={() => handleDropStateMachineOnPlatforms()}
         >
           {platforms.map(({ idx, name }) => (
-            <div
-              key={idx}
-              className={twMerge(
-                'flex cursor-pointer select-none items-center gap-2 p-2 transition-colors duration-75',
-                isPlatformSelected(idx) && 'bg-bg-active'
-              )}
-              onDoubleClick={() => handleAddPlatform(idx)}
-              onClick={() => handleClickPlatform(idx)}
-              draggable
-              onDragStart={() => setDraggedPlatformIdx(idx)}
-              onDragEnd={() => setDraggedPlatformIdx(null)}
-            >
-              {name}
+            <div>
+              <div
+                key={idx}
+                className={twMerge(
+                  'flex cursor-pointer select-none items-center gap-2 p-2 transition-colors duration-75',
+                  isPlatformSelected(idx) && 'bg-bg-active'
+                )}
+                onDoubleClick={() => handleAddPlatform(idx)}
+                onClick={() => handleClickPlatform(idx)}
+                draggable
+                onDragStart={() => setDraggedPlatformIdx(idx)}
+                onDragEnd={() => setDraggedPlatformIdx(null)}
+              >
+                {name}
+              </div>
+              <hr className="h-[1px] w-auto border-bg-hover opacity-70" />
             </div>
           ))}
         </div>

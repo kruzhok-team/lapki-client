@@ -34,21 +34,24 @@ export const StateMachinesStack: React.FC<StateMachinesStackProps> = ({
     >
       {selectedStateMachines.map((sm, index) => {
         return (
-          <div
-            key={sm.id}
-            className={twMerge(
-              'cursor-pointer  select-none flex-col items-center gap-2 p-2 transition-colors duration-75',
-              isSelected(index) && 'bg-bg-active'
-            )}
-            draggable
-            onDragStart={() => onDragStart(index)}
-            onDragEnd={() => onDragEnd()}
-            onClick={() => onSelect(index)}
-          >
-            <div className="text-base">{sm.id}</div>
-            <div className="text-sm">
-              <i>{sm.platform.name}</i>
+          <div>
+            <div
+              key={sm.id}
+              className={twMerge(
+                'cursor-pointer  select-none flex-col items-center gap-2 p-2 transition-colors duration-75',
+                isSelected(index) && 'bg-bg-active'
+              )}
+              draggable
+              onDragStart={() => onDragStart(index)}
+              onDragEnd={() => onDragEnd()}
+              onClick={() => onSelect(index)}
+            >
+              <div className="text-base">{sm.id}</div>
+              <div className="text-sm">
+                <i>{sm.platform.name}</i>
+              </div>
             </div>
+            <hr className="h-[1px] w-auto border-bg-hover opacity-70" />
           </div>
         );
       })}

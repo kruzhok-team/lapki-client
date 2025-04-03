@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 
+import { generateSmId } from '@renderer/lib/utils';
+import { Platform } from '@renderer/types/platform';
+
 import { PlatformSelection } from './PlatformSelection';
 import { StateMachinesStackItem } from './StateMachinesStack';
 import { TemplateSelection } from './TemplateSelection';
@@ -57,8 +60,13 @@ export const CreateSchemeModal: React.FC<CreateSchemeModalProps> = ({
     setSelectedPlatformIdx(null);
   };
 
-  const handleAddStateMachine = (stateMachine: StateMachinesStackItem) => {
-    setSelectedStateMachines([...selectedStateMachines, stateMachine]);
+  const isDuplicateSmId = (smId: string) => {
+    return selectedStateMachines.some((sm) => sm.id === smId);
+  };
+
+  const handleAddPlatform = (platform: Platform) => {
+    const smId = generateSmId(isDuplicateSmId, platform);
+    setSelectedStateMachines([...selectedStateMachines, { id: smId, platform: platform }]);
   };
 
   const handleDeleteStateMachine = (index: number) => {
@@ -86,7 +94,7 @@ export const CreateSchemeModal: React.FC<CreateSchemeModalProps> = ({
           selectedStateMachines={selectedStateMachines}
           selectedPlatformIdx={selectedPlatformIdx}
           setSelectedPlatformIdx={setSelectedPlatformIdx}
-          onAddPlatform={handleAddStateMachine}
+          onAddPlatform={handleAddPlatform}
           onDeletePlatform={handleDeleteStateMachine}
         />
       </TabPanel>

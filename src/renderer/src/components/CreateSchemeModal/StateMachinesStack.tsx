@@ -3,7 +3,7 @@ import { useLayoutEffect, useRef } from 'react';
 import { Platform } from '@renderer/types/platform';
 
 export type StateMachinesStackItem = {
-  name?: string;
+  id: string;
   platform: Platform;
 };
 interface StateMachinesStackProps {
@@ -29,11 +29,12 @@ export const StateMachinesStack: React.FC<StateMachinesStackProps> = ({
       {selectedStateMachines.map((sm, index) => {
         return (
           <div
+            key={sm.id}
             className="flex cursor-pointer items-center gap-2 p-2 transition-colors duration-75"
             draggable
             onDragStart={() => onDragStart(index)}
             onDragEnd={() => onDragEnd()}
-          >{`${sm.name ?? sm.platform.nameTag ?? 'noname'} (${sm.platform.name})`}</div>
+          >{`${sm.id} (${sm.platform.name})`}</div>
         );
       })}
     </div>

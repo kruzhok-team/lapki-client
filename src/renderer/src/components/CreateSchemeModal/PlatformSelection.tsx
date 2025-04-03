@@ -3,6 +3,7 @@ import React, { useMemo, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import { getAvailablePlatforms, getPlatform } from '@renderer/lib/data/PlatformLoader';
+import { Platform } from '@renderer/types/platform';
 
 import { StateMachinesStack, StateMachinesStackItem } from './StateMachinesStack';
 
@@ -10,7 +11,7 @@ interface PlatformSelectionProps {
   selectedPlatformIdx: string | null;
   setSelectedPlatformIdx: (value: string) => void;
   selectedStateMachines: StateMachinesStackItem[];
-  onAddPlatform: (stateMachine: StateMachinesStackItem) => void;
+  onAddPlatform: (platform: Platform) => void;
   onDeletePlatform: (index: number) => void;
 }
 
@@ -38,7 +39,7 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
   const handleAddPlatform = (platformIdx: string) => {
     const platform = getPlatform(platformIdx);
     if (platform === undefined) return;
-    onAddPlatform({ platform: platform });
+    onAddPlatform(platform);
   };
 
   const handleDropPlatformOnStateMachines = () => {

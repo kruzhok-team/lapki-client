@@ -32,7 +32,7 @@ export const CreateSchemeModal: React.FC<CreateSchemeModalProps> = ({
   );
   const [selectedStateMachines, setSelectedStateMachines] = useState<StateMachinesStackItem[]>([]);
 
-  const submitDisabled = tabValue === 0 ? !selectedPlatformIdx : !selectedTemplate;
+  const submitDisabled = tabValue === 0 ? selectedStateMachines.length === 0 : !selectedTemplate;
 
   const submit = () => {
     if (tabValue === 0) {
@@ -58,6 +58,8 @@ export const CreateSchemeModal: React.FC<CreateSchemeModalProps> = ({
   const handleCLose = () => {
     onClose();
     setSelectedPlatformIdx(null);
+    setSelectedTemplate(null);
+    setSelectedStateMachines([]);
   };
 
   const isDuplicateSmId = (smId: string) => {

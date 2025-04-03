@@ -56,7 +56,7 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
     <div className="grid grid-cols-3 gap-4">
       <div onDrop={() => handleDropPlatformOnStateMachines()}>
         <h2>
-          <b>Выбранные платформы</b>
+          <b>Проект</b>
         </h2>
         {selectedStateMachines.length > 0 ? (
           <StateMachinesStack
@@ -72,7 +72,7 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
       </div>
       <div>
         <h2>
-          <b>Список платформ</b>
+          <b>Платформы</b>
         </h2>
         <div
           className="max-h-[40vh] w-full overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
@@ -98,7 +98,7 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
       </div>
       <div>
         <h2>
-          <b>Описание</b>
+          <b>Описание платформ</b>
         </h2>
         <div className={twMerge(selectedPlatform?.description ?? 'opacity-70')}>
           {selectedPlatform?.description ||

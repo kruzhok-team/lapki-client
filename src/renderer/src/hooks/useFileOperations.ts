@@ -39,7 +39,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   };
 
   // Открыть вкладки на каждый контроллер
-  const openTabs = () => {
+  const openTabs = (openAll?: boolean) => {
     changeTab(SidebarIndex.Explorer);
     for (const controllerId in modelController.controllers) {
       if (controllerId === '') continue;
@@ -55,7 +55,8 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
       });
       // (chekoopa) ОБСУДИТЬ! Кажется, разумнее сейчас оставить открытие только первой машины состояний.
       // И в будущем сделать открытие всех машин опцией. Но это в будущем.
-      break;
+      // (Roundabout1) Сейчас все вкладки открываются только при создании проекта
+      if (!openAll) break;
     }
   };
 
@@ -119,7 +120,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
     Compiler.setCompilerData(undefined);
     modelController.files.newFile(stateMachines);
     clearTabs();
-    openTabs();
+    openTabs(true);
   };
 
   const handleSaveAsFile = async () => {

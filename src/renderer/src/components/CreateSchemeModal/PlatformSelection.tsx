@@ -104,9 +104,8 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
           onDrop={() => handleDropStateMachineOnPlatforms()}
         >
           {platforms.map(({ idx, name }) => (
-            <div>
+            <div key={idx}>
               <div
-                key={idx}
                 className={twMerge(
                   'flex cursor-pointer select-none items-center gap-2 p-2 transition-colors duration-75',
                   isPlatformSelected(idx) && 'bg-bg-active'

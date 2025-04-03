@@ -34,9 +34,8 @@ export const StateMachinesStack: React.FC<StateMachinesStackProps> = ({
     >
       {selectedStateMachines.map((sm, index) => {
         return (
-          <div>
+          <div key={sm.id}>
             <div
-              key={sm.id}
               className={twMerge(
                 'cursor-pointer  select-none flex-col items-center gap-2 p-2 transition-colors duration-75',
                 isSelected(index) && 'bg-bg-active'

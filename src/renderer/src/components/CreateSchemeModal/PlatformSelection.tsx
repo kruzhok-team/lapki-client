@@ -77,28 +77,30 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
     <div className="grid grid-cols-2 gap-4">
       <div onDrop={() => handleDropPlatformOnStateMachines()}>
         <h2>
-          <b>Проект</b>
+          <b>Выбрано</b>
         </h2>
-        {selectedStateMachines.length > 0 ? (
-          <StateMachinesStack
-            selectedStateMachines={selectedStateMachines}
-            onDragStart={(index) => setDraggedStateMachineIndex(index)}
-            onDragEnd={() => setDraggedStateMachineIndex(null)}
-            isSelected={isStateMachineSelected}
-            onSelect={handleClickStateMachine}
-          />
-        ) : (
-          <label className="opacity-70">
-            Добавьте платформы сюда двойным кликом левой кнопкой мыши, либо перетащив их сюда
-          </label>
-        )}
+        <div className="h-[30vh] bg-bg-secondary">
+          {selectedStateMachines.length > 0 ? (
+            <StateMachinesStack
+              selectedStateMachines={selectedStateMachines}
+              onDragStart={(index) => setDraggedStateMachineIndex(index)}
+              onDragEnd={() => setDraggedStateMachineIndex(null)}
+              isSelected={isStateMachineSelected}
+              onSelect={handleClickStateMachine}
+            />
+          ) : (
+            <label className="opacity-70">
+              Добавьте платформы сюда двойным кликом левой кнопкой мыши, либо перетащив их сюда
+            </label>
+          )}
+        </div>
       </div>
       <div>
         <h2>
           <b>Платформы</b>
         </h2>
         <div
-          className="max-h-[30vh] w-full overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
+          className="max-h-[30vh] w-full overflow-y-auto bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
           onDrop={() => handleDropStateMachineOnPlatforms()}
         >
           {platforms.map(({ idx, name }) => (
@@ -125,7 +127,7 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
         </h2>
         <div
           className={twMerge(
-            'h-[10vh] w-full overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb',
+            'h-[10vh] w-full overflow-y-auto leading-tight scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb',
             selectedPlatform?.description ?? 'opacity-70'
           )}
         >

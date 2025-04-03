@@ -86,7 +86,6 @@ export const CreateSchemeModal: React.FC<CreateSchemeModalProps> = ({
           selectedStateMachines={selectedStateMachines}
           selectedPlatformIdx={selectedPlatformIdx}
           setSelectedPlatformIdx={setSelectedPlatformIdx}
-          onDoubleClick={submit}
           onAddPlatform={handleAddStateMachine}
           onDeletePlatform={handleDeleteStateMachine}
         />

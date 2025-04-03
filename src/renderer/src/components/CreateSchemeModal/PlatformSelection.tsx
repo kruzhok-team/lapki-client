@@ -9,7 +9,6 @@ import { StateMachinesStack, StateMachinesStackItem } from './StateMachinesStack
 interface PlatformSelectionProps {
   selectedPlatformIdx: string | null;
   setSelectedPlatformIdx: (value: string) => void;
-  onDoubleClick?: () => void;
   selectedStateMachines: StateMachinesStackItem[];
   onAddPlatform: (stateMachine: StateMachinesStackItem) => void;
   onDeletePlatform: (index: number) => void;
@@ -19,7 +18,6 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
   selectedStateMachines,
   selectedPlatformIdx,
   setSelectedPlatformIdx,
-  onDoubleClick,
   onAddPlatform,
   onDeletePlatform,
 }) => {
@@ -37,11 +35,15 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
     [platforms, selectedPlatformIdx]
   );
 
-  const handleDropPlatformOnStateMachines = () => {
-    if (draggedPlatformIdx === null) return;
-    const platform = getPlatform(draggedPlatformIdx);
+  const handleAddPlatform = (platformIdx: string) => {
+    const platform = getPlatform(platformIdx);
     if (platform === undefined) return;
     onAddPlatform({ platform: platform });
+  };
+
+  const handleDropPlatformOnStateMachines = () => {
+    if (draggedPlatformIdx === null) return;
+    handleAddPlatform(draggedPlatformIdx);
   };
 
   const handleDropStateMachineOnPlatforms = () => {
@@ -76,7 +78,7 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
                 'flex cursor-pointer select-none items-center gap-2 p-2 transition-colors duration-75',
                 isSelected(idx) && 'bg-bg-active'
               )}
-              onDoubleClick={onDoubleClick}
+              onDoubleClick={() => handleAddPlatform(idx)}
               onClick={handleClick(idx)}
               draggable
               onDragStart={() => setDraggedPlatformIdx(idx)}

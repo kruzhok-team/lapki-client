@@ -14,7 +14,7 @@ import { Tabs } from '../UI/Tabs/Tabs';
 interface CreateSchemeModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (idx: string) => void;
+  onCreate: (stateMachines: StateMachinesStackItem[]) => void;
   onCreateFromTemplate: (type: string, name: string) => void;
 }
 
@@ -36,9 +36,9 @@ export const CreateSchemeModal: React.FC<CreateSchemeModalProps> = ({
 
   const submit = () => {
     if (tabValue === 0) {
-      if (!selectedPlatformIdx) return;
+      if (selectedStateMachines.length === 0) return;
 
-      onCreate(selectedPlatformIdx);
+      onCreate(selectedStateMachines);
     } else if (tabValue === 1) {
       if (!selectedTemplate) return;
 

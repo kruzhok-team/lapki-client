@@ -9,7 +9,7 @@ import { TemplatesList } from '@renderer/types/templates';
 
 import { importGraphml } from '../GraphmlParser';
 import { ModelController } from '../ModelController';
-import { getPlatform, isPlatformAvailable } from '../PlatformLoader';
+import { isPlatformAvailable } from '../PlatformLoader';
 
 type FileError = {
   name: string;

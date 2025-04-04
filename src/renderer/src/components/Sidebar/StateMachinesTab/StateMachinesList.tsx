@@ -1,5 +1,8 @@
 import { useState } from 'react';
 
+import { twMerge } from 'tailwind-merge';
+
+import { ReactComponent as ArrowIcon } from '@renderer/assets/icons/arrow-down.svg';
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/new transition.svg';
 import { ReactComponent as StateMachineIcon } from '@renderer/assets/icons/state_machine.svg';
 import { StateMachineEditModal } from '@renderer/components/StateMachineEditModal';
@@ -13,7 +16,15 @@ import { StateMachineDeleteModal } from './StateMachineDeleteModal';
 
 import { Component } from '../Explorer/Component';
 
-export const StateMachinesList: React.FC = () => {
+interface StateMachinesListProps {
+  isCollapsed: () => boolean;
+  togglePanel: () => void;
+}
+
+export const StateMachinesList: React.FC<StateMachinesListProps> = ({
+  isCollapsed,
+  togglePanel,
+}) => {
   const modelController = useModelContext();
 
   const openTab = useTabs((state) => state.openTab);
@@ -55,11 +66,14 @@ export const StateMachinesList: React.FC = () => {
 
   return (
     <section>
-      <div className="mx-4 mb-3 flex justify-center border-b border-border-primary py-2 text-center text-lg">
-        <div className="flex w-full justify-center">
-          <h3>Машины состояний</h3>
-        </div>
-        <div className="flex justify-end">
+      <div className="flex">
+        <button className="my-3 flex items-center" onClick={() => togglePanel()}>
+          <ArrowIcon
+            className={twMerge('rotate-0 transition-transform', isCollapsed() && '-rotate-90')}
+          />
+          <h3 className="font-semibold">Машины состояний</h3>
+        </button>
+        <div className="ml-auto flex">
           <button
             type="button"
             className={'w-5 opacity-70 disabled:opacity-40'}

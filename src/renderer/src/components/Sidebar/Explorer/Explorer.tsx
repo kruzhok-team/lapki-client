@@ -28,14 +28,6 @@ export const Explorer: React.FC = () => {
   const hierarchyPanelRef = useRef<ImperativePanelHandle>(null);
   const [, forceUpdate] = useReducer((p) => p + 1, 0);
 
-  const stateMachines = [
-    ...Object.entries(
-      modelController.model.useData('', 'elements.stateMachinesId') as {
-        [id: string]: StateMachine;
-      }
-    ),
-  ];
-
   const togglePanel = (panelRef: RefObject<ImperativePanelHandle>) => {
     const panel = panelRef.current;
     if (!panel) return;
@@ -63,20 +55,14 @@ export const Explorer: React.FC = () => {
           onExpand={forceUpdate}
           className="px-4"
         >
-          <button
-            className="my-3 flex items-center"
-            onClick={() => togglePanel(stateMachinesPanelRef)}
-          >
-            <ArrowIcon
-              className={twMerge(
-                'rotate-0 transition-transform',
-                stateMachinesPanelRef.current?.isCollapsed() && '-rotate-90'
-              )}
+          {isInitialized ? (
+            <StateMachinesList
+              isCollapsed={() => stateMachinesPanelRef.current?.isCollapsed() ?? false}
+              togglePanel={() => togglePanel(stateMachinesPanelRef)}
             />
-            <h3 className="font-semibold">Машины состояний</h3>
-          </button>
-
-          {isInitialized ? <StateMachinesList /> : 'Недоступно до открытия схемы'}
+          ) : (
+            'Недоступно до открытия схемы'
+          )}
         </Panel>
 
         <PanelResizeHandle className="group relative py-1">

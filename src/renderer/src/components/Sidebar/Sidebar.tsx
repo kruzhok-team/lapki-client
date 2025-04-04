@@ -7,7 +7,6 @@ import { ReactComponent as DocumentationIcon } from '@renderer/assets/icons/docu
 import { ReactComponent as FlasherIcon } from '@renderer/assets/icons/flasher.svg';
 import { ReactComponent as HistoryIcon } from '@renderer/assets/icons/history.svg';
 import { ReactComponent as SettingsIcon } from '@renderer/assets/icons/settings.svg';
-import { ReactComponent as StateIcon } from '@renderer/assets/icons/state_machine.svg';
 import { useSettings } from '@renderer/hooks';
 import { useFlasherHooks } from '@renderer/hooks/useFlasherHooks';
 import { useModal } from '@renderer/hooks/useModal';
@@ -24,7 +23,6 @@ import { Labels } from './Labels';
 import { Menu } from './Menu';
 import { Menus } from './Menus';
 import { Setting } from './Setting';
-import { StateMachinesList } from './StateMachinesTab/StateMachinesList';
 
 import { Flasher } from '../Modules/Flasher';
 import { CompilerSelectModal } from '../serverSelect/CompilerSelectModal';
@@ -123,7 +121,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
         compilerStatus={compilerStatus}
         setOpenData={setOpenData}
       />,
-      <StateMachinesList />,
       <Explorer />,
       <CompilerTab
         openData={openData}
@@ -163,10 +160,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </Badge>
         ),
         hint: isEditorDataStale ? 'Документ (не сохранён)' : 'Документ',
-      },
-      {
-        Icon: <StateIcon />,
-        hint: 'Машины состояний',
       },
       {
         Icon: <ComponentsIcon />,

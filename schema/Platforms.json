@@ -38,6 +38,12 @@
         },
         "type": {
           "$ref": "#/definitions/ArgType"
+        },
+        "valueAlias": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
         }
       },
       "required": [
@@ -141,6 +147,9 @@
     "MethodProto": {
       "additionalProperties": false,
       "properties": {
+        "alias": {
+          "type": "string"
+        },
         "description": {
           "type": "string"
         },
@@ -173,6 +182,12 @@
         },
         "type": {
           "$ref": "#/definitions/ArgType"
+        },
+        "valueAlias": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
         }
       },
       "type": "object"
@@ -296,6 +311,9 @@
     "SignalProto": {
       "additionalProperties": false,
       "properties": {
+        "alias": {
+          "type": "string"
+        },
         "checkMethod": {
           "type": "string"
         },
@@ -317,6 +335,9 @@
     "VariableProto": {
       "additionalProperties": false,
       "properties": {
+        "alias": {
+          "type": "string"
+        },
         "description": {
           "type": "string"
         },
@@ -325,6 +346,12 @@
         },
         "type": {
           "$ref": "#/definitions/ArgType"
+        },
+        "valueAlias": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
         }
       },
       "type": "object"

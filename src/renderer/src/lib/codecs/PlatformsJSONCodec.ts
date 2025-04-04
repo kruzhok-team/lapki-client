@@ -273,11 +273,13 @@ const typeMap: any = {
       { json: 'name', js: 'name', typ: u(undefined, '') },
       { json: 'optional', js: 'optional', typ: u(undefined, true) },
       { json: 'type', js: 'type', typ: u(undefined, u(a(u(3.14, '')), '')) },
+      { json: 'valueAlias', js: 'valueAlias', typ: u(undefined, a('')) },
     ],
     false
   ),
   MethodProto: o(
     [
+      { json: 'alias', js: 'alias', typ: u(undefined, '') },
       { json: 'description', js: 'description', typ: u(undefined, '') },
       { json: 'img', js: 'img', typ: u(undefined, '') },
       { json: 'parameters', js: 'parameters', typ: u(undefined, a(r('ArgumentProto'))) },
@@ -291,11 +293,13 @@ const typeMap: any = {
       { json: 'name', js: 'name', typ: '' },
       { json: 'optional', js: 'optional', typ: u(undefined, true) },
       { json: 'type', js: 'type', typ: u(undefined, u(a(u(3.14, '')), '')) },
+      { json: 'valueAlias', js: 'valueAlias', typ: u(undefined, a('')) },
     ],
     false
   ),
   SignalProto: o(
     [
+      { json: 'alias', js: 'alias', typ: u(undefined, '') },
       { json: 'checkMethod', js: 'checkMethod', typ: u(undefined, '') },
       { json: 'description', js: 'description', typ: u(undefined, '') },
       { json: 'img', js: 'img', typ: u(undefined, '') },
@@ -305,9 +309,11 @@ const typeMap: any = {
   ),
   VariableProto: o(
     [
+      { json: 'alias', js: 'alias', typ: u(undefined, '') },
       { json: 'description', js: 'description', typ: u(undefined, '') },
       { json: 'img', js: 'img', typ: u(undefined, '') },
       { json: 'type', js: 'type', typ: u(undefined, u(a(u(3.14, '')), '')) },
+      { json: 'valueAlias', js: 'valueAlias', typ: u(undefined, a('')) },
     ],
     false
   ),

@@ -108,6 +108,11 @@ export const Trigger: React.FC<TriggerProps> = memo(function Trigger(props) {
               options={methodOptions}
               onChange={onMethodChange}
               value={methodOptions.find((o) => o.value === selectedMethod) ?? null}
+              name={
+                methodOptions.find((o) => o.value === selectedMethod)
+                  ? methodOptions.find((o) => o.value === selectedMethod)?.name
+                  : undefined
+              }
               isSearchable={false}
               placeholder="Выберите событие..."
               noOptionsMessage={() => (

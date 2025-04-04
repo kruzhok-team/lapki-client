@@ -103,10 +103,10 @@ export const useCondition = (
     // Тут call потому что контекст теряется
     return getAll
       .call(controller.platform[smId], selectedComponentParam1)
-      .map(({ name, description }) => {
+      .map(({ name, alias, description }) => {
         return {
           value: name,
-          label: name,
+          label: alias ?? name,
           hint: description,
           icon: (
             <img
@@ -126,10 +126,10 @@ export const useCondition = (
     // Тут call потому что контекст теряется
     return getAll
       .call(controller.platform[smId], selectedComponentParam2)
-      .map(({ name, description }) => {
+      .map(({ name, alias, description }) => {
         return {
           value: name,
-          label: name,
+          label: alias ?? name,
           hint: description,
           icon: (
             <img

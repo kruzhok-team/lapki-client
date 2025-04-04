@@ -1,5 +1,7 @@
 import Websocket from 'isomorphic-ws';
 
+import { Buffer } from 'buffer';
+
 import { Device, ArduinoDevice } from '@renderer/components/Modules/Device';
 import { Binary } from '@renderer/types/CompilerTypes';
 import { FlasherMessage, FlasherPayload, FlasherType } from '@renderer/types/FlasherTypes';
@@ -66,8 +68,8 @@ export class Flasher extends ClientWS {
     let ending: string;
     if (device.isArduinoDevice()) {
       ending = 'ino.hex';
-    } else if (device.isMSDevice()) {
-      ending = '.bin';
+    } else if (device.isMSDevice() || device.isBlgMbDevice()) {
+      ending = 'bin';
     } else {
       throw new Error('Попытка задать бинарные данные для неизвестной платформы!');
     }

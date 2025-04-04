@@ -108,7 +108,16 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
           description + (type && `${description ? '\n' : ''}Тип: ${formatArgType(type)}`);
         const label = name + ':';
         if (Array.isArray(type)) {
-          const options = type.map((value) => ({ label: value, value }));
+          const valueAliases = proto.valueAlias;
+          const options =
+            valueAliases !== undefined &&
+            Array.isArray(valueAliases) &&
+            valueAliases.length === type.length
+              ? type.map((value, index) => ({
+                  label: valueAliases[index] ?? value,
+                  value,
+                }))
+              : type.map((value) => ({ label: value, value }));
           return (
             <ComponentFormFieldLabel key={name} label={label} hint={hint}>
               <Select

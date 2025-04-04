@@ -106,11 +106,10 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
   }
 
   const handleSelectFile = async (tableItem: FlashTableItem) => {
-    const extensions = ['bin'];
-    if (tableItem.targetType === FirmwareTargetType.arduino) {
-      extensions.push('hex');
-    }
-    const [canceled, filePath] = await window.api.fileHandlers.selectFile('прошивки', extensions);
+    const [canceled, filePath] = await window.api.fileHandlers.selectFile(
+      'прошивки',
+      tableItem.extensions
+    );
     if (canceled) return;
     setTableData(
       tableData.map((item) => {
@@ -186,9 +185,10 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
     );
   };
 
-  const getArduinoDevicePlatform = (device: Device) => {
+  const getDevicePlatform = (device: Device) => {
     // TODO: подумать, можно ли найти более надёжный способ сверки платформ на клиенте и сервере
     // названия платформ на загрузчике можно посмотреть здесь: https://github.com/kruzhok-team/lapki-flasher/blob/main/src/device_list.JSON
+    // TODO: поддержка кибермишки
     const name = device.name.toLocaleLowerCase();
     switch (name) {
       case 'arduino micro':
@@ -262,13 +262,13 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
         typeId = platformWithoutVersion(typeId);
       }
       displayAddress = addressData.address;
-    } else if (tableItem.targetType === FirmwareTargetType.arduino) {
+    } else if (tableItem.targetType === FirmwareTargetType.dev) {
       const dev = devices.get(tableItem.targetId as string);
       if (!dev) {
         return;
       }
       displayName = dev.displayName();
-      typeId = getArduinoDevicePlatform(dev);
+      typeId = getDevicePlatform(dev);
     } else {
       throw Error(`Плата не поддерживается: ${tableItem}`);
     }

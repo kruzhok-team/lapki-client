@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
 
+import { Buffer } from 'buffer';
+
 import { ArduinoDevice, Device, MSDevice } from '@renderer/components/Modules/Device';
 import { Flasher } from '@renderer/components/Modules/Flasher';
 import { ManagerMS } from '@renderer/components/Modules/ManagerMS';
@@ -38,6 +40,8 @@ export const useFlasherHooks = () => {
   const basename = modelController.model.useData('', 'basename');
 
   const [flasherSetting, setFlasherSetting] = useSettings('flasher');
+  const [monitorSetting] = useSettings('serialmonitor');
+
   const {
     flasherMessage,
     setFlasherMessage,
@@ -71,6 +75,7 @@ export const useFlasherHooks = () => {
     device: serialMonitorDevice,
     setDevice: setSerialMonitorDevice,
     addDeviceMessage: addSerialDeviceMessage,
+    addBytesFromDevice: addBytesFromSerial,
     setConnectionStatus: setSerialConnectionStatus,
     setLog: setSerialLog,
   } = useSerialMonitor();
@@ -156,17 +161,19 @@ export const useFlasherHooks = () => {
     setIsFlashing(false);
     let flashResultKey: string = '';
     let addressInfo: AddressData | undefined = undefined;
-    if (Flasher.currentFlashingDevice instanceof ArduinoDevice) {
-      flashResultKey = Flasher.currentFlashingDevice.displayName();
-      // TODO: унификация с flashingAddressEndLog?
-      ManagerMS.addLog(`${flashResultKey}: ${result}`);
-    } else if (Flasher.currentFlashingDevice instanceof MSDevice) {
-      const msDev = Flasher.currentFlashingDevice as MSDevice;
-      flashResultKey = `${ManagerMS.getFlashingAddress()?.name} - ${msDev.displayName()}`;
-      addressInfo = ManagerMS.getFlashingAddress();
-      ManagerMS.flashingAddressEndLog(result);
-    } else {
+    if (!Flasher.currentFlashingDevice) {
       flashResultKey = 'Неизвестное устройство';
+    } else {
+      if (Flasher.currentFlashingDevice.isMSDevice()) {
+        const msDev = Flasher.currentFlashingDevice as MSDevice;
+        flashResultKey = `${ManagerMS.getFlashingAddress()?.name} - ${msDev.displayName()}`;
+        addressInfo = ManagerMS.getFlashingAddress();
+        ManagerMS.flashingAddressEndLog(result);
+      } else {
+        flashResultKey = Flasher.currentFlashingDevice.displayName();
+        // TODO: унификация с flashingAddressEndLog?
+        ManagerMS.addLog(`${flashResultKey}: ${result}`);
+      }
     }
     const flashReport = new FlashResult(
       Flasher.currentFlashingDevice,
@@ -288,6 +295,11 @@ export const useFlasherHooks = () => {
         addDevice(device);
         break;
       }
+      case 'blg-mb-device': {
+        const device = new Device(flasherMessage.payload as Device, 'blg-mb');
+        addDevice(device);
+        break;
+      }
       case 'device-update-delete': {
         // TODO: нужно что-то сделать, если устройство находится в таблице прошивок
         deleteDevice((flasherMessage.payload as UpdateDelete).deviceID);
@@ -342,6 +354,20 @@ export const useFlasherHooks = () => {
       case 'flash-not-started': {
         flashingEnd(
           'Сервер начал получать файл с прошивкой, но процесс загрузки не был инициализирован.',
+          undefined
+        );
+        break;
+      }
+      case 'incorrect-file-size': {
+        flashingEnd(
+          'Ошибка! Указанный размер файла меньше 1 байта. Прошивку начать невозможно.',
+          undefined
+        );
+        break;
+      }
+      case 'file-write-error': {
+        flashingEnd(
+          'Ошибка! Возникла ошибка при записи блока с бинарными данным. Прошивка прекращена.',
           undefined
         );
         break;
@@ -503,7 +529,16 @@ export const useFlasherHooks = () => {
       }
       case 'serial-device-read': {
         const serialRead = flasherMessage.payload as SerialRead;
-        SerialMonitor.addDeviceMessage(serialRead.msg);
+        const buffer = Buffer.from(serialRead.msg, 'base64');
+        addBytesFromSerial(buffer);
+        switch (monitorSetting?.textMode) {
+          case 'text':
+            addSerialDeviceMessage(SerialMonitor.toText(buffer));
+            break;
+          case 'hex':
+            addSerialDeviceMessage(SerialMonitor.toHex(buffer));
+            break;
+        }
         break;
       }
       case 'flash-open-serial-monitor':

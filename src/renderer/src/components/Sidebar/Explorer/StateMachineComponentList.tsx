@@ -1,5 +1,8 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
+import { twMerge } from 'tailwind-merge';
+
+import { ReactComponent as ArrowIcon } from '@renderer/assets/icons/arrow-down.svg';
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/new transition.svg';
 import { ComponentAddModal } from '@renderer/components/ComponentAddModal';
 import { ComponentDeleteModal } from '@renderer/components/ComponentDeleteModal';
@@ -16,22 +19,16 @@ export interface StateMachineComponentListProps {
   isInitialized: boolean;
   controller: CanvasController;
   smId: string;
-  dragName: string | null;
-  selectedComponent: string | null;
-  setSelectedComponent: React.Dispatch<React.SetStateAction<string | null>>;
-  // onRequestEditComponent: (name: string) => void;
-  // onRequestDeleteComponent: (name: string) => void;
-  setDragName: (name: string) => void;
+  isCollapsed: () => boolean;
+  togglePanel: () => void;
 }
 
 export const StateMachineComponentList: React.FC<StateMachineComponentListProps> = ({
   isInitialized,
   controller,
   smId,
-  dragName,
-  selectedComponent,
-  setSelectedComponent,
-  setDragName,
+  isCollapsed,
+  togglePanel,
 }) => {
   const {
     addProps,
@@ -56,6 +53,9 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
       .map((c) => c[0]);
   }, [components]);
 
+  const [dragName, setDragName] = useState<string | null>(null);
+  const [selectedComponent, setSelectedComponent] = useState<string | null>(null);
+
   const onDropComponent = (name: string) => {
     if (!dragName) return;
 
@@ -69,14 +69,20 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
     onSwapComponents(smId, splittedDragName, splittedName);
   };
   const isDisabled = !isInitialized;
-  return (
-    <>
+
+  const header = () => {
+    return (
       <div className="flex">
-        <div className="flex w-full justify-start">{smName ?? smId}</div>
-        <div className="ml-auto flex w-6 justify-end">
+        <button className="my-3 flex items-center" onClick={() => togglePanel()}>
+          <ArrowIcon
+            className={twMerge('rotate-0 transition-transform', isCollapsed() && '-rotate-90')}
+          />
+          <h3 className="font-semibold">Компоненты</h3>
+        </button>
+        <div className="ml-auto flex">
           <button
             type="button"
-            className={'h-5 w-5 opacity-70 disabled:opacity-40'}
+            className={'w-5 opacity-70 disabled:opacity-40'}
             disabled={isDisabled}
             onClick={() => onRequestAddComponent(smId, components)}
           >
@@ -84,42 +90,54 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
           </button>
         </div>
       </div>
-      <div className="mb-2 mt-1 select-none">
-        {sortedComponents.length === 0 ? (
-          <p className="text-text-inactive">Нет компонентов</p>
-        ) : (
-          sortedComponents.map((id) => {
-            const name = components[id].name;
-            const key = controller.components.getComponentKey(smId, id);
-            return (
-              <Component
-                key={key}
-                name={name ?? id}
-                description={
-                  platform[smId] !== undefined
-                    ? platform[smId].getComponent(id)?.description
-                    : undefined
-                }
-                icon={
-                  platform[smId] !== undefined ? platform[smId].getFullComponentIcon(id) : undefined
-                }
-                isSelected={key === selectedComponent}
-                isDragging={key === dragName}
-                onCallContextMenu={() => onRequestEditComponent(smId, components, id)}
-                onSelect={() => setSelectedComponent(key)}
-                onEdit={() => onRequestEditComponent(smId, components, id)}
-                onDelete={() => onRequestDeleteComponent(smId, components, id)}
-                onDragStart={() => setDragName(key)}
-                onDrop={() => onDropComponent(key)}
-              />
-            );
-          })
-        )}
-      </div>
+    );
+  };
+
+  return (
+    <div className="max-h-full overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
+      {header()}
+      {isInitialized ? (
+        <div className="mb-2 mt-1 select-none">
+          {sortedComponents.length === 0 ? (
+            <p className="text-text-inactive">Нет компонентов</p>
+          ) : (
+            sortedComponents.map((id) => {
+              const name = components[id].name;
+              const key = controller.components.getComponentKey(smId, id);
+              return (
+                <Component
+                  key={key}
+                  name={name ?? id}
+                  description={
+                    platform[smId] !== undefined
+                      ? platform[smId].getComponent(id)?.description
+                      : undefined
+                  }
+                  icon={
+                    platform[smId] !== undefined
+                      ? platform[smId].getFullComponentIcon(id)
+                      : undefined
+                  }
+                  isSelected={key === selectedComponent}
+                  isDragging={key === dragName}
+                  onCallContextMenu={() => onRequestEditComponent(smId, components, id)}
+                  onSelect={() => setSelectedComponent(key)}
+                  onEdit={() => onRequestEditComponent(smId, components, id)}
+                  onDelete={() => onRequestDeleteComponent(smId, components, id)}
+                  onDragStart={() => setDragName(key)}
+                  onDrop={() => onDropComponent(key)}
+                />
+              );
+            })
+          )}
+        </div>
+      ) : (
+        <div className="px-4">Недоступно до открытия схемы</div>
+      )}
 
       <ComponentAddModal {...addProps} />
       <ComponentEditModal {...editProps} />
       <ComponentDeleteModal {...deleteProps} />
-    </>
+    </div>
   );
 };

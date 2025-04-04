@@ -11,7 +11,7 @@ import { twMerge } from 'tailwind-merge';
 import { ReactComponent as ArrowIcon } from '@renderer/assets/icons/arrow-down.svg';
 import { useModelContext } from '@renderer/store/ModelContext';
 
-import { ComponentsList } from './ComponentsList';
+import { StateMachineComponentList } from './StateMachineComponentList';
 import { StateMachinesHierarchy } from './StateMachinesHierarchy';
 
 import { StateMachinesList } from '../StateMachinesTab';
@@ -21,6 +21,11 @@ const collapsedSize = 6;
 export const Explorer: React.FC = () => {
   const modelController = useModelContext();
   const isInitialized = modelController.model.useData('', 'isInitialized');
+  const headControllerId = modelController.model.useData('', 'headControllerId');
+  const controller = modelController.controllers[headControllerId];
+  const stateMachinesIds = Object.keys(
+    modelController.model.useData('', 'elements.stateMachinesId')
+  );
 
   const stateMachinesPanelRef = useRef<ImperativePanelHandle>(null);
   const componentPanelRef = useRef<ImperativePanelHandle>(null);
@@ -74,17 +79,13 @@ export const Explorer: React.FC = () => {
           onExpand={forceUpdate}
           className="px-4"
         >
-          <button className="my-3 flex items-center" onClick={() => togglePanel(componentPanelRef)}>
-            <ArrowIcon
-              className={twMerge(
-                'rotate-0 transition-transform',
-                componentPanelRef.current?.isCollapsed() && '-rotate-90'
-              )}
-            />
-            <h3 className="font-semibold">Компоненты</h3>
-          </button>
-
-          {isInitialized ? <ComponentsList /> : 'Недоступно до открытия схемы'}
+          <StateMachineComponentList
+            controller={controller}
+            isInitialized={isInitialized}
+            smId={stateMachinesIds.length > 0 ? stateMachinesIds[0] : ''}
+            isCollapsed={() => componentPanelRef.current?.isCollapsed() ?? false}
+            togglePanel={() => togglePanel(componentPanelRef)}
+          />
         </Panel>
 
         <PanelResizeHandle className="group relative py-1">
@@ -111,7 +112,11 @@ export const Explorer: React.FC = () => {
             <h3 className="font-semibold">Иерархия</h3>
           </button>
 
-          {isInitialized ? <StateMachinesHierarchy /> : 'Недоступно до открытия схемы'}
+          {isInitialized ? (
+            <StateMachinesHierarchy />
+          ) : (
+            <div className="px-4">Недоступно до открытия схемы</div>
+          )}
         </Panel>
       </PanelGroup>
     </section>

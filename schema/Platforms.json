@@ -210,6 +210,12 @@
           },
           "type": "array"
         },
+        "defaultSetupFunctions": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
         "delimeter": {
           "type": "string"
         },
@@ -217,6 +223,9 @@
           "type": "string"
         },
         "formatVersion": {
+          "type": "string"
+        },
+        "headerFileExtension": {
           "type": "string"
         },
         "hidden": {

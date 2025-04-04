@@ -1,5 +1,12 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
-import { Note, Transition, FinalState, ChoiceState, GhostTransition } from '@renderer/lib/drawable';
+import {
+  Note,
+  Transition,
+  FinalState,
+  ChoiceState,
+  GhostTransition,
+  ShallowHistory,
+} from '@renderer/lib/drawable';
 import { Layer } from '@renderer/lib/types';
 import {
   State as DataState,
@@ -10,6 +17,7 @@ import {
   FinalState as DataFinalState,
   Component,
   StateMachine,
+  ShallowHistory as ShallowHistoryData,
 } from '@renderer/types/diagram';
 
 import { CanvasController } from './ModelController/CanvasController';
@@ -86,6 +94,21 @@ export class Initializer {
       if (!data.parentId) continue;
 
       this.linkFinalStateView(data.parentId, id);
+    }
+  }
+
+  initShallowHistory(smId: string, shallows: { [id: string]: ShallowHistoryData }) {
+    for (const id in shallows) {
+      const choice = shallows[id];
+      this.createShallowHistoryView(smId, id, choice);
+    }
+
+    for (const id in shallows) {
+      const data = shallows[id];
+
+      if (!data.parentId) continue;
+
+      this.linkShallowHistoryView(data.parentId, id);
     }
   }
 
@@ -219,6 +242,28 @@ export class Initializer {
     this.app.view.children.remove(child, Layer.FinalStates);
     child.parent = parent;
     parent.children.add(child, Layer.FinalStates);
+  }
+
+  private createShallowHistoryView(
+    smId: string,
+    id: string,
+    shallowHistoryData: ShallowHistoryData
+  ) {
+    const state = new ShallowHistory(this.app, id, smId, shallowHistoryData);
+    this.states.data.shallowHistory.set(state.id, state);
+    this.states.watch(state);
+    this.app.view.children.add(state, Layer.ShallowHistory);
+  }
+
+  private linkShallowHistoryView(parentId: string, childId: string) {
+    const parent = this.states.data.states.get(parentId);
+    const child = this.states.data.shallowHistory.get(childId);
+
+    if (!parent || !child) return;
+
+    this.app.view.children.remove(child, Layer.ShallowHistory);
+    child.parent = parent;
+    parent.children.add(child, Layer.ShallowHistory);
   }
 
   private createChoiceStateView(smId: string, id: string, choiceStateData: DataChoiceState) {

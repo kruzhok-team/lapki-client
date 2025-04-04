@@ -33,7 +33,7 @@ export type EventData = {
   condition?: Condition | string;
 };
 
-interface BaseState {
+export interface BaseState {
   parentId?: string;
   dimensions: Dimensions;
   position: Point;
@@ -49,11 +49,19 @@ export interface State extends BaseState {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface InitialState extends BaseState {}
+export interface InitialState extends BaseState {
+  selection?: boolean;
+}
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface FinalState extends BaseState {}
+export interface FinalState extends BaseState {
+  selection?: boolean;
+}
 
 export interface ChoiceState extends BaseState {
+  selection?: boolean;
+}
+
+export interface ShallowHistory extends BaseState {
   selection?: boolean;
 }
 
@@ -119,6 +127,7 @@ export type StateMachine = {
   choiceStates: { [id: string]: ChoiceState };
   transitions: { [id: string]: Transition };
   components: { [name: string]: Component };
+  shallowHistory: { [name: string]: ShallowHistory };
   notes: { [id: string]: Note };
 
   platform: string;
@@ -142,6 +151,7 @@ export function emptyStateMachine(): StateMachine {
     choiceStates: {},
     transitions: {},
     components: {},
+    shallowHistory: {},
     notes: {},
     platform: '',
     visual: true,

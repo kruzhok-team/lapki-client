@@ -4,13 +4,11 @@ import {
   EventData,
   State as StateData,
   Transition as TransitionData,
-  InitialState as InitialStateData,
-  FinalState as FinalStateData,
-  ChoiceState as ChoiceStateData,
   Component as ComponentData,
   StateMachine,
   Action,
   Event,
+  BaseState,
 } from '@renderer/types/diagram';
 
 import { EventSelection } from '../drawable';
@@ -19,6 +17,8 @@ export type StateMachineData = {
   name?: string;
   platform: string;
 };
+
+export type VertexFields = 'shallowHistory' | 'choiceStates' | 'initialStates' | 'finalStates';
 
 export const emptyEditorData = () => ({
   basename: null as string | null,
@@ -63,16 +63,7 @@ export type CreateStateParams = StateData & {
 };
 export type ChangeStateParams = Pick<StateData, 'events' | 'color'> & { smId: string; id: string };
 
-export type CreateInitialStateParams = InitialStateData & { smId: string; id?: string };
-export type CreateFinalStateParams = FinalStateData & {
-  id?: string;
-  placeInCenter?: boolean;
-  smId: string;
-  // Поля ниже нужны для коректной отмены этого действия с помощью истории
-  linkByPoint?: boolean;
-};
-
-export type CreateChoiceStateParams = ChoiceStateData & {
+export type CreateVertexParams = BaseState & {
   id?: string;
   smId: string;
   placeInCenter?: boolean;

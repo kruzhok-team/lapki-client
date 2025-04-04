@@ -1,5 +1,5 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
-import { Note, State, ChoiceState } from '@renderer/lib/drawable';
+import { Note, State, ChoiceState, ShallowHistory } from '@renderer/lib/drawable';
 import { transitionStyle } from '@renderer/lib/styles';
 import { Point } from '@renderer/lib/types/graphics';
 import {
@@ -16,7 +16,7 @@ import { getColor } from '@renderer/theme';
  * Используется для визуализации создаваемого перехода.
  */
 export class GhostTransition {
-  source!: State | ChoiceState | Note | null;
+  source!: State | ChoiceState | Note | ShallowHistory | null;
   target!: Point | null;
 
   constructor(private app: CanvasEditor) {}
@@ -61,7 +61,7 @@ export class GhostTransition {
     ctx.strokeStyle = prevStrokeStyle;
   }
 
-  setSource(state: State | ChoiceState | Note) {
+  setSource(state: State | ChoiceState | Note | ShallowHistory) {
     this.source = state;
   }
 

@@ -100,7 +100,7 @@ export const StateMachinesList: React.FC<StateMachinesListProps> = ({
     <section>
       {header()}
       {isInitialized ? (
-        <div className="px-4">
+        <div>
           <div className="overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
             {[...Object.entries(elements)].map(
               ([id, sm]) =>

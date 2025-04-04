@@ -21,8 +21,9 @@ const collapsedSize = 6;
 export const Explorer: React.FC = () => {
   const modelController = useModelContext();
   const isInitialized = modelController.model.useData('', 'isInitialized');
+  const headControllerId = modelController.model.useData('', 'headControllerId');
   const stateMachinesIds = Object.keys(
-    modelController.model.useData('', 'elements.stateMachinesId')
+    modelController.controllers[headControllerId].useData('stateMachinesSub')
   );
 
   const stateMachinesPanelRef = useRef<ImperativePanelHandle>(null);
@@ -32,14 +33,6 @@ export const Explorer: React.FC = () => {
   const [, forceUpdate] = useReducer((p) => p + 1, 0);
 
   const [selectedSm, setSmSelected] = useState<string | null>(null);
-
-  useEffect(() => {
-    const findId = stateMachinesIds.find((id) => id === selectedSm);
-    if (!findId) {
-      const newSmId = stateMachinesIds.find((id) => id !== '') ?? '';
-      setSmSelected(newSmId);
-    }
-  }, [stateMachinesIds]);
 
   const togglePanel = (panelRef: RefObject<ImperativePanelHandle>) => {
     const panel = panelRef.current;
@@ -91,7 +84,7 @@ export const Explorer: React.FC = () => {
           className="px-4"
         >
           <StateMachineComponentList
-            smId={selectedSm ?? ''}
+            smId={stateMachinesIds.length > 0 ? stateMachinesIds[0] : ''}
             isCollapsed={() => componentPanelRef.current?.isCollapsed() ?? false}
             togglePanel={() => togglePanel(componentPanelRef)}
           />

@@ -365,7 +365,6 @@ export class PlatformManager {
           parameter = '?!';
         }
       } else if (typeof paramValue.value === 'string') {
-        debugger;
         if (Array.isArray(parameterList[0].type) && parameterList[0].valueAlias !== undefined) {
           const valueIndex = parameterList[0].type.findIndex(
             (option) => paramValue.value === option

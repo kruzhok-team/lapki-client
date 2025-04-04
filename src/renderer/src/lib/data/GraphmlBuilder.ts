@@ -119,7 +119,6 @@ export function serializeEvent(
       ? components[trigger.component].name
       : trigger.component;
   const protoComponent = platform.components[components[trigger.component].type];
-  // debugger;
   const protoSignal = protoComponent.signals[trigger.method];
   const methodName = useName && protoSignal.alias ? protoSignal.alias : trigger.method;
   if (trigger.args === undefined || Object.keys(trigger.args).length === 0) {

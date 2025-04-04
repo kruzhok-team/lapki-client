@@ -100,15 +100,24 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
     <div className="flex flex-col gap-2">
       <h3 className="mb-1 text-xl">Параметры:</h3>
       {protoParameters.map((proto, idx) => {
-        const { alias, name, description = '', type = '' } = proto;
+        const { name, description = '', type = '' } = proto;
         const parameter = parameters[name] ?? { value: '', order: idx };
         const value = parameter.value;
         const error = errors[name];
         const hint =
           description + (type && `${description ? '\n' : ''}Тип: ${formatArgType(type)}`);
-        const label = (alias ?? name) + ':';
+        const label = name + ':';
         if (Array.isArray(type)) {
-          const options = type.map((value) => ({ label: value, value }));
+          const valueAliases = proto.valueAlias;
+          const options =
+            valueAliases !== undefined &&
+            Array.isArray(valueAliases) &&
+            valueAliases.length === type.length
+              ? type.map((value, index) => ({
+                  label: valueAliases[index] ?? value,
+                  value,
+                }))
+              : type.map((value) => ({ label: value, value }));
           return (
             <ComponentFormFieldLabel key={name} label={label} hint={hint}>
               <Select

@@ -6,7 +6,7 @@ export type ArgumentProto = {
   description?: string;
   type?: ArgType;
   optional?: boolean;
-  alias?: string;
+  valueAlias?: string[];
 };
 
 export type ParameterProto = {
@@ -15,7 +15,7 @@ export type ParameterProto = {
   description?: string;
   type?: ArgType;
   optional?: boolean;
-  alias?: string;
+  valueAlias?: string[];
 };
 
 export type SignalProto = {
@@ -31,6 +31,7 @@ export type VariableProto = {
   type?: ArgType;
   description?: string;
   alias?: string;
+  valueAlias?: string[];
   // TODO: parameters?: ArgumentProto[];
 };
 
@@ -42,6 +43,7 @@ export type MethodProto = {
 };
 
 export type ComponentProto = {
+  name?: string;
   description?: string;
   singletone?: boolean;
   img?: string;
@@ -54,7 +56,6 @@ export type ComponentProto = {
   initializationParameters?: { [name: string]: ParameterProto };
   initializationFunction?: string;
   loopActions?: string[];
-  alias?: string;
 };
 
 export type CompilingSettings = {

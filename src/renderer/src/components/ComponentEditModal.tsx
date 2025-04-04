@@ -90,7 +90,7 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
     onClose();
   };
 
-  const componentType = proto.name ?? data.type;
+  const componentType = data.type;
   const componentName = proto.singletone ? componentType : `${componentType} ${id}`;
 
   useLayoutEffect(() => {

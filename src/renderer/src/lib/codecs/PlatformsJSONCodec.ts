@@ -242,7 +242,6 @@ const typeMap: any = {
   ),
   ComponentProto: o(
     [
-      { json: 'alias', js: 'alias', typ: u(undefined, '') },
       { json: 'buildFiles', js: 'buildFiles', typ: u(undefined, a('')) },
       {
         json: 'constructorParameters',
@@ -260,6 +259,7 @@ const typeMap: any = {
       },
       { json: 'loopActions', js: 'loopActions', typ: u(undefined, a('')) },
       { json: 'methods', js: 'methods', typ: m(r('MethodProto')) },
+      { json: 'name', js: 'name', typ: u(undefined, '') },
       { json: 'signals', js: 'signals', typ: m(r('SignalProto')) },
       { json: 'singletone', js: 'singletone', typ: u(undefined, true) },
       { json: 'variables', js: 'variables', typ: m(r('VariableProto')) },
@@ -268,12 +268,12 @@ const typeMap: any = {
   ),
   ParameterProto: o(
     [
-      { json: 'alias', js: 'alias', typ: u(undefined, '') },
       { json: 'description', js: 'description', typ: u(undefined, '') },
       { json: 'img', js: 'img', typ: u(undefined, '') },
       { json: 'name', js: 'name', typ: u(undefined, '') },
       { json: 'optional', js: 'optional', typ: u(undefined, true) },
       { json: 'type', js: 'type', typ: u(undefined, u(a(u(3.14, '')), '')) },
+      { json: 'valueAlias', js: 'valueAlias', typ: u(undefined, a('')) },
     ],
     false
   ),
@@ -288,12 +288,12 @@ const typeMap: any = {
   ),
   ArgumentProto: o(
     [
-      { json: 'alias', js: 'alias', typ: u(undefined, '') },
       { json: 'description', js: 'description', typ: u(undefined, '') },
       { json: 'img', js: 'img', typ: u(undefined, '') },
       { json: 'name', js: 'name', typ: '' },
       { json: 'optional', js: 'optional', typ: u(undefined, true) },
       { json: 'type', js: 'type', typ: u(undefined, u(a(u(3.14, '')), '')) },
+      { json: 'valueAlias', js: 'valueAlias', typ: u(undefined, a('')) },
     ],
     false
   ),
@@ -313,6 +313,7 @@ const typeMap: any = {
       { json: 'description', js: 'description', typ: u(undefined, '') },
       { json: 'img', js: 'img', typ: u(undefined, '') },
       { json: 'type', js: 'type', typ: u(undefined, u(a(u(3.14, '')), '')) },
+      { json: 'valueAlias', js: 'valueAlias', typ: u(undefined, a('')) },
     ],
     false
   ),

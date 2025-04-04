@@ -36,7 +36,6 @@ export const operatorSet = new Set([
 ]);
 
 export const systemComponent: ComponentProto = {
-  alias: 'Система',
   description: 'Встроенные платформонезависимые события и методы',
   singletone: true,
   img: 'system',
@@ -118,6 +117,11 @@ export class PlatformManager {
 
   resolveComponent(name: string) {
     return this.nameToVisual.get(name) ?? { component: name };
+  }
+
+  resolveVariable(name: string, component: ComponentProto) {
+    const variable = component.variables[name];
+    return variable && variable.alias ? component.variables[name].alias : name;
   }
 
   resolveComponentType(name: string): string {
@@ -332,6 +336,7 @@ export class PlatformManager {
     let argQuery: string = '';
     const compoData = this.resolveComponent(ac.component);
     const component = compoData.component;
+    const protoComponent = this.data.components[component];
     const parameterList = this.data.components[component]?.methods[ac.method]?.parameters;
     if (ac.component === 'System') {
       rightIcon = ac.method;
@@ -360,8 +365,20 @@ export class PlatformManager {
           parameter = '?!';
         }
       } else if (typeof paramValue.value === 'string') {
-        parameter =
-          paramValue.value.length > 15 ? paramValue.value.slice(0, 12) + '...' : paramValue.value;
+        debugger;
+        if (Array.isArray(parameterList[0].type) && parameterList[0].valueAlias !== undefined) {
+          const valueIndex = parameterList[0].type.findIndex(
+            (option) => paramValue.value === option
+          );
+          if (valueIndex !== -1) {
+            parameter = parameterList[0].valueAlias[valueIndex];
+          } else {
+            parameter = '?!';
+          }
+        } else {
+          parameter =
+            paramValue.value.length > 15 ? paramValue.value.slice(0, 12) + '...' : paramValue.value;
+        }
       } else if (
         typeof parameterList[0].type === 'string' &&
         parameterList[0].type.startsWith('Matrix')

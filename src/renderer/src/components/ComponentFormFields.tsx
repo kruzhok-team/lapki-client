@@ -147,7 +147,13 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
         const error = errors[name];
 
         if (Array.isArray(type)) {
-          const options = type.map((value) => ({ label: value, value }));
+          const valueAliases = param.valueAlias;
+          const options =
+            valueAliases !== undefined &&
+            Array.isArray(valueAliases) &&
+            valueAliases.length === type.length
+              ? type.map((value, index) => ({ label: valueAliases[index] ?? value, value }))
+              : type.map((value) => ({ label: value, value }));
           return (
             <ComponentFormFieldLabel
               key={idx}

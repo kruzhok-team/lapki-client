@@ -64,6 +64,7 @@ export const defaultSettings = {
      * Если true, то будет автоматическая прокрутка окна с логами
      */
     autoScroll: true,
+    textMode: 'text' as 'text' | 'hex',
   },
   platformsPath: '',
   theme: 'light' as 'light' | 'dark',
@@ -126,6 +127,11 @@ export const initSettings = () => {
     }
   }
   checkRecentFiles();
+  // (Roundabout1): костыль, нужно будет реализовать проверку наличия всех значений для ключей при инициализации.
+  const monitorSettings = settings.getSync('serialmonitor' as SettingsKey);
+  if (monitorSettings && !monitorSettings['textMode']) {
+    settings.setSync('serialmonitor.textMode', 'text');
+  }
 };
 
 export const initSettingsHandlers = (webContents: WebContents) => {

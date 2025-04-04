@@ -7,7 +7,7 @@ import { useModal } from '@renderer/hooks/useModal';
 import { useProperties } from '@renderer/hooks/useProperties';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { useTabs } from '@renderer/store/useTabs';
-import { noTextMode } from '@renderer/version';
+import { noTextMode, noSchemeScreen } from '@renderer/version';
 
 import { OpenRecentModal } from '../OpenRecentModal';
 import { Badge, WithHint } from '../UI';
@@ -111,7 +111,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
         modelController.model.changeHeadControllerId(schemeEditorId);
       },
       disabled: !isInitialized,
-      hidden: controller.type === 'scheme',
+      hidden: noSchemeScreen || controller.type === 'scheme',
     },
     {
       text: 'Текстовый режим (β)',

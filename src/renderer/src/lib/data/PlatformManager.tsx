@@ -15,6 +15,7 @@ export type ListEntry = {
   name: string;
   description?: string;
   img?: string;
+  alias?: string;
 };
 
 export type ComponentEntry = {
@@ -35,7 +36,6 @@ export const operatorSet = new Set([
 ]);
 
 export const systemComponent: ComponentProto = {
-  name: 'Система',
   description: 'Встроенные платформонезависимые события и методы',
   singletone: true,
   img: 'system',
@@ -119,6 +119,11 @@ export class PlatformManager {
     return this.nameToVisual.get(name) ?? { component: name };
   }
 
+  resolveVariable(name: string, component: ComponentProto) {
+    const variable = component.variables[name];
+    return variable && variable.alias ? component.variables[name].alias : name;
+  }
+
   resolveComponentType(name: string): string {
     return this.nameToVisual.get(name)?.component ?? name;
   }
@@ -139,6 +144,7 @@ export class PlatformManager {
         name: eName,
         description: signals[eName].description,
         img: signals[eName].img,
+        alias: signals[eName].alias,
       });
     }
     return outs;
@@ -154,6 +160,7 @@ export class PlatformManager {
         name: mName,
         description: methods[mName].description,
         img: methods[mName].img,
+        alias: methods[mName].alias,
       });
     }
     return outs;
@@ -169,6 +176,7 @@ export class PlatformManager {
         name: vName,
         description: variables[vName].description,
         img: variables[vName].img,
+        alias: variables[vName].alias,
       });
     }
     return outs;
@@ -356,8 +364,19 @@ export class PlatformManager {
           parameter = '?!';
         }
       } else if (typeof paramValue.value === 'string') {
-        parameter =
-          paramValue.value.length > 15 ? paramValue.value.slice(0, 12) + '...' : paramValue.value;
+        if (Array.isArray(parameterList[0].type) && parameterList[0].valueAlias !== undefined) {
+          const valueIndex = parameterList[0].type.findIndex(
+            (option) => paramValue.value === option
+          );
+          if (valueIndex !== -1) {
+            parameter = parameterList[0].valueAlias[valueIndex];
+          } else {
+            parameter = '?!';
+          }
+        } else {
+          parameter =
+            paramValue.value.length > 15 ? paramValue.value.slice(0, 12) + '...' : paramValue.value;
+        }
       } else if (
         typeof parameterList[0].type === 'string' &&
         parameterList[0].type.startsWith('Matrix')

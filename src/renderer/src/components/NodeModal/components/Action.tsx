@@ -46,6 +46,20 @@ export const Action: React.FC<ActionProps> = (props) => {
     }${getActionDelimeter(platform.data, components[param.component].type)}${param.method}`;
   };
 
+  const getMethod = (component: string, method: string): string => {
+    const protoComponent = platform.getComponent(component);
+
+    if (!protoComponent) return method;
+
+    const protoMethod = protoComponent.methods[method];
+
+    if (!protoMethod) return method;
+
+    if (protoMethod.alias) return protoMethod.alias;
+
+    return method;
+  };
+
   const handleDoubleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     onChange();
@@ -76,7 +90,7 @@ export const Action: React.FC<ActionProps> = (props) => {
 
       <div className="flex flex-row items-center">
         <div>{data.componentName}.</div>
-        <div>{data.method}</div>
+        <div>{getMethod(data.component, data.method)}</div>
         <div>(</div>
         <div className="flex items-center gap-[2px]">
           {sortedParameters.map(([id, value], index) => {
@@ -121,6 +135,19 @@ export const Action: React.FC<ActionProps> = (props) => {
               }
             }
 
+            if (
+              Array.isArray(parameter.type) &&
+              Array.isArray(parameter.valueAlias) &&
+              parameter.valueAlias.length === parameter.type.length
+            ) {
+              // Где находится элемент в списке выбора
+              const valueIndex = parameter.type.findIndex((option) => value.value === option);
+              if (valueIndex !== -1) {
+                return (
+                  <>{serializeParameter(index, parameter.valueAlias[valueIndex] ?? value.value)}</>
+                );
+              }
+            }
             return <>{serializeParameter(index, value.value)}</>;
           })}
         </div>

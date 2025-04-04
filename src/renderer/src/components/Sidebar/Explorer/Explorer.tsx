@@ -1,4 +1,4 @@
-import React, { useReducer, useRef, RefObject } from 'react';
+import React, { useReducer, useRef, RefObject, useState, useEffect } from 'react';
 
 import {
   Panel,
@@ -30,7 +30,18 @@ export const Explorer: React.FC = () => {
   const stateMachinesPanelRef = useRef<ImperativePanelHandle>(null);
   const componentPanelRef = useRef<ImperativePanelHandle>(null);
   const hierarchyPanelRef = useRef<ImperativePanelHandle>(null);
+
   const [, forceUpdate] = useReducer((p) => p + 1, 0);
+
+  const [selectedSm, setSmSelected] = useState<string | null>(null);
+
+  useEffect(() => {
+    const findId = stateMachinesIds.find((id) => id === selectedSm);
+    if (!findId) {
+      const newSmId = stateMachinesIds.find((id) => id !== '') ?? '';
+      setSmSelected(newSmId);
+    }
+  }, [stateMachinesIds]);
 
   const togglePanel = (panelRef: RefObject<ImperativePanelHandle>) => {
     const panel = panelRef.current;
@@ -60,6 +71,8 @@ export const Explorer: React.FC = () => {
           className="px-4"
         >
           <StateMachinesList
+            selectedSm={selectedSm}
+            setSmSelected={setSmSelected}
             isCollapsed={() => stateMachinesPanelRef.current?.isCollapsed() ?? false}
             togglePanel={() => togglePanel(stateMachinesPanelRef)}
           />
@@ -82,7 +95,7 @@ export const Explorer: React.FC = () => {
           <StateMachineComponentList
             controller={controller}
             isInitialized={isInitialized}
-            smId={stateMachinesIds.length > 0 ? stateMachinesIds[0] : ''}
+            smId={selectedSm ?? ''}
             isCollapsed={() => componentPanelRef.current?.isCollapsed() ?? false}
             togglePanel={() => togglePanel(componentPanelRef)}
           />

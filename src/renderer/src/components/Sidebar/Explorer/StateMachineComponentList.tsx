@@ -46,7 +46,6 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
     [id: string]: ComponentData;
   };
   const platform = controller.useData('platform') as { [id: string]: PlatformManager };
-  const smName = model.useData(smId, 'elements.name');
   const sortedComponents = useMemo(() => {
     return Object.entries(components)
       .sort((a, b) => a[1].order - b[1].order)

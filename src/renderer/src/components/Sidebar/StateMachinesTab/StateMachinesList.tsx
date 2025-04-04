@@ -17,11 +17,15 @@ import { StateMachineDeleteModal } from './StateMachineDeleteModal';
 import { Component } from '../Explorer/Component';
 
 interface StateMachinesListProps {
+  selectedSm: string | null;
+  setSmSelected: (newSmId: string | null) => void;
   isCollapsed: () => boolean;
   togglePanel: () => void;
 }
 
 export const StateMachinesList: React.FC<StateMachinesListProps> = ({
+  selectedSm,
+  setSmSelected,
   isCollapsed,
   togglePanel,
 }) => {
@@ -46,7 +50,7 @@ export const StateMachinesList: React.FC<StateMachinesListProps> = ({
   const elements = modelController.model.useData('', 'elements.stateMachinesId') as {
     [ID: string]: StateMachine;
   };
-  const [selectedSm, setSmSelected] = useState<string | null>(null);
+
   const {
     addProps,
     editProps,

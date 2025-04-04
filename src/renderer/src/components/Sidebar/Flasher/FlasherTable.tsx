@@ -10,7 +10,7 @@ import { StateMachine } from '@renderer/types/diagram';
 import { AddressData, FirmwareTargetType, FlashTableItem } from '@renderer/types/FlasherTypes';
 
 interface FlasherTableProps {
-  getEntryById: (ID: number) => AddressData | undefined;
+  getEntryById: (ID: string) => AddressData | undefined;
   addressEnrtyEdit: (data: AddressData) => void;
 }
 
@@ -44,7 +44,6 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
   const { devices, flashTableData: tableData, setFlashTableData: setTableData } = useFlasher();
 
   const [checkedAll, setCheckedAll] = useState<boolean>(true);
-  const [fileBaseName, setFileBaseName] = useState<Map<number | string, string>>(new Map());
 
   const stateMachineOption = (sm: StateMachine | null | undefined, smId: string) => {
     if (!sm) return null;
@@ -107,14 +106,14 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
   }
 
   const handleSelectFile = async (tableItem: FlashTableItem) => {
-    const [canceled, filePath, basename] = await window.api.fileHandlers.selectFile(
+    const [canceled, filePath] = await window.api.fileHandlers.selectFile(
       'прошивки',
       tableItem.extensions
     );
     if (canceled) return;
     setTableData(
       tableData.map((item) => {
-        if (item.targetId === tableItem.targetId) {
+        if (item.targetType === tableItem.targetType && item.targetId === tableItem.targetId) {
           return {
             ...item,
             source: filePath,
@@ -124,17 +123,12 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
         return item;
       })
     );
-    setFileBaseName((oldMap) => {
-      const newMap = new Map(oldMap);
-      newMap.set(tableItem.targetId, basename);
-      return newMap;
-    });
   };
 
   const removeSource = (tableItem: FlashTableItem) => {
     setTableData(
       tableData.map((item) => {
-        if (item.targetId === tableItem.targetId) {
+        if (item.targetType === tableItem.targetType && item.targetId === tableItem.targetId) {
           return {
             ...item,
             source: undefined,
@@ -144,13 +138,6 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
         return item;
       })
     );
-    if (tableItem.isFile) {
-      setFileBaseName((oldMap) => {
-        const newMap = new Map(oldMap);
-        newMap.delete(tableItem.targetId);
-        return newMap;
-      });
-    }
   };
 
   const onCheckedChangeHandle = (tableItem: FlashTableItem) => {
@@ -159,7 +146,7 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
     }
     setTableData(
       tableData.map((item) => {
-        if (item.targetId === tableItem.targetId) {
+        if (item.targetType === tableItem.targetType && item.targetId === tableItem.targetId) {
           return {
             ...item,
             isSelected: !tableItem.isSelected,
@@ -173,7 +160,7 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
   const onSelectChangeHandle = (tableItem: FlashTableItem, smId: string) => {
     setTableData(
       tableData.map((item) => {
-        if (item.targetId === tableItem.targetId) {
+        if (item.targetType === tableItem.targetType && item.targetId === tableItem.targetId) {
           return {
             ...item,
             source: smId,
@@ -211,6 +198,17 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
         return 'ArduinoUno';
     }
     return undefined;
+  };
+
+  const handleDisplayBaseName = (filepath: string | undefined) => {
+    if (filepath === undefined) return 'Ошибка!';
+    let index = 0;
+    for (index = filepath.length - 1; index >= 0; index--) {
+      if (filepath[index] === '\\' || filepath[index] === '/') {
+        break;
+      }
+    }
+    return filepath.slice(index + 1);
   };
 
   const cellRender = (content: string | JSX.Element, mergeClassName: string) => {
@@ -253,7 +251,7 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
     let displayAddress: string = '…';
     let addressData: AddressData | undefined = undefined;
     if (tableItem.targetType === FirmwareTargetType.tjc_ms) {
-      addressData = getEntryById(tableItem.targetId as number);
+      addressData = getEntryById(tableItem.targetId);
       if (!addressData) {
         return;
       }
@@ -275,7 +273,7 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
       throw Error(`Плата не поддерживается: ${tableItem}`);
     }
     return (
-      <div key={tableItem.targetId} className="flex items-start">
+      <div key={`${tableItem.targetId}-${tableItem.targetType}`} className="flex items-start">
         <Checkbox
           className={twMerge(checkColumn, cellHeight)}
           checked={checked}
@@ -304,7 +302,7 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
               'rounded border border-border-primary bg-transparent px-[9px] py-[6px] text-text-primary outline-none transition-colors'
             )}
           >
-            {fileBaseName.get(tableItem.targetId) ?? 'Ошибка!'}
+            {handleDisplayBaseName(tableItem.source)}
           </div>
         ) : (
           <Select

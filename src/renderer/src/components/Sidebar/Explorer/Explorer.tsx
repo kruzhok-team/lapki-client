@@ -1,4 +1,4 @@
-import React, { useReducer, useRef, RefObject, useState, useEffect } from 'react';
+import React, { useReducer, useRef, RefObject, useState } from 'react';
 
 import {
   Panel,

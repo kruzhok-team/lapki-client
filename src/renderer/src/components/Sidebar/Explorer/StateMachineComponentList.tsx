@@ -8,7 +8,6 @@ import { ComponentAddModal } from '@renderer/components/ComponentAddModal';
 import { ComponentDeleteModal } from '@renderer/components/ComponentDeleteModal';
 import { ComponentEditModal } from '@renderer/components/ComponentEditModal';
 import { useComponents } from '@renderer/hooks';
-import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { PlatformManager } from '@renderer/lib/data/PlatformManager';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { Component as ComponentData } from '@renderer/types/diagram';
@@ -16,20 +15,26 @@ import { Component as ComponentData } from '@renderer/types/diagram';
 import { Component } from './Component';
 
 export interface StateMachineComponentListProps {
-  isInitialized: boolean;
-  controller: CanvasController;
   smId: string;
   isCollapsed: () => boolean;
   togglePanel: () => void;
 }
 
 export const StateMachineComponentList: React.FC<StateMachineComponentListProps> = ({
-  isInitialized,
-  controller,
   smId,
   isCollapsed,
   togglePanel,
 }) => {
+  const modelController = useModelContext();
+  const model = modelController.model;
+  const components = model.useData(smId, 'elements.components') as {
+    [id: string]: ComponentData;
+  };
+  const headControllerId = modelController.model.useData('', 'headControllerId');
+  const controller = modelController.controllers[headControllerId];
+  const platform = controller.useData('platform') as { [id: string]: PlatformManager };
+  const isInitialized = modelController.model.useData('', 'isInitialized');
+
   const {
     addProps,
     editProps,
@@ -40,12 +45,6 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
     onRequestDeleteComponent,
   } = useComponents(controller);
 
-  const modelController = useModelContext();
-  const model = modelController.model;
-  const components = model.useData(smId, 'elements.components') as {
-    [id: string]: ComponentData;
-  };
-  const platform = controller.useData('platform') as { [id: string]: PlatformManager };
   const sortedComponents = useMemo(() => {
     return Object.entries(components)
       .sort((a, b) => a[1].order - b[1].order)
@@ -93,7 +92,10 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
   };
 
   return (
-    <div className="max-h-full overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
+    <div
+      className="max-h-full overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
+      key={smId}
+    >
       {header()}
       {isInitialized ? (
         <div className="mb-2 mt-1 select-none">

@@ -21,8 +21,6 @@ const collapsedSize = 6;
 export const Explorer: React.FC = () => {
   const modelController = useModelContext();
   const isInitialized = modelController.model.useData('', 'isInitialized');
-  const headControllerId = modelController.model.useData('', 'headControllerId');
-  const controller = modelController.controllers[headControllerId];
   const stateMachinesIds = Object.keys(
     modelController.model.useData('', 'elements.stateMachinesId')
   );
@@ -93,8 +91,6 @@ export const Explorer: React.FC = () => {
           className="px-4"
         >
           <StateMachineComponentList
-            controller={controller}
-            isInitialized={isInitialized}
             smId={selectedSm ?? ''}
             isCollapsed={() => componentPanelRef.current?.isCollapsed() ?? false}
             togglePanel={() => togglePanel(componentPanelRef)}

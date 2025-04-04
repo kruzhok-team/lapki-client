@@ -98,14 +98,11 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
   };
 
   return (
-    <div
-      className="max-h-full overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
-      key={smId}
-    >
+    <div key={smId}>
       {header()}
       {smName ?? smId}
       {isInitialized ? (
-        <div className="mb-2 mt-1 select-none">
+        <div className="mb-2 mt-1 max-h-full select-none overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
           {sortedComponents.length === 0 ? (
             <p className="text-text-inactive">Нет компонентов</p>
           ) : (

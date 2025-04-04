@@ -42,12 +42,9 @@ export const StateMachinesStack: React.FC<StateMachinesStackProps> = ({
     >
       {selectedStateMachines.map((sm, index) => {
         return (
-          <div key={sm.id}>
+          <div key={sm.id} className={twMerge(isSelected(index) && 'bg-bg-active')}>
             <div
-              className={twMerge(
-                'flex cursor-pointer select-none items-center gap-2 p-2 transition-colors duration-75',
-                isSelected(index) && 'bg-bg-active'
-              )}
+              className="ml-6 mr-6 flex cursor-pointer select-none items-center p-2 transition-colors duration-75"
               draggable
               onDragStart={() => onDragStart(index)}
               onDragEnd={() => onDragEnd()}
@@ -61,13 +58,13 @@ export const StateMachinesStack: React.FC<StateMachinesStackProps> = ({
               </div>
               <button
                 type="button"
-                className="ml-auto mr-2 rounded p-2 transition-colors hover:bg-bg-hover active:bg-bg-active"
+                className="ml-auto rounded p-2 transition-colors hover:bg-bg-hover active:bg-bg-active"
                 onClick={(e) => handleOnDelte(e, index)}
               >
                 <CloseIcon className="h-3 w-3" />
               </button>
             </div>
-            <hr className="h-[1px] w-auto border-bg-hover opacity-70" />
+            <hr className="ml-6 mr-6 h-[1px] w-auto border-bg-hover opacity-70" />
           </div>
         );
       })}

@@ -63,6 +63,7 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
   const handleDropPlatformOnStateMachines = () => {
     if (draggedPlatformIdx === null) return;
     handleAddPlatform(draggedPlatformIdx);
+    setDraggedPlatformIdx(null);
   };
 
   const handleOnDeletePlatform = (index: number) => {
@@ -73,8 +74,10 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
   };
 
   const handleDropStateMachineOnPlatforms = () => {
+    console.log(draggedStateMachineIndex);
     if (draggedStateMachineIndex === null) return;
     handleOnDeletePlatform(draggedStateMachineIndex);
+    setDraggedStateMachineIndex(null);
   };
 
   return (
@@ -95,7 +98,9 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
             />
           ) : (
             <div className="ml-1 opacity-70">
-              Добавьте платформы сюда двойным кликом левой кнопкой мыши, либо перетащив их сюда
+              Добавьте платформы сюда двойным кликом левой кнопкой мыши, либо перетащив их сюда.
+              Чтобы убрать платформы, которые были добавлены, нажмите на крестик сбоку, либо
+              перетащите их обратно в список платформ перетаскиванием.
             </div>
           )}
         </div>

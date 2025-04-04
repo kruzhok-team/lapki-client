@@ -64,8 +64,8 @@ export const StateMachinesList: React.FC<StateMachinesListProps> = ({
   });
   const isDisabled = !isInitialized;
 
-  return (
-    <section>
+  const header = () => {
+    return (
       <div className="flex">
         <button className="my-3 flex items-center" onClick={() => togglePanel()}>
           <ArrowIcon
@@ -84,6 +84,12 @@ export const StateMachinesList: React.FC<StateMachinesListProps> = ({
           </button>
         </div>
       </div>
+    );
+  };
+
+  return (
+    <section>
+      {header()}
       {isInitialized ? (
         <div className="px-4">
           <div className="overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">

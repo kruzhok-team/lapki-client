@@ -54,14 +54,10 @@ export const Explorer: React.FC = () => {
           onExpand={forceUpdate}
           className="px-4"
         >
-          {isInitialized ? (
-            <StateMachinesList
-              isCollapsed={() => stateMachinesPanelRef.current?.isCollapsed() ?? false}
-              togglePanel={() => togglePanel(stateMachinesPanelRef)}
-            />
-          ) : (
-            'Недоступно до открытия схемы'
-          )}
+          <StateMachinesList
+            isCollapsed={() => stateMachinesPanelRef.current?.isCollapsed() ?? false}
+            togglePanel={() => togglePanel(stateMachinesPanelRef)}
+          />
         </Panel>
 
         <PanelResizeHandle className="group relative py-1">

@@ -15,6 +15,8 @@ import { StateMachine } from '@renderer/types/diagram';
 import { ComponentsList } from './ComponentsList';
 import { StateMachinesHierarchy } from './StateMachinesHierarchy';
 
+import { StateMachinesList } from '../StateMachinesTab';
+
 const collapsedSize = 6;
 
 export const Explorer: React.FC = () => {
@@ -74,7 +76,7 @@ export const Explorer: React.FC = () => {
             <h3 className="font-semibold">Машины состояний</h3>
           </button>
 
-          {isInitialized ? <ComponentsList /> : 'Недоступно до открытия схемы'}
+          {isInitialized ? <StateMachinesList /> : 'Недоступно до открытия схемы'}
         </Panel>
 
         <PanelResizeHandle className="group relative py-1">

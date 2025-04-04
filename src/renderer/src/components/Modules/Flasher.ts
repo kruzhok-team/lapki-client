@@ -68,8 +68,8 @@ export class Flasher extends ClientWS {
     let ending: string;
     if (device.isArduinoDevice()) {
       ending = 'ino.hex';
-    } else if (device.isMSDevice()) {
-      ending = '.bin';
+    } else if (device.isMSDevice() || device.isBlgMbDevice()) {
+      ending = 'bin';
     } else {
       throw new Error('Попытка задать бинарные данные для неизвестной платформы!');
     }

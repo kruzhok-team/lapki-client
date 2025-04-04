@@ -5,6 +5,7 @@ import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 're
 
 import { useForm } from 'react-hook-form';
 
+import { ReactComponent as QuestionMark } from '@renderer/assets/icons/question-mark.svg';
 import { AvrdudeGuideModal } from '@renderer/components/AvrdudeGuide';
 import { ErrorModal, ErrorModalData } from '@renderer/components/ErrorModal';
 import { Device, MSDevice } from '@renderer/components/Modules/Device';
@@ -66,6 +67,8 @@ export const FlasherTab: React.FC = () => {
     setFlashTableData,
     hasAvrdude,
     errorMessage,
+    binaryFolder,
+    setBinaryFolder,
   } = useFlasher();
 
   const [managerMSSetting, setManagerMSSetting] = useSettings('managerMS');
@@ -95,6 +98,7 @@ export const FlasherTab: React.FC = () => {
   const noConnection = connectionStatus !== ClientStatus.CONNECTED;
   const commonOperationDisabled =
     noConnection ||
+    // TODO: вынести выбранные платы в отдельную константу?
     flashTableData.find((item) => {
       return item.isSelected;
     }) === undefined;
@@ -228,6 +232,7 @@ export const FlasherTab: React.FC = () => {
       isSelected: true,
       targetId: ID,
       targetType: FirmwareTargetType.tjc_ms,
+      extensions: ['bin'],
     });
     if (!isAdded && index !== -1) {
       ManagerMS.addLog(
@@ -259,7 +264,7 @@ export const FlasherTab: React.FC = () => {
     setFlashTableData(
       flashTableData.filter((item) => {
         switch (item.targetType) {
-          case FirmwareTargetType.arduino:
+          case FirmwareTargetType.dev:
             return devices.has(item.targetId as string);
           default:
             return true;
@@ -324,7 +329,7 @@ export const FlasherTab: React.FC = () => {
             deviceId: deviceMs.deviceID,
             type: op,
           });
-        } else if (item.targetType === FirmwareTargetType.arduino) {
+        } else if (item.targetType === FirmwareTargetType.dev) {
           const dev = devices.get(item.targetId as string);
           ManagerMS.addLog(
             `${dev ? dev.displayName() : 'Неизвестное устройство'}: операция "${getOpName(
@@ -346,20 +351,23 @@ export const FlasherTab: React.FC = () => {
       let address: AddressData | undefined = undefined;
       let devName: string = '';
       switch (item.targetType) {
-        case FirmwareTargetType.arduino: {
+        case FirmwareTargetType.dev: {
           dev = devices.get(item.targetId as string);
           if (!dev) {
             notFound = true;
             break;
           }
           devName = dev.displayName();
+          if (managerMSSetting?.verification) {
+            ManagerMS.addLog(
+              `${devName}: верификация прошивки для данного устройства не поддерживается.`
+            );
+          }
           break;
         }
         case FirmwareTargetType.tjc_ms: {
           if (!addressBookSetting) {
-            ManagerMS.addLog(
-              `${ManagerMS.displayDeviceInfo}: Ошибка! Адресная книга не загрузилась!`
-            );
+            ManagerMS.addLog(`Ошибка! Адресная книга не загрузилась!`);
             continue;
           }
           address = getEntryById(item.targetId as number);
@@ -508,18 +516,19 @@ export const FlasherTab: React.FC = () => {
         handleGetAddressAndMeta();
         continue;
       }
+      const extensions: string[] = ['bin'];
       if (dev.isArduinoDevice()) {
-        const isAdded = addToTable({
-          targetId: devId,
-          isFile: false,
-          isSelected: true,
-          targetType: FirmwareTargetType.arduino,
-        });
-        if (!isAdded) {
-          ManagerMS.addLog(`${dev.displayName()}: устройство уже было добавлено ранее в таблицу.`);
-        }
-      } else {
-        throw Error('Неизвестный тип устройства!');
+        extensions.push('hex');
+      }
+      const isAdded = addToTable({
+        targetId: devId,
+        isFile: false,
+        isSelected: true,
+        targetType: FirmwareTargetType.dev,
+        extensions: extensions,
+      });
+      if (!isAdded) {
+        ManagerMS.addLog(`${dev.displayName()}: устройство уже было добавлено ранее в таблицу.`);
       }
     }
   };
@@ -535,7 +544,7 @@ export const FlasherTab: React.FC = () => {
 
   const needAvrdude = useMemo(() => {
     if (!flasherSetting?.type || flasherSetting.type === 'remote' || hasAvrdude) return false;
-    return flashTableData.some((item) => item.targetType === FirmwareTargetType.arduino);
+    return flashTableData.some((item) => item.targetType === FirmwareTargetType.dev);
   }, [flashTableData, hasAvrdude, flasherSetting?.type]);
 
   // вывод сообщения об отсутствии avrdude и кнопка с подсказкой для пользователя
@@ -652,6 +661,52 @@ export const FlasherTab: React.FC = () => {
     }
   };
 
+  const handleGetFirmware = async () => {
+    const [isCreated, directory, error] = await window.api.fileHandlers.createFolder(
+      `прошивки-${Date.now()}`
+    );
+    // TODO: выскакивает ошибка, если отказаться от выбора папки
+    if (error) {
+      ManagerMS.addLog(`Ошибка: ${error}`);
+      return;
+    }
+    if (!isCreated) {
+      return;
+    }
+    for (const item of flashTableData) {
+      if (!item.isSelected) continue;
+      if (item.targetType !== FirmwareTargetType.tjc_ms) {
+        const dev = devices.get(item.targetId as string);
+        ManagerMS.addLog(
+          `${
+            dev ? dev.displayName() : 'Неизвестное устройство'
+          }: операция выгрузки прошивки не поддерживается.`
+        );
+        continue;
+      }
+      const entry = getEntryById(item.targetId as number);
+      if (!entry) {
+        // Если это произошло, то значит что-то пошло не так на клиенте, такой сценарий не должен быть возможным.
+        ManagerMS.addLog(`Ошибка! Не удаётся найти запись с ID ${item.targetId} в адресной книге.`);
+        continue;
+      }
+      if (!deviceMs) {
+        ManagerMS.addLog(
+          `${ManagerMS.displayAddressInfo(entry)}: подключите центральную плату МС-ТЮК.`
+        );
+        continue;
+      }
+      ManagerMS.getFirmwareAdd({
+        addressInfo: entry,
+        blockSize: 1024,
+        dev: deviceMs,
+      });
+    }
+    if (ManagerMS.getFirmwareStart()) {
+      setBinaryFolder(directory);
+    }
+  };
+
   const handleAddressBookSubmit = (entryIds: (string | number)[]) => {
     const addedItems: FlashTableItem[] = [];
     for (const entryId of entryIds) {
@@ -665,6 +720,7 @@ export const FlasherTab: React.FC = () => {
           isSelected: true,
           targetId: entryId,
           targetType: FirmwareTargetType.tjc_ms,
+          extensions: ['bin'],
         });
       }
     }
@@ -733,7 +789,7 @@ export const FlasherTab: React.FC = () => {
         >
           Прошить!
         </button>
-        <div className="mr-4 flex w-40 items-center justify-between">
+        <div className="mr-4 flex items-center justify-between gap-1">
           <Switch
             checked={managerMSSetting.verification}
             onCheckedChange={() =>
@@ -744,6 +800,17 @@ export const FlasherTab: React.FC = () => {
             }
           />
           Верификация
+          <WithHint
+            hint={
+              'Дополнительная проверка целостности загруженной прошивки. Увеличивает общее время загрузки.'
+            }
+          >
+            {(hintProps) => (
+              <div className="shrink-0" {...hintProps}>
+                <QuestionMark className="h-5 w-5" />
+              </div>
+            )}
+          </WithHint>
         </div>
         <button
           className="btn-primary mr-4"
@@ -774,6 +841,13 @@ export const FlasherTab: React.FC = () => {
           disabled={flashResult.size === 0}
         >
           Результаты прошивки
+        </button>
+        <button
+          className="btn-primary mr-4"
+          onClick={handleGetFirmware}
+          disabled={binaryFolder !== null || commonOperationDisabled}
+        >
+          Выгрузка прошивки...
         </button>
         {avrdudeCheck()}
       </div>

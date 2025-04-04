@@ -126,7 +126,7 @@
       "constructorParameters": {
         "baudrate": {
           "type": "uint32_t",
-          "description": "Частота работы.",
+          "description": "Бод – единица измерения частоты обмена информации. Для корректной передачи данных необходимо, чтобы все устройства, между которыми происходит коммуникация, были настроены на одинаковую частоту. По-умолчанию равняется 9600.",
           "optional": true
         }
       },
@@ -808,6 +808,84 @@
       "importFiles": ["AlarmListener.hpp"],
       "singletone": false,
       "variables": {}
+    },
+
+    "UserSignal": {
+      "description": "Пользовательский сигнал",
+      "img": "common/userSignal.svg",
+      "signals": {
+        "isCalled": {
+          "img": "common/signalIsCalled.svg",
+          "description": "Сработал сигнал",
+          "checkMethod": "isCalled"
+        }
+      },
+      "constructorParameters": {},
+      "methods": {
+        "call": {
+          "img": "common/signalCall.svg",
+          "description": "Вызов сигнала"
+        }
+      },
+      "buildFiles": ["UserSignal.hpp"],
+      "importFiles": ["UserSignal.hpp"],
+      "singletone": false,
+      "variables": {}
+    },
+
+    "Iterator": {
+      "description": "Итератор",
+      "img": "common/iterator.svg",
+      "signals": {
+        "onEnd": {
+          "img": "common/onIterationEnd.svg",
+          "description": "Итерации завершены",
+          "checkMethod": "onEnd"
+        },
+        "onIteration": {
+          "img": "common/onIteration.svg",
+          "description": "Очередная итерация",
+          "checkMethod": "onIteration"
+        }
+      },
+      "constructorParameters": {},
+      "methods": {
+        "break_": {
+          "img": "arduino/timer-stop.svg",
+          "description": "Остановить итератор."
+        },
+        "start": {
+          "img": "arduino/start.svg",
+          "parameters": [
+            {
+              "name": "from",
+              "type": "unsigned long",
+              "description": "Начальное значение."
+            },
+            {
+              "name": "to",
+              "type": "unsigned long",
+              "description": "Конечное значение."
+            },
+            {
+              "name": "step",
+              "type": "unsigned long",
+              "description": "Шаг для изменения значения."
+            }
+          ],
+          "description": "Запустить итератор. Будет сигнал раз в итерацию."
+        }
+      },
+      "buildFiles": ["Iterator.hpp"],
+      "importFiles": ["Iterator.hpp"],
+      "singletone": false,
+      "variables": {
+        "index": {
+          "img": "common/iteratorIndex.svg",
+          "type": "unsigned long",
+          "description": "Текущий индекс итерации"
+        }
+      }
     }
   }
 }

@@ -118,15 +118,13 @@ export function serializeEvent(
     useName && components[trigger.component].name
       ? components[trigger.component].name
       : trigger.component;
-
+  const protoComponent = platform.components[components[trigger.component].type];
+  const protoSignal = protoComponent.signals[trigger.method];
+  const methodName = useName && protoSignal.alias ? protoSignal.alias : trigger.method;
   if (trigger.args === undefined || Object.keys(trigger.args).length === 0) {
-    return `${componentName}.${trigger.method}`;
+    return `${componentName}.${methodName}`;
   } else {
-    return `${componentName}.${trigger.method}(${serializeArgs(
-      components,
-      platform,
-      trigger.args
-    )})`;
+    return `${componentName}.${methodName}(${serializeArgs(components, platform, trigger.args)})`;
   }
 }
 
@@ -260,7 +258,7 @@ function serializeStates(
 }
 
 function isVariable(operand: any): operand is Variable {
-  return operand['component'] !== undefined;
+  return operand && operand['component'] !== undefined;
 }
 
 function isConditionArray(value: unknown): value is Condition[] {
@@ -270,14 +268,19 @@ function isConditionArray(value: unknown): value is Condition[] {
 function getOperand(
   operand: string | number | Variable | Condition[],
   platform: Platform,
-  components: { [id: string]: Component }
+  components: { [id: string]: Component },
+  useAlias: boolean = false
 ): string | number {
   if (isConditionArray(operand)) {
     throw new Error('Internal error: operand is Condition[]');
   }
   if (isVariable(operand)) {
     const component = components[operand.component];
-    return `${operand.component}${getActionDelimeter(platform, component.type)}${operand.method}`;
+    const protoComponent = platform.components[component.type];
+    const protoVariable = protoComponent.variables[operand.method];
+    return `${operand.component}${getActionDelimeter(platform, component.type)}${
+      protoVariable.alias && useAlias ? protoVariable.alias : operand.method
+    }`;
   }
   return operand;
 }
@@ -292,13 +295,14 @@ function getOperand(
 export function serializeCondition(
   condition: Condition,
   platform: Platform,
-  components: { [id: string]: Component }
+  components: { [id: string]: Component },
+  useAlias: boolean = false
 ): string {
   if (!isConditionArray(condition.value)) {
     throw new Error('Internal error: condition.value is not Condition[];');
   }
-  const lval = getOperand(condition.value[0].value, platform, components);
-  const rval = getOperand(condition.value[1].value, platform, components);
+  const lval = getOperand(condition.value[0].value, platform, components, useAlias);
+  const rval = getOperand(condition.value[1].value, platform, components, useAlias);
   return `${lval} ${invertOperatorAlias[condition.type]} ${rval}`;
 }
 

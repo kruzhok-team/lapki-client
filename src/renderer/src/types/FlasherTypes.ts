@@ -1,4 +1,4 @@
-import { ArduinoDevice, Device } from '@renderer/components/Modules/Device';
+import { ArduinoDevice, Device, MSDevice } from '@renderer/components/Modules/Device';
 
 import { Binary } from './CompilerTypes';
 
@@ -21,6 +21,7 @@ export type FlashUpdatePort = {
 export type FlasherType =
   | 'get-list'
   | 'device'
+  | 'blg-mb-device'
   | 'device-update-delete'
   | 'device-update-port'
   | 'empty-list'
@@ -62,9 +63,18 @@ export type FlasherType =
   | 'ms-meta-data'
   | 'ms-meta-data-error'
   | 'ms-get-address-and-meta'
-  | 'ms-address-and-meta';
+  | 'ms-address-and-meta'
+  | 'file-write-error'
+  | 'incorrect-file-size'
+  | 'ms-get-firmware'
+  | 'ms-get-firmware-approve'
+  | 'ms-get-firmware-next-block'
+  | 'ms-get-firmware-finish'
+  | 'binary-data';
 export type FlasherPayload =
+  | null
   | string
+  | Uint8Array
   | Device
   | FlashStart
   | UpdateDelete
@@ -80,7 +90,8 @@ export type FlasherPayload =
   | MSAddressAction
   | MetaData
   | FlashBacktrackMs
-  | MSAddressAndMeta;
+  | MSAddressAndMeta
+  | MSGetFirmware;
 export type FlasherMessage = {
   type: FlasherType;
   payload: FlasherPayload;
@@ -216,7 +227,7 @@ export type MetaDataID = {
 
 export enum FirmwareTargetType {
   tjc_ms,
-  arduino,
+  dev,
 }
 
 // выбранные для прошивки МС-ТЮК платы
@@ -232,6 +243,7 @@ export type FlashTableItem = {
   targetType: FirmwareTargetType;
   source?: string; // id машины состояний или путь к файлу
   isFile: boolean;
+  extensions: string[]; // FIXME: расширения для файлов, нужно будет придумать более надёжную систему, например брать расширения из платформы
 };
 
 export type BinariesQueueItem = {
@@ -275,4 +287,24 @@ export type AddressAndMeta = {
   address?: string;
   type?: string;
   meta?: MetaData;
+};
+
+export type MSGetFirmware = {
+  deviceID: string;
+  address: string;
+  blockSize: number;
+  RefBlChip: string; // не обязательный параметр из метаданных, можно оставить пустым, если значение неизвестно.
+};
+
+export type MSOperationReport = {
+  deviceID: string;
+  address: string;
+  code: number;
+  comment: string;
+};
+
+export type GetFirmwareQueueItem = {
+  dev: MSDevice;
+  addressInfo: AddressData;
+  blockSize: number;
 };

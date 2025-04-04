@@ -45,10 +45,17 @@ export type PossibleActions = {
     prevColor: StateData['color'];
   };
   changeStatePosition: { smId: string; id: string; startPosition: Point; endPosition: Point };
-  linkState: { smId: string; parentId: string; childId: string; dragEndPos: Point };
+  linkState: {
+    smId: string;
+    parentId: string;
+    childId: string;
+    dragEndPos: Point;
+    prevPosition: Point;
+  };
   linkStateToAnotherParent: {
     smId: string;
     prevParentId: string;
+    prevPosition: Point;
     parentId: string;
     childId: string;
     dragEndPos: Point;
@@ -213,14 +220,22 @@ export const actionFunctions: ActionFunctions = {
     ),
   }),
 
-  linkStateToAnotherParent: (sM, { smId, prevParentId, parentId, childId, dragEndPos }) => ({
+  linkStateToAnotherParent: (
+    sM,
+    { smId, prevParentId, parentId, childId, dragEndPos, prevPosition }
+  ) => ({
     redo: sM.linkState.bind(
       sM,
       { smId, parentId, childId, canBeInitial: false, dragEndPos },
       false,
       true
     ),
-    undo: sM.linkState.bind(sM, { smId, parentId: prevParentId, childId }, false),
+    undo: sM.linkState.bind(
+      sM,
+      { smId, parentId: prevParentId, childId, dragEndPos: prevPosition },
+      false,
+      true
+    ),
   }),
 
   linkState: (sM, { smId, parentId, childId, dragEndPos }) => ({

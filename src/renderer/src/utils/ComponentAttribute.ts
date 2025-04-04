@@ -8,9 +8,10 @@ import { Variable } from '@renderer/types/diagram';
  * @returns массив из трёх элементов, где первый - это компонент, второй - атрибут, а третий разделитель. Null, если строка не является параметром с атрибутом.
  */
 export const getComponentAttribute = (
-  parameter: string | Variable,
+  parameter: string | Variable | undefined,
   platform: PlatformManager | undefined
 ) => {
+  if (parameter === undefined) return null;
   if (
     !platform ||
     (typeof parameter === 'string' &&

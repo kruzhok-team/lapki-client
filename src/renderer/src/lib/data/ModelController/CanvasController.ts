@@ -737,7 +737,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     if (!state) {
       return;
     }
-    state.addOnceOff('dragend'); // Линковка состояния меняет его позицию и это плохо для undo
+
     this.view.isDirty = true;
   };
 

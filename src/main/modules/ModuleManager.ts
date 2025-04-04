@@ -70,33 +70,13 @@ export class ModuleManager {
             defaultSettings.flasher.localPort = Number(port);
             /*
             параметры локального загрузчика:
-              -address string
-                  адресс для подключения (default "localhost:8080")
-              -fileSize int
-                  максимальный размер файла, загружаемого на сервер (в байтах) (default 2097152)
-              -listCooldown int
-                  минимальное время (в секундах), через которое клиент может снова запросить список устройств, игнорируется, если количество клиентов меньше чем 2 (default 2)      
-              -msgSize int
-                  максмальный размер одного сообщения, передаваемого через веб-сокеты (в байтах) (default 1024)
-              -thread int
-                  максимальное количество потоков (горутин) на обработку запросов на одного клиента (default 3)
-              -updateList int
-                  количество секунд между автоматическими обновлениями (default 15)
-              -verbose
-                  выводить в консоль подробную информацию
-              -alwaysUpdate
-                  всегда искать устройства и обновлять их список, даже когда ни один клиент не подключён (в основном требуется для тестирования)
-              -stub
-                  количество ненастоящих, симулируемых устройств, которые будут восприниматься как настоящие, применяется для тестирования, при значении 0 или меньше фальшивые устройства не добавляются (по-умолчанию 0)
-              -avrdudePath 
-                  путь к avrdude (по-умолчанию avrdude, то есть будет использоваться системный путь)
-              -configPath 
-                  путь к файлу конфигурации avrdude (по-умолчанию '', то есть пустая строка)
+             https://github.com/kruzhok-team/lapki-flasher?tab=readme-ov-file#%D0%BD%D0%B0%D1%81%D1%82%D1%80%D0%B0%D0%B8%D0%B2%D0%B0%D0%B5%D0%BC%D1%8B%D0%B5-%D0%BF%D0%B0%D1%80%D0%B0%D0%BC%D0%B5%D1%82%D1%80%D1%8B
             */
             const flasherArgs: string[] = [
-              '-updateList=1',
-              '-listCooldown=0',
-              `-address=localhost:${port}`,
+              '-updateList=1', // скорость автоматического обновления списка в секундах
+              '-listCooldown=0', // ограничение в секундах на вызов следующего ручного обновления в секундах, в данном случае отсутствует
+              `-address=localhost:${port}`, // адрес локального сервера
+              `-blgMbUploaderPath=${this.getBlgMbUploaderPath()}`, // путь к загрузчику кибермишки
             ];
 
             const avrdudePath = this.getAvrdudePath();
@@ -182,6 +162,10 @@ export class ModuleManager {
 
   static getConfPath(): string {
     return `${this.getOsPath()}/avrdude.conf`;
+  }
+
+  static getBlgMbUploaderPath(): string {
+    return this.getOsExe(`${this.getOsPath()}/blg-mb-1/blg-mb-1-uploader`);
   }
 
   static getModulePath(module: string): string {

@@ -62,7 +62,7 @@ export const DeviceList: React.FC<DeviceListProps> = ({
           <p>Порты: {portNames}</p>
         </div>
       );
-    } else {
+    } else if (device.isArduinoDevice()) {
       const ArduinoDevice = device as ArduinoDevice;
       return (
         <div>
@@ -73,6 +73,8 @@ export const DeviceList: React.FC<DeviceListProps> = ({
           <p>Программатор: {ArduinoDevice.programmer}</p>
         </div>
       );
+    } else {
+      return <div className="text-center">Дополнительная информация отсутствует</div>;
     }
   };
 

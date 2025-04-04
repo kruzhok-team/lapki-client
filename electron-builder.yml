@@ -21,6 +21,9 @@ nsis:
   createDesktopShortcut: always
 mac:
   artifactName: ${name}-v${version}.${ext}
+  target:
+    - target: dmg
+      arch: universal
   category: 'public.app-category.developer-tools'
   entitlementsInherit: build/entitlements.mac.plist
 linux:

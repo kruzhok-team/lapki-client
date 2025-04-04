@@ -10,7 +10,6 @@ import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as ArrowIcon } from '@renderer/assets/icons/arrow-down.svg';
 import { useModelContext } from '@renderer/store/ModelContext';
-import { StateMachine } from '@renderer/types/diagram';
 
 import { ComponentsList } from './ComponentsList';
 import { StateMachinesHierarchy } from './StateMachinesHierarchy';

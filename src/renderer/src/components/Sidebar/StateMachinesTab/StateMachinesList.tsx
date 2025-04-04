@@ -1,3 +1,5 @@
+import { useEffect } from 'react';
+
 import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as ArrowIcon } from '@renderer/assets/icons/arrow-down.svg';
@@ -64,7 +66,12 @@ export const StateMachinesList: React.FC<StateMachinesListProps> = ({
   const platformList = getAvailablePlatforms().map((platform) => {
     return { value: platform.idx, label: platform.name };
   });
+
   const isDisabled = !isInitialized;
+
+  useEffect(() => {
+    if (isCollapsed()) togglePanel();
+  }, [elements]);
 
   const header = () => {
     return (

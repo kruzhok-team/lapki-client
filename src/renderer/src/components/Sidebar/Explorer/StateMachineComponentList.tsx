@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
@@ -67,7 +67,12 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
     const splittedName = name.split('::')[1];
     onSwapComponents(smId, splittedDragName, splittedName);
   };
+
   const isDisabled = !isInitialized;
+
+  useEffect(() => {
+    if (isCollapsed()) togglePanel();
+  }, [sortedComponents.length]);
 
   const header = () => {
     return (

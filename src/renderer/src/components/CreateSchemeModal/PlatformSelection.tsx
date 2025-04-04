@@ -65,12 +65,16 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
     handleAddPlatform(draggedPlatformIdx);
   };
 
-  const handleDropStateMachineOnPlatforms = () => {
-    if (draggedStateMachineIndex === null) return;
-    if (selectedStateMachineIndex === draggedStateMachineIndex) {
+  const handleOnDeletePlatform = (index: number) => {
+    if (selectedStateMachineIndex === index) {
       setSelectedStateMachineIndex(null);
     }
-    onDeletePlatform(draggedStateMachineIndex);
+    onDeletePlatform(index);
+  };
+
+  const handleDropStateMachineOnPlatforms = () => {
+    if (draggedStateMachineIndex === null) return;
+    handleOnDeletePlatform(draggedStateMachineIndex);
   };
 
   return (
@@ -87,6 +91,7 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
               onDragEnd={() => setDraggedStateMachineIndex(null)}
               isSelected={isStateMachineSelected}
               onSelect={handleClickStateMachine}
+              onDelete={handleOnDeletePlatform}
             />
           ) : (
             <div className="ml-1 opacity-70">

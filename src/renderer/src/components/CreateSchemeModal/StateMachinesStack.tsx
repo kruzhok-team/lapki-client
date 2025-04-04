@@ -14,6 +14,7 @@ interface StateMachinesStackProps {
   onDragEnd: () => void;
   isSelected: (index: number) => boolean;
   onSelect: (index: number) => void;
+  onDelete: (index: number) => void;
 }
 export const StateMachinesStack: React.FC<StateMachinesStackProps> = ({
   selectedStateMachines,
@@ -21,12 +22,19 @@ export const StateMachinesStack: React.FC<StateMachinesStackProps> = ({
   onDragEnd,
   isSelected,
   onSelect,
+  onDelete,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
     if (!containerRef.current) return;
     containerRef.current.scrollTop = containerRef.current.scrollHeight;
   }, [selectedStateMachines]);
+
+  const handleOnDelte = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>, index: number) => {
+    e.stopPropagation();
+    onDelete(index);
+  };
+
   return (
     <div
       className="h-[30vh] w-full overflow-y-auto scroll-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
@@ -54,7 +62,7 @@ export const StateMachinesStack: React.FC<StateMachinesStackProps> = ({
               <button
                 type="button"
                 className="ml-auto mr-2 rounded p-2 transition-colors hover:bg-bg-hover active:bg-bg-active"
-                onClick={() => console.log(-index)}
+                onClick={(e) => handleOnDelte(e, index)}
               >
                 <CloseIcon className="h-3 w-3" />
               </button>

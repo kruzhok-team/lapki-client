@@ -1,6 +1,7 @@
 {
   "name": "Кибермишка",
   "id": "blg-mb-1-a7",
+  "nameTag": "CyBear",
   "description": "Платформа для программирования Кибермишки blg-mb-1-a7.",
   "icon": "",
   "staticComponents": false,

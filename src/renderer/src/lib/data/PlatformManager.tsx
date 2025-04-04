@@ -336,7 +336,6 @@ export class PlatformManager {
     let argQuery: string = '';
     const compoData = this.resolveComponent(ac.component);
     const component = compoData.component;
-    const protoComponent = this.data.components[component];
     const parameterList = this.data.components[component]?.methods[ac.method]?.parameters;
     if (ac.component === 'System') {
       rightIcon = ac.method;

@@ -90,6 +90,7 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
     onClose();
   };
 
+  // (L140-beep)Как будто у нас нигде нет имени у компонента
   const componentType = proto.name ?? data.type;
   const componentName = proto.singletone ? componentType : `${componentType} ${id}`;
 

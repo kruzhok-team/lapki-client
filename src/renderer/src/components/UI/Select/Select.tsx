@@ -16,6 +16,7 @@ import { WithHint } from '../WithHint';
 export interface SelectOption {
   value: string;
   label: React.ReactNode;
+  name?: string;
   hint?: string;
   icon?: React.ReactNode;
 }

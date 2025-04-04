@@ -34,6 +34,7 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
   const controller = modelController.controllers[headControllerId];
   const platform = controller.useData('platform') as { [id: string]: PlatformManager };
   const isInitialized = modelController.model.useData('', 'isInitialized');
+  const smName = model.useData(smId, 'elements.name');
 
   const {
     addProps,
@@ -97,6 +98,7 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
       key={smId}
     >
       {header()}
+      {smName ?? smId}
       {isInitialized ? (
         <div className="mb-2 mt-1 select-none">
           {sortedComponents.length === 0 ? (

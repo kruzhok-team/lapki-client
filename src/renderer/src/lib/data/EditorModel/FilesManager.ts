@@ -1,5 +1,6 @@
 import { Dispatch } from 'react';
 
+import { StateMachinesStackItem } from '@renderer/components/CreateSchemeModal/StateMachinesStack';
 import { Compiler } from '@renderer/components/Modules/Compiler';
 import { Binary, SourceFile } from '@renderer/types/CompilerTypes';
 import { Elements, emptyElements, emptyStateMachine } from '@renderer/types/diagram';
@@ -8,7 +9,7 @@ import { TemplatesList } from '@renderer/types/templates';
 
 import { importGraphml } from '../GraphmlParser';
 import { ModelController } from '../ModelController';
-import { getPlatform, isPlatformAvailable } from '../PlatformLoader';
+import { isPlatformAvailable } from '../PlatformLoader';
 
 type FileError = {
   name: string;
@@ -22,19 +23,13 @@ export class FilesManager {
     return this.modelController.model.data;
   }
 
-  newFile(platformIdx: string) {
-    const platform = getPlatform(platformIdx);
-
-    if (!platform) {
-      throw Error('unknown platform ' + platformIdx);
-    }
-
-    const name = (platform.nameTag ?? 'Machine') + '1';
+  newFile(stateMachines: StateMachinesStackItem[]) {
     const elements = emptyElements();
-    elements.stateMachines[name] = emptyStateMachine();
-    elements.stateMachines[name].platform = platformIdx;
+    for (const sm of stateMachines) {
+      elements.stateMachines[sm.id] = emptyStateMachine();
+      elements.stateMachines[sm.id].platform = sm.platform.id;
+    }
     this.modelController.initData(null, 'Без названия', elements as any, true);
-
     return this.modelController.model.data.headControllerId;
     // this.modelController.model.init(null, 'Без названия', elements as any);
   }

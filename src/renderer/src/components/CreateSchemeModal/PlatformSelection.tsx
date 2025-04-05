@@ -74,7 +74,7 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
   };
 
   const handleDropStateMachineOnPlatforms = () => {
-    console.log(draggedStateMachineIndex);
+    // console.log(draggedStateMachineIndex);
     if (draggedStateMachineIndex === null) return;
     handleOnDeletePlatform(draggedStateMachineIndex);
     setDraggedStateMachineIndex(null);

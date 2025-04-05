@@ -538,7 +538,7 @@ export const useFlasherHooks = () => {
       }
       case 'flash-open-serial-monitor':
         // если не удалось закрыть монитор порта перед прошивкой, то повторяем попытку
-        console.log('flash-open-serial-monitor');
+        // console.log('flash-open-serial-monitor');
         if (Flasher.currentFlashingDevice) {
           SerialMonitor.closeMonitor(Flasher.currentFlashingDevice.deviceID);
           Flasher.flash(Flasher.currentFlashingDevice);

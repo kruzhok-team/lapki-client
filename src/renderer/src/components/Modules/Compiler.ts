@@ -51,8 +51,8 @@ export class Compiler extends ClientWS {
   static decodeBinaries(binaries: Array<any>) {
     const decodedBinaries: Binary[] = [];
     binaries.map((binary) => {
-      console.log(base64StringToBlob(binary.fileContent!));
-      console.log(binary.filename, binary.extension);
+      // console.log(base64StringToBlob(binary.fileContent!));
+      // console.log(binary.filename, binary.extension);
       decodedBinaries.push({
         filename: binary.filename,
         extension: binary.extension,

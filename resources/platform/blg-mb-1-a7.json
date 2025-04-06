@@ -125,11 +125,11 @@
 
     "Matrix": {
       "description": "Компонент для взаимодействия со светодиодной матрицы.",
-      "img": "arduino/led.svg",
+      "img": "tjc-ms/matrix.svg",
       "signals": {},
       "methods": {
         "setPixel": {
-          "img": "arduino/blink.svg",
+          "img": "tjc-ms/cellSet.svg",
           "description": "Включить или выключить светодиод.",
           "parameters": [
             {
@@ -150,7 +150,7 @@
           ]
         },
         "offPixel": {
-          "img": "arduino/blink.svg",
+          "img": "tjc-ms/cellClear.svg",
           "description": "Выключить светодиод.",
           "parameters": [
             {
@@ -166,7 +166,7 @@
           ]
         },
         "setPattern": {
-          "img": "arduino/blink.svg",
+          "img": "tjc-ms/draw.svg",
           "description": "Изобразить паттерн на матрице.",
           "parameters": [
             {
@@ -177,7 +177,7 @@
           ]
         },
         "fill": {
-          "img": "arduino/blink.svg",
+          "img": "tjc-ms/fill.svg",
           "description": "Установить уровень яркости на каждый светодиод.",
           "parameters": [
             {
@@ -188,7 +188,7 @@
           ]
         },
         "clear": {
-          "img": "arduino/blink.svg",
+          "img": "tjc-ms/matrixEmpty.svg",
           "description": "Выключить все светодиоды.",
           "parameters": []
         },
@@ -285,10 +285,10 @@
     },
     "Speaker": {
       "description": "Компонент для взаимодействия с динамиком.",
-      "img": "arduino/timeout.svg",
+      "img": "blg-mb/beeperSound.svg",
       "signals": {
         "isSoundEnd": {
-          "img": "arduino/isPressed.svg",
+          "img": "common/onIterationEnd.svg",
           "description": "Создает сигнал, если звук закончен.",
           "checkMethod": "isSoundEnd"
         }
@@ -322,7 +322,7 @@
 
     "Microphone": {
       "description": "Компонент для взаимодействия с микрофонами. По умолчанию выключен.",
-      "img": "arduino/led.svg",
+      "img": "blg-mb/earsVolume.svg",
       "signals": {},
       "constructorParameters": {},
       "variables": {
@@ -455,41 +455,7 @@
     "Counter": {
       "description": "Переменная-счетчик.",
       "img": "arduino/counter.svg",
-      "signals": {
-        "isEqual": {
-          "img": "arduino/isEqual.svg",
-          "description": "Издать сигнал, если значение счетчика равно value",
-          "checkMethod": "isEqual",
-          "parameters": [
-            {
-              "name": "value",
-              "type": "int"
-            }
-          ]
-        },
-        "isLess": {
-          "img": "arduino/isLess.svg",
-          "description": "Издать сигнал, если значение счетчика меньше value",
-          "checkMethod": "isLess",
-          "parameters": [
-            {
-              "name": "value",
-              "type": "int"
-            }
-          ]
-        },
-        "isGreater": {
-          "img": "arduino/isGreater.svg",
-          "description": "Издать сигнал, если значение счетчика больше value",
-          "checkMethod": "isGreater",
-          "parameters": [
-            {
-              "name": "value",
-              "type": "int"
-            }
-          ]
-        }
-      },
+      "signals": {},
       "constructorParameters": {},
       "methods": {
         "add": {
@@ -840,7 +806,7 @@
 
     "Array": {
       "description": "Статический массив",
-      "img": "arduino/timer.svg",
+      "img": "common/array.svg",
       "signals": {},
       "constructorParameters": {
         "size": {
@@ -910,7 +876,7 @@
     },
     "PhotoDiode": {
       "description": "Компонент, вычисляющий уровень освещенности. Искусственный свет не считается.",
-      "img": "arduino/led.svg",
+      "img": "blg-mb/nose.svg",
       "signals": {},
       "constructorParameters": {},
       "methods": {},
@@ -927,11 +893,12 @@
     },
     "RgbLed": {
       "description": "Компонент для взаимодействия со светодиодом",
-      "img": "arduino/led.svg",
+      "img": "blg-mb/eyesColor.svg",
       "signals": {},
       "constructorParameters": {
         "pin": {
           "type": ["1", "2"],
+          "valueAlias": ["Левый глаз", "Правый глаз"],
           "description": "Пин, к которому подключен светодиод"
         }
       },
@@ -944,7 +911,7 @@
       },
       "methods": {
         "on_color": {
-          "img": "arduino/switch-on.svg",
+          "img": "blg-mb/setColorPalette.svg",
           "parameters": [
             {
               "name": "color",
@@ -970,7 +937,7 @@
           "description": "Зажечь светодиод"
         },
         "on_rgb": {
-          "img": "arduino/switch-on.svg",
+          "img": "blg-mb/setColor.svg",
           "parameters": [
             {
               "name": "red",

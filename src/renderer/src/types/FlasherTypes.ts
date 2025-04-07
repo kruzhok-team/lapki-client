@@ -18,7 +18,12 @@ export type FlashUpdatePort = {
   portName: string;
 };
 
+// TODO: поделить на исходящие и принимающие сообщения
 export type FlasherType =
+  | 'reset'
+  | 'reset-result'
+  | 'ping'
+  | 'pong'
   | 'get-list'
   | 'device'
   | 'blg-mb-device'
@@ -92,6 +97,7 @@ export type FlasherPayload =
   | FlashBacktrackMs
   | MSAddressAndMeta
   | MSGetFirmware;
+
 export type FlasherMessage = {
   type: FlasherType;
   payload: FlasherPayload;
@@ -269,8 +275,8 @@ export enum OperationType {
 
 export type OperationInfo = {
   type: OperationType;
-  addressInfo: AddressData;
-  deviceId: string;
+  addressInfo?: AddressData; // только для МС-ТЮК
+  device: Device;
 };
 
 export type MSAddressAndMeta = {

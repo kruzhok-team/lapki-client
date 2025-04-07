@@ -850,7 +850,7 @@
       },
       "constructorParameters": {},
       "methods": {
-        "break_": {
+        "stop": {
           "img": "arduino/timer-stop.svg",
           "description": "Остановить итератор."
         },

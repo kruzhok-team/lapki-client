@@ -118,10 +118,10 @@
 
     "SpeakerNote": {
       "description": "Простой компонент для взаимодействия с динамиком.",
-      "img": "arduino/timeout.svg",
+      "img": "blg-mb/beeperNote.svg",
       "signals": {
         "isNoteEnd": {
-          "img": "arduino/isPressed.svg",
+          "img": "arduino/timer-start.svg",
           "description": "Создает сигнал, если нота сыграна.",
           "checkMethod": "isSoundEnd"
         }
@@ -149,10 +149,10 @@
 
     "SpeakerSound": {
       "description": "Компонент для взаимодействия с динамиком.",
-      "img": "arduino/timeout.svg",
+      "img": "blg-mb/beeperSound.svg",
       "signals": {
         "isSoundEnd": {
-          "img": "arduino/isPressed.svg",
+          "img": "arduino/timer-start.svg",
           "description": "Создает сигнал, если звук закончен.",
           "checkMethod": "isSoundEnd"
         }
@@ -203,7 +203,7 @@
     },
     "EyePalette": {
       "description": "Компонент для простого взаимодействия с rgb-светодиодом",
-      "img": "arduino/led.svg",
+      "img": "blg-mb/eyesPalette.svg",
       "signals": {},
       "constructorParameters": {
         "pin": {
@@ -220,7 +220,7 @@
       },
       "methods": {
         "setColorPalette": {
-          "img": "arduino/switch-on.svg",
+          "img": "blg-mb/setColorPalette.svg",
           "parameters": [
             {
               "name": "color",
@@ -264,7 +264,7 @@
 
     "EyeRGBK": {
       "description": "Компонент для нетривиального взаимодействия с rgb-светодиодом",
-      "img": "arduino/led.svg",
+      "img": "blg-mb/eyesColor.svg",
       "signals": {},
       "constructorParameters": {
         "pin": {
@@ -281,7 +281,7 @@
       },
       "methods": {
         "setColor": {
-          "img": "arduino/switch-on.svg",
+          "img": "blg-mb/setColor.svg",
           "parameters": [
             {
               "name": "red",
@@ -329,7 +329,7 @@
     },
     "Microphone": {
       "description": "Компонент для взаимодействия с микрофонами. По умолчанию выключен.",
-      "img": "arduino/led.svg",
+      "img": "blg-mb/earsVolume.svg",
       "signals": {},
       "constructorParameters": {},
       "variables": {
@@ -422,11 +422,11 @@
 
     "Matrix": {
       "description": "Компонент для взаимодействия со светодиодной матрицы.",
-      "img": "arduino/led.svg",
+      "img": "tjc-ms/matrix.svg",
       "signals": {},
       "methods": {
         "setPixel": {
-          "img": "arduino/blink.svg",
+          "img": "tjc-ms/cellSet.svg",
           "description": "Включить или выключить светодиод.",
           "parameters": [
             {
@@ -447,7 +447,7 @@
           ]
         },
         "offPixel": {
-          "img": "arduino/blink.svg",
+          "img": "tjc-ms/cellClear.svg",
           "description": "Выключить светодиод.",
           "parameters": [
             {
@@ -463,7 +463,7 @@
           ]
         },
         "setPattern": {
-          "img": "arduino/blink.svg",
+          "img": "tjc-ms/draw.svg",
           "description": "Изобразить паттерн на матрице.",
           "parameters": [
             {
@@ -474,7 +474,7 @@
           ]
         },
         "fill": {
-          "img": "arduino/blink.svg",
+          "img": "tjc-ms/fill.svg",
           "description": "Установить уровень яркости на каждый светодиод.",
           "parameters": [
             {
@@ -485,7 +485,7 @@
           ]
         },
         "clear": {
-          "img": "arduino/blink.svg",
+          "img": "tjc-ms/matrixEmpty.svg",
           "description": "Выключить все светодиоды.",
           "parameters": []
         },
@@ -590,10 +590,10 @@
 
     "MatrixAnimation": {
       "description": "Компонент для анимаций на матрице",
-      "img": "arduino/led.svg",
+      "img": "blg-mb/matrixAnimation.svg",
       "signals": {
         "AnimationFinished": {
-          "img": "arduino/isEqual.svg",
+          "img": "arduino/timer-start.svg",
           "description": "Сигнал по завершении анимации",
           "checkMethod": "AnimationFinished",
           "parameters": []
@@ -603,7 +603,7 @@
       "variables": {},
       "methods": {
         "setFrame": {
-          "img": "arduino/switch-on.svg",
+          "img": "blg-mb/draw.svg",
           "parameters": [
             {
               "name": "pattern",
@@ -634,13 +634,13 @@
 
     "MatrixPicture": {
       "description": "Компонент для отображения картинок на матрице",
-      "img": "arduino/led.svg",
+      "img": "blg-mb/matrixHalftone.svg",
       "signals": {},
       "constructorParameters": {},
       "variables": {},
       "methods": {
         "draw": {
-          "img": "arduino/switch-on.svg",
+          "img": "blg-mb/draw.svg",
           "parameters": [
             {
               "name": "picture",
@@ -826,7 +826,7 @@
           ]
         },
         "set": {
-          "img": "arduino/sub.svg",
+          "img": "common/set.svg",
           "description": "Установить value к значению счетчика",
           "parameters": [
             {
@@ -1153,7 +1153,7 @@
 
     "Array": {
       "description": "Статический массив",
-      "img": "arduino/timer.svg",
+      "img": "common/array.svg",
       "signals": {},
       "constructorParameters": {
         "size": {

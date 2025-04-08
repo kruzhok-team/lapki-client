@@ -186,7 +186,7 @@
 
     "PhotoDiode": {
       "description": "Компонент, вычисляющий уровень освещенности. Искусственный свет не считается.",
-      "img": "arduino/led.svg",
+      "img": "blg-mb/nose.svg",
       "signals": {},
       "constructorParameters": {},
       "methods": {},

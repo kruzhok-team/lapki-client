@@ -874,7 +874,83 @@
         }
       }
     },
+    "SpeakerNote": {
+      "name": "Динамик:ноты",
+      "description": "Простой компонент для взаимодействия с динамиком.",
+      "img": "blg-mb/beeperNote.svg",
+      "signals": {
+        "isNoteEnd": {
+          "alias": "Нота сыграна",
+          "img": "arduino/isPressed.svg",
+          "description": "Создает сигнал, если нота сыграна.",
+          "checkMethod": "isSoundEnd"
+        }
+      },
+      "constructorParameters": {},
+      "variables": {},
+      "buildFiles": ["Notes.hpp", "SpeakerNote.hpp", "CommonNote.hpp"],
+      "importFiles": ["SpeakerNote.hpp"],
+      "methods": {
+        "play": {
+          "img": "arduino/start.svg",
+          "parameters": [
+            {
+              "name": "Нота",
+              "type": ["&TestNote"],
+              "valueAlias": ["Тестовая нота"],
+              "description": "Проигрываемая нота.",
+              "optional": false
+            }
+          ],
+          "alias": "Сыграть ноту",
+          "description": "Проиграть ноту"
+        }
+      },
+      "singletone": false
+    },
+
+    "SpeakerSound": {
+      "name": "Динамик:звуки",
+      "description": "Компонент для взаимодействия с динамиком.",
+      "img": "blg-mb/beeperSound.svg",
+      "signals": {
+        "isSoundEnd": {
+          "img": "arduino/timer-start.svg",
+          "description": "Создает сигнал, если звук закончен.",
+          "checkMethod": "isSoundEnd",
+          "alias": "Звук сыгран"
+        }
+      },
+      "constructorParameters": {},
+      "variables": {},
+      "buildFiles": ["Sounds.hpp", "SpeakerSound.hpp", "CommonSound.hpp"],
+      "importFiles": ["SpeakerSound.hpp"],
+      "methods": {
+        "play": {
+          "img": "arduino/start.svg",
+          "parameters": [
+            {
+              "name": "Звук",
+              "type": ["&TestSound"],
+              "valueAlias": ["Тестовый звук"],
+              "description": "Проигрываемый звук.",
+              "optional": false
+            },
+            {
+              "name": "Длительность",
+              "type": "uint16_t",
+              "description": "Длительность звука (мс).",
+              "optional": false
+            }
+          ],
+          "alias": "Сыграть звук",
+          "description": "Проиграть звук."
+        }
+      },
+      "singletone": false
+    },
     "PhotoDiode": {
+      "name": "Нос",
       "description": "Компонент, вычисляющий уровень освещенности. Искусственный свет не считается.",
       "img": "blg-mb/nose.svg",
       "signals": {},
@@ -884,7 +960,8 @@
         "value": {
           "img": "common/value.svg",
           "type": "uint16_t",
-          "description": "Уровень освещенности."
+          "description": "Уровень освещенности.",
+          "alias": "Значение"
         }
       },
       "buildFiles": ["PhotoDiode.hpp"],
@@ -983,12 +1060,14 @@
         "isPressed": {
           "img": "arduino/isPressed.svg",
           "description": "Создает сигнал, если кнопка была нажата",
-          "checkMethod": "isPressed"
+          "checkMethod": "isPressed",
+          "alias": "Кнопка нажата"
         },
         "isClicked": {
           "img": "arduino/clicked.svg",
           "description": "Создает сигнал, если кнопка была кликнута",
-          "checkMethod": "clicked"
+          "checkMethod": "clicked",
+          "alias": "Кнопка кликнута"
         }
       },
       "constructorParameters": {
@@ -1009,7 +1088,8 @@
         "value": {
           "img": "common/value.svg",
           "type": "int",
-          "description": "Текущее значение на пине"
+          "description": "Текущее значение на пине",
+          "alias": "Значение"
         }
       },
       "buildFiles": ["Button.hpp"],

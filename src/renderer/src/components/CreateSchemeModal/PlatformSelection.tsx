@@ -97,7 +97,7 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
               onDelete={handleOnDeletePlatform}
             />
           ) : (
-            <div className="ml-1 opacity-70">
+            <div className="ml-1 p-2 opacity-70">
               Добавьте платформы сюда двойным кликом левой кнопкой мыши, либо перетащив их сюда.
               Чтобы убрать платформы, которые были добавлены, нажмите на крестик сбоку, либо
               перетащите их обратно в список платформ перетаскиванием.

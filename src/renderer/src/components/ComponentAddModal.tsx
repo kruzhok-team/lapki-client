@@ -86,7 +86,7 @@ export const ComponentAddModal: React.FC<ComponentAddModalProps> = ({
               key={entry.idx}
               className={twMerge(
                 'flex items-center gap-2 p-1',
-                entry.name == cursor?.idx && 'bg-bg-active'
+                entry.idx == cursor?.idx && 'bg-bg-active'
               )}
               onClick={() => onCompClick(entry)}
             >

@@ -208,6 +208,7 @@ const typeMap: any = {
         js: 'compilingSettings',
         typ: u(undefined, a(r('CompilingSettings'))),
       },
+      { json: 'componentDeclaration', js: 'componentDeclaration', typ: u(undefined, true) },
       { json: 'components', js: 'components', typ: m(r('ComponentProto')) },
       { json: 'defaultBuildFiles', js: 'defaultBuildFiles', typ: u(undefined, a('')) },
       { json: 'defaultIncludeFiles', js: 'defaultIncludeFiles', typ: u(undefined, a('')) },

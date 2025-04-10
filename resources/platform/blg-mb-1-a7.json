@@ -186,6 +186,12 @@
           ],
           "alias": "Запустить ноту",
           "description": "Запустить таймер. После запуска раз в заданный интервал будет вызываться событие [таймаут]"
+        },
+        "stop": {
+          "img": "arduino/timer-stop.svg",
+          "parameters": [],
+          "alias": "Остановить ноту",
+          "description": "Остановить воспроизведение ноты"
         }
       },
       "singletone": false
@@ -213,8 +219,8 @@
           "parameters": [
             {
               "name": "sound",
-              "type": ["&TestSound"],
-              "valueAlias": ["Тестовый звук"],
+              "type": ["&TestSound", "&SineSound"],
+              "valueAlias": ["Тестовый звук", "Рычанье"],
               "description": "Проигрываемый звук.",
               "optional": false
             },
@@ -227,6 +233,12 @@
           ],
           "description": "Запускает воспроизведение выбраного звука.",
           "alias": "Запустить звук"
+        },
+        "stop": {
+          "img": "arduino/timer-stop.svg",
+          "parameters": [],
+          "alias": "Остановить звук",
+          "description": "Остановить воспроизведение звука"
         }
       },
       "singletone": false

@@ -513,11 +513,11 @@
     "Matrix": {
       "name": "Матрица",
       "description": "Компонент для взаимодействия со светодиодной матрицы.",
-      "img": "arduino/led.svg",
+      "img": "tjc-ms/matrix.svg",
       "signals": {},
       "methods": {
         "setPixel": {
-          "img": "arduino/blink.svg",
+          "img": "tjc-ms/cellSet.svg",
           "description": "Включить или выключить светодиод.",
           "parameters": [
             {
@@ -538,7 +538,7 @@
           ]
         },
         "offPixel": {
-          "img": "arduino/blink.svg",
+          "img": "tjc-ms/cellClear.svg",
           "description": "Выключить светодиод.",
           "parameters": [
             {
@@ -554,7 +554,7 @@
           ]
         },
         "setPattern": {
-          "img": "arduino/blink.svg",
+          "img": "tjc-ms/draw.svg",
           "description": "Изобразить паттерн на матрице.",
           "parameters": [
             {
@@ -565,7 +565,7 @@
           ]
         },
         "fill": {
-          "img": "arduino/blink.svg",
+          "img": "tjc-ms/fill.svg",
           "description": "Установить уровень яркости на каждый светодиод.",
           "parameters": [
             {
@@ -576,7 +576,7 @@
           ]
         },
         "clear": {
-          "img": "arduino/blink.svg",
+          "img": "tjc-ms/matrixEmpty.svg",
           "description": "Выключить все светодиоды.",
           "parameters": []
         },

@@ -83,23 +83,26 @@
       "img": "arduino/button.svg",
       "signals": {
         "isPressed": {
+          "alias": "Нажата",
           "img": "arduino/isPressed.svg",
           "description": "Создает сигнал, если кнопка была нажата",
           "checkMethod": "isPressed"
         },
         "isClicked": {
+          "alias": "Зажата",
           "img": "arduino/clicked.svg",
-          "description": "Создает сигнал, если кнопка была кликнута",
+          "description": "Создает сигнал, если кнопка была нажата, а затем отпущена",
           "checkMethod": "isClicked"
         },
         "isReleased": {
+          "alias": "Отжата",
           "img": "common/isReleased.svg",
           "description": "Создает сигнал, если кнопка была отпущена",
           "checkMethod": "isReleased"
         }
       },
       "constructorParameters": {
-        "pin": {
+        "Где": {
           "type": ["1", "2", "3", "4", "5", "6"],
           "valueAlias": [
             "Правая лапа",
@@ -113,7 +116,7 @@
         }
       },
       "variables": {
-        "value": {
+        "значение": {
           "img": "common/value.svg",
           "type": "int",
           "description": "Текущее значение на пине"

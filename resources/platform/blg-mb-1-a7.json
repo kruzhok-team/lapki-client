@@ -907,148 +907,164 @@
       "img": "math/calcInt.svg",
       "signals": {
         "isOverflow": {
+          "alias": "Переполнение значения",
           "img": "math/overflow.svg",
-          "description": "Переполнение счетчика.",
+          "description": "Произошло переполнение значения счётчика (в него попытались записать слишком большое значение).",
           "checkMethod": "isOverflow"
         },
         "isZeroDivision": {
+          "alias": "Деление на ноль",
           "img": "math/divZero.svg",
-          "description": "Деление на ноль.",
+          "description": "Произошло деление на ноль. Значению счётчика верить нельзя, в нём может быть что-то странное.",
           "checkMethod": "isZeroDivision"
         }
       },
       "methods": {
         "set": {
+          "alias": "Установить значение",
           "img": "common/set-value.svg",
-          "description": "Установить значение счетчика.",
+          "description": "Установить значение калькулятора.",
           "parameters": [
             {
-              "name": "value",
+              "name": "значение",
               "type": "int32_t",
-              "description": "Новое значение для счетчика."
+              "description": "Новое значение для калькулятора."
             }
           ]
         },
         "add": {
+          "alias": "Прибавить",
           "img": "math/add.svg",
-          "description": "Прибавить значение к счетчику.",
+          "description": "Добавить указанное значение.",
           "parameters": [
             {
-              "name": "value",
+              "name": "слагаемое",
               "type": "int32_t",
               "description": "Слагаемое для операции."
             }
           ]
         },
         "sub": {
+          "alias": "Вычесть",
           "img": "math/sub.svg",
-          "description": "Вычесть значение из счетчика.",
+          "description": "Вычесть указанное значение.",
           "parameters": [
             {
-              "name": "value",
+              "name": "вычитаемое",
               "type": "int32_t",
               "description": "Вычитаемое для операции."
             }
           ]
         },
         "mul": {
+          "alias": "Умножить",
           "img": "math/mul.svg",
-          "description": "Умножить значение счетчика.",
+          "description": "Умножить значение калькулятора.",
           "parameters": [
             {
-              "name": "value",
+              "name": "множитель",
               "type": "int32_t",
               "description": "Множитель для операции."
             }
           ]
         },
         "div": {
+          "alias": "Разделить",
           "img": "math/div.svg",
-          "description": "Целочисленное деление значения счетчика. При делении на ноль значение не изменяется и возникает сигнал.",
+          "description": "Целочисленное деление текущего значения калькулятора. При делении на ноль значение не изменяется и возникает сигнал.",
           "parameters": [
             {
-              "name": "value",
+              "name": "делитель",
               "type": "int32_t",
               "description": "Делитель для операции."
             }
           ]
         },
         "mod": {
+          "alias": "Остаток от деления",
           "img": "math/mod.svg",
-          "description": "Остаток от деления счетчика. При делении на ноль значение не изменяется и возникает сигнал.",
+          "description": "Остаток от деления текущего значения калькулятора. При делении на ноль значение не изменяется и возникает сигнал.",
           "parameters": [
             {
-              "name": "value",
+              "name": "делитель",
               "type": "int32_t",
               "description": "Делитель для операции."
             }
           ]
         },
         "neg": {
+          "alias": "Поменять знак",
           "img": "math/neg.svg",
-          "description": "Поменять знак у счетчика.",
+          "description": "Поменять знак у текущего значения калькулятора.",
           "parameters": []
         },
         "abs": {
+          "alias": "Разделить по модулю",
           "img": "math/abs.svg",
-          "description": "Установить абсолютное значение для счетчика.",
+          "description": "Установить абсолютное значение для калькулятора",
           "parameters": []
         },
         "bitAnd": {
+          "alias": "Битовое И",
           "img": "math/bitAnd.svg",
-          "description": "Побитовое И для значения счетчика.",
+          "description": "Побитовое И для значения калькулятора.",
           "parameters": [
             {
-              "name": "value",
+              "name": "значение",
               "type": "int32_t",
               "description": "Значение для операции."
             }
           ]
         },
         "bitOr": {
+          "alias": "Битовое ИЛИ",
           "img": "math/bitOr.svg",
-          "description": "Побитовое ИЛИ для значения счетчика.",
+          "description": "Побитовое ИЛИ для значения калькулятора.",
           "parameters": [
             {
-              "name": "value",
+              "name": "значение",
               "type": "int32_t",
               "description": "Значение для операции."
             }
           ]
         },
         "bitXor": {
+          "alias": "Битовое исключающее ИЛИ",
           "img": "math/bitXor.svg",
-          "description": "Побитовая операция XOR для значения счетчика.",
+          "description": "Побитовая операция XOR для значения калькулятора.",
           "parameters": [
             {
-              "name": "value",
+              "name": "значение",
               "type": "int32_t",
               "description": "Значение для операции."
             }
           ]
         },
         "bitNot": {
+          "alias": "Битовое НЕ",
           "img": "math/bitNot.svg",
-          "description": "Побитовое отрицание для значения счетчика.",
+          "description": "Побитовое отрицание для значения калькулятора.",
           "parameters": []
         },
         "shiftLeft": {
+          "alias": "Битовый сдвиг влево",
           "img": "math/shiftLeft.svg",
-          "description": "Побитовый сдвиг влево для значения счетчика.",
+          "description": "Побитовый сдвиг влево для значения калькулятора.",
           "parameters": [
             {
-              "name": "value",
+              "name": "сдвиг",
               "type": "int32_t",
               "description": "Количество бит для сдвига."
             }
           ]
         },
         "shiftRight": {
+          "alias": "Битовый сдвиг вправо",
           "img": "math/shiftRight.svg",
-          "description": "Побитовый сдвиг вправо для значения счетчика.",
+          "description": "Побитовый сдвиг вправо для значения калькулятора.",
           "parameters": [
             {
-              "name": "value",
+              "name": "сдвиг",
               "type": "int32_t",
               "description": "Количество бит для сдвига."
             }
@@ -1057,6 +1073,7 @@
       },
       "variables": {
         "value": {
+          "alias": "Результат",
           "img": "common/value.svg",
           "type": "int32_t",
           "description": "Значение счетчика."

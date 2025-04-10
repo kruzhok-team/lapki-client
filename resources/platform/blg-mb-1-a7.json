@@ -731,39 +731,42 @@
     },
 
     "Random": {
-      "name": "Рандомайзер",
-      "description": "Генерация случайного числа",
+      "name": "Генератор случайностей",
+      "description": " Генерация псевдо-случайного числа",
       "img": "common/random.svg",
       "constructorParameters": {},
       "signals": {},
       "methods": {
         "setSeed": {
+          "alias": "Установить затравку",
           "img": "common/randomSeed.svg",
           "parameters": [
             {
-              "name": "seed",
+              "name": "затравка",
               "type": "unsigned long"
             }
           ],
-          "description": "Сбросить состояние генератора и установить новый seed"
+          "description": "Продвинутая функция для отладки. Вручную устанавливает затравку для генератора случайностей, чтобы он выдавал одинаковые последовательности значений при каждом запуске программы. Для нормальной работы этого не требуется, и затравка будет взята из встроенного генератора истинных случайных чисел."
         },
         "doRandom": {
+          "alias": "Сгенерировать",
           "img": "common/randomRoll.svg",
           "description": "Сгенерировать случайное число"
         },
         "doRangeRandom": {
+          "alias": "Сгенерировать в диапазоне",
           "img": "common/randomRange.svg",
           "parameters": [
             {
-              "name": "begin",
+              "name": "начало",
               "type": "signed long long"
             },
             {
-              "name": "end",
+              "name": "конец",
               "type": "signed long long"
             }
           ],
-          "description": "Сгенерировать случайное число в заданном диапазоне [begin; end)"
+          "description": "Сгенерировать случайное число в заданном диапазоне [начало; конец)"
         }
       },
       "buildFiles": ["Random.hpp"],
@@ -771,11 +774,13 @@
       "singletone": false,
       "variables": {
         "value": {
+          "alias": "Целое число",
           "img": "common/valueSigned.svg",
           "type": "signed long",
           "description": "Сгенерированное целое число со знаком"
         },
         "uValue": {
+          "alias": "Натуральное число",
           "img": "common/valueUnsigned.svg",
           "type": "unsigned long",
           "description": "Сгенерированное безнаковое целое число"

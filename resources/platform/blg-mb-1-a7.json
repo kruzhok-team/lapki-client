@@ -786,6 +786,7 @@
       "img": "arduino/timer.svg",
       "signals": {
         "timeout": {
+          "alias": "Тайм-аут",
           "img": "arduino/timeout.svg",
           "description": "Время вышло!",
           "checkMethod": "timeout"
@@ -794,22 +795,26 @@
       "constructorParameters": {},
       "methods": {
         "reset": {
+          "alias": "Сброс",
           "img": "arduino/reset.svg",
           "description": "Сбросить таймер, отчет начнется сначала"
         },
         "disable": {
+          "alias": "Отключить",
           "img": "arduino/timer-stop.svg",
           "description": "Отключить таймер."
         },
         "enable": {
+          "alias": "Включить",
           "img": "arduino/timer-start.svg",
           "description": "Включить таймер."
         },
         "start": {
+          "alias": "Старт",
           "img": "arduino/start.svg",
           "parameters": [
             {
-              "name": "interval",
+              "name": "интервал",
               "type": "unsigned long",
               "description": "Интервал срабатывания."
             }
@@ -822,6 +827,7 @@
       "singletone": false,
       "variables": {
         "difference": {
+          "alias": "Разница",
           "img": "arduino/difference.svg",
           "type": "unsigned long",
           "description": "Оставшееся время до окончания таймера."
@@ -836,42 +842,47 @@
       "constructorParameters": {},
       "methods": {
         "add": {
+          "alias": "Увеличить",
           "img": "arduino/add.svg",
-          "description": "Добавить value к значению счетчика",
+          "description": "Добавить указанное значение к счетчику",
           "parameters": [
             {
-              "name": "value",
+              "name": "значение",
               "type": "int"
             }
           ]
         },
         "sub": {
+          "alias": "Уменьшить",
           "img": "arduino/sub.svg",
-          "description": "Вычесть value к значению счетчика",
+          "description": "Вычесть указанное значение из счетчика",
           "parameters": [
             {
-              "name": "value",
+              "name": "значение",
               "type": "int"
             }
           ]
         },
         "set": {
+          "alias": "Установить",
           "img": "common/set.svg",
-          "description": "Установить value к значению счетчика",
+          "description": "Установить значение счетчика",
           "parameters": [
             {
-              "name": "value",
+              "name": "значение",
               "type": "int"
             }
           ]
         },
         "reset": {
+          "alias": "Сброс",
           "img": "arduino/reset.svg",
           "description": "Обнулить значение счетчика."
         }
       },
       "variables": {
         "value": {
+          "alias": "значение",
           "img": "common/value.svg",
           "description": "Текущее значение счетчика",
           "type": "int"

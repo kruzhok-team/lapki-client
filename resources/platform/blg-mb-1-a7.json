@@ -131,20 +131,22 @@
 
     "UserSignal": {
       "name": "Пользовательский сигнал",
-      "description": "Пользовательский сигнал",
+      "description": "Компонент для создания произвольных, искусственных событий. Бывает полезным для упрощения диаграммы.",
       "img": "common/userSignal.svg",
       "signals": {
         "isCalled": {
+          "alias": "Вызов",
           "img": "common/signalIsCalled.svg",
-          "description": "Сработал сигнал",
+          "description": "Вызвано искусственное событие.",
           "checkMethod": "isCalled"
         }
       },
       "constructorParameters": {},
       "methods": {
         "call": {
+          "alias": "Вызвать",
           "img": "common/signalCall.svg",
-          "description": "Вызов сигнала"
+          "description": "Вызвать искусственное событие."
         }
       },
       "buildFiles": ["UserSignal.hpp"],

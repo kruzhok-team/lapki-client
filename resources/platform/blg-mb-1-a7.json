@@ -15,6 +15,7 @@
   "mainFileExtension": "cpp",
   "headerFileExtension": "hpp",
   "staticActionDelimeter": "::",
+  "componentDeclaration": true,
   "defaultSetupFunctions": [],
   "compilingSettings": [
     {
@@ -38,7 +39,8 @@
         "-ffunction-sections",
         "-fdata-sections",
         "-Xlinker",
-        "--gc-sections"
+        "--gc-sections",
+        "-Wall"
       ]
     },
     {
@@ -48,29 +50,66 @@
   ],
   "mainFunction": true,
   "delimeter": ";",
-  "defaultIncludeFiles": ["stm32g431xx.h", "system.c", "Pins.hpp"],
+  "defaultIncludeFiles": ["stm32g431xx.h", "Pins.hpp", "blg-mb-1-a7_hal.hpp"],
   "defaultBuildFiles": [
+    "commonEars.hpp",
+    "ADC.hpp",
+    "blg-mb-1-a7_hal.hpp",
+    "Connector.hpp",
+    "system.hpp",
+    "CommonPWM.hpp",
+    "PWMPins.hpp",
     "STM32G431KBT6-blg-usb-usercode.ld",
-    "system.c",
     "startup_stm32g431xx.s",
     "stm32g431xx.h",
     "core_cm4.h",
+    "core_cmSimd.h",
     "core_cmInstr.h",
     "cmsis_gcc.h",
     "core_cmFunc.h",
     "system_stm32g4xx.h",
     "Pins.hpp",
-    "macros.hpp"
+    "RGBController.hpp",
+    "Color.hpp",
+    "SoundController.hpp",
+    "CommonSound.hpp",
+    "RgbLed.hpp",
+    "Pattern.hpp"
   ],
   "components": {
-    "LED": {
-      "description": "Компонент для взаимодействия со светодиодом",
-      "img": "arduino/led.svg",
-      "signals": {},
+    "Button": {
+      "name": "Кнопка",
+      "description": "Компонент для взаимодействия с физической кнопкой",
+      "img": "arduino/button.svg",
+      "signals": {
+        "isPressed": {
+          "img": "arduino/isPressed.svg",
+          "description": "Создает сигнал, если кнопка была нажата",
+          "checkMethod": "isPressed"
+        },
+        "isClicked": {
+          "img": "arduino/clicked.svg",
+          "description": "Создает сигнал, если кнопка была кликнута",
+          "checkMethod": "isClicked"
+        },
+        "isReleased": {
+          "img": "common/isReleased.svg",
+          "description": "Создает сигнал, если кнопка была отпущена",
+          "checkMethod": "isReleased"
+        }
+      },
       "constructorParameters": {
         "pin": {
-          "type": "int",
-          "description": "Пин, к которому подключен светодиод"
+          "type": ["1", "2", "3", "4", "5", "6"],
+          "valueAlias": [
+            "Правая лапа",
+            "Левая лапа",
+            "Правый палец",
+            "Левый палец",
+            "Правый бок",
+            "Левый бок"
+          ],
+          "description": "Расположение кнопки"
         }
       },
       "variables": {
@@ -80,50 +119,411 @@
           "description": "Текущее значение на пине"
         }
       },
-      "methods": {
-        "on": {
-          "img": "arduino/switch-on.svg",
-          "parameters": [
-            {
-              "name": "brightness",
-              "type": "uint8_t",
-              "description": "Яркость светодиода (по умолчанию: 100)",
-              "optional": true
-            }
-          ],
-          "description": "Зажечь светодиод"
-        },
-        "off": {
-          "img": "arduino/switch-off.svg",
-          "description": "Выключить светодиод"
-        },
-        "toggle": {
-          "img": "arduino/toggle.svg",
-          "description": "Меняет состояние светодиода на противоположное"
-        },
-        "blink": {
-          "img": "arduino/blink.svg",
-          "parameters": [
-            {
-              "name": "interval",
-              "type": "unsigned int",
-              "description": "Длительность каждого мигания (мс)"
-            },
-            {
-              "name": "times",
-              "type": "byte",
-              "description": "Количество миганий"
-            }
-          ],
-          "description": "Мигает светодиодом определенное количество раз с определенной длительностью каждого мигания"
+      "buildFiles": ["Button.hpp"],
+      "importFiles": ["Button.hpp"],
+      "loopActions": ["scan"],
+      "methods": {},
+      "singletone": false
+    },
+
+    "UserSignal": {
+      "name": "Пользовательский сигнал",
+      "description": "Пользовательский сигнал",
+      "img": "common/userSignal.svg",
+      "signals": {
+        "isCalled": {
+          "img": "common/signalIsCalled.svg",
+          "description": "Сработал сигнал",
+          "checkMethod": "isCalled"
         }
       },
-      "buildFiles": ["LED.h", "Connector.hpp", "PWMInit.hpp", "PWM.hpp"],
-      "importFiles": ["LED.h"],
+      "constructorParameters": {},
+      "methods": {
+        "call": {
+          "img": "common/signalCall.svg",
+          "description": "Вызов сигнала"
+        }
+      },
+      "buildFiles": ["UserSignal.hpp"],
+      "importFiles": ["UserSignal.hpp"],
+      "singletone": false,
+      "variables": {}
+    },
+
+    "SpeakerNote": {
+      "name": "Пищалка-ноты",
+      "description": "Этот компонент управляет динамиком, и с его помощью воспроизводит некоторые ноты.",
+      "img": "blg-mb/beeperNote.svg",
+      "signals": {
+        "isNoteEnd": {
+          "img": "arduino/timer-start.svg",
+          "description": "Проигрывание ноты только что завершилось.",
+          "checkMethod": "isSoundEnd",
+          "alias": "Нота сыграна"
+        }
+      },
+      "constructorParameters": {},
+      "variables": {},
+      "buildFiles": [
+        "Notes.hpp",
+        "SpeakerSound.hpp",
+        "Sounds.hpp",
+        "SpeakerNote.hpp",
+        "CommonNote.hpp"
+      ],
+      "importFiles": ["SpeakerNote.hpp"],
+      "methods": {
+        "play": {
+          "img": "arduino/start.svg",
+          "parameters": [
+            {
+              "name": "note",
+              "type": ["&TestNote"],
+              "valueAlias": ["Тестовая нота"],
+              "description": "Проигрываемая нота.",
+              "optional": false
+            }
+          ],
+          "alias": "Запустить ноту",
+          "description": "Запустить таймер. После запуска раз в заданный интервал будет вызываться событие [таймаут]"
+        },
+        "stop": {
+          "img": "arduino/timer-stop.svg",
+          "parameters": [],
+          "alias": "Остановить ноту",
+          "description": "Остановить воспроизведение ноты"
+        }
+      },
+      "singletone": false
+    },
+
+    "SpeakerSound": {
+      "name": "Пищалка-звуки",
+      "description": "Этот компонент с помощью динамика воспроизводит встроенные звуки.",
+      "img": "blg-mb/beeperSound.svg",
+      "signals": {
+        "isSoundEnd": {
+          "img": "arduino/timer-start.svg",
+          "description": "Проигрывание звука только что завершилось.",
+          "checkMethod": "isSoundEnd",
+          "alias": "Звук сыгран"
+        }
+      },
+      "constructorParameters": {},
+      "variables": {},
+      "buildFiles": ["Sounds.hpp", "SpeakerSound.hpp", "CommonSound.hpp"],
+      "importFiles": ["SpeakerSound.hpp"],
+      "methods": {
+        "play": {
+          "img": "arduino/start.svg",
+          "parameters": [
+            {
+              "name": "sound",
+              "type": ["&TestSound", "&SineSound"],
+              "valueAlias": ["Тестовый звук", "Рычанье"],
+              "description": "Проигрываемый звук.",
+              "optional": false
+            },
+            {
+              "name": "duration",
+              "type": "uint16_t",
+              "description": "Длительность звука (мс).",
+              "optional": false
+            }
+          ],
+          "description": "Запускает воспроизведение выбраного звука.",
+          "alias": "Запустить звук"
+        },
+        "stop": {
+          "img": "arduino/timer-stop.svg",
+          "parameters": [],
+          "alias": "Остановить звук",
+          "description": "Остановить воспроизведение звука"
+        }
+      },
+      "singletone": false
+    },
+
+    "PhotoDiode": {
+      "name": "Нос",
+      "description": "Нос мишки — это инфракрасный фотодиод. Он позволяет мишке реагировать на освещение, но только на инфракрасное, невидимое глазу, Его много в солнечном свете, но почти не бывает в искусственном. Мишка любит солнце!",
+      "img": "blg-mb/nose.svg",
+      "signals": {
+        "isThresholdValue": {
+          "img": "blg-mb/threshold.svg",
+          "description": "Настроить значение яркости, при превышении которого будет запущено событие",
+          "checkMethod": "isThresholdValue",
+          "parameters": [],
+          "alias": "Пороговое значение"
+        }
+      },
+      "constructorParameters": {},
+      "methods": {
+        "setupEvent": {
+          "img": "blg-mb/setupEvent.svg",
+          "parameters": [
+            {
+              "name": "threshold",
+              "type": "uint16_t",
+              "description": "Пороговое значение для события.",
+              "optional": false
+            }
+          ],
+          "alias": "Настроить событие",
+          "description": "Продвинутая настройка события. Позволяет подавлять многократный запуск событий при «дрожании» яркости вокруг порогового значения"
+        }
+      },
+      "variables": {
+        "value": {
+          "img": "common/value.svg",
+          "type": "uint16_t",
+          "description": "Воспринимаемая яркость, в виде числа от 0 до 4095",
+          "alias": "Текущее значение"
+        }
+      },
+      "buildFiles": ["PhotoDiode.hpp"],
+      "importFiles": ["PhotoDiode.hpp"],
+      "loopActions": ["scan"]
+    },
+
+    "EyePalette": {
+      "name": "Глаза-палитра",
+      "description": "Этот компонент устанавливает цвета глаз.",
+      "img": "blg-mb/eyesPalette.svg",
+      "signals": {},
+      "constructorParameters": {},
+      "variables": {},
+      "methods": {
+        "setColorPaletteRight": {
+          "img": "blg-mb/setColorPalette.svg",
+          "parameters": [
+            {
+              "name": "color",
+              "type": [
+                "&ColorRed",
+                "&ColorReddish",
+                "&ColorOrange",
+                "&ColorGreen",
+                "&ColorLime",
+                "&ColorBlue",
+                "&ColorCyan",
+                "&ColorPink",
+                "&ColorPurple",
+                "&ColorYellow",
+                "&ColorWhite",
+                "&ColorBlack",
+                "&ColorPerfectWhite"
+              ],
+              "valueAlias": [
+                "Красный",
+                "Красноватый",
+                "Оранжевый",
+                "Зеленый",
+                "Лаймовый",
+                "Голубой",
+                "Циановый",
+                "Розовый",
+                "Фиолетовый",
+                "Желтый",
+                "Белый",
+                "Черный",
+                "Белоснежный"
+              ],
+              "description": "Цвет светодиода.",
+              "optional": false
+            }
+          ],
+          "description": "Установить выбраный цвет для правого глаза",
+          "alias": "Установить цвет правого глаза"
+        },
+        "setColorPaletteLeft": {
+          "img": "blg-mb/setColorPalette.svg",
+          "parameters": [
+            {
+              "name": "color",
+              "type": [
+                "&ColorRed",
+                "&ColorReddish",
+                "&ColorOrange",
+                "&ColorGreen",
+                "&ColorLime",
+                "&ColorBlue",
+                "&ColorCyan",
+                "&ColorPink",
+                "&ColorPurple",
+                "&ColorYellow",
+                "&ColorWhite",
+                "&ColorBlack",
+                "&ColorPerfectWhite"
+              ],
+              "valueAlias": [
+                "Красный",
+                "Красноватый",
+                "Оранжевый",
+                "Зеленый",
+                "Лаймовый",
+                "Голубой",
+                "Циановый",
+                "Розовый",
+                "Фиолетовый",
+                "Желтый",
+                "Белый",
+                "Черный",
+                "Белоснежный"
+              ],
+              "description": "Цвет светодиода.",
+              "optional": false
+            }
+          ],
+          "description": "Установить выбраный цвет для левого глаза",
+          "alias": "Установить цвет левого глаза"
+        }
+      },
+      "buildFiles": [
+        "EyePalette.hpp",
+        "RgbLed.hpp",
+        "Connector.hpp",
+        "PWMHelpers.hpp",
+        "PWMInit.hpp",
+        "PWM.hpp"
+      ],
+      "importFiles": ["EyePalette.hpp"],
+      "singletone": false
+    },
+
+    "EyeRGBK": {
+      "name": "Глаза-RGBK",
+      "description": "Этот компонент управляет цветом глаз, управляя составляющими их светодиодами. Это красный (R, от английского «Red»), зелёный (G, от английского «Green»), синий (B, от английского «Blue»), и чёрный (K, от английского «blacK»).",
+      "img": "blg-mb/eyesColor.svg",
+      "signals": {},
+      "constructorParameters": {},
+      "variables": {},
+      "methods": {
+        "setColorRight": {
+          "img": "blg-mb/setColor.svg",
+          "parameters": [
+            {
+              "name": "red",
+              "type": "uint8_t",
+              "description": "Продолжительность цвета светодиода (R).",
+              "optional": false
+            },
+            {
+              "name": "green",
+              "type": "uint8_t",
+              "description": "Продолжительность цвета светодиода (G).",
+              "optional": false
+            },
+            {
+              "name": "blue",
+              "type": "uint8_t",
+              "description": "Продолжительность цвета светодиода (B).",
+              "optional": false
+            },
+            {
+              "name": "black",
+              "type": "uint8_t",
+              "description": "Продолжительность выключенных светодиодов.",
+              "optional": false
+            }
+          ],
+          "description": "Установить значения яркости светодиода в правом глазу",
+          "alias": "Установить цвет правого глаза"
+        },
+
+        "setColorLeft": {
+          "img": "blg-mb/setColor.svg",
+          "parameters": [
+            {
+              "name": "red",
+              "type": "uint8_t",
+              "description": "Продолжительность цвета светодиода (R).",
+              "optional": false
+            },
+            {
+              "name": "green",
+              "type": "uint8_t",
+              "description": "Продолжительность цвета светодиода (G).",
+              "optional": false
+            },
+            {
+              "name": "blue",
+              "type": "uint8_t",
+              "description": "Продолжительность цвета светодиода (B).",
+              "optional": false
+            },
+            {
+              "name": "black",
+              "type": "uint8_t",
+              "description": "Продолжительность выключенных светодиодов.",
+              "optional": false
+            }
+          ],
+          "description": "Установить значения яркости светодиода в левом глазу",
+          "alias": "Установить цвет левого глаза"
+        },
+
+        "offRight": {
+          "img": "arduino/switch-off.svg",
+          "description": "Выключить светодиод в правом глазу",
+          "alias": "Выключить цвет правого глаза"
+        },
+
+        "offLeft": {
+          "img": "arduino/switch-off.svg",
+          "description": "Выключить светодиод в левом глазу",
+          "alias": "Выключить цвет левого глаза"
+        }
+      },
+      "buildFiles": [
+        "EyeRGBK.hpp",
+        "RgbLed.hpp",
+        "Connector.hpp",
+        "PWMHelpers.hpp",
+        "PWMInit.hpp",
+        "PWM.hpp"
+      ],
+      "importFiles": ["EyeRGBK.hpp"],
+      "singletone": false
+    },
+
+    "Microphone": {
+      "name": "Уши-громкость",
+      "description": "Компонент, который слушает окружающие звуки и реагирует, когда они становятся слишком громкими",
+      "img": "blg-mb/earsVolume.svg",
+      "signals": {
+        "isLoudSound": {
+          "img": "blg-mb/heardPeak.svg",
+          "description": "Мишка услышал громкий звук",
+          "checkMethod": "isLoudSound",
+          "parameters": [],
+          "alias": "Услышан громкий звук"
+        }
+      },
+      "constructorParameters": {},
+      "variables": {},
+      "methods": {
+        "setupEvent": {
+          "img": "blg-mb/volumeThreshold.svg",
+          "parameters": [
+            {
+              "name": "volume",
+              "type": "uint16_t",
+              "description": "Уровень громкости для события.",
+              "optional": false
+            }
+          ],
+          "description": "Настравает громкость звука, на которую мишка реагирует",
+          "alias": "Настроить порог громкости"
+        }
+      },
+      "buildFiles": ["Microphone.hpp"],
+      "importFiles": ["Microphone.hpp"],
       "singletone": false
     },
 
     "Matrix": {
+      "name": "Матрица",
       "description": "Компонент для взаимодействия со светодиодной матрицы.",
       "img": "tjc-ms/matrix.svg",
       "signals": {},
@@ -218,48 +618,6 @@
             }
           ]
         },
-        "maskRow": {
-          "img": "tjc-ms/maskRow.svg",
-          "description": "Включить или выключить строку светодиодов, используя битовую маску.",
-          "parameters": [
-            {
-              "name": "idx",
-              "type": "uint8_t",
-              "description": "Номер строки, для которой нужно применить маску."
-            },
-            {
-              "name": "pattern",
-              "type": "Matrix1x5",
-              "description": "Паттерн, который будет применен к строке на матрице."
-            },
-            {
-              "name": "op",
-              "type": ["mask_and", "mask_or", "mask_xor"],
-              "description": "Битовая маска для установки значения пикселя."
-            }
-          ]
-        },
-        "maskCol": {
-          "img": "tjc-ms/maskCol.svg",
-          "description": "Включить или выключить столбец светодиодов, используя битовую маску.",
-          "parameters": [
-            {
-              "name": "idx",
-              "type": "uint8_t",
-              "description": "Номер столбца, для которого нужно применить маску."
-            },
-            {
-              "name": "pattern",
-              "type": "Matrix1x7",
-              "description": "Паттерн, который будет применен к столбцу на матрице."
-            },
-            {
-              "name": "op",
-              "type": ["mask_and", "mask_or", "mask_xor"],
-              "description": "Битовая маска для установки значения пикселя."
-            }
-          ]
-        },
         "maskPattern": {
           "img": "tjc-ms/maskGrid.svg",
           "description": "Изобразить паттерн на матрице, используя битовую маску.",
@@ -271,7 +629,7 @@
             },
             {
               "name": "op",
-              "type": ["AND", "OR", "XOR"],
+              "type": ["mask_and", "mask_or", "mask_xor"],
               "description": "Битовая маска для установки значения пикселя."
             }
           ]
@@ -279,82 +637,105 @@
       },
       "variables": {},
       "constructorParameters": {},
-      "buildFiles": ["Matrix.hpp"],
+      "buildFiles": [
+        "Matrix.hpp",
+        "LED.hpp",
+        "PWM.hpp",
+        "PWMHelpers.hpp",
+        "PWMInit.hpp",
+        "Pattern.hpp"
+      ],
       "importFiles": ["Matrix.hpp"],
       "singletone": false
     },
-    "Speaker": {
-      "description": "Компонент для взаимодействия с динамиком.",
-      "img": "blg-mb/beeperSound.svg",
+
+    "MatrixAnimation": {
+      "name": "Матрица-анимация",
+      "description": "Компонент, который делает анимированные переходы между изображениями на матрице",
+      "img": "blg-mb/matrixAnimation.svg",
       "signals": {
-        "isSoundEnd": {
-          "img": "common/onIterationEnd.svg",
-          "description": "Создает сигнал, если звук закончен.",
-          "checkMethod": "isSoundEnd"
+        "AnimationFinished": {
+          "img": "arduino/timer-start.svg",
+          "description": "Переход к финальной картинке завершён",
+          "checkMethod": "AnimationFinished",
+          "parameters": [],
+          "alias": "Анимация завершена"
         }
       },
       "constructorParameters": {},
       "variables": {},
-      "buildFiles": ["Sounds.hpp", "Speaker.hpp", "CommonSound.hpp"],
-      "importFiles": ["Speaker.hpp"],
       "methods": {
-        "play": {
-          "img": "arduino/start.svg",
+        "setFrame": {
+          "img": "blg-mb/draw.svg",
           "parameters": [
             {
-              "name": "sound",
-              "type": ["&TestSound"],
-              "description": "Проигрываемый звук.",
-              "optional": false
+              "name": "pattern",
+              "type": "Matrix5x7",
+              "description": "Паттерн, который будет изображен на матрице."
             },
             {
-              "name": "duration",
-              "type": "uint16_t",
-              "description": "Длительность звука (мс).",
-              "optional": false
+              "name": "time",
+              "type": "uint32_t",
+              "description": "Продолжительность анимации (в миллисекундах)"
             }
           ],
-          "description": "Включить звук."
+          "description": "Установить картинку, к которой нужно перейти",
+          "alias": "Установить матрицу"
         }
       },
+      "buildFiles": [
+        "MatrixAnimation.hpp",
+        "Matrix.hpp",
+        "LED.hpp",
+        "PWM.hpp",
+        "PWMHelpers.hpp",
+        "PWMInit.hpp",
+        "Pattern.hpp"
+      ],
+      "importFiles": ["MatrixAnimation.hpp"],
       "singletone": false
     },
 
-    "Microphone": {
-      "description": "Компонент для взаимодействия с микрофонами. По умолчанию выключен.",
-      "img": "blg-mb/earsVolume.svg",
+    "MatrixPicture": {
+      "name": "Матрица-картинка",
+      "description": "Устанавливает на матрицу статическое изображение",
+      "img": "blg-mb/matrixHalftone.svg",
       "signals": {},
       "constructorParameters": {},
-      "variables": {
-        "lValue": {
-          "img": "common/value.svg",
-          "type": "uint16_t",
-          "description": "Текущее значение на левом микрофоне."
-        },
-        "rValue": {
-          "img": "common/value.svg",
-          "type": "uint16_t",
-          "description": "Текущее значение на правом микрофоне."
-        }
-      },
+      "variables": {},
       "methods": {
-        "on": {
-          "img": "arduino/switch-on.svg",
-          "parameters": [],
-          "description": "Включить микрофон."
-        },
-        "off": {
-          "img": "arduino/switch-off.svg",
-          "description": "Выключить микрофон."
+        "draw": {
+          "img": "blg-mb/draw.svg",
+          "parameters": [
+            {
+              "name": "Рисунок",
+              "type": ["&heart", "&smile", "&sadnes", "&cross", "&note", "&rhombus", "&square"],
+              "valueAlias": ["Сердце", "Улыбка", "Грусть", "Крест", "Нота", "Ромб", "Квадрат"],
+              "description": "Паттерн, который будет изображен на матрице."
+            }
+          ],
+          "description": "Изобразить рисунок на матрице при помощи виджета",
+          "alias": "Установить матрицу"
         }
       },
-      "buildFiles": ["Microphone.hpp"],
-      "importFiles": ["Microphone.hpp"],
+      "buildFiles": [
+        "MatrixPicture.hpp",
+        "Matrix.hpp",
+        "LED.hpp",
+        "PWM.hpp",
+        "PWMHelpers.hpp",
+        "PWMInit.hpp",
+        "Pattern.hpp",
+        "Pictures.hpp",
+        "Picture.hpp"
+      ],
+      "importFiles": ["MatrixPicture.hpp"],
       "singletone": false
     },
 
     "Random": {
-      "description": "Генерация псевдо-случайного числа",
+      "name": "Рандомайзер",
+      "description": "Генерация случайного числа",
       "img": "common/random.svg",
       "constructorParameters": {},
       "signals": {},
@@ -406,6 +787,7 @@
     },
 
     "Timer": {
+      "name": "Таймер",
       "description": "Программный таймер",
       "img": "arduino/timer.svg",
       "signals": {
@@ -453,6 +835,7 @@
       }
     },
     "Counter": {
+      "name": "Счетчик",
       "description": "Переменная-счетчик.",
       "img": "arduino/counter.svg",
       "signals": {},
@@ -479,7 +862,7 @@
           ]
         },
         "set": {
-          "img": "arduino/sub.svg",
+          "img": "common/set.svg",
           "description": "Установить value к значению счетчика",
           "parameters": [
             {
@@ -506,6 +889,7 @@
     },
 
     "CalcInt": {
+      "name": "Целочисленный калькулятор",
       "description": "Компонент для целочисленных вычислений. Хранит счётчик (32-разрядное знаковое число), над которым можно совершать арифметические и битовые операции.",
       "img": "math/calcInt.svg",
       "signals": {
@@ -672,6 +1056,7 @@
     },
 
     "CalcFloat": {
+      "name": "Вещественный калькулятор",
       "description": "Компонент для вычислений c плавающей точкой. Хранит счётчик (вещественное число), над которым можно совершать арифметические операции.",
       "img": "math/calcFloat.svg",
       "signals": {
@@ -799,222 +1184,8 @@
         }
       },
       "constructorParameters": {},
-      "buildFiles": ["CalFloat.hpp", "OverflowHelpers.hpp"],
+      "buildFiles": ["CalcFloat.hpp", "OverflowHelpers.hpp"],
       "importFiles": ["CalcFloat.hpp"],
-      "singletone": false
-    },
-
-    "Array": {
-      "description": "Статический массив",
-      "img": "common/array.svg",
-      "signals": {},
-      "constructorParameters": {
-        "size": {
-          "type": "uint16_t",
-          "description": "Размер массива (должен быть не более, чем 65535 элементов)",
-          "optional": false
-        }
-      },
-      "methods": {
-        "set": {
-          "img": "common/set-value.svg",
-          "description": "Установить значение элементу с заданным индексом",
-          "parameters": [
-            {
-              "name": "index",
-              "description": "Индекс элемента",
-              "type": "uint16_t"
-            },
-            {
-              "name": "value",
-              "description": "Новое значение для элемента",
-              "type": "int16_t"
-            }
-          ]
-        },
-        "peek": {
-          "img": "common/arrayPeek.svg",
-          "description": "Переместиться на элемент с заданным индексом",
-          "parameters": [
-            {
-              "name": "index",
-              "img": "common/arrayIndex.svg",
-              "description": "Индекс элемента",
-              "type": "uint16_t"
-            }
-          ]
-        },
-        "next": {
-          "img": "common/arrayNext.svg",
-          "description": "Переместиться на элемент со следующим индексом"
-        },
-        "prev": {
-          "img": "common/arrayPrev.svg",
-          "description": "Переместиться на элемент с предыдущим индексом"
-        }
-      },
-      "buildFiles": ["Array.hpp"],
-      "importFiles": ["Array.hpp"],
-      "singletone": false,
-      "variables": {
-        "value": {
-          "img": "common/value.svg",
-          "type": "int16_t",
-          "description": "Значение элемента с текущим индексом."
-        },
-        "index": {
-          "img": "common/arrayIndex.svg",
-          "type": "uint16_t",
-          "description": "Текущий индекс."
-        },
-        "size": {
-          "img": "common/arraySize.svg",
-          "type": "uint16_t",
-          "description": "Размер массива."
-        }
-      }
-    },
-    "PhotoDiode": {
-      "description": "Компонент, вычисляющий уровень освещенности. Искусственный свет не считается.",
-      "img": "blg-mb/nose.svg",
-      "signals": {},
-      "constructorParameters": {},
-      "methods": {},
-      "variables": {
-        "value": {
-          "img": "common/value.svg",
-          "type": "uint16_t",
-          "description": "Уровень освещенности."
-        }
-      },
-      "buildFiles": ["PhotoDiode.hpp"],
-      "importFiles": ["PhotoDiode.hpp"],
-      "loopActions": ["scan"]
-    },
-    "RgbLed": {
-      "description": "Компонент для взаимодействия со светодиодом",
-      "img": "blg-mb/eyesColor.svg",
-      "signals": {},
-      "constructorParameters": {
-        "pin": {
-          "type": ["1", "2"],
-          "valueAlias": ["Левый глаз", "Правый глаз"],
-          "description": "Пин, к которому подключен светодиод"
-        }
-      },
-      "variables": {
-        "value": {
-          "img": "common/value.svg",
-          "type": "int",
-          "description": "Текущее значение на пине"
-        }
-      },
-      "methods": {
-        "on_color": {
-          "img": "blg-mb/setColorPalette.svg",
-          "parameters": [
-            {
-              "name": "color",
-              "type": [
-                "&ColorRed",
-                "&ColorReddish",
-                "&ColorOrange",
-                "&ColorGreen",
-                "&ColorLime",
-                "&ColorBlue",
-                "&ColorCyan",
-                "&ColorPink",
-                "&ColorPurple",
-                "&ColorYellow",
-                "&ColorWhite",
-                "&ColorBlack",
-                "&ColorPerfectWhite"
-              ],
-              "description": "Цвет светодиода.",
-              "optional": false
-            }
-          ],
-          "description": "Зажечь светодиод"
-        },
-        "on_rgb": {
-          "img": "blg-mb/setColor.svg",
-          "parameters": [
-            {
-              "name": "red",
-              "type": "uint8_t",
-              "description": "Продолжительность цвета светодиода (R).",
-              "optional": false
-            },
-            {
-              "name": "green",
-              "type": "uint8_t",
-              "description": "Продолжительность цвета светодиода (G).",
-              "optional": false
-            },
-            {
-              "name": "blue",
-              "type": "uint8_t",
-              "description": "Продолжительность цвета светодиода (B).",
-              "optional": false
-            },
-            {
-              "name": "black",
-              "type": "uint8_t",
-              "description": "Продолжительность выключенных светодиодов.",
-              "optional": false
-            }
-          ],
-          "description": "Зажечь светодиод"
-        },
-
-        "off": {
-          "img": "arduino/switch-off.svg",
-          "description": "Выключить светодиод"
-        }
-      },
-      "buildFiles": ["RgbLed.hpp", "Connector.hpp", "PWMHelpers.hpp", "PWMInit.hpp", "PWM.hpp"],
-      "importFiles": ["RgbLed.hpp"],
-      "singletone": false
-    },
-    "Button": {
-      "description": "Компонент для взаимодействия с физической кнопкой",
-      "img": "arduino/button.svg",
-      "signals": {
-        "isPressed": {
-          "img": "arduino/isPressed.svg",
-          "description": "Создает сигнал, если кнопка была нажата",
-          "checkMethod": "isPressed"
-        },
-        "isClicked": {
-          "img": "arduino/clicked.svg",
-          "description": "Создает сигнал, если кнопка была кликнута",
-          "checkMethod": "clicked"
-        }
-      },
-      "constructorParameters": {
-        "pin": {
-          "type": ["1", "2", "3", "4", "5", "6"],
-          "valueAlias": [
-            "Правая лапа",
-            "Левая лапа",
-            "Правый палец",
-            "Левый палец",
-            "Правый бок",
-            "Левый бок"
-          ],
-          "description": "Номер кнопки"
-        }
-      },
-      "variables": {
-        "value": {
-          "img": "common/value.svg",
-          "type": "int",
-          "description": "Текущее значение на пине"
-        }
-      },
-      "buildFiles": ["Button.hpp"],
-      "importFiles": ["Button.hpp"],
-      "methods": {},
       "singletone": false
     }
   }

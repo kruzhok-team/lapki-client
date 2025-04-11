@@ -991,15 +991,18 @@
     },
 
     "Iterator": {
+      "alias": "Итератор",
       "description": "Итератор",
       "img": "common/iterator.svg",
       "signals": {
         "onEnd": {
+          "alias": "Конец",
           "img": "common/onIterationEnd.svg",
           "description": "Итерации завершены",
           "checkMethod": "onEnd"
         },
         "onIteration": {
+          "alias": "На итерации",
           "img": "common/onIteration.svg",
           "description": "Очередная итерация",
           "checkMethod": "onIteration"
@@ -1008,24 +1011,26 @@
       "constructorParameters": {},
       "methods": {
         "stop": {
+          "alias": "стоп",
           "img": "common/break.svg",
           "description": "Остановить итератор."
         },
         "start": {
+          "alias": "Старт",
           "img": "arduino/start.svg",
           "parameters": [
             {
-              "name": "from",
+              "name": "от",
               "type": "unsigned long",
               "description": "Начальное значение."
             },
             {
-              "name": "to",
+              "name": "до",
               "type": "unsigned long",
               "description": "Конечное значение."
             },
             {
-              "name": "step",
+              "name": "шаг",
               "type": "unsigned long",
               "description": "Шаг для изменения значения."
             }
@@ -1038,6 +1043,7 @@
       "singletone": false,
       "variables": {
         "index": {
+          "alias": "Индекс",
           "img": "common/iteratorIndex.svg",
           "type": "unsigned long",
           "description": "Текущий индекс итерации"

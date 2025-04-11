@@ -295,7 +295,7 @@
       "variables": {},
       "methods": {
         "setColorPaletteRight": {
-          "img": "blg-mb/setColorPalette.svg",
+          "img": "blg-mb/setColorPaletteRight.svg",
           "parameters": [
             {
               "name": "color",
@@ -337,7 +337,7 @@
           "alias": "Установить цвет правого глаза"
         },
         "setColorPaletteLeft": {
-          "img": "blg-mb/setColorPalette.svg",
+          "img": "blg-mb/setColorPaletteLeft.svg",
           "parameters": [
             {
               "name": "color",
@@ -400,7 +400,7 @@
       "variables": {},
       "methods": {
         "setColorRight": {
-          "img": "blg-mb/setColor.svg",
+          "img": "blg-mb/setColorRight.svg",
           "parameters": [
             {
               "name": "red",
@@ -432,7 +432,7 @@
         },
 
         "setColorLeft": {
-          "img": "blg-mb/setColor.svg",
+          "img": "blg-mb/setColorLeft.svg",
           "parameters": [
             {
               "name": "red",

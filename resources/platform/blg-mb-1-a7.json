@@ -183,7 +183,7 @@
           "img": "arduino/start.svg",
           "parameters": [
             {
-              "name": "note",
+              "name": "нота",
               "type": ["&TestNote"],
               "valueAlias": ["Тестовая нота"],
               "description": "Проигрываемая нота.",
@@ -224,14 +224,14 @@
           "img": "arduino/start.svg",
           "parameters": [
             {
-              "name": "sound",
+              "name": "звук",
               "type": ["&TestSound", "&SineSound"],
               "valueAlias": ["Тестовый звук", "Рычание"],
               "description": "Проигрываемый звук.",
               "optional": false
             },
             {
-              "name": "duration",
+              "name": "время",
               "type": "uint16_t",
               "description": "Длительность звука (мс).",
               "optional": false
@@ -269,7 +269,7 @@
           "img": "blg-mb/setupEvent.svg",
           "parameters": [
             {
-              "name": "threshold",
+              "name": "порог",
               "type": "uint16_t",
               "description": "Пороговое значение для события.",
               "optional": false
@@ -284,7 +284,7 @@
           "img": "common/value.svg",
           "type": "uint16_t",
           "description": "Воспринимаемая яркость, в виде числа от 0 до 4095",
-          "alias": "Текущее значение"
+          "alias": "яркость"
         }
       },
       "buildFiles": ["PhotoDiode.hpp"],
@@ -304,7 +304,7 @@
           "img": "blg-mb/setColorPalette.svg",
           "parameters": [
             {
-              "name": "color",
+              "name": "цвет",
               "type": [
                 "&ColorRed",
                 "&ColorReddish",
@@ -339,14 +339,14 @@
               "optional": false
             }
           ],
-          "description": "Установить выбраный цвет для правого глаза",
+          "description": "Установить выбраный цвет для правого глаза.",
           "alias": "Установить цвет правого глаза"
         },
         "setColorPaletteLeft": {
           "img": "blg-mb/setColorPalette.svg",
           "parameters": [
             {
-              "name": "color",
+              "name": "цвет",
               "type": [
                 "&ColorRed",
                 "&ColorReddish",
@@ -381,7 +381,7 @@
               "optional": false
             }
           ],
-          "description": "Установить выбраный цвет для левого глаза",
+          "description": "Установить выбраный цвет для левого глаза.",
           "alias": "Установить цвет левого глаза"
         }
       },
@@ -409,31 +409,31 @@
           "img": "blg-mb/setColor.svg",
           "parameters": [
             {
-              "name": "red",
+              "name": "красный",
               "type": "uint8_t",
-              "description": "Продолжительность цвета светодиода (R).",
+              "description": "Продолжительность цвета светодиода (R). От 0 до 255.",
               "optional": false
             },
             {
-              "name": "green",
+              "name": "зелёный",
               "type": "uint8_t",
-              "description": "Продолжительность цвета светодиода (G).",
+              "description": "Продолжительность цвета светодиода (G). От 0 до 255.",
               "optional": false
             },
             {
-              "name": "blue",
+              "name": "синий",
               "type": "uint8_t",
-              "description": "Продолжительность цвета светодиода (B).",
+              "description": "Продолжительность цвета светодиода (B). От 0 до 255.",
               "optional": false
             },
             {
-              "name": "black",
+              "name": "чёрный",
               "type": "uint8_t",
-              "description": "Продолжительность выключенных светодиодов.",
+              "description": "Продолжительность выключенных светодиодов (K). От 0 до 255.",
               "optional": false
             }
           ],
-          "description": "Установить значения яркости светодиода в правом глазу",
+          "description": "Установить значения яркости светодиода в правом глазу.",
           "alias": "Установить цвет правого глаза"
         },
 
@@ -443,41 +443,41 @@
             {
               "name": "red",
               "type": "uint8_t",
-              "description": "Продолжительность цвета светодиода (R).",
+              "description": "Продолжительность цвета светодиода (R). От 0 до 255.",
               "optional": false
             },
             {
               "name": "green",
               "type": "uint8_t",
-              "description": "Продолжительность цвета светодиода (G).",
+              "description": "Продолжительность цвета светодиода (G). От 0 до 255.",
               "optional": false
             },
             {
               "name": "blue",
               "type": "uint8_t",
-              "description": "Продолжительность цвета светодиода (B).",
+              "description": "Продолжительность цвета светодиода (B). От 0 до 255.",
               "optional": false
             },
             {
               "name": "black",
               "type": "uint8_t",
-              "description": "Продолжительность выключенных светодиодов.",
+              "description": "Продолжительность выключенных светодиодов. От 0 до 255.",
               "optional": false
             }
           ],
-          "description": "Установить значения яркости светодиода в левом глазу",
+          "description": "Установить значения яркости светодиода в левом глазу.",
           "alias": "Установить цвет левого глаза"
         },
 
         "offRight": {
           "img": "arduino/switch-off.svg",
-          "description": "Выключить светодиод в правом глазу",
+          "description": "Выключить светодиод в правом глазу.",
           "alias": "Выключить цвет правого глаза"
         },
 
         "offLeft": {
           "img": "arduino/switch-off.svg",
-          "description": "Выключить светодиод в левом глазу",
+          "description": "Выключить светодиод в левом глазу.",
           "alias": "Выключить цвет левого глаза"
         }
       },
@@ -513,13 +513,13 @@
           "img": "blg-mb/volumeThreshold.svg",
           "parameters": [
             {
-              "name": "volume",
+              "name": "громкость",
               "type": "uint16_t",
-              "description": "Уровень громкости для события.",
+              "description": "Уровень громкости для события. От 0 до 65535.",
               "optional": false
             }
           ],
-          "description": "Настравает громкость звука, на которую мишка реагирует",
+          "description": "Настравает громкость звука, на которую мишка реагирует.",
           "alias": "Настроить порог громкости"
         }
       },
@@ -530,7 +530,7 @@
 
     "Matrix": {
       "name": "Матрица светодиодов",
-      "description": "Компонент для взаимодействия со светодиодной матрицы.",
+      "description": "Компонент для взаимодействия со светодиодной матрицей.",
       "img": "tjc-ms/matrix.svg",
       "signals": {},
       "methods": {
@@ -651,7 +651,7 @@
 
     "MatrixAnimation": {
       "name": "Матрица-анимация",
-      "description": "Компонент, который делает анимированные переходы между изображениями на матрице",
+      "description": "Компонент, который делает анимированные переходы между изображениями на матрице.",
       "img": "blg-mb/matrixAnimation.svg",
       "signals": {
         "AnimationFinished": {
@@ -669,17 +669,17 @@
           "img": "blg-mb/draw.svg",
           "parameters": [
             {
-              "name": "pattern",
+              "name": "паттерн",
               "type": "Matrix5x7",
               "description": "Паттерн, который будет изображен на матрице."
             },
             {
-              "name": "time",
+              "name": "время",
               "type": "uint32_t",
-              "description": "Продолжительность анимации (в миллисекундах)"
+              "description": "Продолжительность анимации (в миллисекундах)."
             }
           ],
-          "description": "Установить картинку, к которой нужно перейти",
+          "description": "Установить картинку, к которой нужно перейти.",
           "alias": "Установить матрицу"
         }
       },
@@ -698,7 +698,7 @@
 
     "MatrixPicture": {
       "name": "Матрица-картинка",
-      "description": "Устанавливает на матрицу статическое изображение",
+      "description": "Устанавливает на матрицу статическое изображение.",
       "img": "blg-mb/matrixHalftone.svg",
       "signals": {},
       "constructorParameters": {},
@@ -714,7 +714,7 @@
               "description": "Паттерн, который будет изображен на матрице."
             }
           ],
-          "description": "Изобразить рисунок на матрице при помощи виджета",
+          "description": "Изобразить рисунок на матрице при помощи виджета.",
           "alias": "Установить матрицу"
         }
       },
@@ -735,7 +735,7 @@
 
     "Random": {
       "name": "Генератор случайностей",
-      "description": " Генерация псевдо-случайного числа",
+      "description": " Генерация псевдо-случайного числа.",
       "img": "common/random.svg",
       "constructorParameters": {},
       "signals": {},
@@ -769,7 +769,7 @@
               "type": "signed long long"
             }
           ],
-          "description": "Сгенерировать случайное число в заданном диапазоне [начало; конец)"
+          "description": "Сгенерировать случайное число в заданном диапазоне [начало; конец)."
         }
       },
       "buildFiles": ["Random.hpp"],
@@ -780,13 +780,13 @@
           "alias": "Целое число",
           "img": "common/valueSigned.svg",
           "type": "signed long",
-          "description": "Сгенерированное целое число со знаком"
+          "description": "Сгенерированное целое число со знаком."
         },
         "uValue": {
           "alias": "Натуральное число",
           "img": "common/valueUnsigned.svg",
           "type": "unsigned long",
-          "description": "Сгенерированное безнаковое целое число"
+          "description": "Сгенерированное беззнаковое целое число."
         }
       }
     },
@@ -808,7 +808,7 @@
         "reset": {
           "alias": "Сброс",
           "img": "arduino/reset.svg",
-          "description": "Сбросить таймер, отчет начнется сначала"
+          "description": "Сбросить таймер, отчет начнется сначала."
         },
         "disable": {
           "alias": "Отключить",
@@ -855,7 +855,7 @@
         "add": {
           "alias": "Увеличить",
           "img": "arduino/add.svg",
-          "description": "Добавить указанное значение к счетчику",
+          "description": "Добавить указанное значение к счетчику.",
           "parameters": [
             {
               "name": "значение",
@@ -866,7 +866,7 @@
         "sub": {
           "alias": "Уменьшить",
           "img": "arduino/sub.svg",
-          "description": "Вычесть указанное значение из счетчика",
+          "description": "Вычесть указанное значение из счетчика.",
           "parameters": [
             {
               "name": "значение",
@@ -877,7 +877,7 @@
         "set": {
           "alias": "Установить",
           "img": "common/set.svg",
-          "description": "Установить значение счетчика",
+          "description": "Установить значение счетчика.",
           "parameters": [
             {
               "name": "значение",
@@ -895,7 +895,7 @@
         "value": {
           "alias": "значение",
           "img": "common/value.svg",
-          "description": "Текущее значение счетчика",
+          "description": "Текущее значение счетчика.",
           "type": "int"
         }
       },

@@ -226,7 +226,7 @@
             {
               "name": "sound",
               "type": ["&TestSound", "&SineSound"],
-              "valueAlias": ["Тестовый звук", "Рычанье"],
+              "valueAlias": ["Тестовый звук", "Рычание"],
               "description": "Проигрываемый звук.",
               "optional": false
             },

@@ -79,25 +79,25 @@
   "components": {
     "Button": {
       "name": "Кнопка",
-      "description": "Компонент для взаимодействия с физической кнопкой",
+      "description": "Компонент для взаимодействия с физической кнопкой.",
       "img": "arduino/button.svg",
       "signals": {
         "isPressed": {
           "alias": "Нажата",
           "img": "arduino/isPressed.svg",
-          "description": "Создает сигнал, если кнопка была нажата",
+          "description": "Создает сигнал, если кнопка была нажата.",
           "checkMethod": "isPressed"
         },
         "isClicked": {
           "alias": "Зажата",
           "img": "arduino/clicked.svg",
-          "description": "Создает сигнал, если кнопка была нажата, а затем отпущена",
+          "description": "Создает сигнал, если кнопка была нажата, а затем отпущена.",
           "checkMethod": "isClicked"
         },
         "isReleased": {
           "alias": "Отжата",
           "img": "common/isReleased.svg",
-          "description": "Создает сигнал, если кнопка была отпущена",
+          "description": "Создает сигнал, если кнопка была отпущена.",
           "checkMethod": "isReleased"
         }
       },
@@ -112,7 +112,7 @@
             "Правый бок",
             "Левый бок"
           ],
-          "description": "Расположение кнопки"
+          "description": "Расположение кнопки."
         }
       },
       "variables": {

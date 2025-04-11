@@ -735,7 +735,7 @@
 
     "Random": {
       "name": "Генератор случайностей",
-      "description": " Генерация псевдо-случайного числа.",
+      "description": "Генерация псевдо-случайного числа.",
       "img": "common/random.svg",
       "constructorParameters": {},
       "signals": {},

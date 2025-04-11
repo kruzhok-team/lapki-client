@@ -928,7 +928,7 @@
             {
               "name": "значение",
               "type": "int32_t",
-              "description": "Новое значение для калькулятора."
+              "description": "Новое значение для счетчика."
             }
           ]
         },
@@ -981,7 +981,7 @@
           ]
         },
         "mod": {
-          "alias": "Остаток от деления",
+          "alias": "Разделить по модулю",
           "img": "math/mod.svg",
           "description": "Остаток от деления счетчика. При делении на ноль значение не изменяется и возникает сигнал.",
           "parameters": [
@@ -999,7 +999,7 @@
           "parameters": []
         },
         "abs": {
-          "alias": "Разделить по модулю",
+          "alias": "Модуль",
           "img": "math/abs.svg",
           "description": "Установить абсолютное значение для счетчика.",
           "parameters": []
@@ -1091,115 +1091,128 @@
       "img": "math/calcFloat.svg",
       "signals": {
         "isOverflow": {
+          "alias": "Переполнение значения",
           "img": "math/overflow.svg",
-          "description": "Переполнение счетчика.",
+          "description": "Произошло переполнение значения счетчика (в него попытались записать слишком большое значение).",
           "checkMethod": "isOverflow"
         },
         "isZeroDivision": {
+          "alias": "Деление на ноль",
           "img": "math/divZero.svg",
-          "description": "Деление на ноль.",
+          "description": "Произошло деление на ноль. Значению счетчика верить нельзя, в нём может быть что-то странное.",
           "checkMethod": "isZeroDivision"
         }
       },
       "methods": {
         "set": {
+          "alias": "Установить значение",
           "img": "common/set-value.svg",
           "description": "Установить значение счетчика.",
           "parameters": [
             {
-              "name": "value",
+              "name": "значение",
               "type": "float",
               "description": "Новое значение для счетчика."
             }
           ]
         },
         "add": {
+          "alias": "Прибавить",
           "img": "math/add.svg",
           "description": "Прибавить значение к счетчику.",
           "parameters": [
             {
-              "name": "value",
+              "name": "слагаемое",
               "type": "float",
               "description": "Слагаемое для операции."
             }
           ]
         },
         "sub": {
+          "alias": "Вычесть",
           "img": "math/sub.svg",
           "description": "Вычесть значение из счетчика.",
           "parameters": [
             {
-              "name": "value",
+              "name": "вычитаемое",
               "type": "float",
               "description": "Вычитаемое для операции."
             }
           ]
         },
         "mul": {
+          "alias": "Умножить",
           "img": "math/mul.svg",
           "description": "Умножить значение счетчика.",
           "parameters": [
             {
-              "name": "value",
+              "name": "множитель",
               "type": "float",
               "description": "Множитель для операции."
             }
           ]
         },
         "div": {
+          "alias": "Разделить",
           "img": "math/div.svg",
           "description": "Деление значения счетчика. При делении на ноль значение не изменяется и возникает сигнал.",
           "parameters": [
             {
-              "name": "value",
+              "name": "делитель",
               "type": "float",
               "description": "Делитель для операции."
             }
           ]
         },
         "mod": {
+          "alias": "Разделить по модулю",
           "img": "math/mod.svg",
           "description": "Остаток от деления счетчика. При делении на ноль значение не изменяется и возникает сигнал.",
           "parameters": [
             {
-              "name": "value",
+              "name": "делитель",
               "type": "float",
               "description": "Делитель для операции."
             }
           ]
         },
         "neg": {
+          "alias": "Поменять знак",
           "img": "math/neg.svg",
           "description": "Поменять знак у счетчика.",
           "parameters": []
         },
         "abs": {
+          "alias": "Модуль",
           "img": "math/abs.svg",
           "description": "Установить абсолютное значение для счетчика.",
           "parameters": []
         },
         "pow": {
+          "alias": "Степень",
           "img": "math/pow.svg",
           "description": "Возвести значение счетчика в степень.",
           "parameters": [
             {
-              "name": "power",
+              "name": "степень",
               "type": "float",
               "description": "Значение для операции (возводимая степень)."
             }
           ]
         },
         "sqrt": {
+          "alias": "Корень",
           "img": "math/sqrt.svg",
           "description": "Взять квадратный корень от значения счетчика.",
           "parameters": []
         },
         "log": {
+          "alias": "Логарифм",
           "img": "math/log.svg",
           "description": "Логарифм от счетчика с задаваемым основанием.",
           "parameters": [
             {
-              "name": "base",
+              "name": "основание",
               "type": "float",
               "description": "Значение для операции (основание логарифма)."
             }
@@ -1208,6 +1221,7 @@
       },
       "variables": {
         "value": {
+          "alias": "Результат",
           "img": "common/value.svg",
           "type": "float",
           "description": "Значение счетчика."

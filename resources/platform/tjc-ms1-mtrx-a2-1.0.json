@@ -392,50 +392,56 @@
       }
     },
     "Counter": {
+      "name": "Счетчик",
       "description": "Переменная-счетчик.",
       "img": "arduino/counter.svg",
       "signals": {},
       "constructorParameters": {},
       "methods": {
         "add": {
+          "alias": "Увеличить",
           "img": "arduino/add.svg",
-          "description": "Добавить value к значению счетчика",
+          "description": "Добавить указанное значение к счетчику.",
           "parameters": [
             {
-              "name": "value",
+              "name": "значение",
               "type": "int"
             }
           ]
         },
         "sub": {
+          "alias": "Уменьшить",
           "img": "arduino/sub.svg",
-          "description": "Вычесть value к значению счетчика",
+          "description": "Вычесть указанное значение из счетчика.",
           "parameters": [
             {
-              "name": "value",
+              "name": "значение",
               "type": "int"
             }
           ]
         },
         "set": {
+          "alias": "Установить",
           "img": "common/set.svg",
-          "description": "Установить value к значению счетчика",
+          "description": "Установить значение счетчика.",
           "parameters": [
             {
-              "name": "value",
+              "name": "значение",
               "type": "int"
             }
           ]
         },
         "reset": {
+          "alias": "Сброс",
           "img": "arduino/reset.svg",
           "description": "Обнулить значение счетчика."
         }
       },
       "variables": {
         "value": {
+          "alias": "значение",
           "img": "common/value.svg",
-          "description": "Текущее значение счетчика",
+          "description": "Текущее значение счетчика.",
           "type": "int"
         }
       },

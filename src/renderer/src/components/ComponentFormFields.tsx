@@ -37,6 +37,7 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
 }) => {
   const allParameters = { ...protoParameters, ...protoInitializationParameters };
   const handleInputChange = (name: string, value: string) => {
+    console.log(name);
     const type = allParameters[name]?.type;
 
     if (
@@ -142,9 +143,9 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
 
       {protoParametersArray.map(([idx, param]) => {
         const name = param.name ?? idx;
-        const value: string | undefined = parameters[name];
-        const type = allParameters[name].type;
-        const error = errors[name];
+        const value: string | undefined = parameters[idx];
+        const type = allParameters[idx].type;
+        const error = errors[idx];
 
         if (Array.isArray(type)) {
           const valueAliases = param.valueAlias;
@@ -164,7 +165,7 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
                 className="w-[250px]"
                 options={options}
                 value={options.find((o) => o.value === value || o.value === Number(value))}
-                onChange={({ value }: any) => handleInputChange(name, value)}
+                onChange={({ value }: any) => handleInputChange(idx, value)}
               />
             </ComponentFormFieldLabel>
           );
@@ -177,7 +178,7 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
             hint={param.description + (type ? `\nТип: ${formatArgType(type)}` : '')}
             error={error}
             value={value}
-            name={name}
+            name={idx}
             onChange={(e) => handleInputChange(e.target.name, e.target.value)}
           />
         );

@@ -129,7 +129,8 @@
         }
       },
       "constructorParameters": {
-        "Бод": {
+        "baudrate": {
+          "name": "Бод",
           "type": "uint32_t",
           "description": "Единица измерения частоты обмена информации. Для корректной передачи данных необходимо, чтобы все устройства, между которыми происходит коммуникация, были настроены на одинаковую частоту. По-умолчанию равняется 9600.",
           "optional": true
@@ -168,7 +169,8 @@
       "img": "arduino/led.svg",
       "signals": {},
       "constructorParameters": {
-        "Пин": {
+        "pin": {
+          "name": "Пин",
           "type": ["1", "2", "3"],
           "description": "Пин, к которому подключен светодиод."
         }
@@ -736,7 +738,8 @@
       "img": "common/array.svg",
       "signals": {},
       "constructorParameters": {
-        "Размер": {
+        "size": {
+          "name": "Размер",
           "type": "uint16_t",
           "description": "Размер массива (должен быть не более, чем 65535 элементов).",
           "optional": false

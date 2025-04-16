@@ -34,12 +34,7 @@ export const StateMachinesHierarchy: React.FC = () => {
   };
 
   return (
-    <div
-      className={twMerge(
-        'max-h-full overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb',
-        theme !== 'light' && 'rct-dark'
-      )}
-    >
+    <div className={twMerge(theme !== 'light' && 'rct-dark')}>
       <Filter
         onExpandAll={onExpandAll}
         onCollapseAll={onCollapseAll}

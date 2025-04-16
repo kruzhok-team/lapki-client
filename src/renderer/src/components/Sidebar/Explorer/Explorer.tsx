@@ -104,21 +104,32 @@ export const Explorer: React.FC = () => {
           onExpand={forceUpdate}
           className="px-4"
         >
-          <button className="my-3 flex items-center" onClick={() => togglePanel(hierarchyPanelRef)}>
-            <ArrowIcon
-              className={twMerge(
-                'rotate-0 transition-transform',
-                hierarchyPanelRef.current?.isCollapsed() && '-rotate-90'
-              )}
-            />
-            <h3 className="font-semibold">Иерархия</h3>
-          </button>
+          <div
+            className={
+              hierarchyPanelRef.current?.isCollapsed() ?? false
+                ? ''
+                : 'max-h-full overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb'
+            }
+          >
+            <button
+              className="my-3 flex items-center"
+              onClick={() => togglePanel(hierarchyPanelRef)}
+            >
+              <ArrowIcon
+                className={twMerge(
+                  'rotate-0 transition-transform',
+                  hierarchyPanelRef.current?.isCollapsed() && '-rotate-90'
+                )}
+              />
+              <h3 className="font-semibold">Иерархия</h3>
+            </button>
 
-          {isInitialized ? (
-            <StateMachinesHierarchy />
-          ) : (
-            <div className="px-4">Недоступно до открытия схемы</div>
-          )}
+            {isInitialized ? (
+              <StateMachinesHierarchy />
+            ) : (
+              <div className="px-4">Недоступно до открытия схемы</div>
+            )}
+          </div>
         </Panel>
       </PanelGroup>
     </section>

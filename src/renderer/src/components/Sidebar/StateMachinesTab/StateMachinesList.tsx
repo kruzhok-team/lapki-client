@@ -97,7 +97,13 @@ export const StateMachinesList: React.FC<StateMachinesListProps> = ({
   };
 
   return (
-    <section>
+    <section
+      className={
+        isCollapsed()
+          ? ''
+          : 'max-h-full overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb'
+      }
+    >
       {header()}
       {isInitialized ? (
         <div>

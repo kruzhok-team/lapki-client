@@ -167,7 +167,7 @@
     },
     "Button": {
       "name": "Кнопка",
-      "description": "Компонент для взаимодействия с физической кнопкой",
+      "description": "Компонент для взаимодействия с физической кнопкой.",
       "img": "arduino/button.svg",
       "signals": {
         "isPressed": {

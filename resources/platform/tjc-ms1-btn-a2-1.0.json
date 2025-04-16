@@ -167,6 +167,11 @@
           "img": "arduino/clicked.svg",
           "description": "Создает сигнал, если кнопка была кликнута",
           "checkMethod": "clicked"
+        },
+        "isReleased": {
+          "img": "common/isReleased.svg",
+          "description": "Создает сигнал, если кнопка была отпущена",
+          "checkMethod": "isReleased"
         }
       },
       "constructorParameters": {

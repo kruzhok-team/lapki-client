@@ -2,7 +2,7 @@
   "name": "Arduino Uno",
   "id": "ArduinoUno",
   "nameTag": "ArduinoUno",
-  "description": "Платформа для программирования микроконтроллера Arduino Uno. Включает в себя компоненты для взаимодействия с кнопками, светодиодами, Serial и другими элементами, которые могут понадобиться в процессе.\n Соберите схему, запрограммируйте Arduino Uno и насладитесь результатом вашей работы!", 
+  "description": "Платформа для программирования микроконтроллера Arduino Uno. Включает в себя компоненты для взаимодействия с кнопками, светодиодами, Serial и другими элементами, которые могут понадобиться в процессе.\n Соберите схему, запрограммируйте Arduino Uno и насладитесь результатом вашей работы!",
   "icon": "путь/до/иконки",
   "staticComponents": false,
   "version": "1.0",
@@ -52,7 +52,7 @@
         "buttonMode": {
           "type": ["BUTTON_PULLUP", "BUTTON_PULLDOWN"],
           "description": "buttonMode indicates BUTTON_PULLUP or BUTTON_PULLDOWN resistor",
-          "optional": true            
+          "optional": true
         }
       },
       "variables": {
@@ -81,12 +81,12 @@
         "min": {
           "type": "uint16_t",
           "description": "Ширина импульса в микросекундах, соответствующая минимальному углу (0 градусов) на сервоприводе (по умолчанию 544).",
-          "optional": true            
+          "optional": true
         },
         "max": {
           "type": "uint16_t",
           "description": "Ширина импульса в микросекундах, соответствующая максимальному углу (180 градусов) на сервоприводе (по умолчанию 2400).",
-          "optional": true            
+          "optional": true
         }
       },
       "variables": {
@@ -969,7 +969,7 @@
       "importFiles": ["CalcFloat.hpp"],
       "singletone": false
     },
-    
+
     "Array": {
       "description": "Статический массив",
       "img": "arduino/timer.svg",
@@ -978,7 +978,7 @@
         "size": {
           "type": "uint16_t",
           "description": "Размер массива (должен быть не более, чем 65535 элементов)",
-          "optional" : false
+          "optional": false
         }
       },
       "methods": {
@@ -996,49 +996,49 @@
               "description": "Новое значение для элемента",
               "type": "int16_t"
             }
-            ]
-          },
-          "peek": {
-            "img": "common/arrayPeek.svg",
-            "description": "Переместиться на элемент с заданным индексом",
-            "parameters": [
-              {
-                "name": "index",
-                "img": "common/arrayIndex.svg",
-                "description": "Индекс элемента",
-                "type": "uint16_t"
-              }
-            ]
-          },
-          "next": {
-            "img": "common/arrayNext.svg",
-            "description": "Переместиться на элемент со следующим индексом"
-          },
-          "prev": {
-            "img": "common/arrayPrev.svg",
-            "description": "Переместиться на элемент с предыдущим индексом"
-          }
-    },
-    "buildFiles": ["Array.hpp"],
-    "importFiles": ["Array.hpp"],
-    "singletone": false,
-    "variables": {
-      "value": {
-        "img": "common/value.svg",
-        "type": "int16_t",
-        "description": "Значение элемента с текущим индексом."
+          ]
+        },
+        "peek": {
+          "img": "common/arrayPeek.svg",
+          "description": "Переместиться на элемент с заданным индексом",
+          "parameters": [
+            {
+              "name": "index",
+              "img": "common/arrayIndex.svg",
+              "description": "Индекс элемента",
+              "type": "uint16_t"
+            }
+          ]
+        },
+        "next": {
+          "img": "common/arrayNext.svg",
+          "description": "Переместиться на элемент со следующим индексом"
+        },
+        "prev": {
+          "img": "common/arrayPrev.svg",
+          "description": "Переместиться на элемент с предыдущим индексом"
+        }
       },
-      "index": {
-        "img": "common/arrayIndex.svg",
-        "type": "uint16_t",
-        "description": "Текущий индекс."
-      },
-      "size": {
-        "img": "common/arraySize.svg",
-        "type": "uint16_t",
-        "description": "Размер массива."
+      "buildFiles": ["Array.hpp"],
+      "importFiles": ["Array.hpp"],
+      "singletone": false,
+      "variables": {
+        "value": {
+          "img": "common/value.svg",
+          "type": "int16_t",
+          "description": "Значение элемента с текущим индексом."
+        },
+        "index": {
+          "img": "common/arrayIndex.svg",
+          "type": "uint16_t",
+          "description": "Текущий индекс."
+        },
+        "size": {
+          "img": "common/arraySize.svg",
+          "type": "uint16_t",
+          "description": "Размер массива."
+        }
       }
     }
-  }
   }
 }

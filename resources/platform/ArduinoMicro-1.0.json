@@ -69,7 +69,7 @@
       "singletone": false
     },
 
-    "Servo": {
+    "ServoWrapper": {
       "description": "Компонент для взаимодействия с сервоприводом",
       "img": "arduino/button.svg",
       "signals": {},
@@ -102,8 +102,8 @@
         }
       },
       "loopActions": [],
-      "buildFiles": ["Servo.hpp"],
-      "importFiles": ["Servo.h", "Servo.hpp"],
+      "buildFiles": ["Servo.hpp", "Servo.cpp", "Servo.h", "ServoTimers.h"],
+      "importFiles": ["Servo.hpp"],
       "methods": {
         "write": {
           "img": "arduino/blink.svg",

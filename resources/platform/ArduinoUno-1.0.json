@@ -69,6 +69,68 @@
       "singletone": false
     },
 
+    "ServoWrapper": {
+      "description": "Компонент для взаимодействия с сервоприводом",
+      "img": "arduino/button.svg",
+      "signals": {},
+      "constructorParameters": {
+        "pin": {
+          "type": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
+          "description": "Пин, к которому подключен сервопривод"
+        },
+        "min": {
+          "type": "uint16_t",
+          "description": "Ширина импульса в микросекундах, соответствующая минимальному углу (0 градусов) на сервоприводе (по умолчанию 544).",
+          "optional": true            
+        },
+        "max": {
+          "type": "uint16_t",
+          "description": "Ширина импульса в микросекундах, соответствующая максимальному углу (180 градусов) на сервоприводе (по умолчанию 2400).",
+          "optional": true            
+        }
+      },
+      "variables": {
+        "angle": {
+          "img": "common/value.svg",
+          "type": "int",
+          "description": "Текущий угол поворота сервопривода в градусах."
+        },
+        "angleMicroseconds": {
+          "img": "common/value.svg",
+          "type": "int",
+          "description": "Текущий угол поворота сервопривода в микросекундах."
+        }
+      },
+      "loopActions": [],
+      "buildFiles": ["Servo.hpp", "Servo.cpp", "Servo.h", "ServoTimers.h"],
+      "importFiles": ["Servo.hpp"],
+      "methods": {
+        "write": {
+          "img": "arduino/blink.svg",
+          "parameters": [
+            {
+              "name": "angle",
+              "type": "unsigned int",
+              "description": "Угол поворота сервопривода (градусы)"
+            }
+          ],
+          "description": "Задать угол поворота сервопривода в градусах"
+        },
+        "writeMicroseconds": {
+          "img": "arduino/blink.svg",
+          "parameters": [
+            {
+              "name": "us",
+              "type": "unsigned int",
+              "description": "Задать угол поворота сервопривода"
+            }
+          ],
+          "description": "Задать угол поворота сервопривода в микросекундах"
+        }
+      },
+      "singletone": false
+    },
+
     "LED": {
       "description": "Компонент для взаимодействия со светодиодом",
       "img": "arduino/led.svg",

@@ -161,7 +161,12 @@ export const useFlasherHooks = () => {
     } else {
       if (Flasher.currentFlashingDevice.isMSDevice()) {
         const msDev = Flasher.currentFlashingDevice as MSDevice;
-        flashResultKey = `${ManagerMS.getFlashingAddress()?.name} - ${msDev.displayName()}`;
+        const getName = () => {
+          const addressInfo = ManagerMS.getFlashingAddress();
+          if (!addressInfo) return 'Неизвестная плата';
+          return addressInfo.name ? addressInfo.name : addressInfo.address;
+        };
+        flashResultKey = `${getName()} - ${msDev.displayName()}`;
         addressInfo = ManagerMS.getFlashingAddress();
         ManagerMS.flashingAddressEndLog(result);
       } else {

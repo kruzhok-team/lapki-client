@@ -79,27 +79,31 @@
   "components": {
     "Button": {
       "name": "Кнопка",
-      "description": "Компонент для взаимодействия с физической кнопкой",
+      "description": "Компонент для взаимодействия с физической кнопкой.",
       "img": "arduino/button.svg",
       "signals": {
         "isPressed": {
+          "alias": "Нажата",
           "img": "arduino/isPressed.svg",
-          "description": "Создает сигнал, если кнопка была нажата",
+          "description": "Создает сигнал, если кнопка была нажата.",
           "checkMethod": "isPressed"
         },
         "isClicked": {
+          "alias": "Зажата",
           "img": "arduino/clicked.svg",
-          "description": "Создает сигнал, если кнопка была кликнута",
+          "description": "Создает сигнал, если кнопка была нажата, а затем отпущена.",
           "checkMethod": "isClicked"
         },
         "isReleased": {
+          "alias": "Отжата",
           "img": "common/isReleased.svg",
-          "description": "Создает сигнал, если кнопка была отпущена",
+          "description": "Создает сигнал, если кнопка была отпущена.",
           "checkMethod": "isReleased"
         }
       },
       "constructorParameters": {
         "pin": {
+          "name": "Где",
           "type": ["1", "2", "3", "4", "5", "6"],
           "valueAlias": [
             "Правая лапа",
@@ -109,11 +113,12 @@
             "Правый бок",
             "Левый бок"
           ],
-          "description": "Расположение кнопки"
+          "description": "Расположение кнопки."
         }
       },
       "variables": {
         "value": {
+          "alias": "значение",
           "img": "common/value.svg",
           "type": "int",
           "description": "Текущее значение на пине"
@@ -127,21 +132,23 @@
     },
 
     "UserSignal": {
-      "name": "Пользовательский сигнал",
-      "description": "Пользовательский сигнал",
+      "name": "Свой сигнал",
+      "description": "Компонент для создания произвольных, искусственных событий. Бывает полезным для упрощения диаграммы.",
       "img": "common/userSignal.svg",
       "signals": {
         "isCalled": {
+          "alias": "Вызов",
           "img": "common/signalIsCalled.svg",
-          "description": "Сработал сигнал",
+          "description": "Вызвано искусственное событие.",
           "checkMethod": "isCalled"
         }
       },
       "constructorParameters": {},
       "methods": {
         "call": {
+          "alias": "Вызвать",
           "img": "common/signalCall.svg",
-          "description": "Вызов сигнала"
+          "description": "Вызвать искусственное событие."
         }
       },
       "buildFiles": ["UserSignal.hpp"],
@@ -177,7 +184,7 @@
           "img": "arduino/start.svg",
           "parameters": [
             {
-              "name": "note",
+              "name": "нота",
               "type": ["&TestNote"],
               "valueAlias": ["Тестовая нота"],
               "description": "Проигрываемая нота.",
@@ -218,16 +225,16 @@
           "img": "arduino/start.svg",
           "parameters": [
             {
-              "name": "sound",
+              "name": "звук",
               "type": ["&TestSound", "&SineSound"],
-              "valueAlias": ["Тестовый звук", "Рычанье"],
+              "valueAlias": ["Тестовый звук", "Рычание"],
               "description": "Проигрываемый звук.",
               "optional": false
             },
             {
-              "name": "duration",
+              "name": "время",
               "type": "uint16_t",
-              "description": "Длительность звука (мс).",
+              "description": "Длительность звука (мс). От 0 до 65535.",
               "optional": false
             }
           ],
@@ -263,22 +270,22 @@
           "img": "blg-mb/setupEvent.svg",
           "parameters": [
             {
-              "name": "threshold",
+              "name": "порог",
               "type": "uint16_t",
-              "description": "Пороговое значение для события.",
+              "description": "Пороговое значение для события. От 0 до 4095.",
               "optional": false
             }
           ],
           "alias": "Настроить событие",
-          "description": "Продвинутая настройка события. Позволяет подавлять многократный запуск событий при «дрожании» яркости вокруг порогового значения"
+          "description": "Продвинутая настройка события. Позволяет подавлять многократный запуск событий при «дрожании» яркости вокруг порогового значения."
         }
       },
       "variables": {
         "value": {
           "img": "common/value.svg",
           "type": "uint16_t",
-          "description": "Воспринимаемая яркость, в виде числа от 0 до 4095",
-          "alias": "Текущее значение"
+          "description": "Воспринимаемая яркость, в виде числа от 0 до 4095.",
+          "alias": "яркость"
         }
       },
       "buildFiles": ["PhotoDiode.hpp"],
@@ -298,7 +305,7 @@
           "img": "blg-mb/setColorPaletteRight.svg",
           "parameters": [
             {
-              "name": "color",
+              "name": "цвет",
               "type": [
                 "&ColorRed",
                 "&ColorReddish",
@@ -333,14 +340,14 @@
               "optional": false
             }
           ],
-          "description": "Установить выбраный цвет для правого глаза",
+          "description": "Установить выбраный цвет для правого глаза.",
           "alias": "Установить цвет правого глаза"
         },
         "setColorPaletteLeft": {
           "img": "blg-mb/setColorPaletteLeft.svg",
           "parameters": [
             {
-              "name": "color",
+              "name": "цвет",
               "type": [
                 "&ColorRed",
                 "&ColorReddish",
@@ -375,7 +382,7 @@
               "optional": false
             }
           ],
-          "description": "Установить выбраный цвет для левого глаза",
+          "description": "Установить выбраный цвет для левого глаза.",
           "alias": "Установить цвет левого глаза"
         }
       },
@@ -403,31 +410,31 @@
           "img": "blg-mb/setColorRight.svg",
           "parameters": [
             {
-              "name": "red",
+              "name": "красный",
               "type": "uint8_t",
-              "description": "Продолжительность цвета светодиода (R).",
+              "description": "Продолжительность красного (R) свечения. От 0 до 255.",
               "optional": false
             },
             {
-              "name": "green",
+              "name": "зелёный",
               "type": "uint8_t",
-              "description": "Продолжительность цвета светодиода (G).",
+              "description": "Продолжительность зелёного (G) свечения. От 0 до 255.",
               "optional": false
             },
             {
-              "name": "blue",
+              "name": "синий",
               "type": "uint8_t",
-              "description": "Продолжительность цвета светодиода (B).",
+              "description": "Продолжительность синего (B) свечения. От 0 до 255.",
               "optional": false
             },
             {
-              "name": "black",
+              "name": "чёрный",
               "type": "uint8_t",
-              "description": "Продолжительность выключенных светодиодов.",
+              "description": "Длительность выключения всех трёх светодиодов. Регулирует яркость. От 0 до 255.",
               "optional": false
             }
           ],
-          "description": "Установить значения яркости светодиода в правом глазу",
+          "description": "Установить значения яркости светодиода в правом глазу.",
           "alias": "Установить цвет правого глаза"
         },
 
@@ -435,43 +442,43 @@
           "img": "blg-mb/setColorLeft.svg",
           "parameters": [
             {
-              "name": "red",
+              "name": "красный",
               "type": "uint8_t",
-              "description": "Продолжительность цвета светодиода (R).",
+              "description": "Продолжительность красного (R) свечения. От 0 до 255.",
               "optional": false
             },
             {
-              "name": "green",
+              "name": "зелёный",
               "type": "uint8_t",
-              "description": "Продолжительность цвета светодиода (G).",
+              "description": "Продолжительность зелёного (G) свечения. От 0 до 255.",
               "optional": false
             },
             {
-              "name": "blue",
+              "name": "синий",
               "type": "uint8_t",
-              "description": "Продолжительность цвета светодиода (B).",
+              "description": "Продолжительность синего (B) свечения. От 0 до 255.",
               "optional": false
             },
             {
-              "name": "black",
+              "name": "чёрный",
               "type": "uint8_t",
-              "description": "Продолжительность выключенных светодиодов.",
+              "description": "Длительность выключения всех трёх светодиодов. Регулирует яркость. От 0 до 255.",
               "optional": false
             }
           ],
-          "description": "Установить значения яркости светодиода в левом глазу",
+          "description": "Установить значения яркости светодиода в левом глазу.",
           "alias": "Установить цвет левого глаза"
         },
 
         "offRight": {
           "img": "arduino/switch-off.svg",
-          "description": "Выключить светодиод в правом глазу",
+          "description": "Выключить светодиод в правом глазу.",
           "alias": "Выключить цвет правого глаза"
         },
 
         "offLeft": {
           "img": "arduino/switch-off.svg",
-          "description": "Выключить светодиод в левом глазу",
+          "description": "Выключить светодиод в левом глазу.",
           "alias": "Выключить цвет левого глаза"
         }
       },
@@ -507,13 +514,13 @@
           "img": "blg-mb/volumeThreshold.svg",
           "parameters": [
             {
-              "name": "volume",
+              "name": "громкость",
               "type": "uint16_t",
-              "description": "Уровень громкости для события.",
+              "description": "Уровень громкости для события. От 0 до 65535.",
               "optional": false
             }
           ],
-          "description": "Настравает громкость звука, на которую мишка реагирует",
+          "description": "Настравает громкость звука, на которую мишка реагирует.",
           "alias": "Настроить порог громкости"
         }
       },
@@ -523,113 +530,106 @@
     },
 
     "Matrix": {
-      "name": "Матрица",
-      "description": "Компонент для взаимодействия со светодиодной матрицы.",
+      "name": "Матрица светодиодов",
+      "description": "Компонент для взаимодействия со светодиодной матрицей.",
       "img": "tjc-ms/matrix.svg",
       "signals": {},
       "methods": {
         "setPixel": {
+          "alias": "Отдельный светодиод",
           "img": "tjc-ms/cellSet.svg",
           "description": "Включить или выключить светодиод.",
           "parameters": [
             {
-              "name": "row",
+              "name": "строка",
               "type": "uint8_t",
               "description": "Номер строки, на которой расположен светодиод."
             },
             {
-              "name": "col",
+              "name": "столбец",
               "type": "uint8_t",
               "description": "Номер столбца, на котором расположен светодиод."
             },
             {
-              "name": "value",
+              "name": "действие",
               "type": ["0", "1"],
-              "description": "Состояние светодиода вкл./выкл."
-            }
-          ]
-        },
-        "offPixel": {
-          "img": "tjc-ms/cellClear.svg",
-          "description": "Выключить светодиод.",
-          "parameters": [
-            {
-              "name": "row",
-              "type": "uint8_t",
-              "description": "Номер строки, на которой расположен светодиод."
-            },
-            {
-              "name": "col",
-              "type": "uint8_t",
-              "description": "Номер столбца, на котором расположен светодиод."
+              "valueAlias": ["включить", "выключить"],
+              "description": "Включение, либо выключение светодиода."
             }
           ]
         },
         "setPattern": {
+          "alias": "Рисунок",
           "img": "tjc-ms/draw.svg",
-          "description": "Изобразить паттерн на матрице.",
+          "description": "Изобразить рисунок на матрице.",
           "parameters": [
             {
-              "name": "pattern",
+              "name": "рисунок",
               "type": "Matrix5x7",
-              "description": "Паттерн, который будет изображен на матрице."
+              "description": "Рисунок, который будет изображен на матрице."
             }
           ]
         },
         "fill": {
+          "alias": "Яркость",
           "img": "tjc-ms/fill.svg",
-          "description": "Установить уровень яркости на каждый светодиод.",
+          "description": "Установить уровень яркости на все светодиоды.",
           "parameters": [
             {
-              "name": "value",
+              "name": "уровень",
               "type": "uint8_t",
               "description": "Уровень яркости, который будет установлен на каждый светодиод."
             }
           ]
         },
         "clear": {
+          "alias": "Очистить",
           "img": "tjc-ms/matrixEmpty.svg",
           "description": "Выключить все светодиоды.",
           "parameters": []
         },
         "maskPixel": {
+          "alias": "Маска для светодиода",
           "img": "tjc-ms/maskCell.svg",
           "description": "Включить или выключить светодиод, используя битовую маску.",
           "parameters": [
             {
-              "name": "row",
+              "name": "строка",
               "type": "uint8_t",
               "description": "Номер строки, на которой расположен светодиод."
             },
             {
-              "name": "col",
+              "name": "столбец",
               "type": "uint8_t",
               "description": "Номер столбца, на котором расположен светодиод."
             },
             {
-              "name": "value",
+              "name": "значение",
               "type": ["0", "1"],
-              "description": "Состояние светодиода вкл./выкл."
+              "description": "Второй параметр применяемой функции. Первый – текущее значение светодиода. Значение 0 соответствует выключенному светодиоду, а 1 – включенному."
             },
             {
-              "name": "op",
+              "name": "операция",
               "type": ["mask_and", "mask_or", "mask_xor"],
-              "description": "Битовая маска для установки значения пикселя."
+              "valueAlias": ["AND", "OR", "XOR"],
+              "description": "Битовая функция, используемая для установки значения."
             }
           ]
         },
         "maskPattern": {
+          "alias": "Маска",
           "img": "tjc-ms/maskGrid.svg",
-          "description": "Изобразить паттерн на матрице, используя битовую маску.",
+          "description": "Изобразить рисунок на матрице, используя битовую маску.",
           "parameters": [
             {
-              "name": "pattern",
+              "name": "рисунок",
               "type": "Matrix5x7",
-              "description": "Паттерн, который будет изображен на матрице."
+              "description": "Рисунок, который будет изображен на матрице."
             },
             {
-              "name": "op",
+              "name": "операция",
               "type": ["mask_and", "mask_or", "mask_xor"],
+              "valueAlias": ["AND", "OR", "XOR"],
               "description": "Битовая маска для установки значения пикселя."
             }
           ]
@@ -651,7 +651,7 @@
 
     "MatrixAnimation": {
       "name": "Матрица-анимация",
-      "description": "Компонент, который делает анимированные переходы между изображениями на матрице",
+      "description": "Компонент, который делает анимированные переходы между изображениями на матрице.",
       "img": "blg-mb/matrixAnimation.svg",
       "signals": {
         "AnimationFinished": {
@@ -669,18 +669,18 @@
           "img": "tjc-ms/draw.svg",
           "parameters": [
             {
-              "name": "pattern",
+              "name": "рисунок",
               "type": "Matrix5x7",
-              "description": "Паттерн, который будет изображен на матрице."
+              "description": "Рисунок, который будет изображен на матрице."
             },
             {
-              "name": "time",
+              "name": "время",
               "type": "uint32_t",
-              "description": "Продолжительность анимации (в миллисекундах)"
+              "description": "Продолжительность анимации (в миллисекундах)."
             }
           ],
-          "description": "Установить картинку, к которой нужно перейти",
-          "alias": "Установить матрицу"
+          "description": "Установить рисунок, к которой нужно перейти.",
+          "alias": "Установить"
         }
       },
       "buildFiles": [
@@ -698,7 +698,7 @@
 
     "MatrixPicture": {
       "name": "Матрица-картинка",
-      "description": "Устанавливает на матрицу статическое изображение",
+      "description": "Устанавливает на матрицу статическое изображение.",
       "img": "blg-mb/matrixHalftone.svg",
       "signals": {},
       "constructorParameters": {},
@@ -711,11 +711,11 @@
               "name": "Рисунок",
               "type": ["&heart", "&smile", "&sadnes", "&cross", "&note", "&rhombus", "&square"],
               "valueAlias": ["Сердце", "Улыбка", "Грусть", "Крест", "Нота", "Ромб", "Квадрат"],
-              "description": "Паттерн, который будет изображен на матрице."
+              "description": "Рисунок, который будет изображен на матрице."
             }
           ],
-          "description": "Изобразить рисунок на матрице при помощи виджета",
-          "alias": "Установить матрицу"
+          "description": "Изобразить рисунок на матрице.",
+          "alias": "Установить"
         }
       },
       "buildFiles": [
@@ -734,39 +734,42 @@
     },
 
     "Random": {
-      "name": "Рандомайзер",
-      "description": "Генерация случайного числа",
+      "name": "Генератор случайностей",
+      "description": "Генерация псевдо-случайного числа.",
       "img": "common/random.svg",
       "constructorParameters": {},
       "signals": {},
       "methods": {
         "setSeed": {
+          "alias": "Установить затравку",
           "img": "common/randomSeed.svg",
           "parameters": [
             {
-              "name": "seed",
+              "name": "затравка",
               "type": "unsigned long"
             }
           ],
-          "description": "Сбросить состояние генератора и установить новый seed"
+          "description": "Продвинутая функция для отладки. Вручную устанавливает затравку для генератора случайностей, чтобы он выдавал одинаковые последовательности значений при каждом запуске программы. Для нормальной работы этого не требуется, и затравка будет взята из встроенного генератора истинных случайных чисел."
         },
         "doRandom": {
+          "alias": "Сгенерировать",
           "img": "common/randomRoll.svg",
           "description": "Сгенерировать случайное число"
         },
         "doRangeRandom": {
+          "alias": "Сгенерировать в диапазоне",
           "img": "common/randomRange.svg",
           "parameters": [
             {
-              "name": "begin",
+              "name": "начало",
               "type": "signed long long"
             },
             {
-              "name": "end",
+              "name": "конец",
               "type": "signed long long"
             }
           ],
-          "description": "Сгенерировать случайное число в заданном диапазоне [begin; end)"
+          "description": "Сгенерировать случайное число в заданном диапазоне [начало; конец). Конец в диапазон не входит."
         }
       },
       "buildFiles": ["Random.hpp"],
@@ -774,14 +777,16 @@
       "singletone": false,
       "variables": {
         "value": {
+          "alias": "Целое число",
           "img": "common/valueSigned.svg",
           "type": "signed long",
-          "description": "Сгенерированное целое число со знаком"
+          "description": "Сгенерированное целое число со знаком."
         },
         "uValue": {
+          "alias": "Натуральное число",
           "img": "common/valueUnsigned.svg",
           "type": "unsigned long",
-          "description": "Сгенерированное безнаковое целое число"
+          "description": "Сгенерированное беззнаковое целое число."
         }
       }
     },
@@ -792,32 +797,37 @@
       "img": "arduino/timer.svg",
       "signals": {
         "timeout": {
+          "alias": "Тайм-аут",
           "img": "arduino/timeout.svg",
-          "description": "Время вышло!",
+          "description": "Прошёл очередной интервал таймера.",
           "checkMethod": "timeout"
         }
       },
       "constructorParameters": {},
       "methods": {
         "reset": {
+          "alias": "Сброс",
           "img": "arduino/reset.svg",
-          "description": "Сбросить таймер, отчет начнется сначала"
+          "description": "Сбросить таймер, отчет начнется сначала."
         },
         "disable": {
+          "alias": "Отключить",
           "img": "arduino/timer-stop.svg",
           "description": "Отключить таймер."
         },
         "enable": {
+          "alias": "Включить",
           "img": "arduino/timer-start.svg",
           "description": "Включить таймер."
         },
         "start": {
+          "alias": "Старт",
           "img": "arduino/start.svg",
           "parameters": [
             {
-              "name": "interval",
+              "name": "интервал",
               "type": "unsigned long",
-              "description": "Интервал срабатывания."
+              "description": "Интервал срабатывания (в миллисекундах)."
             }
           ],
           "description": "Запустить таймер. Будет сигнал раз в интервал."
@@ -828,9 +838,10 @@
       "singletone": false,
       "variables": {
         "difference": {
+          "alias": "Разница",
           "img": "arduino/difference.svg",
           "type": "unsigned long",
-          "description": "Оставшееся время до окончания таймера."
+          "description": "Оставшееся время (в миллисекундах) до окончания таймера."
         }
       }
     },
@@ -842,44 +853,49 @@
       "constructorParameters": {},
       "methods": {
         "add": {
+          "alias": "Увеличить",
           "img": "arduino/add.svg",
-          "description": "Добавить value к значению счетчика",
+          "description": "Добавить указанное значение к счетчику.",
           "parameters": [
             {
-              "name": "value",
+              "name": "значение",
               "type": "int"
             }
           ]
         },
         "sub": {
+          "alias": "Уменьшить",
           "img": "arduino/sub.svg",
-          "description": "Вычесть value к значению счетчика",
+          "description": "Вычесть указанное значение из счетчика.",
           "parameters": [
             {
-              "name": "value",
+              "name": "значение",
               "type": "int"
             }
           ]
         },
         "set": {
+          "alias": "Установить",
           "img": "common/set.svg",
-          "description": "Установить value к значению счетчика",
+          "description": "Установить значение счетчика.",
           "parameters": [
             {
-              "name": "value",
+              "name": "значение",
               "type": "int"
             }
           ]
         },
         "reset": {
+          "alias": "Сброс",
           "img": "arduino/reset.svg",
           "description": "Обнулить значение счетчика."
         }
       },
       "variables": {
         "value": {
+          "alias": "значение",
           "img": "common/value.svg",
-          "description": "Текущее значение счетчика",
+          "description": "Текущее значение счетчика.",
           "type": "int"
         }
       },
@@ -889,153 +905,169 @@
     },
 
     "CalcInt": {
-      "name": "Целочисленный калькулятор",
-      "description": "Компонент для целочисленных вычислений. Хранит счётчик (32-разрядное знаковое число), над которым можно совершать арифметические и битовые операции.",
+      "name": "Калькулятор (целые числа)",
+      "description": "Компонент для вычислений над целым числом. Хранит число, над которым можно совершать арифметические и двоичные операции. Результат операции перезаписывает предыдущее число, и к нему можно обратиться через атрибут. Обратите внимание, число хранится в 32-разрядном знаковом формате.",
       "img": "math/calcInt.svg",
       "signals": {
         "isOverflow": {
+          "alias": "Переполнение значения",
           "img": "math/overflow.svg",
-          "description": "Переполнение счетчика.",
+          "description": "Произошло переполнение хранимого значения калькулятора (в него попытались записать слишком большое значение).",
           "checkMethod": "isOverflow"
         },
         "isZeroDivision": {
+          "alias": "Деление на ноль",
           "img": "math/divZero.svg",
-          "description": "Деление на ноль.",
+          "description": "Произошло деление на ноль. Значению калькулятора верить нельзя, в нём может быть что-то странное.",
           "checkMethod": "isZeroDivision"
         }
       },
       "methods": {
         "set": {
+          "alias": "Установить",
           "img": "common/set-value.svg",
-          "description": "Установить значение счетчика.",
+          "description": "Установить значение, которое будет храниться в калькуляторе.",
           "parameters": [
             {
-              "name": "value",
+              "name": "значение",
               "type": "int32_t",
-              "description": "Новое значение для счетчика."
+              "description": "Новое значение для калькулятора."
             }
           ]
         },
         "add": {
+          "alias": "Прибавить",
           "img": "math/add.svg",
-          "description": "Прибавить значение к счетчику.",
+          "description": "Прибавить значение к хранимому числу калькулятора.",
           "parameters": [
             {
-              "name": "value",
+              "name": "слагаемое",
               "type": "int32_t",
               "description": "Слагаемое для операции."
             }
           ]
         },
         "sub": {
+          "alias": "Вычесть",
           "img": "math/sub.svg",
-          "description": "Вычесть значение из счетчика.",
+          "description": "Вычесть значение из хранимого числа калькулятора.",
           "parameters": [
             {
-              "name": "value",
+              "name": "вычитаемое",
               "type": "int32_t",
               "description": "Вычитаемое для операции."
             }
           ]
         },
         "mul": {
+          "alias": "Умножить",
           "img": "math/mul.svg",
-          "description": "Умножить значение счетчика.",
+          "description": "Умножить значение хранимого числа калькулятора.",
           "parameters": [
             {
-              "name": "value",
+              "name": "множитель",
               "type": "int32_t",
               "description": "Множитель для операции."
             }
           ]
         },
         "div": {
+          "alias": "Разделить",
           "img": "math/div.svg",
-          "description": "Целочисленное деление значения счетчика. При делении на ноль значение не изменяется и возникает сигнал.",
+          "description": "Целочисленное деление хранимого числа калькулятора. При делении на ноль значение не изменяется и возникает сигнал.",
           "parameters": [
             {
-              "name": "value",
+              "name": "делитель",
               "type": "int32_t",
               "description": "Делитель для операции."
             }
           ]
         },
         "mod": {
+          "alias": "Остаток от деления",
           "img": "math/mod.svg",
-          "description": "Остаток от деления счетчика. При делении на ноль значение не изменяется и возникает сигнал.",
+          "description": "Получить остаток от деления хранимого числа калькулятора на указанный делитель. При делении на ноль значение не изменяется и возникает сигнал.",
           "parameters": [
             {
-              "name": "value",
+              "name": "делитель",
               "type": "int32_t",
               "description": "Делитель для операции."
             }
           ]
         },
         "neg": {
+          "alias": "Поменять знак",
           "img": "math/neg.svg",
-          "description": "Поменять знак у счетчика.",
+          "description": "Поменять знак у хранимого числа калькулятора.",
           "parameters": []
         },
         "abs": {
+          "alias": "Модуль",
           "img": "math/abs.svg",
-          "description": "Установить абсолютное значение для счетчика.",
+          "description": "Установить абсолютное значение для хранимого числа калькулятора.",
           "parameters": []
         },
         "bitAnd": {
+          "alias": "Битовое И",
           "img": "math/bitAnd.svg",
-          "description": "Побитовое И для значения счетчика.",
+          "description": "Побитовое И между хранимым числом калькулятора и параметром.",
           "parameters": [
             {
-              "name": "value",
+              "name": "значение",
               "type": "int32_t",
               "description": "Значение для операции."
             }
           ]
         },
         "bitOr": {
+          "alias": "Битовое ИЛИ",
           "img": "math/bitOr.svg",
-          "description": "Побитовое ИЛИ для значения счетчика.",
+          "description": "Побитовое ИЛИ между хранимым числом калькулятора и параметром.",
           "parameters": [
             {
-              "name": "value",
+              "name": "значение",
               "type": "int32_t",
               "description": "Значение для операции."
             }
           ]
         },
         "bitXor": {
+          "alias": "Битовое исключающее ИЛИ",
           "img": "math/bitXor.svg",
-          "description": "Побитовая операция XOR для значения счетчика.",
+          "description": "Побитовая операция XOR между хранимым числом калькулятора и параметром.",
           "parameters": [
             {
-              "name": "value",
+              "name": "значение",
               "type": "int32_t",
               "description": "Значение для операции."
             }
           ]
         },
         "bitNot": {
+          "alias": "Битовое НЕ",
           "img": "math/bitNot.svg",
-          "description": "Побитовое отрицание для значения счетчика.",
+          "description": "Побитовое отрицание для хранимого числа калькулятора.",
           "parameters": []
         },
         "shiftLeft": {
+          "alias": "Битовый сдвиг влево",
           "img": "math/shiftLeft.svg",
-          "description": "Побитовый сдвиг влево для значения счетчика.",
+          "description": "Побитовый сдвиг влево для хранимого числа калькулятора.",
           "parameters": [
             {
-              "name": "value",
+              "name": "сдвиг",
               "type": "int32_t",
               "description": "Количество бит для сдвига."
             }
           ]
         },
         "shiftRight": {
+          "alias": "Битовый сдвиг вправо",
           "img": "math/shiftRight.svg",
-          "description": "Побитовый сдвиг вправо для значения счетчика.",
+          "description": "Побитовый сдвиг вправо для хранимого числа калькулятора.",
           "parameters": [
             {
-              "name": "value",
+              "name": "сдвиг",
               "type": "int32_t",
               "description": "Количество бит для сдвига."
             }
@@ -1044,9 +1076,10 @@
       },
       "variables": {
         "value": {
+          "alias": "Результат",
           "img": "common/value.svg",
           "type": "int32_t",
-          "description": "Значение счетчика."
+          "description": "Хранимое число калькулятора."
         }
       },
       "constructorParameters": {},
@@ -1056,120 +1089,133 @@
     },
 
     "CalcFloat": {
-      "name": "Вещественный калькулятор",
-      "description": "Компонент для вычислений c плавающей точкой. Хранит счётчик (вещественное число), над которым можно совершать арифметические операции.",
+      "name": "Калькулятор (плавающая точка)",
+      "description": "Компонент для вычислений над числом c плавающей точкой. Хранит число, над которым можно совершать арифметические операции. Результат операции перезаписывает предыдущее число, и к нему можно обратиться через атрибут. Обратите внимание, число с плавающей точкой — это приближённое представление действительных чисел в памяти вычислительных устройств.",
       "img": "math/calcFloat.svg",
       "signals": {
         "isOverflow": {
+          "alias": "Переполнение значения",
           "img": "math/overflow.svg",
-          "description": "Переполнение счетчика.",
+          "description": "Произошло переполнение хранимого значения калькулятора (в него попытались записать слишком большое значение).",
           "checkMethod": "isOverflow"
         },
         "isZeroDivision": {
+          "alias": "Деление на ноль",
           "img": "math/divZero.svg",
-          "description": "Деление на ноль.",
+          "description": "Произошло деление на ноль. Значению калькулятора верить нельзя, в нём может быть что-то странное.",
           "checkMethod": "isZeroDivision"
         }
       },
       "methods": {
         "set": {
+          "alias": "Установить",
           "img": "common/set-value.svg",
-          "description": "Установить значение счетчика.",
+          "description": "Установить значение, которое будет храниться в калькуляторе.",
           "parameters": [
             {
-              "name": "value",
+              "name": "значение",
               "type": "float",
-              "description": "Новое значение для счетчика."
+              "description": "Новое значение для калькулятора."
             }
           ]
         },
         "add": {
+          "alias": "Прибавить",
           "img": "math/add.svg",
-          "description": "Прибавить значение к счетчику.",
+          "description": "Прибавить значение к хранимому числу калькулятора.",
           "parameters": [
             {
-              "name": "value",
+              "name": "слагаемое",
               "type": "float",
               "description": "Слагаемое для операции."
             }
           ]
         },
         "sub": {
+          "alias": "Вычесть",
           "img": "math/sub.svg",
-          "description": "Вычесть значение из счетчика.",
+          "description": "Вычесть значение из хранимого числа калькулятора.",
           "parameters": [
             {
-              "name": "value",
+              "name": "вычитаемое",
               "type": "float",
               "description": "Вычитаемое для операции."
             }
           ]
         },
         "mul": {
+          "alias": "Умножить",
           "img": "math/mul.svg",
-          "description": "Умножить значение счетчика.",
+          "description": "Умножить значение хранимого числа калькулятора.",
           "parameters": [
             {
-              "name": "value",
+              "name": "множитель",
               "type": "float",
               "description": "Множитель для операции."
             }
           ]
         },
         "div": {
+          "alias": "Разделить",
           "img": "math/div.svg",
-          "description": "Деление значения счетчика. При делении на ноль значение не изменяется и возникает сигнал.",
+          "description": "Деление хранимого числа калькулятора. При делении на ноль значение не изменяется и возникает сигнал.",
           "parameters": [
             {
-              "name": "value",
+              "name": "делитель",
               "type": "float",
               "description": "Делитель для операции."
             }
           ]
         },
         "mod": {
+          "alias": "Остаток от деления",
           "img": "math/mod.svg",
-          "description": "Остаток от деления счетчика. При делении на ноль значение не изменяется и возникает сигнал.",
+          "description": "Получить остаток от деления хранимого числа калькулятора на указанный делитель. При делении на ноль значение не изменяется и возникает сигнал.",
           "parameters": [
             {
-              "name": "value",
+              "name": "делитель",
               "type": "float",
               "description": "Делитель для операции."
             }
           ]
         },
         "neg": {
+          "alias": "Поменять знак",
           "img": "math/neg.svg",
-          "description": "Поменять знак у счетчика.",
+          "description": "Поменять знак у хранимого числа калькулятора.",
           "parameters": []
         },
         "abs": {
+          "alias": "Модуль",
           "img": "math/abs.svg",
-          "description": "Установить абсолютное значение для счетчика.",
+          "description": "Установить абсолютное значение для хранимого числа калькулятора.",
           "parameters": []
         },
         "pow": {
+          "alias": "Степень",
           "img": "math/pow.svg",
-          "description": "Возвести значение счетчика в степень.",
+          "description": "Возвести хранимое число калькулятора в степень.",
           "parameters": [
             {
-              "name": "power",
+              "name": "степень",
               "type": "float",
               "description": "Значение для операции (возводимая степень)."
             }
           ]
         },
         "sqrt": {
+          "alias": "Корень",
           "img": "math/sqrt.svg",
-          "description": "Взять квадратный корень от значения счетчика.",
+          "description": "Взять квадратный корень от хранимого числа калькулятора.",
           "parameters": []
         },
         "log": {
+          "alias": "Логарифм",
           "img": "math/log.svg",
-          "description": "Логарифм от счетчика с задаваемым основанием.",
+          "description": "Логарифм от хранимого числа калькулятора с задаваемым основанием.",
           "parameters": [
             {
-              "name": "base",
+              "name": "основание",
               "type": "float",
               "description": "Значение для операции (основание логарифма)."
             }
@@ -1178,9 +1224,10 @@
       },
       "variables": {
         "value": {
+          "alias": "Результат",
           "img": "common/value.svg",
           "type": "float",
-          "description": "Значение счетчика."
+          "description": "Хранимое число калькулятора."
         }
       },
       "constructorParameters": {},

@@ -37,7 +37,6 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
 }) => {
   const allParameters = { ...protoParameters, ...protoInitializationParameters };
   const handleInputChange = (name: string, value: string) => {
-    console.log(name);
     const type = allParameters[name]?.type;
 
     if (

@@ -709,7 +709,7 @@
           "parameters": [
             {
               "name": "Рисунок",
-              "type": ["&heart", "&smile", "&sadnes", "&cross", "&note", "&rhombus", "&square"],
+              "type": ["heart", "smile", "sadness", "cross", "note", "rhombus", "square"],
               "valueAlias": ["Сердце", "Улыбка", "Грусть", "Крест", "Нота", "Ромб", "Квадрат"],
               "description": "Рисунок, который будет изображен на матрице."
             }

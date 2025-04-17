@@ -155,11 +155,7 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
               ? type.map((value, index) => ({ label: valueAliases[index] ?? value, value }))
               : type.map((value) => ({ label: value, value }));
           return (
-            <ComponentFormFieldLabel
-              key={idx}
-              label={name}
-              hint={param.description + (type ? `\nТип ${formatArgType(type)}` : '')}
-            >
+            <ComponentFormFieldLabel key={idx} label={name} hint={param.description}>
               <Select
                 className="w-[250px]"
                 options={options}
@@ -174,7 +170,7 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
           <ComponentFormFieldLabel
             key={idx}
             label={name}
-            hint={param.description + (type ? `\nТип ${formatArgType(type)}` : '')}
+            hint={param.description + (type ? `\nТип: ${formatArgType(type)}` : '')}
             error={error}
             value={value}
             name={idx}

@@ -107,14 +107,14 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
 
   return (
     <div className="flex flex-col gap-2">
-      <h3 className="mb-1 text-xl">Параметры:</h3>
+      <h3 className="mb-1 text-xl">Параметры</h3>
       {protoParameters.map((proto, idx) => {
         const { name, description = '', type = '' } = proto;
         const parameter = parameters[name] ?? { value: '', order: idx };
         const value = parameter.value;
         const error = errors[name];
         const hint = getHint(description, type);
-        const label = name + ':';
+        const label = name;
         if (Array.isArray(type)) {
           const valueAliases = proto.valueAlias;
           const options =

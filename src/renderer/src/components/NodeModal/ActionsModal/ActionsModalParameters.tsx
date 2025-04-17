@@ -127,7 +127,12 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                 }))
               : type.map((value) => ({ label: value, value }));
           return (
-            <ComponentFormFieldLabel key={name} label={label} hint={hint}>
+            <ComponentFormFieldLabel
+              key={name}
+              label={label}
+              labelClassName="whitespace-pre"
+              hint={hint}
+            >
               <Select
                 className="w-[300px] pl-[50px]"
                 options={options}
@@ -152,6 +157,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                 as="div"
                 key={name}
                 label={label}
+                labelClassName="whitespace-pre"
                 hint={hint}
                 error={error}
                 name={name}
@@ -213,7 +219,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                 <div className="flex">
                   <label className="grid grid-cols-[max-content,1fr] items-center justify-start gap-2">
                     <div className="flex min-w-28 items-center gap-1">
-                      <span>{label}</span>
+                      <span className="whitespace-pre">{label}</span>
                       {hint && (
                         <WithHint hint={hint}>
                           {(props) => (
@@ -263,6 +269,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
               <ComponentFormFieldLabel
                 key={name}
                 label={label}
+                labelClassName="whitespace-pre"
                 hint={hint}
                 error={error}
                 value={value as string}

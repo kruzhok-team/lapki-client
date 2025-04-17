@@ -136,7 +136,7 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
         </h2>
         <div
           className={twMerge(
-            'h-[10vh] w-full overflow-y-auto leading-tight scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb',
+            'h-[10vh] w-full overflow-y-auto whitespace-pre-wrap leading-tight scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb',
             selectedPlatform?.description ?? 'opacity-70'
           )}
         >

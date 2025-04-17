@@ -83,21 +83,21 @@
       "img": "arduino/button.svg",
       "signals": {
         "isPressed": {
-          "alias": "Нажата",
+          "alias": "Зажата",
           "img": "arduino/isPressed.svg",
-          "description": "Создает сигнал, если кнопка была нажата.",
+          "description": "Это событие вызывается до тех пор, пока кнопка зажата.",
           "checkMethod": "isPressed"
         },
-        "isClicked": {
-          "alias": "Зажата",
+        "clicked": {
+          "alias": "Клик",
           "img": "arduino/clicked.svg",
-          "description": "Создает сигнал, если кнопка была нажата, а затем отпущена.",
-          "checkMethod": "isClicked"
+          "description": "Кнопку быстро нажали и отпустили.",
+          "checkMethod": "clicked"
         },
         "isReleased": {
           "alias": "Отжата",
           "img": "common/isReleased.svg",
-          "description": "Создает сигнал, если кнопка была отпущена.",
+          "description": "Кнопка отпущена.",
           "checkMethod": "isReleased"
         }
       },

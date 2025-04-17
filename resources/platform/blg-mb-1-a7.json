@@ -92,7 +92,7 @@
           "alias": "Клик",
           "img": "arduino/clicked.svg",
           "description": "Кнопку быстро нажали и отпустили.",
-          "checkMethod": "clicked"
+          "checkMethod": "isClicked"
         },
         "isReleased": {
           "alias": "Отжата",

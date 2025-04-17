@@ -7,7 +7,7 @@ import { Select, SelectOption, WithHint } from '@renderer/components/UI';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { isVariable } from '@renderer/lib/utils';
 import { ArgList, Variable } from '@renderer/types/diagram';
-import { ArgumentProto } from '@renderer/types/platform';
+import { ArgType, ArgumentProto } from '@renderer/types/platform';
 import { createEmptyMatrix, formatArgType, getMatrixDimensions } from '@renderer/utils';
 import { getComponentAttribute } from '@renderer/utils/ComponentAttribute';
 
@@ -91,6 +91,15 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
     });
   };
 
+  const isMatrix = (type: string) => {
+    return type.startsWith('Matrix');
+  };
+
+  const getHint = (description: string, type: ArgType) => {
+    if (!type || Array.isArray(type) || isMatrix(type)) return description;
+    return description + '\n' + `Тип: {${formatArgType(type)}}`;
+  };
+
   if (protoParameters.length === 0) {
     return null;
     // return <div className="flex text-text-inactive">Параметров нет</div>;
@@ -104,8 +113,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
         const parameter = parameters[name] ?? { value: '', order: idx };
         const value = parameter.value;
         const error = errors[name];
-        const hint =
-          description + (type && `${description ? '\n' : ''}Тип: ${formatArgType(type)}`);
+        const hint = getHint(description, type);
         const label = name + ':';
         if (Array.isArray(type)) {
           const valueAliases = proto.valueAlias;
@@ -129,7 +137,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
             </ComponentFormFieldLabel>
           );
         }
-        if (type.startsWith('Matrix')) {
+        if (isMatrix(type)) {
           const { width, height } = getMatrixDimensions(type);
           if (!value) {
             const newMatrix = createEmptyMatrix(type);

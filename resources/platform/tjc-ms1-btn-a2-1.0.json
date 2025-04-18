@@ -376,7 +376,7 @@
       },
       "variables": {
         "value": {
-          "alias": "значение",
+          "alias": "Значение",
           "img": "common/value.svg",
           "description": "Текущее значение счетчика.",
           "type": "int"

@@ -97,20 +97,46 @@
     },
 
     "ServoWrapper": {
-      "description": "Компонент для взаимодействия с сервоприводом",
+      "name": "Сервопривод",
+      "description": "Компонент для взаимодействия с сервоприводом.",
       "img": "arduino/servo.svg",
       "signals": {},
       "constructorParameters": {
         "pin": {
+          "name": "Пин",
           "type": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
-          "description": "Пин, к которому подключен сервопривод"
+          "valueAlias": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "A0",
+            "A1",
+            "A2",
+            "A3",
+            "A4",
+            "A5"
+          ],
+          "description": "Пин, к которому подключен сервопривод."
         },
         "min": {
+          "name": "Мин. угол",
           "type": "uint16_t",
           "description": "Ширина импульса в микросекундах, соответствующая минимальному углу (0 градусов) на сервоприводе (по умолчанию 544).",
           "optional": true
         },
         "max": {
+          "name": "Макс. угол",
           "type": "uint16_t",
           "description": "Ширина импульса в микросекундах, соответствующая максимальному углу (180 градусов) на сервоприводе (по умолчанию 2400).",
           "optional": true
@@ -118,11 +144,13 @@
       },
       "variables": {
         "angle": {
+          "alias": "Угол",
           "img": "arduino/angle.svg",
           "type": "int",
           "description": "Текущий угол поворота сервопривода в градусах."
         },
         "angleMicroseconds": {
+          "alias": "Точный угол",
           "img": "arduino/preciseAngle.svg",
           "type": "int",
           "description": "Текущий угол поворота сервопривода в микросекундах."
@@ -133,26 +161,28 @@
       "importFiles": ["Servo.hpp"],
       "methods": {
         "write": {
+          "alias": "Установить угол",
           "img": "arduino/setAngle.svg",
           "parameters": [
             {
-              "name": "angle",
+              "name": "Угол",
               "type": "unsigned int",
-              "description": "Угол поворота сервопривода (градусы)"
+              "description": "Угол поворота сервопривода (градусы)."
             }
           ],
-          "description": "Задать угол поворота сервопривода в градусах"
+          "description": "Задать угол поворота сервопривода в градусах."
         },
         "writeMicroseconds": {
+          "alias": "Установить точный угол",
           "img": "arduino/setAnglePrecise.svg",
           "parameters": [
             {
-              "name": "us",
+              "name": "Угол",
               "type": "unsigned int",
-              "description": "Задать угол поворота сервопривода"
+              "description": "Задать угол поворота сервопривода (микросекунды)."
             }
           ],
-          "description": "Задать угол поворота сервопривода в микросекундах"
+          "description": "Задать угол поворота сервопривода в микросекундах."
         }
       },
       "singletone": false

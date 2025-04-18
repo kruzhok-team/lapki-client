@@ -98,7 +98,7 @@
 
     "ServoWrapper": {
       "description": "Компонент для взаимодействия с сервоприводом",
-      "img": "arduino/button.svg",
+      "img": "arduino/servo.svg",
       "signals": {},
       "constructorParameters": {
         "pin": {
@@ -118,12 +118,12 @@
       },
       "variables": {
         "angle": {
-          "img": "common/value.svg",
+          "img": "arduino/angle.svg",
           "type": "int",
           "description": "Текущий угол поворота сервопривода в градусах."
         },
         "angleMicroseconds": {
-          "img": "common/value.svg",
+          "img": "arduino/preciseAngle.svg",
           "type": "int",
           "description": "Текущий угол поворота сервопривода в микросекундах."
         }
@@ -133,7 +133,7 @@
       "importFiles": ["Servo.hpp"],
       "methods": {
         "write": {
-          "img": "arduino/blink.svg",
+          "img": "arduino/setAngle.svg",
           "parameters": [
             {
               "name": "angle",
@@ -144,7 +144,7 @@
           "description": "Задать угол поворота сервопривода в градусах"
         },
         "writeMicroseconds": {
-          "img": "arduino/blink.svg",
+          "img": "arduino/setAnglePrecise.svg",
           "parameters": [
             {
               "name": "us",
@@ -411,11 +411,11 @@
       },
       "methods": {
         "low": {
-          "img": "arduino/switch-off.svg",
+          "img": "arduino/low.svg",
           "description": "Подать LOW на пин."
         },
         "high": {
-          "img": "arduino/switch-on.svg",
+          "img": "arduino/high.svg",
           "description": "Подать HIGH на пин."
         }
       },
@@ -436,7 +436,7 @@
       "img": "arduino/digitalIn.svg",
       "signals": {
         "isChanged": {
-          "img": "arduino/toggle.svg",
+          "img": "arduino/isChanged.svg",
           "description": "Сигнал вызывается, когда меняется значение на пине.",
           "checkMethod": "isChanged"
         },

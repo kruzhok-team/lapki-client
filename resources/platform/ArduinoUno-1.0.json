@@ -189,50 +189,78 @@
     },
 
     "LED": {
-      "description": "Компонент для взаимодействия со светодиодом",
+      "name": "Светодиод",
+      "description": "Компонент для взаимодействия со светодиодом.",
       "img": "arduino/led.svg",
       "signals": {},
       "constructorParameters": {
         "pin": {
+          "name": "Пин",
           "type": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
-          "description": "Пин, к которому подключен светодиод"
+          "valueAlias": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "A0",
+            "A1",
+            "A2",
+            "A3",
+            "A4",
+            "A5"
+          ],
+          "description": "Пин, к которому подключен светодиод."
         }
       },
       "variables": {
-        "value": {
+        "Значение": {
           "img": "common/value.svg",
           "type": "int",
-          "description": "Текущее значение на пине"
+          "description": "Текущее значение на пине."
         }
       },
       "methods": {
         "on": {
+          "alias": "Зажечь",
           "img": "arduino/switch-on.svg",
-          "description": "Зажечь светодиод"
+          "description": "Зажечь светодиод."
         },
         "off": {
+          "alias": "Погасить",
           "img": "arduino/switch-off.svg",
-          "description": "Выключить светодиод"
+          "description": "Выключить светодиод."
         },
         "toggle": {
+          "alias": "Переключить",
           "img": "arduino/toggle.svg",
-          "description": "Меняет состояние кнопки на противоположное"
+          "description": "Меняет состояние светодиода на противоположное."
         },
         "blink": {
+          "alias": "Мигнуть",
           "img": "arduino/blink.svg",
           "parameters": [
             {
-              "name": "interval",
+              "name": "Интервал",
               "type": "unsigned int",
-              "description": "Длительность каждого мигания (мс)"
+              "description": "Длительность каждого мигания (мс)."
             },
             {
-              "name": "times",
+              "name": "Миганий",
               "type": "byte",
-              "description": "Количество миганий"
+              "description": "Количество миганий."
             }
           ],
-          "description": "Мигает кнопкой определенное количество раз с определенной длительностью каждого мигания"
+          "description": "Мигает светодиодом определенное количество раз с определенной длительностью каждого мигания."
         }
       },
       "buildFiles": ["LED.h", "LED.ino"],

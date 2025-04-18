@@ -700,7 +700,7 @@
       },
       "methods": {
         "set": {
-          "img": "common/set-value.svg",
+          "img": "common/set.svg",
           "description": "Установить значение счетчика.",
           "parameters": [
             {
@@ -868,7 +868,7 @@
       },
       "methods": {
         "set": {
-          "img": "common/set-value.svg",
+          "img": "common/set.svg",
           "description": "Установить значение счетчика.",
           "parameters": [
             {

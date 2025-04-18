@@ -765,20 +765,23 @@
     },
 
     "UserSignal": {
-      "description": "Пользовательский сигнал",
+      "name": "Свой сигнал",
+      "description": "Компонент для создания произвольных, искусственных событий. Бывает полезным для упрощения диаграммы.",
       "img": "common/userSignal.svg",
       "signals": {
         "isCalled": {
+          "alias": "Вызов",
           "img": "common/signalIsCalled.svg",
-          "description": "Сработал сигнал",
+          "description": "Вызвано искусственное событие.",
           "checkMethod": "isCalled"
         }
       },
       "constructorParameters": {},
       "methods": {
         "call": {
+          "alias": "Вызвать",
           "img": "common/signalCall.svg",
-          "description": "Вызов сигнала"
+          "description": "Вызвать искусственное событие."
         }
       },
       "buildFiles": ["UserSignal.hpp"],
@@ -788,46 +791,51 @@
     },
 
     "Iterator": {
-      "description": "Итератор",
+      "name": "Итератор",
+      "description": "Компонент для выполнения цикла с параметром, то есть для выполнения повторяющихся операций, зависящих от значения счётчика. Итерация – это один повтор цепочки операций.",
       "img": "common/iterator.svg",
       "signals": {
         "onEnd": {
+          "alias": "Конец цикла",
           "img": "common/onIterationEnd.svg",
-          "description": "Итерации завершены",
+          "description": "Это событие срабатывает после того, как будет выполнена последняя итерация цикла.",
           "checkMethod": "onEnd"
         },
         "onIteration": {
+          "alias": "Итерация",
           "img": "common/onIteration.svg",
-          "description": "Очередная итерация",
+          "description": "Это событие срабатывает, когда нужно выполнить очередную итерацию цикла. Выполняется на каждой итерации, пока цикл не завершится.",
           "checkMethod": "onIteration"
         }
       },
       "constructorParameters": {},
       "methods": {
         "stop": {
+          "alias": "Стоп",
           "img": "common/break.svg",
-          "description": "Остановить итератор."
+          "description": "Завершить цикл досрочно."
         },
         "start": {
+          "alias": "Старт",
           "img": "arduino/start.svg",
           "parameters": [
             {
-              "name": "from",
+              "name": "От",
               "type": "unsigned long",
               "description": "Начальное значение."
             },
             {
-              "name": "to",
+              "name": "До",
               "type": "unsigned long",
               "description": "Конечное значение."
             },
             {
-              "name": "step",
+              "name": "Шаг",
               "type": "unsigned long",
               "description": "Шаг для изменения значения."
             }
           ],
-          "description": "Запустить итератор. Будет сигнал раз в итерацию."
+          "description": "Метод запускает новый цикл. На вход передаётся три аргумента: начальное значение счётчика, конечное значение, и шаг (значение, на которое увеличивается счетчик на каждой итерации)."
         }
       },
       "buildFiles": ["Iterator.hpp"],
@@ -835,9 +843,10 @@
       "singletone": false,
       "variables": {
         "index": {
+          "alias": "Индекс",
           "img": "common/iteratorIndex.svg",
           "type": "unsigned long",
-          "description": "Текущий индекс итерации"
+          "description": "Текущее значение счётчика в заданном для цикла диапазоне. "
         }
       }
     },

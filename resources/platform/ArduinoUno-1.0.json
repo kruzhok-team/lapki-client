@@ -25,17 +25,20 @@
   "delimeter": ";",
   "components": {
     "Button": {
-      "description": "Компонент для взаимодействия с физической кнопкой",
+      "name": "Кнопка",
+      "description": "Компонент для взаимодействия с физической кнопкой.",
       "img": "arduino/button.svg",
       "signals": {
         "isPressed": {
+          "alias": "Зажата",
           "img": "arduino/isPressed.svg",
-          "description": "Создает сигнал, если кнопка была нажата",
+          "description": "Это событие вызывается до тех пор, пока кнопка зажата.",
           "checkMethod": "isPressed"
         },
         "clicked": {
+          "alias": "Клик",
           "img": "arduino/clicked.svg",
-          "description": "Создает сигнал, если кнопка была кликнута",
+          "description": "Кнопку быстро нажали и отпустили.",
           "checkMethod": "clicked"
         },
         "isReleased": {
@@ -46,8 +49,31 @@
       },
       "constructorParameters": {
         "pin": {
+          "name": "Пин",
           "type": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
-          "description": "Пин, к которому подключена кнопка"
+          "valueAlias": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "A0",
+            "A1",
+            "A2",
+            "A3",
+            "A4",
+            "A5"
+          ],
+          "description": "Пин, к которому подключена кнопка."
         },
         "buttonMode": {
           "type": ["BUTTON_PULLUP", "BUTTON_PULLDOWN"],
@@ -57,9 +83,10 @@
       },
       "variables": {
         "value": {
+          "alias": "Значение",
           "img": "common/value.svg",
           "type": "int",
-          "description": "Текущее значение на пине"
+          "description": "Текущее значение на пине."
         }
       },
       "loopActions": ["scan"],

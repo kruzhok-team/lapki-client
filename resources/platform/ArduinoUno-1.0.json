@@ -1184,52 +1184,60 @@
     },
 
     "Array": {
-      "description": "Статический массив",
-      "img": "arduino/timer.svg",
+      "name": "Массив",
+      "description": "Статический массив значений. Не умеет изменять длину.",
+      "img": "common/array.svg",
       "signals": {},
       "constructorParameters": {
         "size": {
+          "name": "Размер",
           "type": "uint16_t",
-          "description": "Размер массива (должен быть не более, чем 65535 элементов)",
+          "description": "Размер массива (должен быть не более, чем 65535 элементов).",
           "optional": false
         }
       },
       "methods": {
         "set": {
+          "alias": "Установить значение",
           "img": "common/set-value.svg",
-          "description": "Установить значение элементу с заданным индексом",
+          "description": "Установить значение элементу с указываемым индексом.",
           "parameters": [
             {
-              "name": "index",
-              "description": "Индекс элемента",
+              "name": "Индекс",
+              "img": "common/arrayIndex.svg",
+              "description": "Индекс элемента массива.",
               "type": "uint16_t"
             },
             {
-              "name": "value",
-              "description": "Новое значение для элемента",
+              "name": "Значение",
+              "img": "common/value.svg",
+              "description": "Новое значение для элемента массива.",
               "type": "int16_t"
             }
           ]
         },
         "peek": {
+          "alias": "Установить индекс",
           "img": "common/arrayPeek.svg",
-          "description": "Переместиться на элемент с заданным индексом",
+          "description": "Переместиться на элемент с заданным индексом.",
           "parameters": [
             {
-              "name": "index",
+              "name": "Индекс",
               "img": "common/arrayIndex.svg",
-              "description": "Индекс элемента",
+              "description": "Индекс элемента массива.",
               "type": "uint16_t"
             }
           ]
         },
         "next": {
+          "alias": "Сместить индекс вправо",
           "img": "common/arrayNext.svg",
-          "description": "Переместиться на элемент со следующим индексом"
+          "description": "Переместиться на элемент со следующим индексом."
         },
         "prev": {
+          "alias": "Сместить индекс влево",
           "img": "common/arrayPrev.svg",
-          "description": "Переместиться на элемент с предыдущим индексом"
+          "description": "Переместиться на элемент с предыдущим индексом."
         }
       },
       "buildFiles": ["Array.hpp"],
@@ -1237,16 +1245,19 @@
       "singletone": false,
       "variables": {
         "value": {
+          "alias": "Текущее значение",
           "img": "common/value.svg",
           "type": "int16_t",
-          "description": "Значение элемента с текущим индексом."
+          "description": "Значение элемента массива с текущим индексом."
         },
         "index": {
+          "alias": "Значение указателя",
           "img": "common/arrayIndex.svg",
           "type": "uint16_t",
           "description": "Текущий индекс."
         },
         "size": {
+          "alias": "Длина массива",
           "img": "common/arraySize.svg",
           "type": "uint16_t",
           "description": "Размер массива."

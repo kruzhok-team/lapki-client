@@ -1,6 +1,6 @@
 {
   "name": "lapki-ide",
-  "version": "0.4.1",
+  "version": "0.4.4",
   "description": "Statemachine-based IDE for cyber-physical systems",
   "main": "./out/main/index.js",
   "author": "Kruzhok Association, Polyus-NT",

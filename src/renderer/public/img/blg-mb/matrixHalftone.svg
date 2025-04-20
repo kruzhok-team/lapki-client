@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="_Слой_2" data-name="Слой 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 37.43 38.17">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #a9acb3;
+        stroke: #a9acb3;
+      }
+
+      .cls-1, .cls-2 {
+        stroke-miterlimit: 10;
+        stroke-width: .07px;
+      }
+
+      .cls-2 {
+        fill: #f5c340;
+        stroke: #f5c340;
+      }
+    </style>
+  </defs>
+  <g id="_Матрица-картинка" data-name="Матрица-картинка">
+    <g id="_Матрица-картинка-2" data-name="Матрица-картинка">
+      <g id="_Матрица-картинка-3" data-name="Матрица-картинка">
+        <rect class="cls-2" x=".03" y=".06" width="9.68" height="9.68" rx=".89" ry=".89"/>
+        <rect class="cls-1" x="13.86" y=".03" width="9.68" height="9.68" rx=".89" ry=".89"/>
+        <rect class="cls-1" x="27.71" y=".04" width="9.68" height="9.68" rx=".89" ry=".89"/>
+        <rect class="cls-1" x=".03" y="14.25" width="9.68" height="9.68" rx=".89" ry=".89"/>
+        <rect class="cls-1" x=".03" y="28.46" width="9.68" height="9.68" rx=".89" ry=".89"/>
+        <rect class="cls-2" x="13.86" y="14.23" width="9.68" height="9.68" rx=".89" ry=".89"/>
+        <rect class="cls-1" x="27.71" y="14.28" width="9.68" height="9.68" rx=".89" ry=".89"/>
+        <rect class="cls-1" x="13.86" y="28.46" width="9.68" height="9.68" rx=".89" ry=".89"/>
+        <rect class="cls-2" x="27.71" y="28.46" width="9.68" height="9.68" rx=".89" ry=".89"/>
+      </g>
+    </g>
+  </g>
+</svg>

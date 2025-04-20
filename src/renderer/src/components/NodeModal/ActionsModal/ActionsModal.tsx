@@ -51,6 +51,7 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
   const [parameters, setParameters] = useState<ArgList>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // TODO(L140-beep): вынести логику в useActions
   const getComponentOption = (id: string, excludeIfEmpty: 'methods' | 'signals' | 'variables') => {
     if (!controller.platform[smId]) {
       return {
@@ -102,16 +103,20 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
     return getComponentOptions('methods');
   }, [smId, platforms, componentsData, isEditingEvent, visual]);
 
+  const componentWithVariablesOptions: SelectOption[] = useMemo(() => {
+    return getComponentOptions('variables');
+  }, [smId, platforms, componentsData, isEditingEvent, visual]);
+
   const methodOptions: SelectOption[] = useMemo(() => {
     if (!selectedComponent || !platforms[smId]) return [];
     const getAll = platforms[smId][isEditingEvent ? 'getAvailableEvents' : 'getAvailableMethods'];
     const getImg = platforms[smId][isEditingEvent ? 'getEventIconUrl' : 'getActionIconUrl'];
 
     // Тут call потому что контекст теряется
-    return getAll.call(platforms[smId], selectedComponent).map(({ name, description }) => {
+    return getAll.call(platforms[smId], selectedComponent).map(({ name, description, alias }) => {
       return {
         value: name,
-        label: name,
+        label: alias ?? name,
         hint: description,
         icon: (
           <img
@@ -129,10 +134,10 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
 
     return platformManager
       .getAvailableVariables(selectedParameterComponent)
-      .map(({ name, description }) => {
+      .map(({ name, description, alias }) => {
         return {
           value: name,
-          label: name,
+          label: alias ?? name,
           hint: description,
           icon: (
             <img
@@ -209,13 +214,16 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
         }
         const componentAttribute = getComponentAttribute(value, platform);
         if (componentAttribute) {
-          // существует ли компонет с таким названием
+          // существует ли компонент с таким названием
           if (
-            !componentOptions.find((opt) => {
+            !componentWithVariablesOptions.find((opt) => {
               return opt.value === componentAttribute[0];
             })
           ) {
-            setErrors((p) => ({ ...p, [name]: `Неправильный формат данных` }));
+            setErrors((p) => ({
+              ...p,
+              [name]: `Ошибка! Не удалось найти компонент с таким названием.`,
+            }));
             return false;
           }
           if (componentAttribute[1] === '') {
@@ -229,7 +237,10 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
               return opt.value === componentAttribute[1];
             })
           ) {
-            setErrors((p) => ({ ...p, [name]: `Неправильный формат данных` }));
+            setErrors((p) => ({
+              ...p,
+              [name]: `Ошибка! Не удалось найти метод с таким названием.`,
+            }));
             return false;
           }
         } else if (type && typeof type === 'string' && validators[type]) {
@@ -333,7 +344,7 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
         setParameters={setParameters}
         errors={errors}
         setErrors={setErrors}
-        componentOptions={getComponentOptions('variables')}
+        componentOptions={componentWithVariablesOptions}
         controller={controller}
         smId={smId}
         methodOptionsSearch={methodOptionsSearch}

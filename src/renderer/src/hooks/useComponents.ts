@@ -38,7 +38,8 @@ export const useComponents = (controller: CanvasController) => {
   const [isDeleteOpen, openDelete, deleteClose] = useModal(false);
 
   const validateComponentId = (newId: string, validateProto: ComponentProto, id: string) => {
-    if (!requestedSmId) throw new Error('ssadasdas');
+    if (!requestedSmId)
+      throw new Error('Внутренняя ошибка: не указано к какой МС указан компонент.');
     const platformId = modelController.model.data.elements.stateMachines[requestedSmId].platform;
     const platform = getPlatform(platformId);
     const validationResult = modelController.validator.validateComponentId(

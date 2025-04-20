@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, Dispatch } from 'react';
 import { toast } from 'sonner';
 
 import { SaveModalData } from '@renderer/components';
+import { StateMachinesStackItem } from '@renderer/components/CreateSchemeModal/StateMachinesStack';
 import { Compiler } from '@renderer/components/Modules/Compiler';
 import { importGraphml } from '@renderer/lib/data/GraphmlParser';
 import { useModelContext } from '@renderer/store/ModelContext';
@@ -10,8 +11,6 @@ import { SidebarIndex, useSidebar } from '@renderer/store/useSidebar';
 import { useTabs } from '@renderer/store/useTabs';
 import { Elements } from '@renderer/types/diagram';
 import { isLeft, isRight, unwrapEither } from '@renderer/types/Either';
-
-import { useSettings } from './useSettings';
 
 const tempSaveKey = 'tempSave';
 
@@ -30,7 +29,6 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   const name = modelController.model.useData('', 'name') as string | null;
   const isStale = modelController.model.useData('', 'isStale');
   const [clearTabs, openTab] = useTabs((state) => [state.clearTabs, state.openTab]);
-  const [restoreSession, setRestoreSession] = useSettings('restoreSession');
 
   const [data, setData] = useState<SaveModalData | null>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -41,7 +39,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   };
 
   // Открыть вкладки на каждый контроллер
-  const openTabs = () => {
+  const openTabs = (openAll?: boolean) => {
     changeTab(SidebarIndex.Explorer);
     for (const controllerId in modelController.controllers) {
       if (controllerId === '') continue;
@@ -57,7 +55,8 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
       });
       // (chekoopa) ОБСУДИТЬ! Кажется, разумнее сейчас оставить открытие только первой машины состояний.
       // И в будущем сделать открытие всех машин опцией. Но это в будущем.
-      break;
+      // (Roundabout1) Сейчас все вкладки открываются только при создании проекта
+      if (!openAll) break;
     }
   };
 
@@ -117,11 +116,11 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
     }
   };
 
-  const performNewFile = (idx: string) => {
+  const performNewFile = (stateMachines: StateMachinesStackItem[]) => {
     Compiler.setCompilerData(undefined);
-    modelController.files.newFile(idx);
+    modelController.files.newFile(stateMachines);
     clearTabs();
-    openTabs();
+    openTabs(true);
   };
 
   const handleSaveAsFile = async () => {
@@ -200,38 +199,30 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
       openTabs();
     }
   };
-  /**
-   * Временное сохранение схемы в localstorage
-   */
-  const tempSave = async () => {
-    window.localStorage.setItem(tempSaveKey, modelController.model.serializer.getAll('Cyberiada'));
-    if (!restoreSession) {
-      await setRestoreSession(true);
-    }
-  };
 
-  const loadTempSave = async () => {
-    const restoredData = window.localStorage.getItem(tempSaveKey);
-    if (restoredData === null) {
-      return false;
-    }
-    const parsedData = importGraphml(restoredData, openImportError);
+  const loadGraphml = (graphml: string) => {
+    const parsedData = importGraphml(graphml, openImportError);
     if (parsedData === undefined) {
       return false;
     }
     modelController.initData(null, 'Без названия', parsedData, true);
     openTabs();
-    if (!restoreSession) {
-      await setRestoreSession(true);
-    }
     return true;
   };
 
-  const deleteTempSave = async () => {
+  /**
+   * Временное сохранение схемы в localstorage
+   */
+  const tempSave = () => {
+    window.localStorage.setItem(tempSaveKey, modelController.model.serializer.getAll('Cyberiada'));
+  };
+
+  const loadTempSave = () => {
+    return window.localStorage.getItem(tempSaveKey);
+  };
+
+  const deleteTempSave = () => {
     window.localStorage.removeItem(tempSaveKey);
-    if (restoreSession) {
-      await setRestoreSession(false);
-    }
   };
 
   useEffect(() => {
@@ -278,5 +269,6 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
       loadTempSave,
       deleteTempSave,
     },
+    loadGraphml,
   };
 };

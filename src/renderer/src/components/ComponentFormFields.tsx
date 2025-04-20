@@ -90,12 +90,12 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
 
   return (
     <div className="flex flex-col gap-2">
-      <h3 className="mb-1 text-xl">Параметры:</h3>
+      <h3 className="mb-1 text-xl">Параметры</h3>
 
       {showMainData && (
         <>
           <ComponentFormFieldLabel
-            label="Название:"
+            label="Название"
             placeholder="Введите название..."
             maxLength={20}
             hint="Человекочитаемое название, которое будет отображаться в интерфейсе вместо технического. До 20 символов."
@@ -108,7 +108,7 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
             placeholder="Введите идентификатор..."
             label={
               <>
-                Техническое <br /> название:
+                Техническое <br /> название
               </>
             }
             maxLength={20}
@@ -120,7 +120,7 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
           />
 
           <ComponentFormFieldLabel
-            label="Подпись:"
+            label="Подпись"
             hint="До 3-х символов. Подпись нужна для различения иконок разных компонентов одного типа на схеме."
             value={parameters['label'] ?? ''}
             name="label"
@@ -128,7 +128,7 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
             onChange={(e) => handleInputChange('label', e.target.value)}
           />
 
-          <ComponentFormFieldLabel label="Цвет подписи:" name="labelColor" as="div">
+          <ComponentFormFieldLabel label="Цвет подписи" name="labelColor" as="div">
             <ColorInput
               clearable={false}
               value={parameters['labelColor'] ?? '#FFFFFF'}
@@ -142,23 +142,30 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
 
       {protoParametersArray.map(([idx, param]) => {
         const name = param.name ?? idx;
-        const value: string | undefined = parameters[name];
-        const type = allParameters[name].type;
-        const error = errors[name];
+        const value: string | undefined = parameters[idx];
+        const type = allParameters[idx].type;
+        const error = errors[idx];
 
         if (Array.isArray(type)) {
-          const options = type.map((value) => ({ label: value, value }));
+          const valueAliases = param.valueAlias;
+          const options =
+            valueAliases !== undefined &&
+            Array.isArray(valueAliases) &&
+            valueAliases.length === type.length
+              ? type.map((value, index) => ({ label: valueAliases[index] ?? value, value }))
+              : type.map((value) => ({ label: value, value }));
           return (
             <ComponentFormFieldLabel
               key={idx}
-              label={name + ':'}
-              hint={param.description + (type ? `\nТип: ${formatArgType(type)}` : '')}
+              label={name}
+              labelClassName="whitespace-pre"
+              hint={param.description}
             >
               <Select
                 className="w-[250px]"
                 options={options}
                 value={options.find((o) => o.value === value || o.value === Number(value))}
-                onChange={({ value }: any) => handleInputChange(name, value)}
+                onChange={({ value }: any) => handleInputChange(idx, value)}
               />
             </ComponentFormFieldLabel>
           );
@@ -167,11 +174,12 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
         return (
           <ComponentFormFieldLabel
             key={idx}
-            label={name + ':'}
+            label={name}
+            labelClassName="whitespace-pre"
             hint={param.description + (type ? `\nТип: ${formatArgType(type)}` : '')}
             error={error}
             value={value}
-            name={name}
+            name={idx}
             onChange={(e) => handleInputChange(e.target.name, e.target.value)}
           />
         );

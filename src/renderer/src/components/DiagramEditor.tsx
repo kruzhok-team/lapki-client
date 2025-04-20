@@ -17,6 +17,7 @@ import { CanvasController } from '@renderer/lib/data/ModelController/CanvasContr
 import { EventSelection, State } from '@renderer/lib/drawable';
 import { Point } from '@renderer/lib/types';
 import { useModelContext } from '@renderer/store/ModelContext';
+import { getColor } from '@renderer/theme';
 import { Event } from '@renderer/types/diagram';
 interface DiagramEditorProps {
   editor: CanvasEditor;
@@ -41,6 +42,10 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditor
     state: State;
     eventSelection: EventSelection;
   }>();
+
+  const style = {
+    backgroundColor: getColor('bg-primary'),
+  };
 
   useEffect(() => {
     // Проверяем на идентификатор '', чтобы не совершать какие-либо операции
@@ -118,7 +123,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditor
 
   return (
     <>
-      <div className="relative h-full overflow-hidden bg-neutral-800" ref={containerRef}></div>
+      <div style={style} className="relative h-full overflow-hidden" ref={containerRef}></div>
 
       {isMounted && (
         <>

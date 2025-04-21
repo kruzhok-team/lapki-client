@@ -93,10 +93,10 @@ export const useTrigger = (
     // Тут call потому что контекст теряется
     return getAll
       .call(controller.platform[smId], selectedComponent)
-      .map(({ name, description }) => {
+      .map(({ name, description, alias }) => {
         return {
           value: name,
-          label: name,
+          label: alias ?? name,
           hint: description,
           icon: (
             <img

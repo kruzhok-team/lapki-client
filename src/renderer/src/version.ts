@@ -5,6 +5,7 @@ export const releaseName = 'Donskoy';
 export const appName = 'Lapki IDE';
 export const seriousMode = false;
 export const noTextMode = false;
+export const noSchemeScreen = false;
 export const showDevInfo = true;
 
 export const telegramLink = 'https://t.me/LapkiSupportBot';

@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
 
+import { Buffer } from 'buffer';
+
 import { ArduinoDevice, Device, MSDevice } from '@renderer/components/Modules/Device';
 import { Flasher } from '@renderer/components/Modules/Flasher';
 import { ManagerMS } from '@renderer/components/Modules/ManagerMS';
@@ -22,6 +24,7 @@ import {
   FlashUpdatePort,
   MetaDataID,
   MSAddressAndMeta,
+  MSOperationReport,
   SerialRead,
   UpdateDelete,
 } from '@renderer/types/FlasherTypes';
@@ -33,6 +36,8 @@ export const useFlasherHooks = () => {
   const basename = modelController.model.useData('', 'basename');
 
   const [flasherSetting, setFlasherSetting] = useSettings('flasher');
+  const [monitorSetting] = useSettings('serialmonitor');
+
   const {
     flasherMessage,
     setFlasherMessage,
@@ -48,6 +53,8 @@ export const useFlasherHooks = () => {
     setHasAvrdude,
     flashTableData,
     setFlashTableData,
+    binaryFolder,
+    setBinaryFolder,
   } = useFlasher();
 
   const {
@@ -63,6 +70,7 @@ export const useFlasherHooks = () => {
     device: serialMonitorDevice,
     setDevice: setSerialMonitorDevice,
     addDeviceMessage: addSerialDeviceMessage,
+    addBytesFromDevice: addBytesFromSerial,
     setConnectionStatus: setSerialConnectionStatus,
     setLog: setSerialLog,
   } = useSerialMonitor();
@@ -109,7 +117,7 @@ export const useFlasherHooks = () => {
     }
     if (deviceMS && deviceMS.deviceID === deviceID) {
       if (msDevicesCnt === 2) {
-        for (const [, dev] of devices) {
+        for (const [, dev] of newMap) {
           if (dev.isMSDevice()) {
             setDeviceMS(dev as MSDevice);
             break;
@@ -148,17 +156,24 @@ export const useFlasherHooks = () => {
     setIsFlashing(false);
     let flashResultKey: string = '';
     let addressInfo: AddressData | undefined = undefined;
-    if (Flasher.currentFlashingDevice instanceof ArduinoDevice) {
-      flashResultKey = Flasher.currentFlashingDevice.displayName();
-      // TODO: унификация с flashingAddressEndLog?
-      ManagerMS.addLog(`${flashResultKey}: ${result}`);
-    } else if (Flasher.currentFlashingDevice instanceof MSDevice) {
-      const msDev = Flasher.currentFlashingDevice as MSDevice;
-      flashResultKey = `${ManagerMS.getFlashingAddress()?.name} - ${msDev.displayName()}`;
-      addressInfo = ManagerMS.getFlashingAddress();
-      ManagerMS.flashingAddressEndLog(result);
-    } else {
+    if (!Flasher.currentFlashingDevice) {
       flashResultKey = 'Неизвестное устройство';
+    } else {
+      if (Flasher.currentFlashingDevice.isMSDevice()) {
+        const msDev = Flasher.currentFlashingDevice as MSDevice;
+        const getName = () => {
+          const addressInfo = ManagerMS.getFlashingAddress();
+          if (!addressInfo) return 'Неизвестная плата';
+          return addressInfo.name ? addressInfo.name : addressInfo.address;
+        };
+        flashResultKey = `${getName()} - ${msDev.displayName()}`;
+        addressInfo = ManagerMS.getFlashingAddress();
+        ManagerMS.flashingAddressEndLog(result);
+      } else {
+        flashResultKey = Flasher.currentFlashingDevice.displayName();
+        // TODO: унификация с flashingAddressEndLog?
+        ManagerMS.addLog(`${flashResultKey}: ${result}`);
+      }
     }
     const flashReport = new FlashResult(
       Flasher.currentFlashingDevice,
@@ -245,6 +260,18 @@ export const useFlasherHooks = () => {
 
     // TODO: заменить на map
     switch (flasherMessage.type) {
+      case 'binary-data': {
+        if (binaryFolder) {
+          // async функция
+          ManagerMS.writeBinary(binaryFolder, flasherMessage.payload as Uint8Array);
+          Flasher.send('ms-get-firmware-next-block', null);
+        } else {
+          ManagerMS.flashingAddressLog(
+            'Ошибка! Отсутствует папка для сохранения выгруженных прошивок.'
+          );
+        }
+        break;
+      }
       case 'flash-next-block': {
         setIsFlashing(true);
         Flasher.sendBlob();
@@ -265,6 +292,11 @@ export const useFlasherHooks = () => {
       }
       case 'ms-device': {
         const device = new MSDevice(flasherMessage.payload as MSDevice);
+        addDevice(device);
+        break;
+      }
+      case 'blg-mb-device': {
+        const device = new Device(flasherMessage.payload as Device, 'blg-mb');
         addDevice(device);
         break;
       }
@@ -326,6 +358,20 @@ export const useFlasherHooks = () => {
         );
         break;
       }
+      case 'incorrect-file-size': {
+        flashingEnd(
+          'Ошибка! Указанный размер файла меньше 1 байта. Прошивку начать невозможно.',
+          undefined
+        );
+        break;
+      }
+      case 'file-write-error': {
+        flashingEnd(
+          'Ошибка! Возникла ошибка при записи блока с бинарными данным. Прошивка прекращена.',
+          undefined
+        );
+        break;
+      }
       case 'flash-backtrack-ms': {
         const payload = flasherMessage.payload as FlashBacktrackMs;
         // TODO: пока обратная связь реализована только для МС-ТЮК
@@ -333,6 +379,7 @@ export const useFlasherHooks = () => {
         break;
       }
       case 'event-not-supported': {
+        // TODO: прекращение текущих операций, типа прошивки?
         ManagerMS.addLog('Загрузчик получил неизвестный тип сообщения.');
         break;
       }
@@ -482,12 +529,21 @@ export const useFlasherHooks = () => {
       }
       case 'serial-device-read': {
         const serialRead = flasherMessage.payload as SerialRead;
-        SerialMonitor.addDeviceMessage(serialRead.msg);
+        const buffer = Buffer.from(serialRead.msg, 'base64');
+        addBytesFromSerial(buffer);
+        switch (monitorSetting?.textMode) {
+          case 'text':
+            addSerialDeviceMessage(SerialMonitor.toText(buffer));
+            break;
+          case 'hex':
+            addSerialDeviceMessage(SerialMonitor.toHex(buffer));
+            break;
+        }
         break;
       }
       case 'flash-open-serial-monitor':
         // если не удалось закрыть монитор порта перед прошивкой, то повторяем попытку
-        console.log('flash-open-serial-monitor');
+        // console.log('flash-open-serial-monitor');
         if (Flasher.currentFlashingDevice) {
           SerialMonitor.closeMonitor(Flasher.currentFlashingDevice.deviceID);
           Flasher.flash(Flasher.currentFlashingDevice);
@@ -727,6 +783,61 @@ export const useFlasherHooks = () => {
             }
             break;
           }
+        }
+        break;
+      }
+      case 'ms-get-firmware-approve': {
+        Flasher.send('ms-get-firmware-next-block', null);
+        break;
+      }
+      case 'ms-get-firmware-finish': {
+        const result = flasherMessage.payload as MSOperationReport;
+        const errorPostfix = result.comment ? ` Текст ошибки ${result.comment}` : '';
+        switch (result.code) {
+          case 0:
+            ManagerMS.flashingAddressEndLog('Выгрузка завершена.');
+            break;
+          case 1:
+            ManagerMS.flashingAddressEndLog(
+              'Порт для загрузки не найден. Возможно плата не подключена.'
+            );
+            break;
+          case 2:
+            ManagerMS.flashingAddressEndLog(
+              'Возникла ошибка при попытке выгрузить прошивку.' + errorPostfix
+            );
+            break;
+          case 3:
+            ManagerMS.flashingAddressEndLog(
+              'Возникла ошибка при попытке выгрузить прошивку.' + errorPostfix
+            );
+            break;
+          case 4:
+            // Этот лог оставлен на всякий случай. Клиент не должен видеть этот лог, так как кнопки для загрузки/выгрузки должны быть заблокированы в этот момент.
+            ManagerMS.flashingAddressEndLog(
+              'Нельзя начать выгрузку, так как в данный момент IDE занято работой с одним из подключённых устройств.'
+            );
+            break;
+          case 5:
+            ManagerMS.flashingAddressEndLog(
+              'Нельзя начать выгрузку, так как в данный момент порт устройства занят другим клиентом'
+            );
+            break;
+          case 6:
+            ManagerMS.flashingAddressEndLog(
+              `Нельзя начать выгрузку, так как указан не верный размер передаваемых блоков с бинарным файлами: ${result.comment}. Сообщите об этой ошибке разработчикам IDE.`
+            );
+            break;
+          case 7:
+            // это ещё не реализовано на сервере
+            ManagerMS.flashingAddressEndLog(
+              `Выгрузка прекращена, так как истекло время ожидания запроса на бинарные данные от клиента. Сообщите об этой ошибке разработчикам IDE.`
+            );
+            break;
+        }
+        Flasher.currentFlashingDevice = undefined;
+        if (!ManagerMS.getFirmwareStart()) {
+          setBinaryFolder(null);
         }
         break;
       }

@@ -1,4 +1,6 @@
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+
+import { Buffer } from 'buffer';
 
 import {
   SERIAL_MONITOR_CONNECTED,
@@ -12,7 +14,7 @@ import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
 
 import { DeviceList } from './DeviceList';
 
-import { Select, Switch, TextInput } from '../../UI';
+import { Select, Switch, TextInput, WithHint } from '../../UI';
 
 type LineBreakType = 'LF' | 'CR' | 'CRLF' | 'Без';
 // опции выбора символа окончания строки
@@ -40,12 +42,29 @@ class LineBreakOptions {
   };
 }
 
+// опции выбора режима текста
+// при изменение данных здесь, нужно не забыть проверить стандартные настройки (setting.ts)
+class TextModeOptions {
+  static text = {
+    label: 'Текст',
+    value: 'text',
+    hint: 'Перевод в режим текста. В этом режиме байты, полученные с устройства, автоматически конвертируются в текст. Введённый текст тоже преобразуется в байты при отправке на устройство.',
+  };
+  static hex = {
+    label: 'HEX',
+    value: 'hex',
+    hint: 'Перевод в режим HEX. В этом режиме байты, полученные с устройства, отображаются в виде двузначных шестнадцатеричных чисел. Чтобы передать данные на устройство ввод необходимо написать в таком же формате.',
+  };
+}
+
 export const SerialMonitorTab: React.FC = () => {
   const [monitorSetting, setMonitorSetting] = useSettings('serialmonitor');
 
   const {
     deviceMessages,
     setDeviceMessages: setMessages,
+    bytesFromDevice,
+    setBytesFromDevice,
     device,
     setDevice,
     connectionStatus,
@@ -68,6 +87,7 @@ export const SerialMonitorTab: React.FC = () => {
   ].map(makeOption);
 
   const [inputValue, setInputValue] = useState<string>('');
+  const [inputError, setInputError] = useState<string>('');
 
   const deviceMessageContainerRef = useRef<HTMLDivElement>(null);
   const logContainerRef = useRef<HTMLDivElement>(null);
@@ -88,16 +108,95 @@ export const SerialMonitorTab: React.FC = () => {
     if (deviceMessages !== '' && deviceMessages[deviceMessages.length - 1] !== '\n') {
       SerialMonitor.addDeviceMessage('\n');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [device]);
 
+  const serialDevices = useMemo(() => {
+    const serial = new Map() as typeof devices;
+    devices.forEach((dev, id) => {
+      if (dev.getSerialPort()) {
+        serial.set(id, dev);
+      }
+    });
+    return serial;
+  }, [devices]);
+
+  useEffect(() => {
+    if (!monitorSetting?.textMode) return;
+    switch (monitorSetting.textMode) {
+      case 'hex':
+        setMessages(SerialMonitor.toHex(bytesFromDevice));
+        break;
+      case 'text':
+        setMessages(SerialMonitor.toText(bytesFromDevice));
+        break;
+      default:
+        console.log('Неизвестный режим монитора порта! Перевод в режим текста...');
+        settingTextMode('text');
+        return;
+    }
+    setInputError('');
+    SerialMonitor.addLog(`Перевод в режим «${TextModeOptions[monitorSetting.textMode].label}».`);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [monitorSetting?.textMode]);
+
+  useEffect(() => {
+    setInputError('');
+  }, [connectionStatus]);
+
+  if (!monitorSetting) {
+    return null;
+  }
+
+  type TextModeType = typeof monitorSetting.textMode;
+
+  // Отправляем сообщение через SerialMonitor
   const handleSend = () => {
-    if (inputValue.trim() && device !== undefined && monitorSetting !== null) {
-      // Отправляем сообщение через SerialMonitor
-      SerialMonitor.sendMessage(
-        device?.deviceID,
-        inputValue + LineBreakOptions[monitorSetting?.lineBreak].value
-      );
+    if (inputValue !== '' && device !== undefined) {
+      let msgToSend: Buffer;
+      const lineBreak = LineBreakOptions[monitorSetting.lineBreak].value;
+      switch (monitorSetting.textMode) {
+        case 'text':
+          msgToSend = Buffer.from(inputValue + lineBreak);
+          break;
+        case 'hex': {
+          const bytes =
+            inputValue
+              .replaceAll('0x', '')
+              .replaceAll(' ', '')
+              .match(/.{1,2}/g) || [];
+          const hexBuffers: Buffer[] = [];
+          let hasErr = false;
+          for (const byte of bytes) {
+            if (byte.length != 2) {
+              hasErr = true;
+              break;
+            }
+            const re = /[0-9A-Fa-f]{2}/g;
+            if (!re.test(byte)) {
+              hasErr = true;
+              break;
+            }
+            hexBuffers.push(Buffer.from(byte, 'hex'));
+          }
+          if (hasErr) {
+            const errorText = `Неправильный ввод. В режиме «${
+              TextModeOptions[monitorSetting.textMode].label
+            }» строка должна состоять из двузначных шестнадцатеричных чисел, разделённых пробелами. Каждое число представляет один байт.`;
+            setInputError(errorText);
+            SerialMonitor.addLog(errorText);
+            return;
+          }
+          hexBuffers.push(Buffer.from(lineBreak));
+          msgToSend = Buffer.concat(hexBuffers);
+          break;
+        }
+        default:
+          return;
+      }
+      SerialMonitor.sendMessage(device.deviceID, msgToSend);
       setInputValue('');
+      setInputError('');
     }
   };
 
@@ -108,6 +207,7 @@ export const SerialMonitorTab: React.FC = () => {
   };
 
   const handleClear = () => {
+    setBytesFromDevice(Buffer.from(''));
     setMessages('');
     setLog(() => []);
   };
@@ -123,7 +223,7 @@ export const SerialMonitorTab: React.FC = () => {
   };
 
   const handleConnectionButton = () => {
-    if (device === undefined || monitorSetting === null) {
+    if (device === undefined) {
       return;
     }
     if (connectionStatus === SERIAL_MONITOR_CONNECTED) {
@@ -134,7 +234,6 @@ export const SerialMonitorTab: React.FC = () => {
   };
 
   const settingLineBreak = (newBreakLine: LineBreakType) => {
-    if (!monitorSetting) return;
     let settingValue: typeof monitorSetting.lineBreak;
     switch (newBreakLine) {
       case 'Без':
@@ -149,17 +248,19 @@ export const SerialMonitorTab: React.FC = () => {
     });
   };
 
+  const settingTextMode = (newTextMode: TextModeType) => {
+    setMonitorSetting({
+      ...monitorSetting,
+      textMode: newTextMode,
+    });
+  };
+
   const settingBaudRate = (newBaudRate: number) => {
-    if (!monitorSetting) return;
     setMonitorSetting({
       ...monitorSetting,
       baudRate: newBaudRate,
     });
   };
-
-  if (!monitorSetting) {
-    return null;
-  }
 
   const handleAddDevice = (deviceIds: string[]) => {
     if (deviceIds.length === 0) return;
@@ -176,7 +277,7 @@ export const SerialMonitorTab: React.FC = () => {
   };
 
   return (
-    <section className="mr-3 flex h-full flex-col bg-bg-secondary">
+    <section className="mr-3 flex h-full flex-col overflow-auto bg-bg-secondary">
       <div className="m-2 flex justify-between">
         <button
           className="btn-primary"
@@ -191,13 +292,37 @@ export const SerialMonitorTab: React.FC = () => {
         {`${handleCurrentDeviceDisplay()}`}
       </div>
       <div className="m-2 flex">
-        <TextInput
-          className="mr-2 max-w-full"
-          placeholder="Напишите значение"
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          onKeyDown={handleKeyDown}
-        />
+        <WithHint hint={inputError}>
+          {(hintProps) => (
+            <TextInput
+              {...hintProps}
+              className="mr-2 max-w-full"
+              placeholder="Напишите значение"
+              value={inputValue}
+              onChange={(e) => {
+                setInputValue(e.target.value);
+                if (e.target.value === '') {
+                  setInputError('');
+                }
+              }}
+              onKeyDown={handleKeyDown}
+              error={inputError !== ''}
+            />
+          )}
+        </WithHint>
+        <div className="mr-2 w-48">
+          <Select
+            isSearchable={false}
+            value={TextModeOptions[monitorSetting.textMode]}
+            placeholder="Режим..."
+            onChange={(option) => {
+              if (option) {
+                settingTextMode(option.value as TextModeType);
+              }
+            }}
+            options={[TextModeOptions.text, TextModeOptions.hex]}
+          />
+        </div>
         <div className="mr-2 w-48">
           <Select
             isSearchable={false}
@@ -272,7 +397,7 @@ export const SerialMonitorTab: React.FC = () => {
         </div>
       </div>
       <div
-        className="mx-2 h-full select-text overflow-y-auto whitespace-break-spaces bg-bg-primary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
+        className="mx-2 h-full select-text overflow-y-auto whitespace-break-spaces break-words bg-bg-primary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
         ref={deviceMessageContainerRef}
       >
         {deviceMessages}
@@ -281,7 +406,7 @@ export const SerialMonitorTab: React.FC = () => {
       <hr></hr>
       <br></br>
       <div
-        className="mx-2 h-full select-text overflow-y-auto whitespace-break-spaces bg-bg-primary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
+        className="mx-2 h-full select-text overflow-y-auto whitespace-break-spaces break-words bg-bg-primary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
         ref={logContainerRef}
       >
         {log.map((msg, index) => (
@@ -294,7 +419,7 @@ export const SerialMonitorTab: React.FC = () => {
         onClose={closeDeviceList}
         onSubmit={handleAddDevice}
         submitLabel="Выбрать"
-        devices={devices}
+        devices={serialDevices}
       />
     </section>
   );

@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, Dispatch } from 'react';
 import { toast } from 'sonner';
 
 import { SaveModalData } from '@renderer/components';
+import { StateMachinesStackItem } from '@renderer/components/CreateSchemeModal/StateMachinesStack';
 import { Compiler } from '@renderer/components/Modules/Compiler';
 import { importGraphml } from '@renderer/lib/data/GraphmlParser';
 import { useModelContext } from '@renderer/store/ModelContext';
@@ -38,7 +39,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   };
 
   // Открыть вкладки на каждый контроллер
-  const openTabs = () => {
+  const openTabs = (openAll?: boolean) => {
     changeTab(SidebarIndex.Explorer);
     for (const controllerId in modelController.controllers) {
       if (controllerId === '') continue;
@@ -54,7 +55,8 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
       });
       // (chekoopa) ОБСУДИТЬ! Кажется, разумнее сейчас оставить открытие только первой машины состояний.
       // И в будущем сделать открытие всех машин опцией. Но это в будущем.
-      break;
+      // (Roundabout1) Сейчас все вкладки открываются только при создании проекта
+      if (!openAll) break;
     }
   };
 
@@ -114,11 +116,11 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
     }
   };
 
-  const performNewFile = (idx: string) => {
+  const performNewFile = (stateMachines: StateMachinesStackItem[]) => {
     Compiler.setCompilerData(undefined);
-    modelController.files.newFile(idx);
+    modelController.files.newFile(stateMachines);
     clearTabs();
-    openTabs();
+    openTabs(true);
   };
 
   const handleSaveAsFile = async () => {

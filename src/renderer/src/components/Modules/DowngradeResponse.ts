@@ -6,6 +6,7 @@ import {
   CompilerState,
   CompilerAction,
   CompilerElements,
+  CompilerEvent,
 } from '@renderer/types/CompilerTypes';
 import {
   Transition,
@@ -14,8 +15,44 @@ import {
   Action,
   StateMachine,
   State,
-  Event,
+  ArgList,
+  EventData,
 } from '@renderer/types/diagram';
+
+function downgradeArgs(argList: ArgList) {
+  // ИНВАРИАНТ: мы работаем со схемами Берлоги, где нет параметров по умолчанию.
+  // Поэтому при undefined мы кладём сюда пустую строку.
+  return Object.fromEntries(
+    Object.keys(argList).map((id) => [id, argList[id].value?.toString() ?? ''])
+  );
+}
+
+function downgradeActions(actions: string | Action[]): CompilerAction[] {
+  if (typeof actions === 'string') {
+    return [];
+  }
+  const compilerActions: CompilerAction[] = [];
+  actions.map((value) => {
+    compilerActions.push({ ...value, args: downgradeArgs(value.args ?? {}) });
+  });
+
+  return compilerActions;
+}
+
+function downgradeEvents(events: EventData[]): CompilerEvent[] {
+  const compilerEvents: CompilerEvent[] = [];
+
+  events.map((eventData) => {
+    if (typeof eventData.trigger === 'string' || typeof eventData.condition === 'string') return;
+    compilerEvents.push({
+      ...eventData,
+      trigger: eventData.trigger as CompilerAction,
+      do: downgradeActions(eventData.do),
+    });
+  });
+
+  return compilerEvents;
+}
 
 function downgradeInitialState(
   transitions: { [id: string]: Transition },
@@ -34,15 +71,21 @@ function downgradeTransitions(transitions: { [id: string]: Transition }): Compil
   const downgradedTransitions: CompilerTransition[] = [];
 
   for (const transition of Object.values(transitions)) {
-    if (!transition.label || !transition.label.trigger) continue;
+    if (
+      !transition.label ||
+      !transition.label.trigger ||
+      typeof transition.label.trigger === 'string' ||
+      typeof transition.label.condition === 'string'
+    )
+      continue;
     downgradedTransitions.push({
       source: transition.sourceId,
       target: transition.targetId,
       color: transition.color ?? '#FFFFFF',
       // TODO: Переводить в объект Condition если у нас включен текстовый режим
       condition: (transition.label?.condition as Condition) ?? null,
-      trigger: transition.label.trigger as Event,
-      do: (transition.label.do as Action[]) ?? [],
+      trigger: transition.label.trigger as CompilerAction,
+      do: downgradeActions((transition.label.do as Action[]) ?? []),
       position: transition.label.position,
     });
   }
@@ -59,7 +102,7 @@ function downgradeStates(states: { [id: string]: State }): { [id: string]: Compi
         ...state.dimensions,
         ...state.position,
       },
-      events: state.events as CompilerAction[],
+      events: downgradeEvents(state.events),
       parent: state.parentId,
     };
   }

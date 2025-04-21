@@ -77,8 +77,10 @@
           "description": "Пин, к которому подключена кнопка."
         },
         "buttonMode": {
+          "name": "Подтяжка",
           "type": ["BUTTON_PULLUP", "BUTTON_PULLDOWN"],
-          "description": "buttonMode indicates BUTTON_PULLUP or BUTTON_PULLDOWN resistor",
+          "valueAlias": ["К питанию", "К земле"],
+          "description": "К питанию (BUTTON_PULLUP) — подключение кнопки без резистора.\nК земле (BUTTON_PULLDOWN)— подключение кнопки с резистором.",
           "optional": true
         }
       },

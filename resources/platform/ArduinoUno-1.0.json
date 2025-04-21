@@ -151,7 +151,7 @@
           "description": "Текущий угол поворота сервопривода в градусах."
         },
         "angleMicroseconds": {
-          "alias": "Точный угол",
+          "alias": "Период",
           "img": "arduino/preciseAngle.svg",
           "type": "int",
           "description": "Текущий угол поворота сервопривода в микросекундах."
@@ -174,7 +174,7 @@
           "description": "Задать угол поворота сервопривода в градусах."
         },
         "writeMicroseconds": {
-          "alias": "Установить точный угол",
+          "alias": "Установить период",
           "img": "arduino/setAnglePrecise.svg",
           "parameters": [
             {

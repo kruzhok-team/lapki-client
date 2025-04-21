@@ -433,10 +433,6 @@
               "type": "int | char[]"
             }
           ]
-        },
-        "read": {
-          "img": "arduino/read.svg",
-          "description": "Запросить данные из Serial."
         }
       },
       "variables": {

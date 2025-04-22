@@ -99,7 +99,7 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
           ) : (
             <div className="ml-2 p-2 leading-tight opacity-70">
               <p className="mb-1">
-                Чтобы добавить платформу для проекта, выберите её из списка справа и перетащите её
+                Чтобы добавить платформу для документа, выберите её из списка справа и перетащите её
                 сюда, либо дважды нажмите на неё левой кнопкой мыши.
               </p>
               <hr className="h-[1px] w-auto border-bg-hover opacity-70 " />

@@ -500,7 +500,7 @@ export function exportCGML(elements: Elements): string {
     const sm = elements.stateMachines[smId];
     const platform = getPlatform(sm.platform);
     if (!platform) {
-      throw new Error('Внутренняя ошибка! В момент экспорта схемы платформа не инициализирована.');
+      throw new Error('Внутренняя ошибка! В момент экспорта платформа не инициализирована.');
     }
     cgmlElements.stateMachines[smId] = {
       standardVersion: '1.0',

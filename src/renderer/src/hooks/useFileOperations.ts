@@ -131,7 +131,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
         openSaveError(cause);
       }
     } else {
-      toast.success('Схема сохранена!');
+      toast.success('Документ сохранён!');
     }
   };
 
@@ -143,7 +143,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
         openSaveError(cause);
       }
     } else {
-      toast.success('Схема сохранена!');
+      toast.success('Документ сохранён!');
     }
   }, [model, openSaveError]);
 
@@ -211,7 +211,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   };
 
   /**
-   * Временное сохранение схемы в localstorage
+   * Временное сохранение документа в localstorage
    */
   const tempSave = () => {
     window.localStorage.setItem(tempSaveKey, modelController.model.serializer.getAll('Cyberiada'));

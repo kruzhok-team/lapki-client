@@ -117,7 +117,7 @@ export const Explorer: React.FC = () => {
           {isInitialized ? (
             <StateMachinesHierarchy />
           ) : (
-            <div className="px-4">Недоступно до открытия схемы</div>
+            <div className="px-4">Недоступно до открытия документа</div>
           )}
         </Panel>
       </PanelGroup>

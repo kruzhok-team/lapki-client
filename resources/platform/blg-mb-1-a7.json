@@ -165,7 +165,7 @@
         "isNoteEnd": {
           "img": "arduino/timer-start.svg",
           "description": "Проигрывание ноты только что завершилось.",
-          "checkMethod": "isSoundEnd",
+          "checkMethod": "isNoteEnd",
           "alias": "Нота сыграна"
         }
       },
@@ -180,16 +180,35 @@
       ],
       "importFiles": ["SpeakerNote.hpp"],
       "methods": {
-        "play": {
+        "setupSound": {
           "img": "arduino/start.svg",
           "parameters": [
             {
               "name": "Нота",
-              "type": ["&TestNote"],
-              "valueAlias": ["Тестовая нота"],
+              "type": [ "NoteName::h", "NoteName::b", "NoteName::a", "NoteName::gH", "NoteName::g", "NoteName::fH", "NoteName::f", "NoteName::e", "NoteName::dH", "NoteName::d", "NoteName::cH", "NoteName::c" ],
+              "valueAlias": [ "h", "b", "a", "gH", "g", "fH", "f", "e", "dH", "d", "cH", "c" ],
               "description": "Проигрываемая нота.",
               "optional": false
+            },
+            {
+              "name": "Амплитуда",
+              "type": "uint16_t",
+              "description": "Амплитуда звука. От 0 до 2047.",
+              "optional": false
+            },
+            {
+              "name": "Время",
+              "type": "uint16_t",
+              "description": "Длительность звука (мс). От 0 до 65535.",
+              "optional": false
             }
+          ],
+          "alias": "Настроить ноту",
+          "description": "Настройка ноты"
+        },
+        "play": {
+          "img": "arduino/start.svg",
+          "parameters": [
           ],
           "alias": "Запустить ноту",
           "description": "Запустить таймер. После запуска раз в заданный интервал будет вызываться событие [таймаут]"

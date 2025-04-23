@@ -28,7 +28,11 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   const model = modelController.model;
   const name = modelController.model.useData('', 'name') as string | null;
   const isStale = modelController.model.useData('', 'isStale');
-  const [clearTabs, openTab] = useTabs((state) => [state.clearTabs, state.openTab]);
+  const [clearTabs, openTab, setActiveTab] = useTabs((state) => [
+    state.clearTabs,
+    state.openTab,
+    state.setActiveTab,
+  ]);
 
   const [data, setData] = useState<SaveModalData | null>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -41,22 +45,28 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   // Открыть вкладки на каждый контроллер
   const openTabs = (openAll?: boolean) => {
     changeTab(SidebarIndex.Explorer);
+    let firstTabName = '';
     for (const controllerId in modelController.controllers) {
       if (controllerId === '') continue;
       const controller = modelController.controllers[controllerId];
       if (controller.type === 'scheme') continue; // Схемотехнический экран открываем только по кнопке в меню
       const stateMachines = Object.keys(controller.stateMachinesSub);
       const smId = stateMachines[0] ?? controllerId;
+      const tabName = modelController.model.data.elements.stateMachines[smId].name ?? smId;
       // ID контроллера равен ID канваса.
       openTab(modelController, {
         type: 'editor',
-        name: modelController.model.data.elements.stateMachines[smId].name ?? smId,
+        name: tabName,
         canvasId: controllerId,
       });
       // (chekoopa) ОБСУДИТЬ! Кажется, разумнее сейчас оставить открытие только первой машины состояний.
       // И в будущем сделать открытие всех машин опцией. Но это в будущем.
       // (Roundabout1) Сейчас все вкладки открываются только при создании документа
       if (!openAll) break;
+      if (!firstTabName) firstTabName = tabName;
+    }
+    if (firstTabName) {
+      setActiveTab(firstTabName);
     }
   };
 

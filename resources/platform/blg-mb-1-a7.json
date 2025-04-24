@@ -244,8 +244,8 @@
           "parameters": [
             {
               "name": "Звук",
-              "type": ["&TestSound", "&SineSound"],
-              "valueAlias": ["Тестовый звук", "Рычание"],
+              "type": ["&SineSound", "&SqueakSound", "&BeepBeepSound", "&LaserSound", "&WaterDropSound", "&RubleSound", "&SirenSound"],
+              "valueAlias": ["Рычание", "Писк", "Бип-Бип", "Лазер", "Капля воды", "Бурчание", "Сирена"],
               "description": "Проигрываемый звук.",
               "optional": false
             },

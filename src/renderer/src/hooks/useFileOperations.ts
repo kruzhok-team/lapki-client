@@ -61,7 +61,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
       });
       // (chekoopa) ОБСУДИТЬ! Кажется, разумнее сейчас оставить открытие только первой машины состояний.
       // И в будущем сделать открытие всех машин опцией. Но это в будущем.
-      // (Roundabout1) Сейчас все вкладки открываются только при создании проекта
+      // (Roundabout1) Сейчас все вкладки открываются только при создании документа
       if (!openAll) break;
       if (!firstTabName) firstTabName = tabName;
     }
@@ -141,7 +141,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
         openSaveError(cause);
       }
     } else {
-      toast.success('Схема сохранена!');
+      toast.success('Документ сохранён!');
     }
   };
 
@@ -153,7 +153,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
         openSaveError(cause);
       }
     } else {
-      toast.success('Схема сохранена!');
+      toast.success('Документ сохранён!');
     }
   }, [model, openSaveError]);
 
@@ -221,7 +221,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   };
 
   /**
-   * Временное сохранение схемы в localstorage
+   * Временное сохранение документа в localstorage
    */
   const tempSave = () => {
     window.localStorage.setItem(tempSaveKey, modelController.model.serializer.getAll('Cyberiada'));
@@ -236,12 +236,12 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   };
 
   useEffect(() => {
-    //Сохранение проекта после закрытия редактора
+    //Сохранение документа после закрытия редактора
     const unsubscribe = window.electron.ipcRenderer.on('app-close', () => {
       if (isStale) {
         setData({
           shownName: name,
-          question: 'Хотите сохранить проект перед тем, как закрыть приложение?',
+          question: 'Хотите сохранить документ перед тем, как закрыть приложение?',
           //При нажатии на любую из кнопок, он должен закрывать редактор
           onConfirm: () => {
             return window.electron.ipcRenderer.send('closed');

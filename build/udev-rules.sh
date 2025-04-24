@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Определяем файл для правил udev
-UDEV_RULES_FILE="/etc/udev/rules.d/99-usb.rules"
+UDEV_RULES_FILE="/etc/udev/rules.d/99-mb1.rules"
 
 # Проверяем, существует ли файл, если нет, создаем его
 if [ ! -f "$UDEV_RULES_FILE" ]; then

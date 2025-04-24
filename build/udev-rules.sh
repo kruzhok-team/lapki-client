@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash 
 
 # Определяем файл для правил udev
 UDEV_RULES_FILE="/etc/udev/rules.d/99-mb1.rules"

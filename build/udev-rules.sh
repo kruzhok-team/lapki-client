@@ -9,7 +9,7 @@ if [ ! -f "$UDEV_RULES_FILE" ]; then
 fi
 
 # Добавляем правило в файл
-echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="1209", ATTRS{idProduct}=="ac01", GROUP="dialout", MODE="0666"' >> "$UDEV_RULES_FILE"
+echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="1209", ATTRS{idProduct}=="ac01", GROUP="dialout", MODE="0666"' > "$UDEV_RULES_FILE"
 
 # Перезагружаем правила udev
 udevadm control --reload-rules

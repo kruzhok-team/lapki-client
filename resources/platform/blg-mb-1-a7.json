@@ -180,13 +180,12 @@
       ],
       "importFiles": ["SpeakerNote.hpp"],
       "methods": {
-        "setupSound": {
+        "setupNote": {
           "img": "arduino/start.svg",
           "parameters": [
             {
               "name": "Нота",
-              "type": [ "NoteName::h", "NoteName::b", "NoteName::a", "NoteName::gH", "NoteName::g", "NoteName::fH", "NoteName::f", "NoteName::e", "NoteName::dH", "NoteName::d", "NoteName::cH", "NoteName::c" ],
-              "valueAlias": [ "h", "b", "a", "gH", "g", "fH", "f", "e", "dH", "d", "cH", "c" ],
+              "type": [ "h", "b", "a", "gH", "g", "fH", "f", "e", "dH", "d", "cH", "c" ],
               "description": "Проигрываемая нота.",
               "optional": false
             },

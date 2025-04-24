@@ -143,24 +143,24 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
     };
   });
 
-  const handleNextTab = (e: KeyboardEvent) => {
-    e.preventDefault();
+  const handleNextTab = (_: KeyboardEvent) => {
     nextTab();
   };
 
-  const handlePrevTab = (e: KeyboardEvent) => {
-    e.preventDefault();
+  const handlePrevTab = (_: KeyboardEvent) => {
     prevTab();
   };
 
   const handleKeyDown = async (e: KeyboardEvent) => {
-    if (e.shiftKey) {
-      if (e.code === 'Tab') {
+    if (e.code === 'Tab') {
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.ctrlKey && e.shiftKey) {
         return handlePrevTab(e);
       }
-    }
-    if (e.code === 'Tab') {
-      return handleNextTab(e);
+      if (e.ctrlKey) {
+        return handleNextTab(e);
+      }
     }
   };
 

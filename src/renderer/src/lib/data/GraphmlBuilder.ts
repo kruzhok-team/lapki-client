@@ -110,6 +110,9 @@ export function serializeEvent(
   trigger: Event,
   useName: boolean = false
 ): string {
+  if (trigger.component === '' || trigger.method === '') {
+    return '';
+  }
   if (isDefaultComponent(trigger)) {
     return convertDefaultComponent(trigger.component, trigger.method);
   }

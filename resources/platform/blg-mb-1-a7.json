@@ -911,7 +911,7 @@
       },
       "variables": {
         "value": {
-          "alias": "значение",
+          "alias": "Значение",
           "img": "common/value.svg",
           "description": "Текущее значение счетчика.",
           "type": "int"
@@ -943,7 +943,7 @@
       "methods": {
         "set": {
           "alias": "Установить",
-          "img": "common/set-value.svg",
+          "img": "common/set.svg",
           "description": "Установить значение, которое будет храниться в калькуляторе.",
           "parameters": [
             {
@@ -1127,7 +1127,7 @@
       "methods": {
         "set": {
           "alias": "Установить",
-          "img": "common/set-value.svg",
+          "img": "common/set.svg",
           "description": "Установить значение, которое будет храниться в калькуляторе.",
           "parameters": [
             {

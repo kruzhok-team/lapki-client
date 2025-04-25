@@ -12,6 +12,8 @@ interface TabsState {
   swapTabs: (a: string, b: string) => void;
   clearTabs: () => void;
   renameTab: (oldName: string, newName: string) => void;
+  nextTab: () => void;
+  prevTab: () => void;
 }
 
 export const useTabs = create<TabsState>((set) => ({
@@ -112,4 +114,56 @@ export const useTabs = create<TabsState>((set) => ({
         activeTab: newActiveTab,
       };
     }),
+  nextTab: () => {
+    set(({ items, activeTab }) => {
+      if (!activeTab)
+        return {
+          items,
+          activeTab,
+        };
+      const newItems = [...items];
+      let index = newItems.findIndex(({ name }) => name === activeTab);
+      let newActiveTab = activeTab;
+      if (index !== -1) {
+        if (index === items.length - 1) {
+          index = 0;
+        } else {
+          index += 1;
+        }
+
+        newActiveTab = items[index].name;
+      }
+
+      return {
+        items: newItems,
+        activeTab: newActiveTab,
+      };
+    });
+  },
+  prevTab: () => {
+    set(({ items, activeTab }) => {
+      if (!activeTab)
+        return {
+          items,
+          activeTab,
+        };
+      const newItems = [...items];
+      let index = newItems.findIndex(({ name }) => name === activeTab);
+      let newActiveTab = activeTab;
+      if (index !== -1) {
+        if (index === 0) {
+          index = items.length - 1;
+        } else {
+          index -= 1;
+        }
+
+        newActiveTab = items[index].name;
+      }
+
+      return {
+        items: newItems,
+        activeTab: newActiveTab,
+      };
+    });
+  },
 }));

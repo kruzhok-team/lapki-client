@@ -22,7 +22,7 @@ import {
 } from './handlersTypes';
 
 /**
- * Асинхронный диалог открытия файла схемы.
+ * Асинхронный диалог открытия документа.
  */
 export async function handleFileOpen(platform: string, path?: string): HandleFileOpenReturn {
   return new Promise((resolve) => {
@@ -167,7 +167,7 @@ export async function handleSaveIntoFolder(
 }
 
 /**
- * Асинхронное сохранение файла схемы.
+ * Асинхронное сохранение документа.
  */
 export async function handleFileSave(fileName: string, data: string): HandleFileSaveReturn {
   return new Promise((resolve) => {

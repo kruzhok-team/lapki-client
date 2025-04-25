@@ -130,7 +130,7 @@ export const StateMachinesList: React.FC<StateMachinesListProps> = ({
           </div>
         </div>
       ) : (
-        <div className="px-4">Недоступно до открытия схемы</div>
+        <div className="px-4">Недоступно до открытия документа</div>
       )}
 
       <StateMachineEditModal

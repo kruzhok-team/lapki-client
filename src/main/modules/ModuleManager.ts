@@ -76,7 +76,7 @@ export class ModuleManager {
               '-updateList=1', // скорость автоматического обновления списка в секундах
               '-listCooldown=0', // ограничение в секундах на вызов следующего ручного обновления в секундах, в данном случае отсутствует
               `-address=localhost:${port}`, // адрес локального сервера
-              `-blgMbUploaderPath=${this.getBlgMbUploaderPath()}`, // путь к загрузчику кибермишки
+              `-blgMbUploaderPath=${this.getBlgMbUploaderPath()}`, // путь к загрузчику КиберМишки
             ];
 
             const avrdudePath = this.getAvrdudePath();

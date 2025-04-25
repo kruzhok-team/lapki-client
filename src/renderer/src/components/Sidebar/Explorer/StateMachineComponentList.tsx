@@ -144,7 +144,7 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
           )}
         </div>
       ) : (
-        <div className="px-4">Недоступно до открытия схемы</div>
+        <div className="px-4">Недоступно до открытия документа</div>
       )}
 
       <ComponentAddModal {...addProps} />

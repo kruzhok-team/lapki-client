@@ -1,5 +1,6 @@
 import React, { useReducer, useRef, RefObject, useState } from 'react';
 
+import { useModelContext } from '@renderer/store/ModelContext';
 import {
   Panel,
   PanelGroup,
@@ -9,7 +10,6 @@ import {
 import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as ArrowIcon } from '@renderer/assets/icons/arrow-down.svg';
-import { useModelContext } from '@renderer/store/ModelContext';
 
 import { StateMachineComponentList } from './StateMachineComponentList';
 import { StateMachinesHierarchy } from './StateMachinesHierarchy';
@@ -127,7 +127,7 @@ export const Explorer: React.FC = () => {
             {isInitialized ? (
               <StateMachinesHierarchy />
             ) : (
-              <div className="px-4">Недоступно до открытия схемы</div>
+              <div className="px-4">Недоступно до открытия документа</div>
             )}
           </div>
         </Panel>

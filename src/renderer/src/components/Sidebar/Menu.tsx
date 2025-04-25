@@ -39,6 +39,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
     state.activeTab,
     state.items,
   ]);
+  const [nextTab, prevTab] = useTabs((state) => [state.nextTab, state.prevTab]);
   const activeTab = tabs.find((tab) => tab.name === activeTabName);
   const modelController = useModelContext();
   const headControllerId = modelController.model.useData('', 'headControllerId');
@@ -134,8 +135,34 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
   // TODO (L140-beep): переместить в MainContainer.tsx
   useLayoutEffect(() => {
     window.addEventListener('keyup', handleKeyUp);
-    return () => window.removeEventListener('keyup', handleKeyUp);
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keyup', handleKeyUp);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   });
+
+  const handleNextTab = (_: KeyboardEvent) => {
+    nextTab();
+  };
+
+  const handlePrevTab = (_: KeyboardEvent) => {
+    prevTab();
+  };
+
+  const handleKeyDown = async (e: KeyboardEvent) => {
+    if (e.code === 'Tab') {
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.ctrlKey && e.shiftKey) {
+        return handlePrevTab(e);
+      }
+      if (e.ctrlKey) {
+        return handleNextTab(e);
+      }
+    }
+  };
 
   const handleKeyUp = async (e: KeyboardEvent) => {
     if (e.ctrlKey) {

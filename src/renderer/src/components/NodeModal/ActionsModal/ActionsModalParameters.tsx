@@ -106,7 +106,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
   }
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex max-h-[50vh] flex-col gap-2 overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
       <h3 className="mb-1 text-xl">Параметры</h3>
       {protoParameters.map((proto, idx) => {
         const { name, description = '', type = '' } = proto;

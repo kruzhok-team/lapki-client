@@ -18,7 +18,7 @@ export const useErrorModal = () => {
       caption: 'Ошибка',
       text: (
         <div>
-          <p> Не удалось записать схему в </p>
+          <p> Не удалось записать документ в </p>
           <code className="break-all">{cause.name}</code>
           <br /> <br />
           <p> {cause.content} </p>
@@ -32,7 +32,7 @@ export const useErrorModal = () => {
       caption: 'Ошибка',
       text: (
         <div>
-          <p> Не удалось прочесть схему из </p>
+          <p> Не удалось прочесть документ из </p>
           <code className="break-all">{cause.name}</code>
           <br /> <br />
           <p> {cause.content} </p>

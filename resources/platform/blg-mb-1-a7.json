@@ -1,8 +1,8 @@
 {
-  "name": "Кибермишка",
+  "name": "КиберМишка",
   "id": "blg-mb-1-a7",
   "nameTag": "CyBear",
-  "description": "Платформа для программирования Кибермишки blg-mb-1-a7.",
+  "description": "Платформа для программирования КиберМишки blg-mb-1-a7.",
   "icon": "",
   "staticComponents": false,
   "version": "1.0",
@@ -165,7 +165,7 @@
         "isNoteEnd": {
           "img": "arduino/timer-start.svg",
           "description": "Проигрывание ноты только что завершилось.",
-          "checkMethod": "isSoundEnd",
+          "checkMethod": "isNoteEnd",
           "alias": "Нота сыграна"
         }
       },
@@ -180,17 +180,35 @@
       ],
       "importFiles": ["SpeakerNote.hpp"],
       "methods": {
-        "play": {
+        "setupNote": {
           "img": "arduino/start.svg",
           "parameters": [
             {
               "name": "Нота",
-              "type": ["&TestNote"],
-              "valueAlias": ["Тестовая нота"],
+              "type": ["c", "cH", "d", "dH", "e", "f", "fH", "g", "gH", "a", "b", "h"],
+              "valueAlias": ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "H"],
               "description": "Проигрываемая нота.",
+              "optional": false
+            },
+            {
+              "name": "Амплитуда",
+              "type": "uint16_t",
+              "description": "Амплитуда звука. От 0 до 2047.",
+              "optional": false
+            },
+            {
+              "name": "Время",
+              "type": "uint16_t",
+              "description": "Длительность звука (мс). От 0 до 65535.",
               "optional": false
             }
           ],
+          "alias": "Настроить ноту",
+          "description": "Настройка ноты"
+        },
+        "play": {
+          "img": "arduino/start.svg",
+          "parameters": [],
           "alias": "Запустить ноту",
           "description": "Запустить таймер. После запуска раз в заданный интервал будет вызываться событие [таймаут]"
         },
@@ -226,8 +244,24 @@
           "parameters": [
             {
               "name": "Звук",
-              "type": ["&TestSound", "&SineSound"],
-              "valueAlias": ["Тестовый звук", "Рычание"],
+              "type": [
+                "&SineSound",
+                "&SqueakSound",
+                "&BeepBeepSound",
+                "&LaserSound",
+                "&WaterDropSound",
+                "&RubleSound",
+                "&SirenSound"
+              ],
+              "valueAlias": [
+                "Рычание",
+                "Писк",
+                "Бип-Бип",
+                "Лазер",
+                "Капля воды",
+                "Бурчание",
+                "Сирена"
+              ],
               "description": "Проигрываемый звук.",
               "optional": false
             },
@@ -553,7 +587,7 @@
             {
               "name": "Действие",
               "type": ["0", "1"],
-              "valueAlias": ["включить", "выключить"],
+              "valueAlias": ["Выключить", "Включить"],
               "description": "Включение, либо выключение светодиода."
             }
           ]
@@ -893,7 +927,7 @@
       },
       "variables": {
         "value": {
-          "alias": "значение",
+          "alias": "Значение",
           "img": "common/value.svg",
           "description": "Текущее значение счетчика.",
           "type": "int"
@@ -925,7 +959,7 @@
       "methods": {
         "set": {
           "alias": "Установить",
-          "img": "common/set-value.svg",
+          "img": "common/set.svg",
           "description": "Установить значение, которое будет храниться в калькуляторе.",
           "parameters": [
             {
@@ -1109,7 +1143,7 @@
       "methods": {
         "set": {
           "alias": "Установить",
-          "img": "common/set-value.svg",
+          "img": "common/set.svg",
           "description": "Установить значение, которое будет храниться в калькуляторе.",
           "parameters": [
             {

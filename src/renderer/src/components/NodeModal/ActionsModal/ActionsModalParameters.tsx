@@ -97,7 +97,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
 
   const getHint = (description: string, type: ArgType) => {
     if (!type || Array.isArray(type) || isMatrix(type)) return description;
-    return description + '\n' + `Тип: {${formatArgType(type)}}`;
+    return description + (description ? '\n' : '' + `Тип: {${formatArgType(type)}}`);
   };
 
   if (protoParameters.length === 0) {

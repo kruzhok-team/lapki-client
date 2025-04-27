@@ -1,4 +1,3 @@
-!include "LogicLib.nsh"
 Section "DriversSection" SEC02
     SetOutPath "$PLUGINSDIR"
     File /oname=$PLUGINSDIR\wdi-simple64.exe "${BUILD_RESOURCES_DIR}\wdi-simple64.exe"

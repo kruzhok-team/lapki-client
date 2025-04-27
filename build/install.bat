@@ -24,11 +24,5 @@ if !last_char!==^" (
     set "arg=!arg:~0,-1!"
 )
 set "result=!arg!\wdi-simple64.exe"
-echo "64 bit os"
-echo "!result!" -t 1 -b
-start "Install drivers..." /WAIT "!result!" -t 1 -b
-timeout /t 10 /nobreak >nul
-@REM )
-
-@REM powershell -Command "&'C:\Users\karto\OneDrive\Рабочий стол\Программирование\lapki-client\build\install.bat' -ArgumentList  'C:\Users\karto\OneDrive\Рабочий стол\Программирование\lapki-client\build'"             
-@REM powershell -Command "& 'C:\Users\karto\OneDrive\Рабочий стол\Программирование\lapki-client\build\install.bat' '\"C:\Users\karto\OneDrive\Рабочий стол\Программирование\lapki-client\build\"'"       
+echo "!result!" -t 1 -l 0 -v 0x1209 -p 0xAC01
+start "Install drivers..." /WAIT "!result!" -t 1 -l 0 -v 0x1209 -p 0xAC01

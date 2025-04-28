@@ -1,6 +1,6 @@
 @echo off
 setlocal enabledelayedexpansion
-
+chcp 1251 > nul
 FSUTIL DIRTY query %SystemDrive% >NUL || (
     PowerShell "Start-Process -FilePath cmd.exe -Wait -Args '/C CHDIR /D %CD% & ""%0" %*"' -Verb RunAs"
     EXIT
@@ -32,4 +32,8 @@ if !last_char!==^" (
 set "result=!arg!\wdi-simple64.exe"
 echo Installing drivers for CyberBear. Sit tight!
 @REM echo "!result!" -t 1 -l 0 -v 0x1209 -p 0xAC01
-start "Install drivers..." /WAIT "!result!" -t 1 -l 0 -v 0x1209 -p 0xAC01
+@REM TODO: Проблема с передачей кириллицы в качестве аргумента
+@REM Перевод в UTF-8 не помогает, а с кириллицей он начинает ругаться
+@REM Если медведь сохранил плохое название, то wdi-simple будет отваливаться от переполнения
+@REM В таком случае нужно удалять устройство вручную
+start "Install drivers..." /WAIT "!result!" -t 1 -l 0 -v 0x1209 -p 0xAC01 -n "CyberBear"

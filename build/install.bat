@@ -32,4 +32,4 @@ if !last_char!==^" (
 set "result=!arg!\wdi-simple64.exe"
 echo Installing drivers for CyberBear. Sit tight!
 @REM echo "!result!" -t 1 -l 0 -v 0x1209 -p 0xAC01
-start "Install drivers..." /WAIT "!result!" -t 1 -l 0 -v 0x1209 -p 0xAC01
+start "Install drivers..." /WAIT "!result!" -t 1 -l 0 -v 0x1209 -p 0xAC01 -n "КиберМишка"

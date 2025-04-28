@@ -120,7 +120,7 @@ export const Actions: React.FC<ActionsProps> = (props) => {
                   </div>
                 </div>
               )}
-              <div className="w-full">
+              <div className="w-min min-w-full">
                 {actions.map((data, i) => (
                   <Action
                     key={i}

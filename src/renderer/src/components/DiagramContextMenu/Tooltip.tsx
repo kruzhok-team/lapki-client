@@ -23,7 +23,7 @@ export const Tooltip: React.FC<Tooltip> = ({ controller }) => {
   useEffect(() => {
     const handleShowTooltip = (args: { position: Point; text: string | undefined }) => {
       if (!args.text) return;
-      refs.setReference(getVirtualElement(args.position));
+      refs.setReference(getVirtualElement({ ...args.position, x: args.position.x + 15 }));
       setText(args.text);
       open();
     };

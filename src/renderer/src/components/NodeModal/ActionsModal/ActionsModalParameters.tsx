@@ -212,6 +212,11 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                   setCheckedTo(name, !currentChecked);
                   handleInputChange(name, idx, '');
                 }}
+                hint={
+                  currentChecked
+                    ? 'Переключиться на константу'
+                    : 'Переключиться на атрибут компонента'
+                }
               />
             </div>
             {currentChecked ? (

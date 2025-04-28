@@ -100,7 +100,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   // Он нужен, потому что нам требуется наличие канваса в момент запуска приложения
   controllers: { [id: string]: CanvasController } = {};
   validator: UserInputValidator;
-  private copyData: CopyData | null = null; // То что сейчас скопировано
+  private copyData: { [id: string]: CopyData | null } = {}; // То что сейчас скопировано
   private pastePositionOffset = 0; // Для того чтобы при вставке скопированной сущности она не перекрывала предыдущую
   private onStateMachineDelete: (controller: ModelController, nameOrsmId: string) => void;
   constructor(onStateMachineDelete: (controller: ModelController, nameOrsmId: string) => void) {
@@ -139,6 +139,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.emptyController();
     this.loadData();
     this.history.clear();
+    this.copyData = {};
   }
 
   // Берем машины состояний, который обрабатываются главным канвасом
@@ -1943,12 +1944,12 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       else if (this.isNote(nodeToCopy)) copyType = 'note';
 
       // Если скопировалась новая нода, то нужно сбросить смещение позиции вставки
-      if (id !== this.copyData?.data.id) {
+      if (id !== this.copyData[this.model.data.headControllerId]?.data.id) {
         this.pastePositionOffset = 0;
       }
 
-      this.copyData = {
-        smId: smId,
+      this.copyData[this.model.data.headControllerId] = {
+        smId,
         type: copyType,
         data: { ...(structuredClone(nodeToCopy) as any), id: id },
         state: state,
@@ -1958,10 +1959,12 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   };
 
   pasteSelected = () => {
-    if (!this.copyData) {
-      throw new Error('No copy data!');
+    const copyData = this.copyData[this.model.data.headControllerId];
+
+    if (!copyData) {
+      return;
     }
-    const { type, data, smId, state } = this.copyData;
+    const { type, data, smId, state } = copyData;
 
     if (type === 'state') {
       this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
@@ -1981,7 +1984,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       const stateChildrens = this.getStatesByParentId(smId, data.id, state.states);
 
       for (const [id, stateData] of stateChildrens) {
-        this.copyData = {
+        this.copyData[this.model.data.headControllerId] = {
           type: 'state',
           data: { ...stateData, id, parentId: newState },
           smId: smId,
@@ -1994,7 +1997,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       const choiceChildrens = this.getChoicesByParentId(smId, data.id, state.finalStates);
 
       for (const [id, stateData] of choiceChildrens) {
-        this.copyData = {
+        this.copyData[this.model.data.headControllerId] = {
           type: 'choiceState',
           data: { ...stateData, id, parentId: newState },
           smId,

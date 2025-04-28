@@ -185,7 +185,7 @@
           "parameters": [
             {
               "name": "Нота",
-              "type": ["c", "cH", "d", "dH", "e", "f", "fH", "g", "gH", "a", "b", "h"],
+              "type": ["Note_c", "Note_cH", "Note_d", "Note_dH", "Note_e", "Note_f", "Note_fH", "Note_g", "Note_gH", "Note_a", "Note_b", "Note_h"],
               "valueAlias": ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "H"],
               "description": "Проигрываемая нота.",
               "optional": false

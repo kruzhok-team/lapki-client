@@ -19,7 +19,7 @@ nsis:
   shortcutName: ${productName}
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
-  include: build-installer\installer.nsh
+  include: build-installer/installer.nsh
 mac:
   artifactName: ${name}-v${version}.${ext}
   target:

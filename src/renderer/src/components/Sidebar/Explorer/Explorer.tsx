@@ -6,9 +6,7 @@ import {
   PanelResizeHandle,
   ImperativePanelHandle,
 } from 'react-resizable-panels';
-import { twMerge } from 'tailwind-merge';
 
-import { ReactComponent as ArrowIcon } from '@renderer/assets/icons/arrow-down.svg';
 import { useModelContext } from '@renderer/store/ModelContext';
 
 import { StateMachineComponentList } from './StateMachineComponentList';

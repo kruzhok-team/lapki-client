@@ -467,6 +467,19 @@ function getPointNode(position: Point): CGMLDataNode {
     rect: undefined,
   };
 }
+// Отфильтровать пустые значения параметров.
+function filterParameters(parameters: { [id: string]: string }) {
+  const filteredParameters: { [id: string]: string } = {};
+
+  for (const paramName in parameters) {
+    const parameter = parameters[paramName];
+    if (parameter !== '') {
+      filteredParameters[paramName] = parameter;
+    }
+  }
+
+  return filteredParameters;
+}
 
 function serializeComponents(components: { [id: string]: Component }): {
   [id: string]: CGMLComponent;
@@ -480,7 +493,7 @@ function serializeComponents(components: { [id: string]: Component }): {
       id: id,
       type: component.type,
       parameters: {
-        ...component.parameters,
+        ...filterParameters(component.parameters),
       },
       order: component.order,
       unsupportedDataNodes: [getPointNode(component.position)],

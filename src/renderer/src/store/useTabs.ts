@@ -16,6 +16,14 @@ interface TabsState {
   prevTab: (modelController: ModelController) => void;
 }
 
+const changeHeadController = (newActiveTab: Tab, modelController: ModelController) => {
+  if (newActiveTab.type === 'editor') {
+    modelController.changeHeadControllerId(newActiveTab.canvasId);
+  } else {
+    modelController.changeHeadControllerId('');
+  }
+};
+
 export const useTabs = create<TabsState>((set) => ({
   items: [],
   activeTab: 'editor',
@@ -24,9 +32,7 @@ export const useTabs = create<TabsState>((set) => ({
   },
   openTab: (modelController, tab) =>
     set(({ items }) => {
-      if (tab.type === 'editor') {
-        modelController.changeHeadControllerId(tab.canvasId);
-      }
+      changeHeadController(tab, modelController);
 
       // Если пытаемся открыть одну и ту же вкладку
       if (items.find(({ name }) => name === tab.name)) {
@@ -66,11 +72,7 @@ export const useTabs = create<TabsState>((set) => ({
 
       if (newActiveTabName) {
         const newActiveTab = items[items.findIndex((tab) => tab.name === newActiveTabName)];
-        if (newActiveTab.type === 'editor') {
-          modelController.changeHeadControllerId(newActiveTab.canvasId);
-        } else {
-          modelController.changeHeadControllerId('');
-        }
+        changeHeadController(newActiveTab, modelController);
       }
 
       return {
@@ -132,11 +134,7 @@ export const useTabs = create<TabsState>((set) => ({
         }
         const newActiveTabItem = items[index];
         newActiveTab = items[index].name;
-        if (newActiveTabItem.type === 'editor') {
-          modelController.changeHeadControllerId(newActiveTabItem.canvasId);
-        } else {
-          modelController.changeHeadControllerId('');
-        }
+        changeHeadController(newActiveTabItem, modelController);
       }
 
       return {
@@ -163,11 +161,7 @@ export const useTabs = create<TabsState>((set) => ({
         }
         const newActiveTabItem = items[index];
         newActiveTab = items[index].name;
-        if (newActiveTabItem.type === 'editor') {
-          modelController.changeHeadControllerId(newActiveTabItem.canvasId);
-        } else {
-          modelController.changeHeadControllerId('');
-        }
+        changeHeadController(newActiveTabItem, modelController);
       }
 
       return {

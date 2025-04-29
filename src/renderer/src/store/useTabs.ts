@@ -6,7 +6,7 @@ import { Tab } from '@renderer/types/tabs';
 interface TabsState {
   items: Tab[];
   activeTab: string | null;
-  setActiveTab: (tabName: string) => void;
+  setActiveTab: (modelController: ModelController, tabName: string) => void;
   openTab: (modelController: ModelController, tab: Tab) => void;
   closeTab: (tabName: string, modelController: ModelController) => void;
   swapTabs: (a: string, b: string) => void;
@@ -19,8 +19,15 @@ interface TabsState {
 export const useTabs = create<TabsState>((set) => ({
   items: [],
   activeTab: 'editor',
-  setActiveTab: (activeTab) => {
-    set({ activeTab });
+  setActiveTab: (modelController, activeTab) => {
+    set(({ items }) => {
+      const tab = items.find(({ name }) => name === activeTab);
+      if (!tab) return {};
+      if (tab.type === 'editor') {
+        modelController.model.changeHeadControllerId(tab.canvasId);
+      }
+      return { activeTab: activeTab };
+    });
   },
   openTab: (modelController, tab) =>
     set(({ items }) => {

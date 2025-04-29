@@ -45,14 +45,6 @@ export const MatrixLed: React.FC<MatrixLedProps> = ({
     onChange(rowIndex, colIndex, newValue);
   };
 
-  // Динамически вычисляемый стиль фона
-  const getBackground = () => {
-    if (displayValue === 0) return 'bg-matrix-inactive';
-    if (displayValue === 100) return 'bg-matrix-active';
-
-    return `bg-matrix-inactive-${displayValue * 100}`;
-  };
-
   return (
     <button
       style={{

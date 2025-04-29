@@ -12,8 +12,8 @@ interface TabsState {
   swapTabs: (a: string, b: string) => void;
   clearTabs: () => void;
   renameTab: (oldName: string, newName: string) => void;
-  nextTab: () => void;
-  prevTab: () => void;
+  nextTab: (modelController: ModelController) => void;
+  prevTab: (modelController: ModelController) => void;
 }
 
 export const useTabs = create<TabsState>((set) => ({
@@ -25,7 +25,7 @@ export const useTabs = create<TabsState>((set) => ({
   openTab: (modelController, tab) =>
     set(({ items }) => {
       if (tab.type === 'editor') {
-        modelController.model.changeHeadControllerId(tab.canvasId);
+        modelController.changeHeadControllerId(tab.canvasId);
       }
 
       // Если пытаемся открыть одну и ту же вкладку
@@ -46,7 +46,7 @@ export const useTabs = create<TabsState>((set) => ({
       const newItems = items.filter((tab) => tab.name !== tabName);
 
       if (newItems.length === 0) {
-        modelController.model.changeHeadControllerId('');
+        modelController.changeHeadControllerId('');
         return {
           items: newItems,
           activeTab: null,
@@ -67,9 +67,9 @@ export const useTabs = create<TabsState>((set) => ({
       if (newActiveTabName) {
         const newActiveTab = items[items.findIndex((tab) => tab.name === newActiveTabName)];
         if (newActiveTab.type === 'editor') {
-          modelController.model.changeHeadControllerId(newActiveTab.canvasId);
+          modelController.changeHeadControllerId(newActiveTab.canvasId);
         } else {
-          modelController.model.changeHeadControllerId('');
+          modelController.changeHeadControllerId('');
         }
       }
 
@@ -114,7 +114,7 @@ export const useTabs = create<TabsState>((set) => ({
         activeTab: newActiveTab,
       };
     }),
-  nextTab: () => {
+  nextTab: (modelController: ModelController) => {
     set(({ items, activeTab }) => {
       if (!activeTab)
         return {
@@ -130,8 +130,13 @@ export const useTabs = create<TabsState>((set) => ({
         } else {
           index += 1;
         }
-
+        const newActiveTabItem = items[index];
         newActiveTab = items[index].name;
+        if (newActiveTabItem.type === 'editor') {
+          modelController.changeHeadControllerId(newActiveTabItem.canvasId);
+        } else {
+          modelController.changeHeadControllerId('');
+        }
       }
 
       return {
@@ -140,7 +145,7 @@ export const useTabs = create<TabsState>((set) => ({
       };
     });
   },
-  prevTab: () => {
+  prevTab: (modelController: ModelController) => {
     set(({ items, activeTab }) => {
       if (!activeTab)
         return {
@@ -156,8 +161,13 @@ export const useTabs = create<TabsState>((set) => ({
         } else {
           index -= 1;
         }
-
+        const newActiveTabItem = items[index];
         newActiveTab = items[index].name;
+        if (newActiveTabItem.type === 'editor') {
+          modelController.changeHeadControllerId(newActiveTabItem.canvasId);
+        } else {
+          modelController.changeHeadControllerId('');
+        }
       }
 
       return {

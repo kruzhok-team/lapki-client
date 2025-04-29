@@ -80,8 +80,7 @@ import { FilesManager } from '../EditorModel/FilesManager';
 type ModelControllerEvents = CanvasControllerEvents & {
   openCreateTransitionModal: { smId: string; sourceId: string; targetId: string };
   openChangeTransitionModal: ChangeTransitionParams;
-  showToolTip: { text: string };
-  closeToolTip: undefined;
+  changedHeadController: string;
 };
 
 const StateTypes = ['states', 'finalStates', 'choiceStates', 'initialStates'] as const;
@@ -127,8 +126,13 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     editor.setController(controller);
     this.controllers = {};
     this.controllers[''] = controller;
-    this.model.changeHeadControllerId('');
+    this.changeHeadControllerId('');
     this.schemeEditorId = null;
+  }
+
+  changeHeadControllerId(id: string) {
+    this.model.changeHeadControllerId(id);
+    this.emit('changedHeadController', id);
   }
 
   reset() {
@@ -326,7 +330,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       const canvasId = this.createStateMachine(smId, elements.stateMachines[smId], false);
       headCanvas = canvasId;
     }
-    this.model.changeHeadControllerId(headCanvas);
+    this.changeHeadControllerId(headCanvas);
     if (isStale) {
       this.model.makeStale();
     }
@@ -654,9 +658,9 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     delete this.controllers[specificCanvas.id];
 
     if (Object.values(this.controllers).length === 1) {
-      this.model.changeHeadControllerId('');
+      this.changeHeadControllerId('');
     } else {
-      this.model.changeHeadControllerId(Object.values(this.controllers)[1].id);
+      this.changeHeadControllerId(Object.values(this.controllers)[1].id);
     }
 
     if (canUndo) {

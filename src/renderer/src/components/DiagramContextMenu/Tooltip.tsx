@@ -6,6 +6,7 @@ import { twMerge } from 'tailwind-merge';
 import { useModal } from '@renderer/hooks';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { Point } from '@renderer/lib/types';
+import { useModelContext } from '@renderer/store/ModelContext';
 import { getVirtualElement } from '@renderer/utils';
 
 interface Tooltip {
@@ -19,6 +20,7 @@ export const Tooltip: React.FC<Tooltip> = ({ controller }) => {
     middleware: [offset(), flip(), shift({ padding: 5 })],
   });
   const [text, setText] = useState<string>('');
+  const modelController = useModelContext();
 
   useEffect(() => {
     const handleShowTooltip = (args: { position: Point; text: string | undefined }) => {
@@ -30,9 +32,11 @@ export const Tooltip: React.FC<Tooltip> = ({ controller }) => {
     const handleCloseTooltip = () => {
       close();
     };
+    modelController.on('changedHeadController', handleCloseTooltip);
     controller.view.on('showToolTip', handleShowTooltip);
     controller.view.on('closeToolTip', handleCloseTooltip);
     return () => {
+      modelController.off('changedHeadController', handleCloseTooltip);
       controller.view.off('showToolTip', handleShowTooltip);
       controller.view.off('closeToolTip', handleCloseTooltip);
     };

@@ -226,7 +226,8 @@
         }
       },
       "variables": {
-        "Значение": {
+        "value": {
+          "alias": "Значение",
           "img": "common/value.svg",
           "type": "int",
           "description": "Текущее значение на пине."

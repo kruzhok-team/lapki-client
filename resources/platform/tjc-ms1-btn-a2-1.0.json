@@ -183,8 +183,9 @@
           "checkMethod": "clicked"
         },
         "isReleased": {
+          "alias": "Отжата",
           "img": "common/isReleased.svg",
-          "description": "Создает сигнал, если кнопка была отпущена",
+          "description": "Кнопка отпущена.",
           "checkMethod": "isReleased"
         }
       },
@@ -221,7 +222,8 @@
         }
       },
       "variables": {
-        "Значение": {
+        "value": {
+          "alias": "Значение",
           "img": "common/value.svg",
           "type": "int",
           "description": "Текущее значение на пине."

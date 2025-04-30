@@ -750,6 +750,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
 
     if (!visualCompo) return;
 
+    visualCompo.label = args.parameters['label'];
     this.platform[smId].nameToVisual.set(newId, visualCompo);
     this.platform[smId].nameToVisual.delete(id);
 

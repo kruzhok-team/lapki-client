@@ -8,6 +8,7 @@ import { CanvasController } from '@renderer/lib/data/ModelController/CanvasContr
 import { operatorSet } from '@renderer/lib/data/PlatformManager';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { Component, Condition, Variable as VariableData } from '@renderer/types/diagram';
+import { getFilteredOptions } from '@renderer/utils';
 
 /**
  * Инкапсуляция логики условия формы
@@ -67,14 +68,7 @@ export const useCondition = (
       };
     };
 
-    const sortedComponents = Object.entries(componentsData).sort((a, b) => a[1].order - b[1].order);
-    const result: Exclude<ReturnType<typeof getComponentOption>, undefined>[] = [];
-    for (const [componentId] of sortedComponents) {
-      const option = getComponentOption(componentId);
-      if (option) {
-        result.push(option);
-      }
-    }
+    const result = getFilteredOptions(getComponentOption, componentsData);
 
     return result;
   }, [smId, controller, componentsData, controller.platform, visual]);
@@ -101,14 +95,7 @@ export const useCondition = (
       };
     };
 
-    const sortedComponents = Object.entries(componentsData).sort((a, b) => a[1].order - b[1].order);
-    const result: Exclude<ReturnType<typeof getComponentOption>, undefined>[] = [];
-    for (const [componentId] of sortedComponents) {
-      const option = getComponentOption(componentId);
-      if (option) {
-        result.push(option);
-      }
-    }
+    const result = getFilteredOptions(getComponentOption, componentsData);
 
     return result;
   }, [smId, controller, componentsData, controller.platform, visual]);

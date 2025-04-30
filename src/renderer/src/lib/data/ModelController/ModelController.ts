@@ -1242,7 +1242,9 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     );
     this.model.editComponent(smId, id, parameters, name);
     if (newId) {
-      this.renameComponent(smId, id, newId, { ...prevComponent });
+      this.renameComponent(smId, id, newId, {
+        ...this.model.data.elements.stateMachines[smId].components[id],
+      });
     }
 
     if (canUndo) {

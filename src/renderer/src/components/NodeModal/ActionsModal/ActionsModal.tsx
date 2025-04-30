@@ -13,6 +13,8 @@ import { getComponentAttribute } from '@renderer/utils/ComponentAttribute';
 
 import { ActionsModalParameters } from './ActionsModalParameters';
 
+import { useActions } from '../hooks/useActions';
+
 export interface ActionsModalData {
   smId: string;
   action: Action;
@@ -51,102 +53,24 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
   const [parameters, setParameters] = useState<ArgList>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // TODO(L140-beep): вынести логику в useActions
-  const getComponentOption = (id: string, excludeIfEmpty: 'methods' | 'signals' | 'variables') => {
-    if (!controller.platform[smId]) {
-      return {
-        value: id,
-        label: id,
-        hint: undefined,
-        icon: undefined,
-      };
-    }
-    const proto = controller.platform[smId]?.getComponent(id);
-
-    if (proto && Object.keys(proto[excludeIfEmpty]).length === 0) {
-      return;
-    }
-
-    const name =
-      componentsData[id] && visual && componentsData[id].name ? componentsData[id].name : id;
-    return {
-      value: id,
-      label: name,
-      hint: proto?.description,
-      icon: controller.platform[smId]?.getFullComponentIcon(id, 'mr-1 h-7 w-7'),
-    };
-  };
-
-  const getComponentOptions = (excludeIfEmpty: 'methods' | 'signals' | 'variables') => {
-    if (!platforms[smId]) return [];
-
-    const sortedComponents = Object.entries(componentsData).sort((a, b) => a[1].order - b[1].order);
-    const result: Exclude<ReturnType<typeof getComponentOption>, undefined>[] = [];
-    for (const [componentId] of sortedComponents) {
-      const option = getComponentOption(componentId, excludeIfEmpty);
-      if (option) {
-        result.push(option);
-      }
-    }
-
-    if (isEditingEvent) {
-      const system = getComponentOption('System', excludeIfEmpty);
-      if (system) {
-        result.unshift(system);
-      }
-    }
-
-    return result;
-  };
+  const { getComponentOptions, getPropertyOptions } = useActions(smId, controller, null);
 
   const componentOptions: SelectOption[] = useMemo(() => {
-    return getComponentOptions('methods');
+    return getComponentOptions('methods', isEditingEvent);
   }, [smId, platforms, componentsData, isEditingEvent, visual]);
 
   const componentWithVariablesOptions: SelectOption[] = useMemo(() => {
-    return getComponentOptions('variables');
+    return getComponentOptions('variables', isEditingEvent);
   }, [smId, platforms, componentsData, isEditingEvent, visual]);
 
   const methodOptions: SelectOption[] = useMemo(() => {
-    if (!selectedComponent || !platforms[smId]) return [];
-    const getAll = platforms[smId][isEditingEvent ? 'getAvailableEvents' : 'getAvailableMethods'];
-    const getImg = platforms[smId][isEditingEvent ? 'getEventIconUrl' : 'getActionIconUrl'];
-
-    // Тут call потому что контекст теряется
-    return getAll.call(platforms[smId], selectedComponent).map(({ name, description, alias }) => {
-      return {
-        value: name,
-        label: alias ?? name,
-        hint: description,
-        icon: (
-          <img
-            src={getImg.call(platforms[smId], selectedComponent, name, true)}
-            className="mr-1 size-7 object-contain"
-          />
-        ),
-      };
-    });
+    if (!selectedComponent) return [];
+    return getPropertyOptions(selectedComponent, isEditingEvent ? 'signals' : 'methods');
   }, [selectedComponent, platforms, isEditingEvent, visual]);
 
   const methodOptionsSearch = (selectedParameterComponent: string | null) => {
-    if (!selectedParameterComponent || !controller?.platform[smId]) return [];
-    const platformManager = controller.platform[smId];
-
-    return platformManager
-      .getAvailableVariables(selectedParameterComponent)
-      .map(({ name, description, alias }) => {
-        return {
-          value: name,
-          label: alias ?? name,
-          hint: description,
-          icon: (
-            <img
-              src={platformManager.getVariableIconUrl(selectedParameterComponent, name, true)}
-              className="mr-1 h-7 w-7 object-contain"
-            />
-          ),
-        };
-      });
+    if (!selectedParameterComponent) return [];
+    return getPropertyOptions(selectedParameterComponent, 'variables');
   };
 
   // Функция обновления параметров при смене метода в селекте

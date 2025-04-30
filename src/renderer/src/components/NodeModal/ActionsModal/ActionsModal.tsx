@@ -8,7 +8,7 @@ import { PlatformManager } from '@renderer/lib/data/PlatformManager';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { ArgList, Component, Action } from '@renderer/types/diagram';
 import { ArgumentProto } from '@renderer/types/platform';
-import { formatArgType, validators } from '@renderer/utils';
+import { formatArgType, getFilteredOptions, validators } from '@renderer/utils';
 import { getComponentAttribute } from '@renderer/utils/ComponentAttribute';
 
 import { ActionsModalParameters } from './ActionsModalParameters';
@@ -52,7 +52,7 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // TODO(L140-beep): вынести логику в useActions
-  const getComponentOption = (id: string, excludeIfEmpty: 'methods' | 'signals' | 'variables') => {
+  const getComponentOption = (excludeIfEmpty: 'methods' | 'signals' | 'variables', id: string) => {
     if (!controller.platform[smId]) {
       return {
         value: id,
@@ -79,18 +79,12 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
 
   const getComponentOptions = (excludeIfEmpty: 'methods' | 'signals' | 'variables') => {
     if (!platforms[smId]) return [];
-
-    const sortedComponents = Object.entries(componentsData).sort((a, b) => a[1].order - b[1].order);
-    const result: Exclude<ReturnType<typeof getComponentOption>, undefined>[] = [];
-    for (const [componentId] of sortedComponents) {
-      const option = getComponentOption(componentId, excludeIfEmpty);
-      if (option) {
-        result.push(option);
-      }
-    }
-
+    const result = getFilteredOptions(
+      getComponentOption.bind(this, excludeIfEmpty),
+      componentsData
+    );
     if (isEditingEvent) {
-      const system = getComponentOption('System', excludeIfEmpty);
+      const system = getComponentOption(excludeIfEmpty, 'System');
       if (system) {
         result.unshift(system);
       }

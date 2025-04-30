@@ -8,6 +8,7 @@ import { CanvasController } from '@renderer/lib/data/ModelController/CanvasContr
 import { operatorSet } from '@renderer/lib/data/PlatformManager';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { Component, Condition, Variable as VariableData } from '@renderer/types/diagram';
+import { getFilteredOptions } from '@renderer/utils';
 
 /**
  * Инкапсуляция логики условия формы
@@ -56,7 +57,9 @@ export const useCondition = (
         };
       }
       const proto = controller.platform[smId].getComponent(id);
-
+      if (proto && Object.keys(proto.variables).length === 0) {
+        return;
+      }
       return {
         value: id,
         label: componentsData[id]?.name ?? id,
@@ -65,7 +68,7 @@ export const useCondition = (
       };
     };
 
-    const result = Object.keys(componentsData).map((idx) => getComponentOption(idx));
+    const result = getFilteredOptions(getComponentOption, componentsData);
 
     return result;
   }, [smId, controller, componentsData, controller.platform, visual]);
@@ -81,7 +84,9 @@ export const useCondition = (
         };
       }
       const proto = controller.platform[smId]!.getComponent(id);
-
+      if (proto && Object.keys(proto.variables).length === 0) {
+        return;
+      }
       return {
         value: id,
         label: componentsData[id]?.name ?? id,
@@ -90,7 +95,7 @@ export const useCondition = (
       };
     };
 
-    const result = Object.keys(componentsData).map((idx) => getComponentOption(idx));
+    const result = getFilteredOptions(getComponentOption, componentsData);
 
     return result;
   }, [smId, controller, componentsData, controller.platform, visual]);

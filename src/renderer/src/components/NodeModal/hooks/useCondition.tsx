@@ -56,7 +56,9 @@ export const useCondition = (
         };
       }
       const proto = controller.platform[smId].getComponent(id);
-
+      if (proto && Object.keys(proto.variables).length === 0) {
+        return;
+      }
       return {
         value: id,
         label: componentsData[id]?.name ?? id,
@@ -65,7 +67,14 @@ export const useCondition = (
       };
     };
 
-    const result = Object.keys(componentsData).map((idx) => getComponentOption(idx));
+    const sortedComponents = Object.entries(componentsData).sort((a, b) => a[1].order - b[1].order);
+    const result: Exclude<ReturnType<typeof getComponentOption>, undefined>[] = [];
+    for (const [componentId] of sortedComponents) {
+      const option = getComponentOption(componentId);
+      if (option) {
+        result.push(option);
+      }
+    }
 
     return result;
   }, [smId, controller, componentsData, controller.platform, visual]);
@@ -81,7 +90,9 @@ export const useCondition = (
         };
       }
       const proto = controller.platform[smId]!.getComponent(id);
-
+      if (proto && Object.keys(proto.variables).length === 0) {
+        return;
+      }
       return {
         value: id,
         label: componentsData[id]?.name ?? id,
@@ -90,7 +101,14 @@ export const useCondition = (
       };
     };
 
-    const result = Object.keys(componentsData).map((idx) => getComponentOption(idx));
+    const sortedComponents = Object.entries(componentsData).sort((a, b) => a[1].order - b[1].order);
+    const result: Exclude<ReturnType<typeof getComponentOption>, undefined>[] = [];
+    for (const [componentId] of sortedComponents) {
+      const option = getComponentOption(componentId);
+      if (option) {
+        result.push(option);
+      }
+    }
 
     return result;
   }, [smId, controller, componentsData, controller.platform, visual]);

@@ -7,13 +7,10 @@ import {
   OperationInfo,
   OperationType,
 } from '@renderer/types/FlasherTypes';
+import { dateFormatTime } from '@renderer/utils';
 
 import { Device, MSDevice } from './Device';
 import { Flasher } from './Flasher';
-
-const dateFormat = new Intl.DateTimeFormat('ru-Ru', {
-  timeStyle: 'short',
-}).format;
 
 export class ManagerMS {
   static setDevice: (currentDevice: MSDevice | undefined) => void;
@@ -108,7 +105,7 @@ export class ManagerMS {
 
   static timeStamp(log: string) {
     const date = new Date();
-    return `${dateFormat(date)} - ${log}`;
+    return `${dateFormatTime(date)} - ${log}`;
   }
 
   static addLog(log: string) {

@@ -218,7 +218,7 @@ export const frameworkWords = [
 ];
 
 export const dateFormatTime = new Intl.DateTimeFormat('ru-Ru', {
-  timeStyle: 'short',
+  timeStyle: 'medium',
 }).format;
 
 export const dateFormatTimeAndDate = new Intl.DateTimeFormat('ru-Ru', {

@@ -1,5 +1,7 @@
 import { Buffer } from 'buffer';
 
+import { dateFormatTime } from '@renderer/utils';
+
 import { Device } from './Device';
 import { Flasher } from './Flasher';
 
@@ -53,8 +55,13 @@ export class SerialMonitor {
     });
   }
 
+  static timeStamp(log: string) {
+    const date = new Date();
+    return `${dateFormatTime(date)} - ${log}`;
+  }
+
   static addLog(log: string) {
-    this.setLog((prevMessages) => [...prevMessages, log]);
+    this.setLog((prevMessages) => [...prevMessages, this.timeStamp(log)]);
   }
 
   static changeBaud(deviceID: string, baud: number) {

@@ -8,7 +8,7 @@ import { PlatformManager } from '@renderer/lib/data/PlatformManager';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { ArgList, Component, Action } from '@renderer/types/diagram';
 import { ArgumentProto } from '@renderer/types/platform';
-import { formatArgType, getFilteredOptions, validators } from '@renderer/utils';
+import { formatArgType, validators } from '@renderer/utils';
 import { getComponentAttribute } from '@renderer/utils/ComponentAttribute';
 
 import { ActionsModalParameters } from './ActionsModalParameters';

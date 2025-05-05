@@ -7,6 +7,7 @@ import { serializeActions } from '@renderer/lib/data/GraphmlBuilder';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { Action, Component } from '@renderer/types/diagram';
+import { getFilteredOptions } from '@renderer/utils';
 
 export const useActions = (
   smId: string,
@@ -109,7 +110,7 @@ export const useActions = (
     [controller, visual, componentsData] // зависимости для того, чтобы парсер в текстовом режиме работал корректно
   );
 
-  const getComponentOption = (id: string, excludeIfEmpty: 'methods' | 'signals' | 'variables') => {
+  const getComponentOption = (excludeIfEmpty: 'methods' | 'signals' | 'variables', id: string) => {
     if (!controller.platform[smId]) {
       return {
         value: id,
@@ -140,17 +141,13 @@ export const useActions = (
   ) => {
     if (!controller.platform[smId]) return [];
 
-    const sortedComponents = Object.entries(componentsData).sort((a, b) => a[1].order - b[1].order);
-    const result: Exclude<ReturnType<typeof getComponentOption>, undefined>[] = [];
-    for (const [componentId] of sortedComponents) {
-      const option = getComponentOption(componentId, excludeIfEmpty);
-      if (option) {
-        result.push(option);
-      }
-    }
+    const result = getFilteredOptions(
+      getComponentOption.bind(this, excludeIfEmpty),
+      componentsData
+    );
 
     if (isEvent) {
-      const system = getComponentOption('System', excludeIfEmpty);
+      const system = getComponentOption(excludeIfEmpty, 'System');
       if (system) {
         result.unshift(system);
       }

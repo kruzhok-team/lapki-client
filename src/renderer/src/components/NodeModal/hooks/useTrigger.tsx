@@ -8,6 +8,7 @@ import { variableRegex } from '@renderer/lib/data/GraphmlParser';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { Component, Event } from '@renderer/types/diagram';
+import { getFilteredOptions } from '@renderer/utils';
 
 /**
  * Инкапсуляция логики триггера формы {@link CreateModal}
@@ -67,14 +68,7 @@ export const useTrigger = (
       };
     };
 
-    const sortedComponents = Object.entries(componentsData).sort((a, b) => a[1].order - b[1].order);
-    const result: Exclude<ReturnType<typeof getComponentOption>, undefined>[] = [];
-    for (const [componentId] of sortedComponents) {
-      const option = getComponentOption(componentId);
-      if (option) {
-        result.push(option);
-      }
-    }
+    const result = getFilteredOptions(getComponentOption, componentsData);
     if (addSystemComponents) {
       const system = getComponentOption('System');
       if (system) {

@@ -11,6 +11,10 @@ import {
 import { Device, MSDevice } from './Device';
 import { Flasher } from './Flasher';
 
+const dateFormat = new Intl.DateTimeFormat('ru-Ru', {
+  timeStyle: 'short',
+}).format;
+
 export class ManagerMS {
   static setDevice: (currentDevice: MSDevice | undefined) => void;
   static setLog: (update: (prevMessages: string[]) => string[]) => void;
@@ -101,14 +105,20 @@ export class ManagerMS {
       deviceID: deviceID,
     });
   }
+
+  static timeStamp(log: string) {
+    const date = new Date();
+    return `${dateFormat(date)} - ${log}`;
+  }
+
   static addLog(log: string) {
     this.logSize++;
-    this.setLog((prevMessages) => [...prevMessages, log]);
+    this.setLog((prevMessages) => [...prevMessages, this.timeStamp(log)]);
   }
   static editLog(log: string, index: number) {
     this.setLog((prevMessages) => {
       return prevMessages.map((msg, idx) => {
-        return index === idx ? log : msg;
+        return index === idx ? this.timeStamp(log) : msg;
       });
     });
   }

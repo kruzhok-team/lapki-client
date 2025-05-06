@@ -37,6 +37,8 @@ import { MsGetAddressModal } from './MsGetAddressModal';
 import { ManagerMS } from '../../Modules/ManagerMS';
 import { Switch, WithHint } from '../../UI';
 
+const monitorTabName = 'Монитор порта';
+
 export const FlasherTab: React.FC = () => {
   const modelController = useModelContext();
   const [flasherSetting] = useSettings('flasher');
@@ -76,6 +78,8 @@ export const FlasherTab: React.FC = () => {
 
   const openTab = useTabs((state) => state.openTab);
   const closeTab = useTabs((state) => state.closeTab);
+  const tabs = useTabs((state) => state.items);
+  const isMonitorOpen = tabs.find((tab) => tab.name === monitorTabName) !== undefined;
 
   const [isAddressBookOpen, openAddressBook, closeAddressBook] = useModal(false);
   const [isMsGetAddressOpen, openMsGetAddressModal, closeMsGetAddressModal] = useModal(false);
@@ -539,7 +543,8 @@ export const FlasherTab: React.FC = () => {
   const handleAddSerialMonitorTab = () => {
     openTab(modelController, {
       type: 'serialMonitor',
-      name: 'Монитор порта',
+      name: monitorTabName,
+      isOpen: isMonitorOpen,
     });
   };
 

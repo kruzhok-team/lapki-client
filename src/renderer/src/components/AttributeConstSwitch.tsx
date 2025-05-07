@@ -35,7 +35,7 @@ export const AttributeConstSwitch: React.FC<AttributeConstSwitch> = ({
             /> */}
             <RSwitch.Root
               className={
-                'relative h-[25px] w-[42px] cursor-pointer rounded-full bg-bg-secondary shadow-[0_0_0_1px] shadow-border-primary outline-none'
+                'relative h-[25px] w-[42px] cursor-pointer rounded-full bg-bg-secondary shadow-[0_0_0_1px] shadow-border-primary outline-none focus:shadow-[0_0_0_1px]'
               }
               id="airplane-mode"
               checked={checked}

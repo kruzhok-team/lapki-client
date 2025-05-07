@@ -21,11 +21,15 @@ export const AttributeConstSwitch: React.FC<AttributeConstSwitch> = ({
   isDisabled,
   ...props
 }) => {
+  const getHint = () => {
+    if (!isDisabled) {
+      return isAttribute ? 'Переключиться на константу' : 'Переключиться на атрибут компонента';
+    }
+    return null;
+  };
   return (
     <div {...props}>
-      <WithHint
-        hint={isAttribute ? 'Переключиться на константу' : 'Переключиться на атрибут компонента'}
-      >
+      <WithHint hint={getHint()}>
         {(hintProps) => (
           <div {...hintProps}>
             <RSwitch.Root

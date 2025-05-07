@@ -26,7 +26,8 @@ interface ActionsModalProps {
   controller: CanvasController;
   initialData?: ActionsModalData;
   isOpen: boolean;
-  onSubmit: (data: Action) => void;
+  idx: number | null;
+  onSubmit: (idx: number, data: Action) => void;
   onClose: () => void;
 }
 
@@ -37,6 +38,7 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
   smId,
   isOpen,
   onClose,
+  idx,
 }) => {
   const modelController = useModelContext();
   const model = modelController.model;
@@ -126,7 +128,7 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     e.stopPropagation(); // Для работы модалки внутри модалки, чтобы не отправлять родительскую форму
-
+    if (idx === null) return;
     const platform = controller.platform[smId];
     if (
       protoParameters
@@ -191,7 +193,8 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
       return;
     }
     if (!selectedComponent || !selectedMethod) return;
-    onSubmit({
+    // TODO (L140-beep): не отправлять форму при отсутствии обязательных параметров
+    onSubmit(idx, {
       component: selectedComponent,
       method: selectedMethod,
       args: parameters,

@@ -27,7 +27,7 @@ interface ActionsModalProps {
   initialData?: ActionsModalData;
   isOpen: boolean;
   idx: number | null;
-  onSubmit: (idx: number, data: Action) => void;
+  onSubmit: (data: Action, idx?: number) => void;
   onClose: () => void;
 }
 
@@ -194,11 +194,14 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
     }
     if (!selectedComponent || !selectedMethod) return;
     // TODO (L140-beep): не отправлять форму при отсутствии обязательных параметров
-    onSubmit(idx, {
-      component: selectedComponent,
-      method: selectedMethod,
-      args: parameters,
-    });
+    onSubmit(
+      {
+        component: selectedComponent,
+        method: selectedMethod,
+        args: parameters,
+      },
+      idx
+    );
     reset();
   };
 

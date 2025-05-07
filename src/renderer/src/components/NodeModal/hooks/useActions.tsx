@@ -54,8 +54,8 @@ export const useActions = (
     });
   };
 
-  const handleActionsModalSubmit = (idx: number, data: Action) => {
-    if (actionsModalData) {
+  const handleActionsModalSubmit = (data: Action, idx?: number) => {
+    if (actionsModalData && idx !== undefined && idx !== null) {
       setActions((p) => {
         if (idx === -1) return p;
 

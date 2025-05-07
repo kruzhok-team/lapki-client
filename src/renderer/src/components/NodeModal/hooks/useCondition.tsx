@@ -8,7 +8,8 @@ import { CanvasController } from '@renderer/lib/data/ModelController/CanvasContr
 import { operatorSet } from '@renderer/lib/data/PlatformManager';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { Component, Condition, Variable as VariableData } from '@renderer/types/diagram';
-import { getFilteredOptions } from '@renderer/utils';
+
+import { useActions } from './useActions';
 
 /**
  * Инкапсуляция логики условия формы
@@ -46,104 +47,24 @@ export const useCondition = (
 
   const [text, setText] = useState('');
 
+  const { getComponentOptions, getPropertyOptions } = useActions(smId, controller, null);
+
   const componentOptionsParam1: SelectOption[] = useMemo(() => {
-    const getComponentOption = (id: string) => {
-      if (!controller.platform[smId]) {
-        return {
-          value: id,
-          label: componentsData[id]?.name ?? id,
-          hint: undefined,
-          icon: undefined,
-        };
-      }
-      const proto = controller.platform[smId].getComponent(id);
-      if (proto && Object.keys(proto.variables).length === 0) {
-        return;
-      }
-      return {
-        value: id,
-        label: componentsData[id]?.name ?? id,
-        hint: proto?.description,
-        icon: controller.platform[smId].getFullComponentIcon(id, 'mr-1 h-7 w-7'),
-      };
-    };
-
-    const result = getFilteredOptions(getComponentOption, componentsData);
-
-    return result;
+    return getComponentOptions('variables', false);
   }, [smId, controller, componentsData, controller.platform, visual]);
 
   const componentOptionsParam2: SelectOption[] = useMemo(() => {
-    const getComponentOption = (id: string) => {
-      if (!controller.platform[smId]) {
-        return {
-          value: id,
-          label: componentsData[id]?.name ?? id,
-          hint: undefined,
-          icon: undefined,
-        };
-      }
-      const proto = controller.platform[smId]!.getComponent(id);
-      if (proto && Object.keys(proto.variables).length === 0) {
-        return;
-      }
-      return {
-        value: id,
-        label: componentsData[id]?.name ?? id,
-        hint: proto?.description,
-        icon: controller.platform[smId]!.getFullComponentIcon(id, 'mr-1 h-7 w-7'),
-      };
-    };
-
-    const result = getFilteredOptions(getComponentOption, componentsData);
-
-    return result;
+    return getComponentOptions('variables', false);
   }, [smId, controller, componentsData, controller.platform, visual]);
 
   const methodOptionsParam1: SelectOption[] = useMemo(() => {
-    if (!selectedComponentParam1 || !controller.platform[smId]) return [];
-    const getAll = controller.platform[smId]['getAvailableVariables'];
-    const getImg = controller.platform[smId]['getVariableIconUrl'];
-
-    // Тут call потому что контекст теряется
-    return getAll
-      .call(controller.platform[smId], selectedComponentParam1)
-      .map(({ name, alias, description }) => {
-        return {
-          value: name,
-          label: alias ?? name,
-          hint: description,
-          icon: (
-            <img
-              src={getImg.call(controller.platform[smId], selectedComponentParam1, name, true)}
-              className="mr-1 h-7 w-7 object-contain"
-            />
-          ),
-        };
-      });
+    if (!selectedComponentParam1) return [];
+    return getPropertyOptions(selectedComponentParam1, 'variables');
   }, [smId, controller, controller.platform, selectedComponentParam1, visual]);
 
   const methodOptionsParam2: SelectOption[] = useMemo(() => {
     if (!selectedComponentParam2 || !controller.platform[smId]) return [];
-    const getAll = controller.platform[smId]['getAvailableVariables'];
-    const getImg = controller.platform[smId]['getVariableIconUrl'];
-
-    // Тут call потому что контекст теряется
-    return getAll
-      .call(controller.platform[smId], selectedComponentParam2)
-      .map(({ name, alias, description }) => {
-        return {
-          value: name,
-          label: alias ?? name,
-          hint: description,
-          icon: (
-            <img
-              src={getImg.call(controller.platform[smId], selectedComponentParam2, name, true)}
-              className="mr-1 h-7 w-7 object-contain"
-            />
-          ),
-        };
-      });
+    return getPropertyOptions(selectedComponentParam2, 'variables');
   }, [smId, controller, controller.platform, selectedComponentParam2, visual]);
 
   const checkForErrors = useCallback(() => {

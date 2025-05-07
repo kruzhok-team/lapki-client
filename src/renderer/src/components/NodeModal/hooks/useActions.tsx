@@ -1,11 +1,13 @@
 import { useCallback, useState } from 'react';
 
 import { ActionsModalData } from '@renderer/components';
+import { SelectOption } from '@renderer/components/UI';
 import { useModal } from '@renderer/hooks/useModal';
 import { serializeActions } from '@renderer/lib/data/GraphmlBuilder';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { Action, Component } from '@renderer/types/diagram';
+import { getFilteredOptions } from '@renderer/utils';
 
 export const useActions = (
   smId: string,
@@ -108,6 +110,91 @@ export const useActions = (
     [controller, visual, componentsData] // зависимости для того, чтобы парсер в текстовом режиме работал корректно
   );
 
+  const getComponentOption = (excludeIfEmpty: 'methods' | 'signals' | 'variables', id: string) => {
+    if (!controller.platform[smId]) {
+      return {
+        value: id,
+        label: id,
+        hint: undefined,
+        icon: undefined,
+      };
+    }
+    const proto = controller.platform[smId]?.getComponent(id);
+
+    if (proto && Object.keys(proto[excludeIfEmpty]).length === 0) {
+      return;
+    }
+
+    const name =
+      componentsData[id] && visual && componentsData[id].name ? componentsData[id].name : id;
+    return {
+      value: id,
+      label: name,
+      hint: proto?.description,
+      icon: controller.platform[smId]?.getFullComponentIcon(id, 'mr-1 h-7 w-7'),
+    };
+  };
+
+  const getComponentOptions = (
+    excludeIfEmpty: 'methods' | 'signals' | 'variables',
+    isEvent: boolean
+  ) => {
+    if (!controller.platform[smId]) return [];
+
+    const result = getFilteredOptions(
+      getComponentOption.bind(this, excludeIfEmpty),
+      componentsData
+    );
+
+    if (isEvent) {
+      const system = getComponentOption(excludeIfEmpty, 'System');
+      if (system) {
+        result.unshift(system);
+      }
+    }
+
+    return result;
+  };
+
+  const getPropertyOptions = (
+    component: string,
+    type: 'methods' | 'signals' | 'variables'
+  ): SelectOption[] => {
+    if (!controller.platform[smId]) return [];
+    const getAll =
+      controller.platform[smId][
+        type === 'methods'
+          ? 'getAvailableMethods'
+          : type === 'signals'
+          ? 'getAvailableEvents'
+          : 'getAvailableVariables'
+      ];
+
+    const getImg =
+      controller.platform[smId][
+        type === 'methods'
+          ? 'getActionIconUrl'
+          : type === 'signals'
+          ? 'getEventIconUrl'
+          : 'getVariableIconUrl'
+      ];
+
+    // Тут call потому что контекст теряется
+    return getAll.call(controller.platform[smId], component).map(({ name, description, alias }) => {
+      return {
+        value: name,
+        label: alias ?? name,
+        hint: description,
+        icon: (
+          <img
+            src={getImg.call(controller.platform[smId], component, name, true)}
+            className="mr-1 h-7 w-7 object-contain"
+          />
+        ),
+      };
+    });
+  };
+
   return {
     actions,
     setActions,
@@ -134,5 +221,7 @@ export const useActions = (
     controller,
     parse,
     clear,
+    getComponentOptions,
+    getPropertyOptions,
   };
 };

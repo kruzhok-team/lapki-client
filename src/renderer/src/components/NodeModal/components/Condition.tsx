@@ -144,7 +144,7 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
           <div className={twMerge('flex flex-row', !show && 'hidden')}>
             <AttributeConstSwitch
               hint="Если не выполняются другие условия для данного триггера"
-              checked={isElse}
+              isAttribute={isElse}
               onCheckedChange={handleElseChange}
             />
             <span className="ml-2">else</span>
@@ -167,7 +167,7 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
             <div className="flex items-start">
               <div className="mr-2 mt-[6px]">
                 <AttributeConstSwitch
-                  checked={isParamOneInput1}
+                  isAttribute={isParamOneInput1}
                   onCheckedChange={() => handleParamOneInput1(!isParamOneInput1)}
                   hint={
                     isParamOneInput1
@@ -236,7 +236,7 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
             <div className="flex items-start">
               <div className="mr-2 mt-[6px]">
                 <AttributeConstSwitch
-                  checked={isParamOneInput2}
+                  isAttribute={isParamOneInput2}
                   onCheckedChange={() => handleParamOneInput2(!isParamOneInput2)}
                   hint={
                     isParamOneInput2

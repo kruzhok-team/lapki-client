@@ -10,7 +10,6 @@ import { WithHint } from './UI';
 interface AttributeConstSwitch {
   isAttribute?: boolean;
   onCheckedChange?: (isAttribute: boolean) => void;
-  hint?: string;
   className?: string;
   isDisabled?: boolean;
 }
@@ -18,14 +17,15 @@ interface AttributeConstSwitch {
 export const AttributeConstSwitch: React.FC<AttributeConstSwitch> = ({
   isAttribute,
   onCheckedChange,
-  hint,
   className,
   isDisabled,
   ...props
 }) => {
   return (
     <div {...props}>
-      <WithHint hint={hint}>
+      <WithHint
+        hint={isAttribute ? 'Переключиться на константу' : 'Переключиться на атрибут компонента'}
+      >
         {(hintProps) => (
           <div {...hintProps}>
             <RSwitch.Root

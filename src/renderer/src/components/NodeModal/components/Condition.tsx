@@ -9,7 +9,9 @@ import { Select, TabPanel, Tabs, TextField } from '@renderer/components/UI';
 import { useModelContext } from '@renderer/store/ModelContext';
 
 import { useCondition } from '../hooks';
+
 import '../style.css';
+import { Switch } from '@renderer/components/UI/Switch';
 
 const operand = [
   {
@@ -142,9 +144,9 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
         </label>
         {visual && (
           <div className={twMerge('flex flex-row', !show && 'hidden')}>
-            <AttributeConstSwitch
+            <Switch
               hint="Если не выполняются другие условия для данного триггера"
-              isAttribute={isElse}
+              checked={isElse}
               onCheckedChange={handleElseChange}
             />
             <span className="ml-2">else</span>
@@ -169,11 +171,6 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
                 <AttributeConstSwitch
                   isAttribute={isParamOneInput1}
                   onCheckedChange={() => handleParamOneInput1(!isParamOneInput1)}
-                  hint={
-                    isParamOneInput1
-                      ? 'Переключиться на константу'
-                      : 'Переключиться на атрибут компонента'
-                  }
                   isDisabled={isElse}
                   className={twMerge(isElse && 'cursor-default opacity-50')}
                 />
@@ -238,11 +235,6 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
                 <AttributeConstSwitch
                   isAttribute={isParamOneInput2}
                   onCheckedChange={() => handleParamOneInput2(!isParamOneInput2)}
-                  hint={
-                    isParamOneInput2
-                      ? 'Переключиться на константу'
-                      : 'Переключиться на атрибут компонента'
-                  }
                   isDisabled={isElse}
                   className={twMerge(isElse && 'cursor-default opacity-50')}
                 />

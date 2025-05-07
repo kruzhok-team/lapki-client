@@ -171,6 +171,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                       border: 2,
                       isRounded: true,
                     },
+                    showSlider: true,
                   }}
                   onChange={onChange.bind(this, name)}
                 />

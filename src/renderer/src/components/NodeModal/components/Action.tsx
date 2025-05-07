@@ -133,6 +133,7 @@ export const Action: React.FC<ActionProps> = (props) => {
                           border: 1,
                           isRounded: false,
                         }}
+                        showSlider={false}
                       />
                     </>
                   );

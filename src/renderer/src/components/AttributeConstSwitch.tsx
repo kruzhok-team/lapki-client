@@ -28,12 +28,6 @@ export const AttributeConstSwitch: React.FC<AttributeConstSwitch> = ({
       <WithHint hint={hint}>
         {(hintProps) => (
           <div {...hintProps}>
-            {/* <Switch
-              className={className}
-              checked={checked}
-              disabled={isDisabled}
-              onCheckedChange={onCheckedChange}
-            /> */}
             <RSwitch.Root
               className={twMerge(
                 'relative h-[25px] w-[42px] cursor-pointer rounded-full bg-bg-secondary shadow-[0_0_0_1px] shadow-border-primary outline-none focus:shadow-[0_0_0_1px]',

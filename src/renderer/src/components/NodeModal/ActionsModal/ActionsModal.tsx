@@ -128,7 +128,7 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     e.stopPropagation(); // Для работы модалки внутри модалки, чтобы не отправлять родительскую форму
-    if (idx === null) return;
+    if (idx === null || idx === -1) return;
     const platform = controller.platform[smId];
     if (
       protoParameters

@@ -129,60 +129,68 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
 
     const platform = controller.platform[smId];
     if (
-      !protoParameters.every((proto, idx) => {
-        const { name, type = '' } = proto;
-        const parameter = parameters[name] ?? { value: '', order: idx };
-        const value = parameter.value;
-        if (Array.isArray(value)) {
-          return true;
-        }
-        const componentAttribute = getComponentAttribute(value, platform);
-        if (componentAttribute) {
-          // существует ли компонент с таким названием
-          if (
-            !componentWithVariablesOptions.find((opt) => {
-              return opt.value === componentAttribute[0];
-            })
-          ) {
+      protoParameters
+        .map((proto, idx) => {
+          const { name, type = '' } = proto;
+          const parameter = parameters[name] ?? { value: '', order: idx };
+          const value = parameter.value;
+          if (!proto.optional && (value === undefined || value === '')) {
             setErrors((p) => ({
               ...p,
-              [name]: `Ошибка! Не удалось найти компонент с таким названием.`,
+              [name]: `Обязательный параметр.`,
             }));
             return false;
           }
-          if (componentAttribute[1] === '') {
-            setErrors((p) => ({ ...p, [name]: `Выберите метод` }));
-            return false;
-          }
-          // существует ли атрибут с таким названием у данного компонента
-          const attributeOptions = methodOptionsSearch(componentAttribute[0]);
-          if (
-            !attributeOptions.find((opt) => {
-              return opt.value === componentAttribute[1];
-            })
-          ) {
-            setErrors((p) => ({
-              ...p,
-              [name]: `Ошибка! Не удалось найти метод с таким названием.`,
-            }));
-            return false;
-          }
-        } else if (type && typeof type === 'string' && validators[type]) {
-          if (!validators[type](value as string)) {
-            setErrors((p) => ({ ...p, [name]: `Неправильный тип (${formatArgType(type)})` }));
-            return false;
-          } else {
-            setErrors((p) => ({ ...p, [name]: '' }));
+          if (Array.isArray(value)) {
             return true;
           }
-        }
-        return true;
-      })
+          const componentAttribute = getComponentAttribute(value, platform);
+          if (componentAttribute) {
+            // существует ли компонент с таким названием
+            if (
+              !componentWithVariablesOptions.find((opt) => {
+                return opt.value === componentAttribute[0];
+              })
+            ) {
+              setErrors((p) => ({
+                ...p,
+                [name]: `Ошибка! Не удалось найти компонент с таким названием.`,
+              }));
+              return false;
+            }
+            if (componentAttribute[1] === '') {
+              setErrors((p) => ({ ...p, [name]: `Выберите метод` }));
+              return false;
+            }
+            // существует ли атрибут с таким названием у данного компонента
+            const attributeOptions = methodOptionsSearch(componentAttribute[0]);
+            if (
+              !attributeOptions.find((opt) => {
+                return opt.value === componentAttribute[1];
+              })
+            ) {
+              setErrors((p) => ({
+                ...p,
+                [name]: `Ошибка! Не удалось найти метод с таким названием.`,
+              }));
+              return false;
+            }
+          } else if (type && typeof type === 'string' && validators[type]) {
+            if (!validators[type](value as string)) {
+              setErrors((p) => ({ ...p, [name]: `Неправильный тип (${formatArgType(type)})` }));
+              return false;
+            } else {
+              setErrors((p) => ({ ...p, [name]: '' }));
+              return true;
+            }
+          }
+          return true;
+        })
+        .some((value) => !value)
     ) {
       return;
     }
     if (!selectedComponent || !selectedMethod) return;
-    // TODO (L140-beep): не отправлять форму при отсутствии обязательных параметров
     onSubmit({
       component: selectedComponent,
       method: selectedMethod,

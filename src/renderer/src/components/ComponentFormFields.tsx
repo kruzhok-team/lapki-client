@@ -80,9 +80,8 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
   useEffect(() => {
     setErrors(
       Object.fromEntries(
-        Object.entries(allParameters).map(([idx, param]) => {
-          const name = param.name ?? idx;
-          return [name, ''];
+        Object.entries(allParameters).map(([idx]) => {
+          return [idx, ''];
         })
       )
     );
@@ -157,6 +156,7 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
           return (
             <ComponentFormFieldLabel
               key={idx}
+              error={errors[idx]}
               label={name}
               labelClassName="whitespace-pre"
               hint={param.description}

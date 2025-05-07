@@ -11,6 +11,7 @@ interface ComponentFormFieldLabelProps extends ComponentProps<'input'> {
   error?: string;
   as?: 'label' | 'div';
   labelClassName?: string;
+  childrenDivClassname?: string;
 }
 
 export const ComponentFormFieldLabel: React.FC<ComponentFormFieldLabelProps> = ({
@@ -19,6 +20,7 @@ export const ComponentFormFieldLabel: React.FC<ComponentFormFieldLabelProps> = (
   error,
   className,
   labelClassName,
+  childrenDivClassname,
   children,
   as = 'label',
   ...props
@@ -28,7 +30,7 @@ export const ComponentFormFieldLabel: React.FC<ComponentFormFieldLabelProps> = (
   return (
     <div>
       <Component className="grid grid-cols-[max-content,1fr] items-center justify-start gap-2">
-        <div className={twMerge('flex min-w-32 items-center gap-1', labelClassName)}>
+        <div className={twMerge('mt-2 flex h-full min-w-32 gap-1', labelClassName)}>
           <span>{label}</span>
           {hint && (
             <WithHint hint={hint}>
@@ -40,19 +42,23 @@ export const ComponentFormFieldLabel: React.FC<ComponentFormFieldLabelProps> = (
             </WithHint>
           )}
         </div>
-        {children || (
-          <input
-            className={twMerge(
-              'rounded border border-border-primary bg-transparent px-2 py-1 text-text-primary outline-none focus:border-text-primary',
-              error && '!border-error text-error',
-              className
-            )}
-            {...props}
-            value={props.value ?? ''}
-          />
-        )}
+        <div className={childrenDivClassname}>
+          {children || (
+            <div>
+              <input
+                className={twMerge(
+                  'rounded border border-border-primary bg-transparent px-2 py-1 text-text-primary outline-none focus:border-text-primary',
+                  error && '!border-error text-error',
+                  className
+                )}
+                {...props}
+                value={props.value ?? ''}
+              />
+              <p className="text-sm text-error">{error}</p>
+            </div>
+          )}
+        </div>
       </Component>
-      <p className="pl-[120px] text-sm text-error">{error}</p>
     </div>
   );
 };

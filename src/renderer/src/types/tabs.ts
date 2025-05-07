@@ -16,6 +16,7 @@ export interface CodeTab {
 export interface SerialMonitorTab {
   type: 'serialMonitor';
   name: string;
+  isOpen: boolean;
 }
 
 export interface ManagerMSTab {

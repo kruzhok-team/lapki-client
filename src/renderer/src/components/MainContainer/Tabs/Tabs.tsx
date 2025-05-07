@@ -60,7 +60,7 @@ export const Tabs: React.FC = () => {
       case 'code':
         return <CodeEditor initialValue={item.code} language={item.language} />;
       case 'serialMonitor':
-        return <SerialMonitorTab />;
+        return <SerialMonitorTab isTabOpen={item.isOpen} />;
       case 'managerMS':
         return <FlasherTab />;
       default:

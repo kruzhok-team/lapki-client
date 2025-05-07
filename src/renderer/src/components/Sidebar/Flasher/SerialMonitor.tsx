@@ -57,7 +57,11 @@ class TextModeOptions {
   };
 }
 
-export const SerialMonitorTab: React.FC = () => {
+export interface SerialMonitorTabProps {
+  isTabOpen: boolean;
+}
+
+export const SerialMonitorTab: React.FC<SerialMonitorTabProps> = ({ isTabOpen }) => {
   const [monitorSetting, setMonitorSetting] = useSettings('serialmonitor');
 
   const {
@@ -143,6 +147,11 @@ export const SerialMonitorTab: React.FC = () => {
   useEffect(() => {
     setInputError('');
   }, [connectionStatus]);
+
+  useEffect(() => {
+    if (isTabOpen || !device || connectionStatus !== SERIAL_MONITOR_CONNECTED) return;
+    SerialMonitor.closeMonitor(device.deviceID);
+  }, [isTabOpen]);
 
   if (!monitorSetting) {
     return null;

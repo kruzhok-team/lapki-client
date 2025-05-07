@@ -1,6 +1,7 @@
 import React from 'react';
 
 import * as RSwitch from '@radix-ui/react-switch';
+import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as AttributeIcon } from '@renderer/assets/icons/useAttribute.svg';
 import { ReactComponent as ConstIcon } from '@renderer/assets/icons/useConst.svg';
@@ -34,9 +35,10 @@ export const AttributeConstSwitch: React.FC<AttributeConstSwitch> = ({
               onCheckedChange={onCheckedChange}
             /> */}
             <RSwitch.Root
-              className={
-                'relative h-[25px] w-[42px] cursor-pointer rounded-full bg-bg-secondary shadow-[0_0_0_1px] shadow-border-primary outline-none focus:shadow-[0_0_0_1px]'
-              }
+              className={twMerge(
+                'relative h-[25px] w-[42px] cursor-pointer rounded-full bg-bg-secondary shadow-[0_0_0_1px] shadow-border-primary outline-none focus:shadow-[0_0_0_1px]',
+                className
+              )}
               id="airplane-mode"
               checked={checked}
               disabled={isDisabled}

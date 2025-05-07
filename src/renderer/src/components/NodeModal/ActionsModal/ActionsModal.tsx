@@ -292,7 +292,7 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
 
     const { action, isEditingEvent: isEditingAction } = initialData;
 
-    init(action, isEditingAction ? 'signals' : 'methods');
+    init(structuredClone(action), isEditingAction ? 'signals' : 'methods');
   }, [smId, controller, platforms, initialData]);
 
   return (

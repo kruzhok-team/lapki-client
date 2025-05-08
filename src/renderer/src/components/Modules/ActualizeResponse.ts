@@ -158,6 +158,7 @@ export function actualizeElements(oldElements: CompilerElements): Elements {
         },
         initialStates: initials,
         meta: {},
+        shallowHistory: {},
       },
     },
   };

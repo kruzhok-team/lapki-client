@@ -175,10 +175,14 @@ export const FlasherTab: React.FC = () => {
         `;
     const op = ManagerMS.finishOperation(`Получены метаданные: ${metaStr}`);
     if (op === undefined) {
-      return;
+      throw Error('undefined операция');
+    }
+    if (op.addressInfo === undefined) {
+      throw Error('undefined адрес');
     }
     const index = addressBookSetting.findIndex((v) => {
-      return v.address === op.addressInfo.address;
+      // мы делаем проверку на undefined ранее
+      return v.address === op.addressInfo?.address;
     });
     if (index === -1) {
       return;
@@ -327,7 +331,7 @@ export const FlasherTab: React.FC = () => {
           }
           ManagerMS.addOperation({
             addressInfo: addr,
-            deviceId: deviceMs.deviceID,
+            device: deviceMs,
             type: op,
           });
         } else if (item.targetType === FirmwareTargetType.dev) {
@@ -338,7 +342,14 @@ export const FlasherTab: React.FC = () => {
             )}" не поддерживается для этого устройства.`
           );
         } else {
-          throw Error('Неизвестный тип устройства');
+          const dev = devices.get(item.targetId as string);
+          if (!dev) {
+            throw Error('Устройства для выполнения операции не найдено!');
+          }
+          ManagerMS.addOperation({
+            device: dev,
+            type: op,
+          });
         }
       }
     }

@@ -559,6 +559,7 @@ export const useFlasherHooks = () => {
           );
         }
         break;
+      case 'pong':
       case 'ms-ping-result':
         {
           const pingResult = flasherMessage.payload as DeviceCommentCode;
@@ -583,7 +584,7 @@ export const useFlasherHooks = () => {
             }
             case 3:
               ManagerMS.finishOperation(
-                'Не удалось отправить пинг, так как переданное устройство не является МС-ТЮК.'
+                'Не удалось отправить пинг, так как переданное устройство не поддерживает операцию «Пинг».'
               );
               break;
             case 4: {
@@ -642,6 +643,7 @@ export const useFlasherHooks = () => {
         }
         break;
       }
+      case 'reset-result':
       case 'ms-reset-result': {
         const result = flasherMessage.payload as DeviceCommentCode;
         switch (result.code) {
@@ -664,7 +666,9 @@ export const useFlasherHooks = () => {
             break;
           }
           case 3:
-            ManagerMS.finishOperation('Переданное устройство для перезагрузки не является МС-ТЮК.');
+            ManagerMS.finishOperation(
+              'Не удалось выполнить перезагрузку, так как переданное устройство не поддерживает данную операцию.'
+            );
             break;
           case 4: {
             const errorText = result.comment;

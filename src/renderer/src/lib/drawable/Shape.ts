@@ -184,6 +184,10 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
     };
   }
 
+  get isDraggable() {
+    return this.canDrag;
+  }
+
   private dragEnd() {
     const dragEndPosition = { ...this.position };
     if (

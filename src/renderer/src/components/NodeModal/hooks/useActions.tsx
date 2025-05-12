@@ -54,11 +54,9 @@ export const useActions = (
     });
   };
 
-  const handleActionsModalSubmit = (data: Action, idx?: number) => {
+  const handleActionsModalSubmit = (data: Action, idx?: number | null) => {
     if (actionsModalData && idx !== undefined && idx !== null) {
       setActions((p) => {
-        if (idx === -1) return p;
-
         const newActions = [...p];
 
         newActions[idx] = data;

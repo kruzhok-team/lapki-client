@@ -171,6 +171,7 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
     const node = this.getCapturedNode({ position: e });
 
     if (node) {
+      this.emit('closeToolTip', undefined);
       node.handleMouseDown(e);
 
       const parent = node.parent ?? this;

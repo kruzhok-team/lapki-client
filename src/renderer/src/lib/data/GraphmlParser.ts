@@ -426,7 +426,7 @@ function getComponents(rawComponents: { [id: string]: CGMLComponent }): {
   for (const id in rawComponents) {
     const rawComponent = rawComponents[id];
     if (rawComponent.order === undefined) {
-      throw new Error('Ошибка парсинга схемы! Отсутствует порядок компонентов!');
+      throw new Error('Ошибка парсинга документа! Отсутствует порядок компонентов!');
     }
     components[rawComponent.id] = {
       name: rawComponent.parameters['name'],
@@ -627,7 +627,7 @@ function getVisualFlag(
   }
   if (visual && !platformVisual) {
     throw new Error(
-      'В схеме флаг lapkiVisual равен true, но целевая платформа не поддерживает визуальный режим!'
+      'Флаг lapkiVisual равен true, но целевая платформа не поддерживает визуальный режим!'
     );
   }
   return visual;

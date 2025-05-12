@@ -98,11 +98,11 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
   };
 
   return (
-    <div key={smId}>
+    <div key={smId} className="flex h-full flex-col">
       {header()}
       {smName ?? smId}
       {isInitialized ? (
-        <div className="mb-2 mt-1 max-h-full select-none overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
+        <div className="mb-2 mt-1 select-none overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
           {sortedComponents.length === 0 ? (
             <p className="text-text-inactive">Нет компонентов</p>
           ) : (
@@ -137,7 +137,7 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
           )}
         </div>
       ) : (
-        <div className="px-4">Недоступно до открытия схемы</div>
+        <div className="px-4">Недоступно до открытия документа</div>
       )}
 
       <ComponentAddModal {...addProps} />

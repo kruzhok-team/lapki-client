@@ -29,7 +29,7 @@ export class FilesManager {
       elements.stateMachines[sm.id] = emptyStateMachine();
       elements.stateMachines[sm.id].platform = sm.platform.id;
     }
-    this.modelController.initData(null, 'Без названия', elements as any, true);
+    this.modelController.initData(null, 'Без названия', elements, true);
     return this.modelController.model.data.headControllerId;
     // this.modelController.model.init(null, 'Без названия', elements as any);
   }

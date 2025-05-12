@@ -6,14 +6,14 @@ import { appName, appVersion, askAppVersion, seriousMode } from '@renderer/versi
 
 const combination = [
   {
-    name: 'Создать новую схему',
+    name: 'Создать новый документ',
     command: {
       button1: 'Ctrl',
       button2: 'N',
     },
   },
   {
-    name: 'Открыть файл схемы',
+    name: 'Открыть файл документа',
     command: {
       button1: 'Ctrl',
       button2: 'O',

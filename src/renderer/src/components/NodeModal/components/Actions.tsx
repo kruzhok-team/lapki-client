@@ -111,7 +111,7 @@ export const Actions: React.FC<ActionsProps> = (props) => {
       <div className="pl-4">
         <TabPanel value={0} tabValue={tabValue}>
           <div onDoubleClick={onAddAction} className="flex gap-2">
-            <div className="flex h-44 w-full flex-col overflow-y-auto break-words rounded border border-border-primary bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
+            <div className="flex h-44 w-full flex-col overflow-x-auto overflow-y-auto whitespace-nowrap rounded border border-border-primary bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
               {actions.length === 0 && (
                 <div className="flex h-full w-full select-none flex-row items-center justify-center text-center align-middle text-text-inactive">
                   <span className="mr-2">Чтобы добавить действие, нажмите</span>
@@ -120,22 +120,23 @@ export const Actions: React.FC<ActionsProps> = (props) => {
                   </div>
                 </div>
               )}
-
-              {actions.map((data, i) => (
-                <Action
-                  key={i}
-                  smId={smId}
-                  isSelected={selectedActionIndex === i}
-                  onSelect={() => setSelectedActionIndex(i)}
-                  onChange={() => onChangeAction(data)}
-                  onDragStart={() => handleDrag(i)}
-                  onDrop={() => handleDrop(i)}
-                  data={{
-                    ...data,
-                    componentName: getComponentName(data.component) ?? data.component,
-                  }}
-                />
-              ))}
+              <div className="w-min min-w-full">
+                {actions.map((data, i) => (
+                  <Action
+                    key={i}
+                    smId={smId}
+                    isSelected={selectedActionIndex === i}
+                    onSelect={() => setSelectedActionIndex(i)}
+                    onChange={() => onChangeAction(data)}
+                    onDragStart={() => handleDrag(i)}
+                    onDrop={() => handleDrop(i)}
+                    data={{
+                      ...data,
+                      componentName: getComponentName(data.component) ?? data.component,
+                    }}
+                  />
+                ))}
+              </div>
             </div>
 
             <div className="flex flex-col gap-2">

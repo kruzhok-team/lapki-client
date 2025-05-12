@@ -1,11 +1,30 @@
 export * from './MatrixActions';
 import { Point } from '@renderer/lib/types/graphics';
-import { StateMachine } from '@renderer/types/diagram';
+import { Component, StateMachine } from '@renderer/types/diagram';
 import { ArgType } from '@renderer/types/platform';
 
 export function isString(value: any): value is string {
   return typeof value === 'string';
 }
+
+/*
+ (L140-beep): Получить опции для выбора без «пустых» компонентов.
+*/
+export const getFilteredOptions = <T>(
+  getComponentOption: (id: string) => T,
+  componentsData: { [id: string]: Component }
+): NonNullable<T>[] => {
+  const sortedComponents = Object.entries(componentsData).sort((a, b) => a[1].order - b[1].order);
+  const result: NonNullable<T>[] = [];
+  for (const [componentId] of sortedComponents) {
+    const option = getComponentOption(componentId);
+    if (option) {
+      result.push(option);
+    }
+  }
+
+  return result;
+};
 
 export const getDefaultSmSelection = (
   stateMachines: { [id: string]: StateMachine },

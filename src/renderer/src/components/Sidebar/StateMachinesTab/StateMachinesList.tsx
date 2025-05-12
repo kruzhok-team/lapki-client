@@ -97,34 +97,32 @@ export const StateMachinesList: React.FC<StateMachinesListProps> = ({
   };
 
   return (
-    <section>
+    <section className="flex h-full flex-col">
       {header()}
       {isInitialized ? (
-        <div>
-          <div className="overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
-            {[...Object.entries(elements)].map(
-              ([id, sm]) =>
-                id !== '' && (
-                  <Component
-                    key={id}
-                    name={sm.name || id}
-                    isSelected={id === selectedSm}
-                    icon={<StateMachineIcon className="size-8 fill-border-contrast" />}
-                    onSelect={() => setSmSelected(id)}
-                    onEdit={() => onCallContextMenu(id, sm)}
-                    onDelete={() => undefined}
-                    onCallContextMenu={() => onRequestEditStateMachine(id)}
-                    // TODO (L140-beep): Доделать свап машин состояний
-                    onDragStart={() => console.log('setDragState')}
-                    onDrop={() => console.log('onDrop')}
-                    isDragging={id === ''}
-                  />
-                )
-            )}
-          </div>
+        <div className="overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
+          {[...Object.entries(elements)].map(
+            ([id, sm]) =>
+              id !== '' && (
+                <Component
+                  key={id}
+                  name={sm.name || id}
+                  isSelected={id === selectedSm}
+                  icon={<StateMachineIcon className="size-8 fill-border-contrast" />}
+                  onSelect={() => setSmSelected(id)}
+                  onEdit={() => onCallContextMenu(id, sm)}
+                  onDelete={() => undefined}
+                  onCallContextMenu={() => onRequestEditStateMachine(id)}
+                  // TODO (L140-beep): Доделать свап машин состояний
+                  onDragStart={() => console.log('setDragState')}
+                  onDrop={() => console.log('onDrop')}
+                  isDragging={id === ''}
+                />
+              )
+          )}
         </div>
       ) : (
-        <div className="px-4">Недоступно до открытия схемы</div>
+        <div className="px-4">Недоступно до открытия документа</div>
       )}
 
       <StateMachineEditModal

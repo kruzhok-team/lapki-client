@@ -6,9 +6,7 @@ import {
   PanelResizeHandle,
   ImperativePanelHandle,
 } from 'react-resizable-panels';
-import { twMerge } from 'tailwind-merge';
 
-import { ReactComponent as ArrowIcon } from '@renderer/assets/icons/arrow-down.svg';
 import { useModelContext } from '@renderer/store/ModelContext';
 
 import { StateMachineComponentList } from './StateMachineComponentList';
@@ -104,20 +102,13 @@ export const Explorer: React.FC = () => {
           onExpand={forceUpdate}
           className="px-4"
         >
-          <button className="my-3 flex items-center" onClick={() => togglePanel(hierarchyPanelRef)}>
-            <ArrowIcon
-              className={twMerge(
-                'rotate-0 transition-transform',
-                hierarchyPanelRef.current?.isCollapsed() && '-rotate-90'
-              )}
-            />
-            <h3 className="font-semibold">Иерархия</h3>
-          </button>
-
           {isInitialized ? (
-            <StateMachinesHierarchy />
+            <StateMachinesHierarchy
+              isCollapsed={() => hierarchyPanelRef.current?.isCollapsed() ?? false}
+              togglePanel={() => togglePanel(hierarchyPanelRef)}
+            />
           ) : (
-            <div className="px-4">Недоступно до открытия схемы</div>
+            <div className="px-4">Недоступно до открытия документа</div>
           )}
         </Panel>
       </PanelGroup>

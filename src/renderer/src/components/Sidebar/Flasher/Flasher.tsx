@@ -545,8 +545,15 @@ export const FlasherTab: React.FC = () => {
 
   const needAvrdude = useMemo(() => {
     if (!flasherSetting?.type || flasherSetting.type === 'remote' || hasAvrdude) return false;
-    return flashTableData.some((item) => item.targetType === FirmwareTargetType.dev);
-  }, [flashTableData, hasAvrdude, flasherSetting?.type]);
+    return flashTableData.some((item) => {
+      if (item.targetType !== FirmwareTargetType.dev) {
+        return false;
+      }
+      const dev = devices.get(item.targetId as string);
+      if (!dev) return false;
+      return dev.isArduinoDevice();
+    });
+  }, [flashTableData, hasAvrdude, flasherSetting?.type, devices]);
 
   // вывод сообщения об отсутствии avrdude и кнопка с подсказкой для пользователя
   const avrdudeCheck = () => {

@@ -22,12 +22,7 @@ interface ActionsModalParametersProps {
   setErrors: React.Dispatch<React.SetStateAction<Record<string, string>>>;
 
   componentOptions: SelectOption[];
-  methodOptionsSearch: (selectedParameterComponent: string | null) => {
-    value: string;
-    label: string;
-    hint: string | undefined;
-    icon: JSX.Element;
-  }[];
+  methodOptionsSearch: (selectedParameterComponent: string | null) => SelectOption[];
 
   smId: string;
   controller: CanvasController;
@@ -97,7 +92,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
 
   const getHint = (description: string, type: ArgType) => {
     if (!type || Array.isArray(type) || isMatrix(type)) return description;
-    return description + '\n' + `Тип: {${formatArgType(type)}}`;
+    return description + (description ? '\n' : '' + `Тип: {${formatArgType(type)}}`);
   };
 
   if (protoParameters.length === 0) {
@@ -106,7 +101,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
   }
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex max-h-[50vh] flex-col gap-2 overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
       <h3 className="mb-1 text-xl">Параметры</h3>
       {protoParameters.map((proto, idx) => {
         const { name, description = '', type = '' } = proto;
@@ -212,6 +207,11 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                   setCheckedTo(name, !currentChecked);
                   handleInputChange(name, idx, '');
                 }}
+                hint={
+                  currentChecked
+                    ? 'Переключиться на константу'
+                    : 'Переключиться на атрибут компонента'
+                }
               />
             </div>
             {currentChecked ? (

@@ -64,6 +64,12 @@ export function Select<
       <ReactSelect
         placeholder={props.placeholder ?? 'Выберите...'}
         {...props}
+        // Хак (а хак ли?) от нейронки
+        menuPortalTarget={document.body}
+        menuPosition="fixed"
+        styles={{
+          menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+        }}
         className={twMerge(className, !!error && 'error')}
         classNamePrefix="CustomSelect"
         components={{ Option: Option as any, SingleValue: SingleValue as any }}

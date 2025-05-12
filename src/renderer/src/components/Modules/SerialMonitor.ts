@@ -57,7 +57,7 @@ export class SerialMonitor {
 
   static timeStamp(log: string) {
     const date = new Date();
-    return `${dateFormatTime(date)} - ${log}`;
+    return `${dateFormatTime(date)} ${log}`;
   }
 
   static addLog(log: string) {

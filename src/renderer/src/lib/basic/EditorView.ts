@@ -449,6 +449,7 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
           y: Math.max(0, this.mouseDownNode.position.y),
         };
       }
+      this.app.canvas.element.style.cursor = 'grabbing';
       this.isDirty = true;
     } else {
       // const mousePoint = { x: this.app.mouse.px, y: this.app.mouse.py };

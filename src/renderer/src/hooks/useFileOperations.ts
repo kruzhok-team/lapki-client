@@ -66,7 +66,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
       if (!firstTabName) firstTabName = tabName;
     }
     if (firstTabName) {
-      setActiveTab(firstTabName);
+      setActiveTab(modelController, firstTabName);
     }
   };
 

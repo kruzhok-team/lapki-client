@@ -109,7 +109,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
           canvasId: schemeEditorId,
           name: 'Схемоэкран',
         });
-        modelController.model.changeHeadControllerId(schemeEditorId);
+        modelController.changeHeadControllerId(schemeEditorId);
       },
       disabled: !isInitialized,
       hidden: noSchemeScreen || controller.type === 'scheme',
@@ -144,11 +144,11 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
   });
 
   const handleNextTab = (_: KeyboardEvent) => {
-    nextTab();
+    nextTab(modelController);
   };
 
   const handlePrevTab = (_: KeyboardEvent) => {
-    prevTab();
+    prevTab(modelController);
   };
 
   const handleKeyDown = async (e: KeyboardEvent) => {

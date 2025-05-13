@@ -130,9 +130,10 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
               label={label}
               labelClassName="whitespace-pre"
               hint={hint}
+              error={error}
+              childrenDivClassname="ml-[50px] w-[300px]"
             >
               <Select
-                className="w-[300px] pl-[50px]"
                 options={options}
                 value={options.find((o) => o.value === value)}
                 onChange={(opt) => handleInputChange(name, idx, opt?.value ?? '')}
@@ -207,7 +208,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
         }
         const methodOptions = methodOptionsSearch(selectedParameterComponent);
         return (
-          <div className="flex items-center space-x-2" key={name}>
+          <div className="flex space-x-2" key={name}>
             <div className="mt-[4px]">
               <AttributeConstSwitch
                 checked={currentChecked}

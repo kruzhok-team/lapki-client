@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
+import { Range } from '@renderer/types/utils';
+
 export interface MatrixStyle {
   ledWidth: number;
   ledHeight: number;
@@ -17,6 +19,8 @@ interface MatrixLedProps {
   isClickable: boolean;
   style: MatrixStyle;
   currentBrushValue: number;
+  range: Range;
+  isHalf: boolean;
   onChange: (rowIndex: number, colIndex: number, newValue: number) => void;
 }
 
@@ -28,6 +32,8 @@ export const MatrixLed: React.FC<MatrixLedProps> = ({
   onChange,
   style,
   currentBrushValue,
+  range,
+  isHalf,
 }) => {
   const { isRounded, margin, ledHeight, ledWidth } = style;
   const [displayValue, setDisplayValue] = useState(value);
@@ -40,7 +46,14 @@ export const MatrixLed: React.FC<MatrixLedProps> = ({
   const handleClick = () => {
     if (!isClickable) return;
 
-    const newValue = currentBrushValue;
+    let newValue = currentBrushValue;
+
+    if (!isHalf && value !== range.max) {
+      newValue = range.max;
+    }
+    if (!isHalf && value === range.max) {
+      newValue = range.min;
+    }
     setDisplayValue(newValue);
     onChange(rowIndex, colIndex, newValue);
   };
@@ -60,11 +73,11 @@ export const MatrixLed: React.FC<MatrixLedProps> = ({
       )}
       type="button"
       onClick={handleClick}
-      title={`Value: ${displayValue}`}
+      title={`Значение: ${displayValue}`}
     >
       <div
         style={{
-          opacity: 1 - displayValue / 100,
+          opacity: 1 - (displayValue - range.min) / (range.max - range.min),
         }}
         className="h-full w-full bg-[#343a40]"
       ></div>

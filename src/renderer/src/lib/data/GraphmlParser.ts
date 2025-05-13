@@ -31,7 +31,7 @@ import {
   Variable,
 } from '@renderer/types/diagram';
 import { Platform, ComponentProto, MethodProto, SignalProto } from '@renderer/types/platform';
-import { getMatrixDimensions, isString, parseMatrixFromString } from '@renderer/utils';
+import { getMatrixDimensions, isMatrix, isString, parseMatrixFromString } from '@renderer/utils';
 
 import { validateElements } from './ElementsValidator';
 import { getPlatform, isPlatformAvailable } from './PlatformLoader';
@@ -443,7 +443,7 @@ function labelParameters(args: ArgList, method: MethodProto): ArgList {
   const labeledArgs: ArgList = { ...args };
   method.parameters?.forEach((element, index) => {
     delete labeledArgs[index];
-    if (element.type && !Array.isArray(element.type) && element.type.startsWith('Matrix')) {
+    if (element.type && !Array.isArray(element.type) && isMatrix('Matrix')) {
       const { width, height } = getMatrixDimensions(element.type);
       labeledArgs[element.name] = {
         value: parseMatrixFromString(args[index].value as string, width, height),

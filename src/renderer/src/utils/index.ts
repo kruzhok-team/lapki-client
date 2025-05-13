@@ -2,9 +2,38 @@ export * from './MatrixActions';
 import { Point } from '@renderer/lib/types/graphics';
 import { Component, StateMachine } from '@renderer/types/diagram';
 import { ArgType } from '@renderer/types/platform';
+import { Range } from '@renderer/types/utils';
+
+export const DEFAULT_RANGE_STEP = 1;
+
+export function getDefaultRange(): Range {
+  return {
+    min: 0,
+    max: 100,
+  };
+}
 
 export function isString(value: any): value is string {
   return typeof value === 'string';
+}
+
+export function isMatrix(type: string) {
+  return type.includes('Matrix');
+}
+
+export function parseRange(input: string, minValue: number = 0): Range {
+  const match = input.match(/^(\[|\() *(-?\d+(?:\.\d+)?) *, *(-?\d+(?:\.\d+)?) *(\]|\))$/);
+
+  if (!match) {
+    throw new Error(`Invalid range format: "${input}"`);
+  }
+  const [, left, minRaw, maxRaw, right] = match;
+  let min = parseFloat(minRaw);
+  let max = parseFloat(maxRaw);
+  if (left === '(') min += minValue;
+  if (right === ')') max -= minValue;
+
+  return { min, max };
 }
 
 /*

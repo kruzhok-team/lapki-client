@@ -6,7 +6,7 @@ import { getActionDelimeter } from '@renderer/lib/data/GraphmlBuilder';
 import { PlatformManager } from '@renderer/lib/data/PlatformManager';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { Action as ActionData, Component, Variable } from '@renderer/types/diagram';
-import { getMatrixDimensions } from '@renderer/utils';
+import { getDefaultRange, getMatrixDimensions, isMatrix, parseRange } from '@renderer/utils';
 
 import { Picto } from './Picto';
 
@@ -112,7 +112,7 @@ export const Action: React.FC<ActionProps> = (props) => {
               if (!parameter || !parameter.type)
                 return <>{serializeParameter(index, value.value)}</>;
 
-              if (typeof parameter.type === 'string' && parameter.type.startsWith('Matrix')) {
+              if (typeof parameter.type === 'string' && isMatrix(parameter.type)) {
                 const dimensions = getMatrixDimensions(parameter.type);
 
                 if (Array.isArray(value.value) && typeof value.value[0][0] === 'number') {
@@ -133,7 +133,9 @@ export const Action: React.FC<ActionProps> = (props) => {
                           border: 1,
                           isRounded: false,
                         }}
-                        showSlider={false}
+                        step={parameter.step ?? 1}
+                        range={parameter.range ? parseRange(parameter.range) : getDefaultRange()}
+                        isHalf={false}
                       />
                     </>
                   );

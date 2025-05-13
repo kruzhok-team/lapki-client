@@ -36,6 +36,12 @@
         "optional": {
           "type": "boolean"
         },
+        "range": {
+          "type": "string"
+        },
+        "step": {
+          "type": "number"
+        },
         "type": {
           "$ref": "#/definitions/ArgType"
         },

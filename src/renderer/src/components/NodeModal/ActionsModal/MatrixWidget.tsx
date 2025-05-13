@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 
+import { Range } from '@renderer/types/utils';
+import { DEFAULT_RANGE_STEP } from '@renderer/utils';
+
 import { GradientSlider } from './GradientSlider';
 import { MatrixLed, MatrixStyle } from './MatrixLed';
 
@@ -9,7 +12,9 @@ interface MatrixWidgetProps {
   values: number[][];
   isClickable: boolean;
   style: MatrixStyle;
-  showSlider: boolean;
+  isHalf: boolean;
+  range: Range;
+  step?: number;
   onChange: (rowIndex: number, colIndex: number, newValue: number) => void;
 }
 
@@ -18,9 +23,11 @@ export const MatrixWidget: React.FC<MatrixWidgetProps> = ({
   style,
   isClickable,
   values,
-  showSlider,
+  isHalf,
+  range,
+  step,
 }) => {
-  const [brushValue, setBrushValue] = useState(100);
+  const [brushValue, setBrushValue] = useState(range.max);
   return (
     <div className="flex flex-col gap-2">
       <div className="flex shrink-0 flex-col">
@@ -39,6 +46,8 @@ export const MatrixWidget: React.FC<MatrixWidgetProps> = ({
                       colIndex,
                       value,
                       currentBrushValue: brushValue,
+                      range,
+                      isHalf,
                     }}
                   />
                 );
@@ -46,9 +55,14 @@ export const MatrixWidget: React.FC<MatrixWidgetProps> = ({
             </div>
           );
         })}
-        {showSlider && (
-          <div className="flex w-[300px] items-center gap-1 rounded bg-gray-100 p-2">
-            <GradientSlider value={brushValue} onChange={(e) => setBrushValue(e)} />
+        {isHalf && (
+          <div className="flex w-[300px] items-center gap-1 rounded  p-2">
+            <GradientSlider
+              step={step ?? DEFAULT_RANGE_STEP}
+              range={range}
+              value={brushValue}
+              onChange={(e) => setBrushValue(e)}
+            />
             <span className="w-12 select-none text-center">{brushValue}</span>
           </div>
         )}

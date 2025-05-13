@@ -36,26 +36,17 @@ export const MatrixLed: React.FC<MatrixLedProps> = ({
   isHalf,
 }) => {
   const { isRounded, margin, ledHeight, ledWidth } = style;
-  const [displayValue, setDisplayValue] = useState(value);
-
-  // Синхронизируем displayValue с внешним value
-  useEffect(() => {
-    setDisplayValue(value);
-  }, [value]);
 
   const handleClick = () => {
     if (!isClickable) return;
 
-    let newValue = currentBrushValue;
+    if (isHalf) return onChange(rowIndex, colIndex, currentBrushValue);
 
-    if (!isHalf && value !== range.max) {
-      newValue = range.max;
+    if (value !== range.max) {
+      return onChange(rowIndex, colIndex, range.max);
     }
-    if (!isHalf && value === range.max) {
-      newValue = range.min;
-    }
-    setDisplayValue(newValue);
-    onChange(rowIndex, colIndex, newValue);
+
+    return onChange(rowIndex, colIndex, range.min);
   };
 
   return (
@@ -73,11 +64,11 @@ export const MatrixLed: React.FC<MatrixLedProps> = ({
       )}
       type="button"
       onClick={handleClick}
-      title={`Значение: ${displayValue}`}
+      title={`Значение: ${value}`}
     >
       <div
         style={{
-          opacity: 1 - (displayValue - range.min) / (range.max - range.min),
+          opacity: 1 - (value - range.min) / (range.max - range.min),
         }}
         className="h-full w-full bg-[#343a40]"
       ></div>

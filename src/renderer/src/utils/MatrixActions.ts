@@ -3,7 +3,6 @@ import { Matrix } from '@renderer/types/MatrixWidget';
 
 export const getMatrixDimensions = (matrixType: string): Dimensions => {
   const rowSize = matrixType.split('Matrix')[1];
-  console.log(matrixType.split('Matrix')[1]);
   const [width, height] = rowSize.split('x').map((value) => Number(value));
 
   return {

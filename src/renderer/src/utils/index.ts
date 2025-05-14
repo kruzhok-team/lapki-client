@@ -216,3 +216,12 @@ export const frameworkWords = [
   'SIGNAL_DISPATCH',
   'PASS_EVENT_TO',
 ];
+
+export const dateFormatTime = new Intl.DateTimeFormat('ru-Ru', {
+  timeStyle: 'medium',
+}).format;
+
+export const dateFormatTimeAndDate = new Intl.DateTimeFormat('ru-Ru', {
+  dateStyle: 'short',
+  timeStyle: 'short',
+}).format;

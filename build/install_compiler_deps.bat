@@ -15,7 +15,7 @@ if not exist "%BASE_DIR%\" (
     echo ERROR: Base directory "%BASE_DIR%" does not exist.
     exit /b 1
 )
-set "ITEMS=resources\app.asar.unpacked\resources\modules\win32\gcc-arm-none-eabi resources\app.asar.unpacked\resources\modules\win32\arduino-cli"
+set "ITEMS=resources\app.asar.unpacked\resources\modules\win32\gcc-arm-none-eabi\bin resources\app.asar.unpacked\resources\modules\win32\arduino-cli"
 
 REM =====================================================
 REM 2) Prepare new PATH

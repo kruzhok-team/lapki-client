@@ -9,7 +9,7 @@ import path from 'path';
 import { findFreePort } from './freePortFinder';
 
 import { defaultSettings } from '../settings';
-export type ModuleName = 'lapki-flasher';
+export type ModuleName = 'lapki-flasher' | 'lapki-compiler';
 
 export class ModuleStatus {
   /* 
@@ -41,6 +41,7 @@ export class ModuleManager {
   static localProccesses: Map<string, ChildProcessWithoutNullStreams> = new Map();
   static moduleStatus: Map<string, ModuleStatus> = new Map();
   static async startLocalModule(module: ModuleName) {
+    const usedPorts = await this.getUsedPorts();
     this.moduleStatus.set(module, new ModuleStatus());
     if (!this.localProccesses.has(module)) {
       const platform = process.platform;
@@ -65,7 +66,7 @@ export class ModuleManager {
       if (modulePath) {
         switch (module) {
           case 'lapki-flasher': {
-            const port = await findFreePort();
+            const port = await findFreePort({ usedPorts });
             await settings.set('flasher.localPort', port);
             defaultSettings.flasher.localPort = Number(port);
             /*
@@ -81,6 +82,7 @@ export class ModuleManager {
 
             const avrdudePath = this.getAvrdudePath();
             const configPath = this.getConfPath();
+            console.log('flasher port: ', port);
             console.log('pathes', avrdudePath, configPath);
             if (existsSync(avrdudePath)) {
               flasherArgs.push(`-avrdudePath=${avrdudePath}`);
@@ -89,6 +91,16 @@ export class ModuleManager {
               flasherArgs.push(`-configPath=${configPath}`);
             }
             chprocess = spawn(modulePath, flasherArgs);
+            break;
+          }
+          case 'lapki-compiler': {
+            modulePath = this.getCompilerPath();
+            const port = await findFreePort({ usedPorts });
+            console.log('compiler port', port);
+            await settings.set('compiler.localPort', port);
+            defaultSettings.compiler.localPort = Number(port);
+            const compilerArgs = [`--server-port=${port}`];
+            chprocess = spawn(modulePath, compilerArgs);
             break;
           }
           default:
@@ -126,6 +138,13 @@ export class ModuleManager {
     }
   }
 
+  static async getUsedPorts(): Promise<number[]> {
+    return [
+      Number(await settings.get('compiler.localPort')),
+      Number(await settings.get('flasher.localPort')),
+    ];
+  }
+
   static stopModule(module: ModuleName) {
     if (this.localProccesses.has(module)) {
       this.localProccesses.get(module)!.kill();
@@ -152,7 +171,11 @@ export class ModuleManager {
   }
 
   static getAvrdudePath(): string {
-    return this.getOsExe(`${this.getOsPath()}/avrdude`);
+    return this.getModulePath('avrdude');
+  }
+
+  static getCompilerPath() {
+    return this.getModulePath('lapki-compiler/lapki-compiler');
   }
 
   static getConfPath(): string {
@@ -160,7 +183,7 @@ export class ModuleManager {
   }
 
   static getBlgMbUploaderPath(): string {
-    return this.getOsExe(`${this.getOsPath()}/blg-mb-1/blg-mb-1-uploader`);
+    return this.getModulePath('blg-mb-1/blg-mb-1-uploader');
   }
 
   static getModulePath(module: string): string {

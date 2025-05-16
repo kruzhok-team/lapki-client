@@ -110,11 +110,12 @@ function createWindow(): BrowserWindow {
   return mainWindow;
 }
 
-const startFlasher = async () => {
-  ModuleManager.startLocalModule('lapki-flasher');
+const startModules = async () => {
+  await ModuleManager.startLocalModule('lapki-flasher');
+  await ModuleManager.startLocalModule('lapki-compiler');
 };
 initSettings();
-startFlasher();
+startModules();
 
 // Выполняется после инициализации Electron
 app.whenReady().then(() => {
@@ -128,6 +129,9 @@ app.whenReady().then(() => {
     await ModuleManager.startLocalModule(module);
     if (module === 'lapki-flasher') {
       settingsChangeSend(mainWindow.webContents, 'flasher', settings.getSync('flasher'));
+    }
+    if (module === 'lapki-compiler') {
+      settingsChangeSend(mainWindow.webContents, 'compiler', settings.getSync('compiler'));
     }
   });
 

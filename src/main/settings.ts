@@ -38,7 +38,9 @@ type RecentFile = {
 
 export const defaultSettings = {
   doc: {
-    host: defaultDocHost,
+    host: 'http://localhost:8071/', // FIXME: реализовать авто поиск порта
+    remoteHost: defaultDocHost,
+    type: 'local' as 'local' | 'remote',
   },
   compiler: {
     host: defaultCompilerHost,

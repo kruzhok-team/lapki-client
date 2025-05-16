@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>03. Результат работы компилятора</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9"
+      crossorigin="anonymous"
+    />
+  </head>
+  <body class="mx-3">
+    <span class="badge text-wrap text-bg-primary mt-3">
+      03. Интерфейс среды → 02. Компилятор
+    </span>
+    <h1 class="display-6 mt-3">03. Результат работы компилятора</h1>
+    <p class="mt-3">
+      Для того, чтобы увидеть результаты компиляции конкретной машины состояния,
+      необходимо выбрать её из выпадающего меню, которое находится внизу вместе
+      с другими кнопками. В зависимости от типа платформы машины состояния,
+      будут доступны разные кнопки.
+    </p>
+    <ul class="list-group list-group-flush list-group-numbered">
+      <li class="list-group-item"><strong>Берлога</strong></li>
+      <p class="mt-3">
+        При&nbsp;<strong>успешной компиляции</strong> внизу будет доступно
+        только две кнопки:
+      </p>
+      <p class="mt-3">
+        <strong>«Показать код»</strong>&nbsp;— В&nbsp;верхней панели IDE
+        откроется <strong>вкладка</strong> с&nbsp;кодом схемы для игры
+        <strong>«Берлога: Защита пасеки»</strong>.
+      </p>
+      <p class="mt-3">
+        <strong>«Сохранить код»</strong>&nbsp;— Открывается окно, в&nbsp;котором
+        необходимо выбрать место на&nbsp;компьютере, в&nbsp;которую будет
+        сохранена загружаемая схема для&nbsp;игры
+        <strong>«Берлога: Защита пасеки»</strong>.
+      </p>
+      <p class="text-bg-success p-2">
+        <em
+          >Недоступные кнопки необходимы лишь для&nbsp;схем других платформ,
+          таких как <strong>Arduino</strong>.</em
+        >
+      </p>
+      <p class="text-bg-warning p-2">
+        <em
+          ><strong>Наведите</strong> курсор мыши на&nbsp;раздел компилятора
+          и&nbsp;<strong>прокрутите вниз</strong> колесиком мыши, чтобы увидеть
+          остальные кнопки.</em
+        >
+      </p>
+      <li class="list-group-item">
+        <strong>Arduino, МС-ТЮК и КиберМишка</strong>
+      </li>
+      <p class="mt-3">
+        При&nbsp;<strong>успешной компиляции</strong>
+        станут доступны кнопки:
+      </p>
+      <p class="mt-3">
+        <strong> «Журнал компиляции»</strong>&nbsp;— Открывается вкладка с
+        выводом (stdout и stderr) от компилятора. Если&nbsp;во&nbsp;время
+        компиляции произошли <strong>ошибки (NOTOK)</strong>, то&nbsp;после
+        stderr будет находиться текст с&nbsp;<strong>ошибками</strong> вашей
+        программы, если&nbsp;же&nbsp;компиляция прошла
+        <strong>успешно (OK)</strong>, после stderr не будет текста .
+      </p>
+      <p class="mt-3">
+        <strong>«Экспорт прошивки»</strong>&nbsp;— При нажатии на&nbsp;кнопку
+        открывается окно приложения для&nbsp;<strong
+          >сохранения бинарного кода</strong
+        >
+        в&nbsp;файл. Если&nbsp;вы скомпилировали схему, то&nbsp;вы&nbsp;можете
+        сразу загрузить ее&nbsp;в&nbsp;плату через раздел Загрузчик,
+        но&nbsp;при&nbsp;открытии другой схемы или&nbsp;закрытии IDE, схему
+        нужно будет компилировать заново. Если&nbsp;же&nbsp;вы&nbsp;сохраните
+        бинарные файлы, вы&nbsp;сможете потом загружать их&nbsp;в&nbsp;плату
+        в&nbsp;любой момент через Загрузчик без&nbsp;компиляции, то&nbsp;есть
+        даже при&nbsp;отсутствии интернета.
+      </p>
+      <p class="mt-3">
+        <strong>«Экспорт кода»</strong>&nbsp;— Открывается окно прлиожения,
+        в&nbsp;котором необходимо выбрать папку на&nbsp;компьютере,
+        в&nbsp;которую будет сохранен код для&nbsp;выбранной машины состояния.
+      </p>
+      <p class="mt-3">
+        <strong>«Посмореть код»</strong>&nbsp;— В&nbsp;верхней панели IDE
+        откроются <strong>вкладки</strong> с&nbsp;кодом для&nbsp;выбранной
+        машины состояния.
+      </p>
+    </ul>
+  </body>
+</html>

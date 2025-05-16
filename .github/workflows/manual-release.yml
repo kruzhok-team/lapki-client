@@ -25,7 +25,7 @@ jobs:
       - name: Download gcc-arm-none-eabi
         run: |
           wget https://seafile.polyus-nt.ru/d/29049f2b2c2e40699df1/files/?p=%2Farm-gnu-toolchain-14.2.rel1-mingw-w64-x86_64-arm-none-eabi.zip -O resources/modules/win32/gcc-arm-none-eabi.zip
-          unzip resources/modules/win32/gcc-arm-none-eabi.zip -d resources/modules/win32/gcc-arm-none-eabi/
+          unzip resources/modules/win32/gcc-arm-none-eabi.zip -d resources/modules/win32/
           rm -f resources/modules/win32/gcc-arm-none-eabi.zip
       - name: Run the build process with Docker
         uses: addnab/docker-run-action@v3

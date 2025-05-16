@@ -293,6 +293,8 @@ const typeMap: any = {
       { json: 'img', js: 'img', typ: u(undefined, '') },
       { json: 'name', js: 'name', typ: '' },
       { json: 'optional', js: 'optional', typ: u(undefined, true) },
+      { json: 'range', js: 'range', typ: u(undefined, '') },
+      { json: 'step', js: 'step', typ: u(undefined, 3.14) },
       { json: 'type', js: 'type', typ: u(undefined, u(a(u(3.14, '')), '')) },
       { json: 'valueAlias', js: 'valueAlias', typ: u(undefined, a('')) },
     ],

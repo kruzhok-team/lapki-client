@@ -7,6 +7,8 @@ export type ArgumentProto = {
   type?: ArgType;
   optional?: boolean;
   valueAlias?: string[];
+  range?: string;
+  step?: number;
 };
 
 export type ParameterProto = {

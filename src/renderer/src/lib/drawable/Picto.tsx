@@ -494,9 +494,21 @@ export class Picto {
           computedY + py,
           width,
           height,
-          value === 0 ? inactiveColor : activeColor,
+          activeColor,
           undefined,
           undefined,
+          1,
+          0.25
+        );
+        this.drawRect(
+          ctx,
+          computedX + px,
+          computedY + py,
+          width,
+          height,
+          inactiveColor,
+          undefined,
+          1 - value / 100,
           1,
           0.25
         );

@@ -1,6 +1,7 @@
 import { MarkedIconData, Picto, icons } from '@renderer/lib/drawable';
 import { Action, Condition, Event, Variable } from '@renderer/types/diagram';
 import { Platform, ComponentProto } from '@renderer/types/platform';
+import { isMatrix } from '@renderer/utils';
 
 import { stateStyle } from '../styles';
 import { isVariable } from '../utils';
@@ -299,10 +300,7 @@ export class PlatformManager {
         parameter = '?!';
       } else if (typeof paramValue.value === 'string') {
         parameter = paramValue.value;
-      } else if (
-        typeof parameterList[0].type === 'string' &&
-        parameterList[0].type.startsWith('Matrix')
-      ) {
+      } else if (typeof parameterList[0].type === 'string' && isMatrix(parameterList[0].type)) {
         parameter = paramValue.value;
         drawFunction = this.picto.drawMatrix;
       } else {
@@ -377,10 +375,7 @@ export class PlatformManager {
           parameter =
             paramValue.value.length > 15 ? paramValue.value.slice(0, 12) + '...' : paramValue.value;
         }
-      } else if (
-        typeof parameterList[0].type === 'string' &&
-        parameterList[0].type.startsWith('Matrix')
-      ) {
+      } else if (typeof parameterList[0].type === 'string' && isMatrix(parameterList[0].type)) {
         parameter = paramValue.value;
         drawFunction = this.picto.drawMatrix;
       } else if (isVariable(paramValue.value)) {

@@ -19,7 +19,7 @@ jobs:
       - name: Download Arduino CLI
         run: |
           wget https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_Windows_64bit.zip -O resources/modules/win32/arduino-cli.zip
-          unzip resources/modules/win32/arduino-cli.zip 0d resources/modules/win32
+          unzip resources/modules/win32/arduino-cli.zip 0d resources/modules/win32/arduino-cli/
           rm -f resources/modules/win32/arduino-cli.zip
       - name: Download gcc-arm-none-eabi
         run: |

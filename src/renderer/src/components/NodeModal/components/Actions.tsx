@@ -174,7 +174,7 @@ export const Actions: React.FC<ActionsProps> = (props) => {
         )}
       </div>
 
-      <ActionsModal smId={smId} controller={controller} {...modal} />
+      <ActionsModal smId={smId} controller={controller} idx={selectedActionIndex} {...modal} />
     </div>
   );
 };

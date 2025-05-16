@@ -23,7 +23,14 @@ jobs:
           wget https://github.com/avrdudes/avrdude/releases/download/v8.0/avrdude-v8.0-windows-x86.zip -O resources/modules/win32/avrdude.zip
           unzip resources/modules/win32/avrdude.zip -d resources/modules/win32
           rm -f resources/modules/win32/avrdude.zip
-
+      - name: Download Arduino CLI
+        run: |
+          wget https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_Windows_64bit.zip -O resources/modules/win32/arduino-cli.zip
+          unzip resources/modules/win32/arduino-cli.zip 0d resources/modules/win32
+          rm -f resources/modules/win32/arduino-cli.zip
+      - name: Download gcc-arm-none-eabi
+        run: |
+          wget https://seafile.polyus-nt.ru/d/29049f2b2c2e40699df1/files/?p=%2Fgcc-arm-none-eabi-10.3-2021.10-win32.exe -O resources/modules/win32/gcc-arm-none-eabi.exe
       - name: Run the build process with Docker
         uses: addnab/docker-run-action@v3
         with:

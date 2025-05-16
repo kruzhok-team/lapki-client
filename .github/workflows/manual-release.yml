@@ -24,7 +24,7 @@ jobs:
           rm -f resources/modules/win32/arduino-cli.zip
       - name: Download gcc-arm-none-eabi
         run: |
-          wget https://seafile.polyus-nt.ru/d/29049f2b2c2e40699df1/files/?p=%2Farm-gnu-toolchain-14.2.rel1-mingw-w64-x86_64-arm-none-eabi.zip&dl=1 -O resources/modules/win32/gcc-arm-none-eabi.zip
+          wget https://seafile.polyus-nt.ru/f/83d0be836d1c491fa3b3/?dl=1 -O resources/modules/win32/gcc-arm-none-eabi.zip
           unzip resources/modules/win32/gcc-arm-none-eabi.zip -d resources/modules/win32/
           rm -f resources/modules/win32/gcc-arm-none-eabi.zip
       - name: Run the build process with Docker

@@ -33,17 +33,13 @@ for %%R in (%ITEMS%) do (
     for %%F in ("!FULL_PATH!") do set "DIR=%%~dpF"
     REM strip trailing backslash
     if "!DIR:~-1!"=="\" set "DIR=!DIR:~0,-1!"
-    if exist "!DIR!\" (
-        REM check if already in NEWPATH
-        echo !NEWPATH! | findstr /I /C:";!DIR!;" >nul
-        if errorlevel 1 (
-            echo Adding "!DIR!" to PATH...
-            set "NEWPATH=!NEWPATH!;!DIR!"
-        ) else (
-            echo "!DIR!" already in PATH, skipping.
-        )
+    REM check if already in NEWPATH
+    echo !NEWPATH! | findstr /I /C:";!DIR!;" >nul
+    if errorlevel 1 (
+        echo Adding "!DIR!" to PATH...
+        set "NEWPATH=!NEWPATH!;!DIR!"
     ) else (
-        echo WARNING: Directory "!DIR!" not found, skipping.
+        echo "!DIR!" already in PATH, skipping.
     )
 )
 

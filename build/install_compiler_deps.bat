@@ -2,7 +2,15 @@
 setlocal EnableDelayedExpansion
 
 REM =====================================================
-REM Configuration: set your base directory and files here
+REM 0) читаем существующий пользовательский PATH
+REM =====================================================
+set "USERPATH="
+for /f "tokens=2,* skip=2" %%A in ('
+    reg query "HKCU\Environment" /v Path 2^>nul
+') do set "USERPATH=%%B"
+
+REM =====================================================
+REM 1) получаем BASE_DIR и список относительных путей
 REM =====================================================
 if "%~1"=="" (
     echo ERROR: No base directory provided.
@@ -15,49 +23,48 @@ if not exist "%BASE_DIR%\" (
     echo ERROR: Base directory "%BASE_DIR%" does not exist.
     exit /b 1
 )
+
 set "ITEMS=resources\app.asar.unpacked\resources\modules\win32\gcc-arm-none-eabi\bin resources\app.asar.unpacked\resources\modules\win32\arduino-cli"
 
 REM =====================================================
-REM 2) Prepare new PATH
+REM 2) добавляем каждый каталог в USERPATH, если там нет
 REM =====================================================
-set "OLDPATH=%PATH%"
-set "NEWPATH=%PATH%"
+REM — гарантируем, что USERPATH заканчивается ;
+if defined USERPATH (
+    if "!USERPATH:~-1!" neq ";" set "USERPATH=!USERPATH!;"
+) else (
+    set "USERPATH=;"
+)
 
-REM =====================================================
-REM 3) Loop through each relative item
-REM =====================================================
 for %%R in (%ITEMS%) do (
-    set "REL=%%R"
-    set "FULL_PATH=%BASE_DIR%\!REL!"
-    REM extract directory of the file
-    for %%F in ("!FULL_PATH!") do set "DIR=%%~dpF"
-    REM strip trailing backslash
+    set "FULL=%BASE_DIR%\%%R"
+    for %%F in ("!FULL!") do set "DIR=%%~dpF"
     if "!DIR:~-1!"=="\" set "DIR=!DIR:~0,-1!"
-    REM check if already in NEWPATH
-    echo !NEWPATH! | findstr /I /C:";!DIR!;" >nul
+    REM проверяем, есть ли уже ;DIR; в USERPATH;
+    echo !USERPATH! | findstr /I /C:";!DIR!;" >nul
     if errorlevel 1 (
-        echo Adding "!DIR!" to PATH...
-        set "NEWPATH=!NEWPATH!;!DIR!"
+        echo Adding "!DIR!" to user PATH...
+        set "USERPATH=!USERPATH!!DIR!;"
     ) else (
-        echo "!DIR!" already in PATH, skipping.
+        echo "!DIR!" already present, skipping.
     )
 )
 
-REM 4) Сохраняем PATH в HKCU\Environment как REG_EXPAND_SZ
-REM ------------------------------------------------------
-echo.
-echo Writing PATH to registry...
-reg add "HKCU\Environment" /v Path /t REG_EXPAND_SZ /d "!NEWPATH!" /f >nul
+REM обрезаем финальный ;
+if "!USERPATH:~-1!"==";" set "USERPATH=!USERPATH:~0,-1!"
 
-REM ------------------------------------------------------
-REM 5) Оповещаем систему — чтобы диалог «Переменные среды» 
-REM    и все новые консоли увидели обновлённый PATH
-REM ------------------------------------------------------
+REM =====================================================
+REM 3) пишем обратно в реестр и оповещаем систему
+REM =====================================================
+echo.
+echo Writing updated user PATH to HKCU\Environment...
+reg add "HKCU\Environment" /v Path /t REG_EXPAND_SZ /d "!USERPATH!" /f >nul
+
 echo.
 echo Broadcasting environment change...
-REM WM_SETTINGCHANGE = 0x001A, HWND_BROADCAST = 0xFFFF
-<nul set /p="> "  &  RUNDLL32.EXE USER32.DLL,SendNotifyMessageW 0xffff,0x1A,0,"Environment"
+REM WM_SETTINGCHANGE=0x1A, HWND_BROADCAST=0xFFFF, SMTO_ABORTIFHUNG=0x0002
+<nul set /p=">"  &  RUNDLL32.EXE USER32.DLL,SendNotifyMessageW 0xffff,0x1A,0,"Environment"
 
 echo.
-echo Done. Please reopen the Environment Variables dialog or start a new console.
+echo Done. New user PATH written. Please reopen any consoles or the Environment Variables dialog to see changes.
 endlocal

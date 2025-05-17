@@ -1,0 +1,7 @@
+#ifndef USER_H
+#define USER_H
+#include "STATE_MACHINE_NAME.h"
+
+class User {
+    public:
+        static void emit(QSignal signal);

@@ -1,0 +1,9 @@
+
+#ifdef DESKTOP
+        /*.${SMs::STATE_MACHINE_CAPITALIZED_NAME::SM::global::TERMINATE} */
+        case TERMINATE_SIG: {
+            status_ = Q_TRAN(&STATE_MACHINE_CAPITALIZED_NAME_final);
+            break;
+        }
+#endif /* def DESKTOP */
+

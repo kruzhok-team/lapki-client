@@ -31,6 +31,7 @@ if !last_char!==^" (
 )
 set "result=!arg!\wdi-simple64.exe"
 echo Installing drivers for CyberBear. Sit tight!
+@REM TODO: Установка драйверов МС-ТЮК
 @REM echo "!result!" -t 1 -l 0 -v 0x1209 -p 0xAC01
 @REM TODO: Проблема с передачей кириллицы в качестве аргумента
 @REM Перевод в UTF-8 не помогает, а с кириллицей он начинает ругаться

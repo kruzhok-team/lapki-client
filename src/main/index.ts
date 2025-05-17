@@ -68,7 +68,7 @@ function createWindow(): BrowserWindow {
 
   //Получаем ответ из рендера и закрываем приложение
   ipcMain.on('closed', (_) => {
-    ModuleManager.stopModule('lapki-flasher');
+    ModuleManager.stopModules();
     app.exit(0);
   });
 
@@ -110,11 +110,12 @@ function createWindow(): BrowserWindow {
   return mainWindow;
 }
 
-const startFlasher = async () => {
-  ModuleManager.startLocalModule('lapki-flasher');
+const startModules = async () => {
+  await ModuleManager.startLocalModule('lapki-flasher');
+  await ModuleManager.startLocalModule('lapki-compiler');
 };
 initSettings();
-startFlasher();
+startModules();
 
 // Выполняется после инициализации Electron
 app.whenReady().then(() => {
@@ -128,6 +129,9 @@ app.whenReady().then(() => {
     await ModuleManager.startLocalModule(module);
     if (module === 'lapki-flasher') {
       settingsChangeSend(mainWindow.webContents, 'flasher', settings.getSync('flasher'));
+    }
+    if (module === 'lapki-compiler') {
+      settingsChangeSend(mainWindow.webContents, 'compiler', settings.getSync('compiler'));
     }
   });
 
@@ -167,6 +171,6 @@ app.whenReady().then(() => {
 // Завершаем приложение, когда окна закрыты.
 app.on('window-all-closed', () => {
   // явно останавливаем загрузчик, так как в некоторых случаях он остаётся висеть
-  ModuleManager.stopModule('lapki-flasher');
+  ModuleManager.stopModules();
   app.quit();
 });

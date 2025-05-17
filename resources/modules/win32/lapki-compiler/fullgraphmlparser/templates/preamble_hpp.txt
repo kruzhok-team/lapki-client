@@ -1,0 +1,8 @@
+#ifndef STATE_MACHINE_NAME_h
+#define STATE_MACHINE_NAME_h
+
+QSignal defer[64];
+int defer_i = 0;
+bool stateChanged = false;
+bool signalDefer = false;
+bool inVertex = false;

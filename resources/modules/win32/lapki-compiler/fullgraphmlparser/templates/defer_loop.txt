@@ -1,0 +1,10 @@
+  
+  if (stateChanged) {
+      signalDefer = true;
+      for (int defer_j = 0; defer_j != defer_i; defer_j++) {
+          SIGNAL_DISPATCH(the_STATE_MACHINE_NAME, defer[defer_j]);
+      }
+      signalDefer = false;
+      stateChanged = false;
+      defer_i = 0;
+  }

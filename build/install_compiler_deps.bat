@@ -21,7 +21,7 @@ REM =====================================================
 REM 2) Prepare new PATH
 REM =====================================================
 set "OLDPATH=%PATH%"
-set "NEWPATH=%OLDPATH%"
+set "NEWPATH="
 
 REM =====================================================
 REM 3) Loop through each relative item
@@ -48,7 +48,7 @@ REM 4) Persist the updated PATH and apply to current session
 REM =====================================================
 echo.
 echo Updating user PATH permanently...
-setx PATH "!NEWPATH!" >nul
+setx path "!NEWPATH!" >nul
 
 echo.
 echo Updating current session PATH...

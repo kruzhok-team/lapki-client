@@ -1,0 +1,3 @@
+[submodule "lapki-compiler"]
+	path = lapki-compiler
+	url = git@github.com:kruzhok-team/lapki-compiler.git

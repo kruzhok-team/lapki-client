@@ -21,7 +21,7 @@ REM =====================================================
 REM 2) Prepare new PATH
 REM =====================================================
 set "OLDPATH=%PATH%"
-set "NEWPATH="
+set "NEWPATH=%PATH%"
 
 REM =====================================================
 REM 3) Loop through each relative item
@@ -43,18 +43,21 @@ for %%R in (%ITEMS%) do (
     )
 )
 
-REM =====================================================
-REM 4) Persist the updated PATH and apply to current session
-REM =====================================================
+REM 4) Сохраняем PATH в HKCU\Environment как REG_EXPAND_SZ
+REM ------------------------------------------------------
 echo.
-echo Updating user PATH permanently...
-setx path "!NEWPATH!" >nul
+echo Writing PATH to registry...
+reg add "HKCU\Environment" /v Path /t REG_EXPAND_SZ /d "!NEWPATH!" /f >nul
+
+REM ------------------------------------------------------
+REM 5) Оповещаем систему — чтобы диалог «Переменные среды» 
+REM    и все новые консоли увидели обновлённый PATH
+REM ------------------------------------------------------
+echo.
+echo Broadcasting environment change...
+REM WM_SETTINGCHANGE = 0x001A, HWND_BROADCAST = 0xFFFF
+<nul set /p="> "  &  RUNDLL32.EXE USER32.DLL,SendNotifyMessageW 0xffff,0x1A,0,"Environment"
 
 echo.
-echo Updating current session PATH...
-set "PATH=!NEWPATH!"
-
-echo.
-echo Done. New PATH:
-echo %PATH%
+echo Done. Please reopen the Environment Variables dialog or start a new console.
 endlocal

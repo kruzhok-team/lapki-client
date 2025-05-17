@@ -68,7 +68,7 @@ function createWindow(): BrowserWindow {
 
   //Получаем ответ из рендера и закрываем приложение
   ipcMain.on('closed', (_) => {
-    ModuleManager.stopModule('lapki-flasher');
+    ModuleManager.stopModules();
     app.exit(0);
   });
 
@@ -171,6 +171,6 @@ app.whenReady().then(() => {
 // Завершаем приложение, когда окна закрыты.
 app.on('window-all-closed', () => {
   // явно останавливаем загрузчик, так как в некоторых случаях он остаётся висеть
-  ModuleManager.stopModule('lapki-flasher');
+  ModuleManager.stopModules();
   app.quit();
 });

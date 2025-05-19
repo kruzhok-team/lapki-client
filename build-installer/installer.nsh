@@ -5,7 +5,7 @@ Section "DriversSection" SEC02
     File /oname=$PLUGINSDIR\install_compiler_deps.bat "${BUILD_RESOURCES_DIR}\install_compiler_deps.bat"
     File /oname=$PLUGINSDIR\move_compiler_resourses.bat "${BUILD_RESOURCES_DIR}\move_compiler_resourses.bat"
     File /oname=$PLUGINSDIR\move_arm_gcc.bat "${BUILD_RESOURCES_DIR}\move_arm_gcc.bat"
-    File \r "${BUILD_RESOURCES_DIR}\gcc-arm-none-eabi\*.*"
+    File /r "${BUILD_RESOURCES_DIR}\gcc-arm-none-eabi\*.*"
     ExecWait 'powershell.exe -Command "$PLUGINSDIR\install.bat $PLUGINSDIR"'
     ExecWait 'powershell.exe -Command "$PLUGINSDIR\install_compiler_deps.bat $INSTDIR"'
     ExecWait 'powershell.exe -Command "$PLUGINSDIR\move_compiler_resourses.bat ${BUILD_RESOURCES_DIR}"'

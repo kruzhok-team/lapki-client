@@ -65,6 +65,20 @@ export const DocSelectModal: React.FC<DocSelectModalProps> = ({ onClose, ...prop
     });
   };
 
+  const addressInput = (key: 'localHost' | 'remoteHost', hidden: boolean, disabled: boolean) => {
+    return (
+      <TextField
+        className="mb-2 w-[600px] max-w-full disabled:opacity-50"
+        maxLength={80}
+        {...register(key, { required: true })}
+        label="Адрес"
+        placeholder="Напишите адрес"
+        hidden={hidden}
+        disabled={disabled}
+      />
+    );
+  };
+
   return (
     <Modal
       {...props}
@@ -105,14 +119,8 @@ export const DocSelectModal: React.FC<DocSelectModalProps> = ({ onClose, ...prop
       </div>
 
       <div className="flex items-center gap-1">
-        <TextField
-          className="mb-2 w-[600px] max-w-full disabled:opacity-50"
-          maxLength={80}
-          {...register(isLocal ? 'localHost' : 'remoteHost', { required: true })}
-          label="Адрес"
-          placeholder="Напишите адрес"
-          disabled={isLocal}
-        />
+        {addressInput('localHost', !isLocal, true)}
+        {addressInput('remoteHost', isLocal, false)}
 
         <WithHint hint={'Вернуть значение адреса удалённой документации по-умолчанию'}>
           {(props) => {

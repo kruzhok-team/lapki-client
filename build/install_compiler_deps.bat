@@ -34,7 +34,7 @@ if not exist "%BASE_DIR%\" (
 REM =====================================================
 REM 2) List of relative dirs under BASE_DIR to add
 REM =====================================================
-set "ITEMS=resources\app.asar.unpacked\resources\modules\win32\gcc-arm-none-eabi\bin\ resources\app.asar.unpacked\resources\modules\win32\arduino-cli\"
+set "ITEMS=gcc-arm-none-eabi\bin\ resources\app.asar.unpacked\resources\modules\win32\arduino-cli\"
 
 REM =====================================================
 REM 3) Loop and append each unique directory to USERPATH

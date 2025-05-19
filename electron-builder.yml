@@ -10,12 +10,13 @@ files:
   - '!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
   - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
   - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
-  - '**/*.o'
-  - '**/*.a'
-  - 'out/**/*'
 asarUnpack:
   - resources/**
-  - resources/modules/win32/gcc-arm-none-eabi/**
+  - "**/*.o"
+  - "**/*.a"
+  - "**/*.so"
+  - "**/*.dll"
+  - "**/*.exe"
 # TODO: afterSign: build/notarize.js
 win:
   executableName: lapki-ide

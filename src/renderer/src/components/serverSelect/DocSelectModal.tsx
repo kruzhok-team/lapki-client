@@ -116,7 +116,7 @@ export const DocSelectModal: React.FC<DocSelectModalProps> = ({ onClose, ...prop
                 Тип
                 <Select
                   value={options.find((opt) => opt.value === value)}
-                  onChange={(opt) => handleChange(opt)}
+                  onChange={handleChange}
                   options={options}
                   isSearchable={false}
                 />

@@ -17,5 +17,5 @@ SectionEnd
     ; если нужен нулевой код возврата:
     ; IfErrors 0 +2
     ;   MessageBox MB_OK "install_compiler_deps.bat failed!"
-    ExecWait 'powershell.exe -Command "$PLUGINSDIR\move_arm_gcc.bat ${PLUGINSDIR} $INSTDIR"'
+    ExecWait 'powershell.exe -Command "$PLUGINSDIR\move_arm_gcc.bat $PLUGINSDIR $INSTDIR"'
 !macroend

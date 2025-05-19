@@ -1,8 +1,9 @@
 import { useLayoutEffect } from 'react';
 
 import { Controller, useForm } from 'react-hook-form';
+import { twMerge } from 'tailwind-merge';
 
-import { Modal, Select, TextField } from '@renderer/components/UI';
+import { Modal, Select, TextField, WithHint } from '@renderer/components/UI';
 import { useSettings } from '@renderer/hooks';
 
 type FormValues = Main['settings']['doc'];
@@ -18,7 +19,7 @@ const options = [
 ];
 
 export const DocSelectModal: React.FC<DocSelectModalProps> = ({ onClose, ...props }) => {
-  const [docSetting, setDocSetting, resetDocSetting] = useSettings('doc');
+  const [docSetting, setDocSetting] = useSettings('doc');
 
   const {
     register,
@@ -52,6 +53,18 @@ export const DocSelectModal: React.FC<DocSelectModalProps> = ({ onClose, ...prop
     docSetting?.type === 'local' ? 'локальный' : 'удалённый'
   }`;
 
+  const resetLocalHost = () => {
+    window.electron.ipcRenderer.invoke('getLocalDocServer').then((addr) => {
+      setValue('localHost', addr);
+    });
+  };
+
+  const resetRemoteHost = () => {
+    window.electron.ipcRenderer.invoke('getRemoteDocServer').then((addr) => {
+      setValue('remoteHost', addr);
+    });
+  };
+
   return (
     <Modal
       {...props}
@@ -70,14 +83,10 @@ export const DocSelectModal: React.FC<DocSelectModalProps> = ({ onClose, ...prop
               onChange(v.value);
 
               if (v.value === 'local') {
-                window.electron.ipcRenderer.invoke('getLocalDocServer').then((addr) => {
-                  setValue('localHost', addr);
-                });
+                resetLocalHost();
               } else {
                 if (!docSetting?.remoteHost) {
-                  window.electron.ipcRenderer.invoke('getRemoteDocServer').then((addr) => {
-                    setValue('remoteHost', addr);
-                  });
+                  resetRemoteHost();
                 }
               }
             };
@@ -97,18 +106,38 @@ export const DocSelectModal: React.FC<DocSelectModalProps> = ({ onClose, ...prop
         />
       </div>
 
-      <TextField
-        className="mb-2 max-w-full disabled:opacity-50"
-        maxLength={80}
-        {...register(isLocal ? 'localHost' : 'remoteHost', { required: true })}
-        label="Адрес"
-        placeholder="Напишите адрес"
-        disabled={isLocal}
-      />
+      <div className="flex items-center gap-1">
+        <TextField
+          className="mb-2 max-w-full disabled:opacity-50"
+          maxLength={80}
+          {...register(isLocal ? 'localHost' : 'remoteHost', { required: true })}
+          label="Адрес"
+          placeholder="Напишите адрес"
+          disabled={isLocal}
+        />
 
-      <button type="button" className="btn-secondary" onClick={resetDocSetting}>
-        Сбросить настройки
-      </button>
+        <WithHint hint={'Вернуть значение адреса удалённой документации по-умолчанию'}>
+          {(props) => {
+            return (
+              <button
+                type="button"
+                className={twMerge(
+                  'text-icon-secondary disabled:text-text-disabled',
+                  !isLocal && 'hover:text-icon-active'
+                )}
+                {...props}
+                onClick={(e) => {
+                  e.preventDefault();
+                  resetRemoteHost();
+                }}
+                disabled={isLocal}
+              >
+                ↺
+              </button>
+            );
+          }}
+        </WithHint>
+      </div>
 
       <div>{currentServerLabel}</div>
     </Modal>

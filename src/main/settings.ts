@@ -134,10 +134,17 @@ export const initSettings = () => {
     }
   }
   checkRecentFiles();
+  // FIXME
   // (Roundabout1): костыль, нужно будет реализовать проверку наличия всех значений для ключей при инициализации.
   const monitorSettings = settings.getSync('serialmonitor' as SettingsKey);
   if (monitorSettings && !monitorSettings['textMode']) {
     settings.setSync('serialmonitor.textMode', 'text');
+  }
+  // FIXME
+  // (Roundabout1): тот же костыль, но для документации.
+  const docSettings = settings.getSync('doc' as SettingsKey);
+  if (docSettings && !docSettings['type']) {
+    settings.setSync('doc', defaultSettings['doc']);
   }
 };
 

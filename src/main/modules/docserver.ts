@@ -1,6 +1,8 @@
 import { readFile } from 'fs';
 import * as http from 'http';
 import path from 'path';
+
+import { getContentType } from '../utils';
 // FIXME: реализовать авто поиск порта
 export function startDocServer(port = 8071, host = 'localhost') {
   // FIXME: сделать функцию для получения этого пути, чтобы не дублировать код из moduleManager
@@ -12,30 +14,11 @@ export function startDocServer(port = 8071, host = 'localhost') {
       let filePath = `${basePath}/docserver${decodeURI(url.pathname)}`;
       if (url.pathname === '/') filePath = filePath + 'index.json';
 
-      const extname = path.extname(filePath);
-      let contentType = 'text/html';
-      switch (extname) {
-        case '.js':
-          contentType = 'text/javascript';
-          break;
-        case '.css':
-          contentType = 'text/css';
-          break;
-        case '.json':
-          contentType = 'application/json';
-          break;
-        case '.png':
-          contentType = 'image/png';
-          break;
-        case '.jpg':
-          contentType = 'image/jpg';
-          break;
-        case '.wav':
-          contentType = 'audio/wav';
-          break;
-        case '.svg':
-          contentType = 'image/svg+xml';
-          break;
+      const contentType = getContentType(filePath);
+      if (!contentType) {
+        response.writeHead(500);
+        response.end(`Тип контента для ${filePath} не определён.`, 'utf-8');
+        return;
       }
       readFile(filePath, function (error, content) {
         if (error) {

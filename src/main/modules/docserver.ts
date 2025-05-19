@@ -41,11 +41,13 @@ export function startDocServer(port = 8071, host = 'localhost') {
         if (error) {
           if (error.code == 'ENOENT') {
             response.writeHead(404);
-            response.end('Страница не найдена: 404');
+            response.end('Страница не найдена: 404', 'utf-8');
           } else {
             response.writeHead(500);
-            response.end('Sorry, check with the site admin for error: ' + error.code + ' ..\n');
-            response.end();
+            response.end(
+              'Произошла ошибка, отправьте код ошибки в службу поддержки: ' + error.code + ' ..\n',
+              'utf-8'
+            );
           }
         } else {
           response.writeHead(200, { 'Content-Type': contentType });

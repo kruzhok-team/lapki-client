@@ -102,10 +102,10 @@ export const DocSelectModal: React.FC<DocSelectModalProps> = ({ onClose, ...prop
       </div>
 
       <TextField
-        className="mb-2 disabled:opacity-50"
+        className="mb-2 max-w-full disabled:opacity-50"
         maxLength={80}
         {...register('remoteHost', { required: true })}
-        label="Адрес:"
+        label="Адрес"
         placeholder="Напишите адрес"
         hidden={isLocal}
       />

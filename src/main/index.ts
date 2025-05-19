@@ -12,6 +12,7 @@ import { startDocServer } from './modules/docserver';
 import { ModuleName, ModuleManager } from './modules/ModuleManager';
 import { initSettings, initSettingsHandlers, settingsChangeSend } from './settings';
 import { getAllTemplates, getTemplate } from './templates';
+import { defaultRemoteDocHost, defaultLocalDocHost } from './version';
 
 import icon from '../../resources/icon.png?asset';
 
@@ -151,6 +152,14 @@ app.whenReady().then(() => {
     } else {
       return false;
     }
+  });
+
+  ipcMain.handle('getRemoteDocServer', () => {
+    return defaultRemoteDocHost;
+  });
+
+  ipcMain.handle('getLocalDocServer', () => {
+    return defaultLocalDocHost;
   });
 
   // отключение перезагрузки по CmdOrCtrl + R

@@ -46,7 +46,7 @@ export const DocSelectModal: React.FC<DocSelectModalProps> = ({ onClose, ...prop
     reset(docSetting);
   }, [reset, docSetting]);
 
-  const isSecondaryFieldsDisabled = watch('type') === 'local';
+  const isLocal = watch('type') === 'local';
 
   const currentServerLabel = `Текущий тип сервера: ${
     docSetting?.type === 'local' ? 'локальный' : 'удалённый'
@@ -69,11 +69,20 @@ export const DocSelectModal: React.FC<DocSelectModalProps> = ({ onClose, ...prop
             const handleChange = (v: any) => {
               onChange(v.value);
 
+              // FIXME: костыли
               if (v.value === 'local') {
-                // FIXME: брать из константы или настроек
-                setValue('host', 'http://localhost:8071/');
+                window.electron.ipcRenderer.invoke('getLocalDocServer').then((addr) => {
+                  setValue('host', addr);
+                });
               } else {
-                setValue('host', docSetting?.remoteHost ?? docSetting?.host ?? '');
+                if (!docSetting?.remoteHost) {
+                  window.electron.ipcRenderer.invoke('getRemoteDocServer').then((addr) => {
+                    setValue('host', addr);
+                    setValue('remoteHost', addr);
+                  });
+                } else {
+                  setValue('host', docSetting.remoteHost);
+                }
               }
             };
 
@@ -95,10 +104,10 @@ export const DocSelectModal: React.FC<DocSelectModalProps> = ({ onClose, ...prop
       <TextField
         className="mb-2 disabled:opacity-50"
         maxLength={80}
-        {...register('host', { required: true })}
+        {...register('remoteHost', { required: true })}
         label="Адрес:"
         placeholder="Напишите адрес"
-        disabled={isSecondaryFieldsDisabled}
+        hidden={isLocal}
       />
 
       <button type="button" className="btn-secondary" onClick={resetDocSetting}>

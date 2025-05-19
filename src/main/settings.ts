@@ -3,7 +3,12 @@ import settings from 'electron-settings';
 
 import { existsSync } from 'fs';
 
-import { defaultCompilerHost, defaultCompilerPort, defaultDocHost } from './version';
+import {
+  defaultCompilerHost,
+  defaultCompilerPort,
+  defaultRemoteDocHost,
+  defaultLocalDocHost,
+} from './version';
 
 type MetaType =
   | {
@@ -38,8 +43,8 @@ type RecentFile = {
 
 export const defaultSettings = {
   doc: {
-    host: 'http://localhost:8071/', // FIXME: реализовать авто поиск порта
-    remoteHost: defaultDocHost,
+    host: defaultLocalDocHost,
+    remoteHost: defaultRemoteDocHost,
     type: 'local' as 'local' | 'remote',
   },
   compiler: {

@@ -84,10 +84,8 @@ export const DocSelectModal: React.FC<DocSelectModalProps> = ({ onClose, ...prop
 
               if (v.value === 'local') {
                 resetLocalHost();
-              } else {
-                if (!docSetting?.remoteHost) {
-                  resetRemoteHost();
-                }
+              } else if (!docSetting?.remoteHost) {
+                resetRemoteHost();
               }
             };
 

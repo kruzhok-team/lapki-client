@@ -2,6 +2,7 @@ appId: ru.kruzhok.lapki-ide
 productName: lapki-ide
 directories:
   buildResources: build
+  output: dist
 files:
   - '!**/.vscode/*'
   - '!src/*'
@@ -11,8 +12,10 @@ files:
   - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
   - '**/*.o'
   - '**/*.a'
+  - 'out/**/*'
 asarUnpack:
   - resources/**
+  - resources/modules/win32/gcc-arm-none-eabi/**
 # TODO: afterSign: build/notarize.js
 win:
   executableName: lapki-ide

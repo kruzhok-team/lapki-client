@@ -1,6 +1,7 @@
 import { useLayoutEffect } from 'react';
 
 import { Controller, useForm } from 'react-hook-form';
+import { SingleValue } from 'react-select';
 import { twMerge } from 'tailwind-merge';
 
 import { Modal, Select, TextField, WithHint } from '@renderer/components/UI';
@@ -13,7 +14,12 @@ interface DocSelectModalProps {
   onClose: () => void;
 }
 
-const options = [
+type optionType = {
+  value: FormValues['type'];
+  label: string;
+};
+
+const options: optionType[] = [
   { value: 'remote', label: 'Удалённый' },
   { value: 'local', label: 'Локальный' },
 ];
@@ -65,7 +71,7 @@ export const DocSelectModal: React.FC<DocSelectModalProps> = ({ onClose, ...prop
     });
   };
 
-  const addressInput = (key: 'localHost' | 'remoteHost', hidden: boolean, disabled: boolean) => {
+  const addressInput = (key: keyof FormValues, hidden: boolean, disabled: boolean) => {
     return (
       <TextField
         className="mb-2 w-[600px] max-w-full disabled:opacity-50"
@@ -93,7 +99,9 @@ export const DocSelectModal: React.FC<DocSelectModalProps> = ({ onClose, ...prop
           control={control}
           name="type"
           render={({ field: { value, onChange } }) => {
-            const handleChange = (v: any) => {
+            const handleChange = (v: SingleValue<optionType>) => {
+              if (!v) return;
+
               onChange(v.value);
 
               if (v.value === 'local') {
@@ -108,7 +116,7 @@ export const DocSelectModal: React.FC<DocSelectModalProps> = ({ onClose, ...prop
                 Тип
                 <Select
                   value={options.find((opt) => opt.value === value)}
-                  onChange={handleChange}
+                  onChange={(opt) => handleChange(opt)}
                   options={options}
                   isSearchable={false}
                 />

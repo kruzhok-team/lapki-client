@@ -1,0 +1,3 @@
+[submodule "resources/docserver"]
+	path = resources/docserver
+	url = https://github.com/kruzhok-team/lapki-docserver.git

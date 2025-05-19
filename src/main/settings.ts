@@ -43,8 +43,8 @@ type RecentFile = {
 
 export const defaultSettings = {
   doc: {
-    host: defaultLocalDocHost,
     remoteHost: defaultRemoteDocHost,
+    localHost: defaultLocalDocHost,
     type: 'local' as 'local' | 'remote',
   },
   compiler: {

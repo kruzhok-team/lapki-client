@@ -69,19 +69,15 @@ export const DocSelectModal: React.FC<DocSelectModalProps> = ({ onClose, ...prop
             const handleChange = (v: any) => {
               onChange(v.value);
 
-              // FIXME: костыли
               if (v.value === 'local') {
                 window.electron.ipcRenderer.invoke('getLocalDocServer').then((addr) => {
-                  setValue('host', addr);
+                  setValue('localHost', addr);
                 });
               } else {
                 if (!docSetting?.remoteHost) {
                   window.electron.ipcRenderer.invoke('getRemoteDocServer').then((addr) => {
-                    setValue('host', addr);
                     setValue('remoteHost', addr);
                   });
-                } else {
-                  setValue('host', docSetting.remoteHost);
                 }
               }
             };
@@ -104,10 +100,10 @@ export const DocSelectModal: React.FC<DocSelectModalProps> = ({ onClose, ...prop
       <TextField
         className="mb-2 max-w-full disabled:opacity-50"
         maxLength={80}
-        {...register('remoteHost', { required: true })}
+        {...register(isLocal ? 'localHost' : 'remoteHost', { required: true })}
         label="Адрес"
         placeholder="Напишите адрес"
-        hidden={isLocal}
+        disabled={isLocal}
       />
 
       <button type="button" className="btn-secondary" onClick={resetDocSetting}>

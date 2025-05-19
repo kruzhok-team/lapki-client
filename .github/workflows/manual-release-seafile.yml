@@ -17,6 +17,9 @@ jobs:
           unzip resources/modules/win32/avrdude.zip -d resources/modules/win32
           rm -f resources/modules/win32/avrdude.zip
 
+      - name: Init submodules
+        run: git submodule update --init --checkout --recursive
+
       - name: Run the build process with Docker
         uses: addnab/docker-run-action@v3
         with:

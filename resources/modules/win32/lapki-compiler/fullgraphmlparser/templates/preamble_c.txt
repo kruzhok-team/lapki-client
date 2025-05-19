@@ -1,5 +1,0 @@
-#include "qhsm.HEADER_EXTENSION"
-#include "STATE_MACHINE_NAME.HEADER_EXTENSION"
-#include <stdint.h>
-
-QHsm * const the_STATE_MACHINE_NAME = (QHsm *) &STATE_MACHINE_LOWERED_NAME;

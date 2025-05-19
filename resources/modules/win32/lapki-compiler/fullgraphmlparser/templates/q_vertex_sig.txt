@@ -1,4 +1,0 @@
-
-    if (inVertex) {
-        SIGNAL_DISPATCH(the_STATE_MACHINE_NAME, Q_VERTEX_SIG);
-    }

@@ -1,5 +1,0 @@
-#include "User.h"
-
-void User::emit(QSignal signal){
-    SIGNAL_DISPATCH(the_STATE_MACHINE_NAME, signal);
-}

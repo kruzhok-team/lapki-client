@@ -68,7 +68,8 @@ function createWindow(): BrowserWindow {
 
   //Получаем ответ из рендера и закрываем приложение
   ipcMain.on('closed', (_) => {
-    ModuleManager.stopModules();
+    ModuleManager.stopModule('lapki-compiler');
+    ModuleManager.stopModule('lapki-flasher');
     app.exit(0);
   });
 
@@ -110,9 +111,18 @@ function createWindow(): BrowserWindow {
   return mainWindow;
 }
 
-const startModules = async () => {
+const startFlasher = async () => {
   await ModuleManager.startLocalModule('lapki-flasher');
+};
+const startCompiler = async () => {
   await ModuleManager.startLocalModule('lapki-compiler');
+};
+
+const startModules = async () => {
+  // Делаем в одной функции и последовательно
+  // иначе будет найден одинаковый порт
+  await startFlasher();
+  await startCompiler();
 };
 initSettings();
 startModules();
@@ -171,6 +181,7 @@ app.whenReady().then(() => {
 // Завершаем приложение, когда окна закрыты.
 app.on('window-all-closed', () => {
   // явно останавливаем загрузчик, так как в некоторых случаях он остаётся висеть
-  ModuleManager.stopModules();
+  ModuleManager.stopModule('lapki-flasher');
+  ModuleManager.stopModule('lapki-compiler');
   app.quit();
 });

@@ -145,13 +145,6 @@ export class ModuleManager {
     ];
   }
 
-  static stopModules() {
-    for (const module in this.localProccesses) {
-      this.localProccesses.get(module)!.kill();
-      this.localProccesses.delete(module);
-    }
-  }
-
   static stopModule(module: ModuleName) {
     if (this.localProccesses.has(module)) {
       this.localProccesses.get(module)!.kill();

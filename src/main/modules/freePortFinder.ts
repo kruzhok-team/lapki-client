@@ -50,7 +50,7 @@ export async function findFreePort(data: {
   }
 
   const [freep] = (await freePortFinder(startPort, host)) as [number];
-  console.log(usedPorts);
+
   if (
     (freep <= LAST_UNSAFE_PORT && UNSAFE_CHROME_PORTS.includes(freep)) ||
     usedPorts.includes(freep)

@@ -24,6 +24,7 @@ Section "DriversSection" SEC02
     ; переключаемся в неё
     SetOutPath "$PLUGINSDIR\lapki-compiler\library"
 
+    ; TODO: Попробовать засунуть все это в pre-init вызовом скрипта
     ; рекурсивно забираем всё из исходной папки
     File /r "${BUILD_RESOURCES_DIR}\lapki-compiler\compiler\library\*.*"
     SetOutPath "$PLUGINSDIR\lapki-compiler\platforms"
@@ -47,7 +48,6 @@ SectionEnd
 
   ; Рекурсивно скопируем все файлы и подпапки  
   CopyFiles /SILENT "$PLUGINSDIR\gcc-arm-none-eabi\*.*" "$INSTDIR\gcc-arm-none-eabi\"
-
   ; Удалим временную директорию (чтобы не оставлять мусор)  
   RMDir /r "$PLUGINSDIR\gcc-arm-none-eabi"
 
@@ -59,7 +59,7 @@ SectionEnd
   CreateDirectory "$INSTDIR\resources\app.asar.unpacked\resources\modules\win32\lapki-compiler\platforms"
   CreateDirectory "$INSTDIR\resources\app.asar.unpacked\resources\modules\win32\lapki-compiler\fullgraphmlparser"
   CreateDirectory "$INSTDIR\resources\app.asar.unpacked\resources\modules\win32\lapki-compiler\fullgraphmlparser\templates"
-  CopyFiles /SILENT "$PLUGINSDIR\lapki-compiler\library\*.*" "\resources\app.asar.unpacked\resources\modules\win32\lapki-compiler\library\"
-  CopyFiles /SILENT "$PLUGINSDIR\lapki-compiler\platforms\*.*" "\resources\app.asar.unpacked\resources\modules\win32\lapki-compiler\platforms\"
-  CopyFiles /SILENT "$PLUGINSDIR\lapki-compiler\fullgraphmlparser\templates\*.*" "\resources\app.asar.unpacked\resources\modules\win32\lapki-compiler\fullgraphmlparser\templates\"
+  CopyFiles /SILENT "$PLUGINSDIR\lapki-compiler\library\*.*" "$INSTDIR\resources\app.asar.unpacked\resources\modules\win32\lapki-compiler\library\"
+  CopyFiles /SILENT "$PLUGINSDIR\lapki-compiler\platforms\*.*" "$INSTDIR\resources\app.asar.unpacked\resources\modules\win32\lapki-compiler\platforms\"
+  CopyFiles /SILENT "$PLUGINSDIR\lapki-compiler\fullgraphmlparser\templates\*.*" "$INSTDIR\resources\app.asar.unpacked\resources\modules\win32\lapki-compiler\fullgraphmlparser\templates\"
 !macroend

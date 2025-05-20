@@ -42,7 +42,7 @@ export class ModuleManager {
   static localProccesses: Map<string, ChildProcessWithoutNullStreams> = new Map();
   static moduleStatus: Map<string, ModuleStatus> = new Map();
   static async startLocalModule(module: ModuleName) {
-    const usedPorts = await this.getUsedPorts();
+    const usedPorts = this.getUsedPorts();
     this.moduleStatus.set(module, new ModuleStatus());
     if (!this.localProccesses.has(module)) {
       const platform = process.platform;
@@ -97,7 +97,6 @@ export class ModuleManager {
           case 'lapki-compiler': {
             modulePath = this.getCompilerPath();
             const port = await findFreePort({ usedPorts });
-            console.log('compiler port', port);
             await settings.set('compiler.localPort', port);
             defaultSettings.compiler.localPort = Number(port);
             const compilerArgs = [`--server-port=${port}`];
@@ -139,10 +138,10 @@ export class ModuleManager {
     }
   }
 
-  static async getUsedPorts(): Promise<number[]> {
+  static getUsedPorts(): number[] {
     return [
-      Number(await settings.get('compiler.localPort')),
-      Number(await settings.get('flasher.localPort')),
+      Number(settings.getSync('compiler.localPort')),
+      Number(settings.getSync('flasher.localPort')),
     ];
   }
 

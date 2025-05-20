@@ -164,6 +164,7 @@ export class ModuleManager {
       if (module === 'lapki-compiler') {
         const port = Number(await settings.get('compiler.localPort'));
         await this.sendKillRequest(port);
+        this.localProccesses.get(module)?.kill();
       } else {
         this.localProccesses.get(module)!.kill();
       }

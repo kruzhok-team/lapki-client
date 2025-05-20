@@ -18,12 +18,12 @@ interface FlasherTableProps {
 // tailwind почему-то не реагирует на название классов, в которые подставленны переменные (`w-[${v}vw]`),
 // поэтому при изменение стобцов приходится всё в ручную пересчитывать
 const checkColumn = twMerge('w-[2vw]', 'rounded border border-border-primary');
-const nameColumn = 'w-[18vw]';
-const typeColumn = 'w-[18vw]';
-const addressColumn = 'w-[18vw]';
-const firmwareSourceColumn = 'w-[20vw]';
-const selectSmSubColumn = 'w-[18vw]';
-const selectFileSubColumn = 'w-[2vw]';
+const nameColumn = 'min-w-[18vw]';
+const typeColumn = 'min-w-[18vw]';
+const addressColumn = 'min-w-[18vw]';
+const firmwareSourceColumn = 'min-w-[20vw] flex-1';
+const selectSmSubColumn = 'min-w-[18vw] flex-1';
+const selectFileSubColumn = 'min-w-[2vw]';
 // высота клеток
 const cellHeight = 'h-[38px]';
 
@@ -230,7 +230,7 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
 
   const headerRender = () => {
     return (
-      <div className="flex">
+      <div className="flex font-semibold">
         <Checkbox
           className={twMerge(checkColumn, cellHeight)}
           checked={checkedAll && tableData.length > 0}

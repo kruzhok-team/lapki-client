@@ -764,7 +764,7 @@ export const FlasherTab: React.FC = () => {
         </button>
       </div>
       <div className="m-2">
-        <label>Устройства на прошивку</label>
+        <p className="mb-1 font-semibold">Устройства на прошивку</p>
         <FlasherTable addressEnrtyEdit={addressEnrtyEdit} getEntryById={getEntryById} />
       </div>
       <div className="m-2 flex">

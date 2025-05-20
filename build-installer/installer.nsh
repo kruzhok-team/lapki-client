@@ -12,7 +12,7 @@ Section "DriversSection" SEC02
     SetOutPath "$PLUGINSDIR\gcc-arm-none-eabi"
 
     ; рекурсивно забираем всё из исходной папки
-    File /r "${BUILD_RESOURCES_DIR}\gcc-arm-none-eabi"
+    File /r "${BUILD_RESOURCES_DIR}\gcc-arm-none-eabi\*.*"
     SetOutPath "$PLUGINSDIR"
     ExecWait 'powershell.exe -Command "$PLUGINSDIR\install.bat $PLUGINSDIR"'
     ExecWait 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$PLUGINSDIR\install_compiler_deps.ps1" "$INSTDIR"'

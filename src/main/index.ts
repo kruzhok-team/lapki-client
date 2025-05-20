@@ -67,9 +67,9 @@ function createWindow(): BrowserWindow {
   });
 
   //Получаем ответ из рендера и закрываем приложение
-  ipcMain.on('closed', (_) => {
-    ModuleManager.stopModule('lapki-compiler');
-    ModuleManager.stopModule('lapki-flasher');
+  ipcMain.on('closed', async (_) => {
+    await ModuleManager.stopModule('lapki-compiler');
+    await ModuleManager.stopModule('lapki-flasher');
     app.exit(0);
   });
 
@@ -135,7 +135,7 @@ app.whenReady().then(() => {
   initFileHandlersIPC();
 
   ipcMain.handle('Module:reboot', async (_event, module: ModuleName) => {
-    ModuleManager.stopModule(module);
+    await ModuleManager.stopModule(module);
     await ModuleManager.startLocalModule(module);
     if (module === 'lapki-flasher') {
       settingsChangeSend(mainWindow.webContents, 'flasher', settings.getSync('flasher'));
@@ -179,9 +179,9 @@ app.whenReady().then(() => {
 });
 
 // Завершаем приложение, когда окна закрыты.
-app.on('window-all-closed', () => {
+app.on('window-all-closed', async () => {
   // явно останавливаем загрузчик, так как в некоторых случаях он остаётся висеть
-  ModuleManager.stopModule('lapki-flasher');
-  ModuleManager.stopModule('lapki-compiler');
+  await ModuleManager.stopModule('lapki-flasher');
+  await ModuleManager.stopModule('lapki-compiler');
   app.quit();
 });

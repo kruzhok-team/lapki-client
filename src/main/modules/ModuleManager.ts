@@ -4,6 +4,7 @@ import fixPath from 'fix-path';
 
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import { existsSync } from 'fs';
+import http from 'http';
 import path from 'path';
 
 import { findFreePort } from './freePortFinder';
@@ -145,9 +146,28 @@ export class ModuleManager {
     ];
   }
 
-  static stopModule(module: ModuleName) {
+  private static async sendKillRequest(port: number): Promise<void> {
+    return new Promise((resolve, _) => {
+      const req = http.get(`http://localhost:${port}/kill`, (res) => {
+        res.on('end', () => resolve());
+      });
+      req.on('error', (err) => {
+        // Ignore errors since we're shutting down anyway
+        console.log(err);
+        resolve();
+      });
+      req.end();
+    });
+  }
+
+  static async stopModule(module: ModuleName) {
     if (this.localProccesses.has(module)) {
-      this.localProccesses.get(module)!.kill();
+      if (module === 'lapki-compiler') {
+        const port = Number(await settings.get('compiler.localPort'));
+        await this.sendKillRequest(port);
+      } else {
+        this.localProccesses.get(module)!.kill();
+      }
       this.localProccesses.delete(module);
     }
   }

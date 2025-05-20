@@ -2,20 +2,28 @@ Section "DriversSection" SEC02
     SetOutPath "$PLUGINSDIR"
     File /oname=$PLUGINSDIR\wdi-simple64.exe "${BUILD_RESOURCES_DIR}\wdi-simple64.exe"
     File /oname=$PLUGINSDIR\install.bat "${BUILD_RESOURCES_DIR}\install.bat"
-    File /oname=$PLUGINSDIR\install_compiler_deps.bat "${BUILD_RESOURCES_DIR}\install_compiler_deps.bat"
+    File /oname=$PLUGINSDIR\install_compiler_deps.ps1 "${BUILD_RESOURCES_DIR}\install_compiler_deps.ps1"
     File /oname=$PLUGINSDIR\move_compiler_resourses.bat "${BUILD_RESOURCES_DIR}\move_compiler_resourses.bat"
     File /oname=$PLUGINSDIR\move_arm_gcc.bat "${BUILD_RESOURCES_DIR}\move_arm_gcc.bat"
-    File /r "${BUILD_RESOURCES_DIR}\gcc-arm-none-eabi\*.*"
+    File /r "${BUILD_RESOURCES_DIR}\gcc-arm-none-eabi"
     ExecWait 'powershell.exe -Command "$PLUGINSDIR\install.bat $PLUGINSDIR"'
-    ExecWait 'powershell.exe -Command "$PLUGINSDIR\install_compiler_deps.bat $INSTDIR"'
-    ExecWait 'powershell.exe -Command "$PLUGINSDIR\move_compiler_resourses.bat ${BUILD_RESOURCES_DIR}"'
+    ExecWait 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$PLUGINSDIR\install_compiler_deps.ps1" "$INSTDIR"'
+    ExecWait 'powershell.exe -Command "$PLUGINSDIR\move_compiler_resourses.bat $PLUGINSDIR"'
 SectionEnd
 
 !macro customInstall
-    DetailPrint "Running post–install batch…"
-    ; ExecWait '"$INSTDIR\install_compiler_deps.bat"' $0
-    ; если нужен нулевой код возврата:
-    ; IfErrors 0 +2
-    ;   MessageBox MB_OK "install_compiler_deps.bat failed!"
-    ExecWait 'powershell.exe -Command "$PLUGINSDIR\move_arm_gcc.bat $PLUGINSDIR $INSTDIR"'
+  DetailPrint "Running post–install batch…"
+
+  DetailPrint "Copying gcc-arm-none-eabi from $PLUGINSDIR to $INSTDIR…"  
+  ; Убедимся, что папка приёмник существует  
+  CreateDirectory "$INSTDIR\gcc-arm-none-eabi"
+
+  ; Рекурсивно скопируем все файлы и подпапки  
+  CopyFiles /SILENT "$PLUGINSDIR\gcc-arm-none-eabi\*.*" "$INSTDIR\gcc-arm-none-eabi\"
+
+  ; Удалим временную директорию (чтобы не оставлять мусор)  
+  RMDir /r "$PLUGINSDIR\gcc-arm-none-eabi"
+
+  DetailPrint "Done. INSTDIR now contains:"  
+  DetailPrint "  $INSTDIR\gcc-arm-none-eabi"  
 !macroend

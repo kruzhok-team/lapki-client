@@ -54,19 +54,12 @@ export const useActions = (
     });
   };
 
-  const handleActionsModalSubmit = (data: Action) => {
-    if (actionsModalData) {
+  const handleActionsModalSubmit = (data: Action, idx?: number | null) => {
+    if (actionsModalData && idx !== undefined && idx !== null) {
       setActions((p) => {
-        const { component, method } = actionsModalData.action;
-        const prevActionIndex = p.findIndex(
-          (v) => v.component === component && v.method === method
-        );
-
-        if (prevActionIndex === -1) return p;
-
         const newActions = [...p];
 
-        newActions[prevActionIndex] = data;
+        newActions[idx] = data;
         return newActions;
       });
     } else {

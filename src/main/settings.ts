@@ -3,7 +3,14 @@ import settings from 'electron-settings';
 
 import { existsSync } from 'fs';
 
-import { defaultCompilerHost, defaultCompilerPort, defaultDocHost } from './version';
+import {
+  defaultCompilerHost,
+  defaultCompilerPort,
+  defaultRemoteDocHost,
+  defaultLocalDocHost,
+} from './version';
+
+type ModuleType = 'local' | 'remote';
 
 type MetaType =
   | {
@@ -38,17 +45,21 @@ type RecentFile = {
 
 export const defaultSettings = {
   doc: {
-    host: defaultDocHost,
+    remoteHost: defaultRemoteDocHost,
+    localHost: defaultLocalDocHost,
+    type: 'local' as 'local' | 'remote',
   },
   compiler: {
     host: defaultCompilerHost,
     port: defaultCompilerPort,
+    localPort: 0,
+    type: 'remote' as ModuleType,
   },
   flasher: {
     host: 'localhost',
     port: 0,
     localPort: 0, //! Это ручками менять нельзя, инициализируется при запуске
-    type: 'local' as 'local' | 'remote',
+    type: 'local' as ModuleType,
   },
   // см. SerialMonitor.tsx в renderer для того, чтобы узнать допустимые значения
   serialmonitor: {
@@ -127,10 +138,17 @@ export const initSettings = () => {
     }
   }
   checkRecentFiles();
+  // FIXME
   // (Roundabout1): костыль, нужно будет реализовать проверку наличия всех значений для ключей при инициализации.
   const monitorSettings = settings.getSync('serialmonitor' as SettingsKey);
   if (monitorSettings && !monitorSettings['textMode']) {
     settings.setSync('serialmonitor.textMode', 'text');
+  }
+  // FIXME
+  // (Roundabout1): тот же костыль, но для документации.
+  const docSettings = settings.getSync('doc' as SettingsKey);
+  if (docSettings && !docSettings['type']) {
+    settings.setSync('doc', defaultSettings['doc']);
   }
 };
 
@@ -155,7 +173,7 @@ export const initSettingsHandlers = (webContents: WebContents) => {
 
 // изменение настройки и отправка сообщения через webContents
 async function settingsChange(webContents: WebContents, key: SettingsKey, value) {
-  await settings.set(key, value);
+  await settings.set(key, structuredClone(value));
 
   settingsChangeSend(webContents, key, value);
 }

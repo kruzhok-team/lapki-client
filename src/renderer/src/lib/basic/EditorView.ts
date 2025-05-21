@@ -163,6 +163,8 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
   handleMouseDown = (e: MyMouseEvent) => {
     if (!e.left || this.isPan) return;
 
+    setTimeout(() => this.checkBorders(), 1000);
+
     const node = this.getCapturedNode({ position: e });
 
     if (node) {
@@ -262,6 +264,8 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
     if (this.isPan || this.mouseDownNode) {
       this.app.canvas.element.style.cursor = 'grabbing';
     }
+
+    this.checkBorders();
 
     if (this.isPan) {
       // TODO Много раз такие операции повторяются, нужно переделать на функции
@@ -416,4 +420,69 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
       this.setScale(to.scale);
     }
   }
+
+  checkBorders = throttle(() => {
+    if (this.mouseDownNode) {
+      if (!this.mouseDownNode.isDraggable) {
+        return;
+      }
+      // считаем "крайние координаты"
+      const leftX = this.mouseDownNode.computedPosition.x;
+      const upY = this.mouseDownNode.computedPosition.y;
+      const rightX = this.mouseDownNode.computedPosition.x + this.mouseDownNode.computedWidth;
+      const downY =
+        this.mouseDownNode.computedPosition.y +
+        Math.max(this.mouseDownNode.childrenContainerHeight, this.mouseDownNode.computedHeight);
+
+      const { dx, dy } = this.borderMover({ x: leftX, y: upY }, { x: rightX, y: downY });
+      if (dx === 0 && dy === 0) {
+        return;
+      }
+      this.mouseDownNode.position = {
+        x: this.mouseDownNode.position.x - dx * this.app.controller.scale,
+        y: this.mouseDownNode.position.y - dy * this.app.controller.scale,
+      };
+
+      if (this.mouseDownNode.parent) {
+        this.mouseDownNode.position = {
+          x: Math.max(0, this.mouseDownNode.position.x),
+          y: Math.max(0, this.mouseDownNode.position.y),
+        };
+      }
+      this.app.canvas.element.style.cursor = 'grabbing';
+      this.isDirty = true;
+    } else {
+      // const mousePoint = { x: this.app.mouse.px, y: this.app.mouse.py };
+      // const { dx, dy } = this.borderMover(mousePoint, mousePoint);
+      // if (dx === 0 && dy === 0) {
+      //   return;
+      // }
+      // this.isDirty = true;
+      return;
+    }
+    this.checkBorders();
+  }, 10);
+
+  borderMover = (topLeft: Point, bottomRight: Point, border: number = 20, speed: number = 2.5) => {
+    const offsetX = this.app.controller.offset.x;
+    const offsetY = this.app.controller.offset.y;
+
+    if (topLeft.x <= border) {
+      this.app.controller.offset.x += speed * this.app.controller.scale;
+    }
+    if (topLeft.y <= border) {
+      this.app.controller.offset.y += speed * this.app.controller.scale;
+    }
+    if (bottomRight.x >= this.app.canvas.width - border) {
+      this.app.controller.offset.x -= speed * this.app.controller.scale;
+    }
+    if (bottomRight.y >= this.app.canvas.height - border) {
+      this.app.controller.offset.y -= speed * this.app.controller.scale;
+    }
+
+    return {
+      dx: this.app.controller.offset.x - offsetX,
+      dy: this.app.controller.offset.y - offsetY,
+    };
+  };
 }

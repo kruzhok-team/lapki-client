@@ -6,10 +6,12 @@ import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import { existsSync } from 'fs';
 import http from 'http';
 import path from 'path';
+import { resourcesPath } from 'process';
 
 import { findFreePort } from './freePortFinder';
 
 import { defaultSettings } from '../settings';
+import { basePath } from '../utils';
 export type ModuleName = 'lapki-flasher' | 'lapki-compiler';
 
 export class ModuleStatus {
@@ -177,9 +179,6 @@ export class ModuleManager {
   }
 
   static getOsPath(): string {
-    const basePath = path
-      .join(__dirname, '../../resources')
-      .replace('app.asar', 'app.asar.unpacked');
     return `${basePath}/modules/${process.platform}`;
   }
 

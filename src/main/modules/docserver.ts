@@ -1,12 +1,9 @@
 import { readFile } from 'fs';
 import * as http from 'http';
-import path from 'path';
 
-import { getContentType } from '../utils';
+import { basePath, getContentType } from '../utils';
 // FIXME: реализовать авто поиск порта
 export function startDocServer(port = 8071, host = 'localhost') {
-  // FIXME: сделать функцию для получения этого пути, чтобы не дублировать код из moduleManager
-  const basePath = path.join(__dirname, '../../resources').replace('app.asar', 'app.asar.unpacked');
   http
     .createServer(function (request, response) {
       const url = new URL(`http://${host}:${port}${request.url}`);

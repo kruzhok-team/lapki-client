@@ -1,4 +1,9 @@
 import path from 'path';
+
+export const basePath = path
+  .join(__dirname, '../../resources')
+  .replace('app.asar', 'app.asar.unpacked');
+
 export const contentType = new Map([
   ['.html', 'text/html'],
   ['.js', 'text/javascript'],

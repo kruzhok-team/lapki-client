@@ -7,7 +7,7 @@ import { findFreePort, getUsedPorts } from './freePortFinder';
 
 import { defaultSettings } from '../settings';
 import { basePath, getContentType } from '../utils';
-// FIXME: реализовать авто поиск порта
+
 export async function startDocServer() {
   const usedPorts = getUsedPorts();
   const port = await findFreePort({ usedPorts });

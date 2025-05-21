@@ -543,7 +543,6 @@
       },
       "constructorParameters": {
         "cooldown": {
-          "img": "arduino/add.svg",
           "name": "Интервал срабатывания",
           "description": "Определяет, как часто микрофон сможет реагировать на новый громкий звук после предыдущего. Чем больше значение, тем дольше он «отдыхает» (по умолчанию 0)",
           "optional": true,
@@ -553,7 +552,7 @@
       "variables": {},
       "methods": {
         "setCooldown": {
-          "img": "blg-mb/volumeThreshold.svg",
+          "img": "common/set.svg",
           "parameters": [
             {
               "name": "Интервал срабатывания",

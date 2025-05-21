@@ -6,7 +6,7 @@ import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import { existsSync } from 'fs';
 import http from 'http';
 
-import { findFreePort } from './freePortFinder';
+import { findFreePort, getUsedPorts } from './freePortFinder';
 
 import { defaultSettings } from '../settings';
 import { basePath } from '../utils';
@@ -42,7 +42,7 @@ export class ModuleManager {
   static localProccesses: Map<string, ChildProcessWithoutNullStreams> = new Map();
   static moduleStatus: Map<string, ModuleStatus> = new Map();
   static async startLocalModule(module: ModuleName) {
-    const usedPorts = this.getUsedPorts();
+    const usedPorts = getUsedPorts();
     this.moduleStatus.set(module, new ModuleStatus());
     if (!this.localProccesses.has(module)) {
       const platform = process.platform;
@@ -136,13 +136,6 @@ export class ModuleManager {
     } else {
       console.log(`${module} is already local`);
     }
-  }
-
-  static getUsedPorts(): number[] {
-    return [
-      Number(settings.getSync('compiler.localPort')),
-      Number(settings.getSync('flasher.localPort')),
-    ];
   }
 
   private static async sendKillRequest(port: number): Promise<void> {

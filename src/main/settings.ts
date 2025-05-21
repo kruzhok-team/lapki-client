@@ -3,12 +3,7 @@ import settings from 'electron-settings';
 
 import { existsSync } from 'fs';
 
-import {
-  defaultCompilerHost,
-  defaultCompilerPort,
-  defaultRemoteDocHost,
-  defaultLocalDocHost,
-} from './version';
+import { defaultCompilerHost, defaultCompilerPort, defaultRemoteDocHost } from './version';
 
 type ModuleType = 'local' | 'remote';
 
@@ -46,7 +41,7 @@ type RecentFile = {
 export const defaultSettings = {
   doc: {
     remoteHost: defaultRemoteDocHost,
-    localHost: defaultLocalDocHost,
+    localHost: '',
     type: 'local' as ModuleType,
   },
   compiler: {

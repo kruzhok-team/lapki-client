@@ -1,5 +1,4 @@
 import path from 'path';
-
 export const basePath = path
   .join(__dirname, '../../resources')
   .replace('app.asar', 'app.asar.unpacked');
@@ -20,4 +19,9 @@ export function getContentType(filepath: string) {
   } catch (error) {
     return null;
   }
+}
+
+export function extractPort(address: string) {
+  const url = new URL(address);
+  return url.port;
 }

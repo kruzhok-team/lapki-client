@@ -146,6 +146,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditor
           <StateModal smId={smId} controller={controller} />
           <TransitionModal controller={controller} smId={smId} />
           <ActionsModal
+            idx={actionsModalParentData?.eventSelection.actionIdx ?? null}
             controller={controller}
             smId={smId}
             initialData={actionsModalData}

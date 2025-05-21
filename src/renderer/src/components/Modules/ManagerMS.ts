@@ -7,6 +7,7 @@ import {
   OperationInfo,
   OperationType,
 } from '@renderer/types/FlasherTypes';
+import { dateFormatTime } from '@renderer/utils';
 
 import { Device, MSDevice } from './Device';
 import { Flasher } from './Flasher';
@@ -101,14 +102,20 @@ export class ManagerMS {
       deviceID: deviceID,
     });
   }
+
+  static timeStamp(log: string) {
+    const date = new Date();
+    return `${dateFormatTime(date)} ${log}`;
+  }
+
   static addLog(log: string) {
     this.logSize++;
-    this.setLog((prevMessages) => [...prevMessages, log]);
+    this.setLog((prevMessages) => [...prevMessages, this.timeStamp(log)]);
   }
   static editLog(log: string, index: number) {
     this.setLog((prevMessages) => {
       return prevMessages.map((msg, idx) => {
-        return index === idx ? log : msg;
+        return index === idx ? this.timeStamp(log) : msg;
       });
     });
   }

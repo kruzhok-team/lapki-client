@@ -5,6 +5,8 @@ import { existsSync } from 'fs';
 
 import { defaultCompilerHost, defaultCompilerPort, defaultDocHost } from './version';
 
+type ModuleType = 'local' | 'remote';
+
 type MetaType =
   | {
       RefBlHw: string; // Описывает физическое окружение контроллера (плату)
@@ -43,12 +45,14 @@ export const defaultSettings = {
   compiler: {
     host: defaultCompilerHost,
     port: defaultCompilerPort,
+    localPort: 0,
+    type: 'remote' as ModuleType,
   },
   flasher: {
     host: 'localhost',
     port: 0,
     localPort: 0, //! Это ручками менять нельзя, инициализируется при запуске
-    type: 'local' as 'local' | 'remote',
+    type: 'local' as ModuleType,
   },
   // см. SerialMonitor.tsx в renderer для того, чтобы узнать допустимые значения
   serialmonitor: {
@@ -155,7 +159,7 @@ export const initSettingsHandlers = (webContents: WebContents) => {
 
 // изменение настройки и отправка сообщения через webContents
 async function settingsChange(webContents: WebContents, key: SettingsKey, value) {
-  await settings.set(key, value);
+  await settings.set(key, structuredClone(value));
 
   settingsChangeSend(webContents, key, value);
 }

@@ -1,15 +1,23 @@
+import settings from 'electron-settings';
+
 import { readFile } from 'fs';
 import * as http from 'http';
-import path from 'path';
 
-import { getContentType } from '../utils';
-// FIXME: реализовать авто поиск порта
-export function startDocServer(port = 8071, host = 'localhost') {
-  // FIXME: сделать функцию для получения этого пути, чтобы не дублировать код из moduleManager
-  const basePath = path.join(__dirname, '../../resources').replace('app.asar', 'app.asar.unpacked');
+import { findFreePort, getUsedPorts } from './freePortFinder';
+
+import { defaultSettings } from '../settings';
+import { basePath, getContentType } from '../utils';
+
+export async function startDocServer() {
+  const usedPorts = getUsedPorts();
+  const port = await findFreePort({ usedPorts });
+  const host = 'localhost';
+  const urlBase = `http://${host}:${port}`;
+  settings.setSync('doc.localHost', urlBase);
+  defaultSettings.doc.localHost = urlBase;
   http
     .createServer(function (request, response) {
-      const url = new URL(`http://${host}:${port}${request.url}`);
+      const url = new URL(`${urlBase}${request.url}`);
 
       let filePath = `${basePath}/docserver${decodeURI(url.pathname)}`;
       if (url.pathname === '/') filePath = filePath + 'index.json';

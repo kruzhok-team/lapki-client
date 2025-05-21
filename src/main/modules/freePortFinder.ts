@@ -1,8 +1,11 @@
 // нахождение незанятого порта для запуска модуля
 
+import settings from 'electron-settings';
 import freePortFinder from 'find-free-port';
 
 import { error } from 'console';
+
+import { extractPort } from '../utils';
 
 // список небезопасных портов для хрома. Источник:https://chromium.googlesource.com/chromium/src.git/+/refs/heads/master/net/base/port_util.cc
 const UNSAFE_CHROME_PORTS: number[] = [
@@ -60,4 +63,12 @@ export async function findFreePort(data: {
   }
 
   return freep;
+}
+
+export function getUsedPorts(): number[] {
+  return [
+    Number(settings.getSync('compiler.localPort')),
+    Number(settings.getSync('flasher.localPort')),
+    Number(extractPort(settings.getSync('doc.localHost') as string)),
+  ];
 }

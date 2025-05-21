@@ -5,11 +5,11 @@ import fixPath from 'fix-path';
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import { existsSync } from 'fs';
 import http from 'http';
-import path from 'path';
 
-import { findFreePort } from './freePortFinder';
+import { findFreePort, getUsedPorts } from './freePortFinder';
 
 import { defaultSettings } from '../settings';
+import { basePath } from '../utils';
 export type ModuleName = 'lapki-flasher' | 'lapki-compiler';
 
 export class ModuleStatus {
@@ -42,7 +42,7 @@ export class ModuleManager {
   static localProccesses: Map<string, ChildProcessWithoutNullStreams> = new Map();
   static moduleStatus: Map<string, ModuleStatus> = new Map();
   static async startLocalModule(module: ModuleName) {
-    const usedPorts = this.getUsedPorts();
+    const usedPorts = getUsedPorts();
     this.moduleStatus.set(module, new ModuleStatus());
     if (!this.localProccesses.has(module)) {
       const platform = process.platform;
@@ -138,13 +138,6 @@ export class ModuleManager {
     }
   }
 
-  static getUsedPorts(): number[] {
-    return [
-      Number(settings.getSync('compiler.localPort')),
-      Number(settings.getSync('flasher.localPort')),
-    ];
-  }
-
   private static async sendKillRequest(port: number): Promise<void> {
     return new Promise((resolve, _) => {
       const req = http.get(`http://localhost:${port}/kill`, (res) => {
@@ -177,9 +170,6 @@ export class ModuleManager {
   }
 
   static getOsPath(): string {
-    const basePath = path
-      .join(__dirname, '../../resources')
-      .replace('app.asar', 'app.asar.unpacked');
     return `${basePath}/modules/${process.platform}`;
   }
 

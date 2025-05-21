@@ -10,9 +10,13 @@ import { checkForUpdates } from './checkForUpdates';
 import { initFileHandlersIPC } from './file-handlers';
 import { startDocServer } from './modules/docserver';
 import { ModuleName, ModuleManager } from './modules/ModuleManager';
-import { initSettings, initSettingsHandlers, settingsChangeSend } from './settings';
+import {
+  defaultSettings,
+  initSettings,
+  initSettingsHandlers,
+  settingsChangeSend,
+} from './settings';
 import { getAllTemplates, getTemplate } from './templates';
-import { defaultRemoteDocHost, defaultLocalDocHost } from './version';
 
 import icon from '../../resources/icon.png?asset';
 
@@ -125,11 +129,11 @@ const startModules = async () => {
   // иначе будет найден одинаковый порт
   await startFlasher();
   await startCompiler();
+  await startDocServer();
 };
 
 initSettings();
 startModules();
-startDocServer();
 
 // Выполняется после инициализации Electron
 app.whenReady().then(() => {
@@ -170,11 +174,11 @@ app.whenReady().then(() => {
   });
 
   ipcMain.handle('getRemoteDocServer', () => {
-    return defaultRemoteDocHost;
+    return defaultSettings.doc.remoteHost;
   });
 
   ipcMain.handle('getLocalDocServer', () => {
-    return defaultLocalDocHost;
+    return defaultSettings.doc.localHost;
   });
 
   // отключение перезагрузки по CmdOrCtrl + R

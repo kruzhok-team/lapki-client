@@ -910,7 +910,7 @@ export const FlasherTab: React.FC = () => {
         <button
           className={twMerge(
             'btn-primary ml-auto mr-4 p-2 py-1',
-            isProMode ? '' : 'bg-bg-secondary'
+            isProMode ? '' : 'bg-bg-secondary text-border-contrast'
           )}
           style={{ marginLeft: 'auto' }}
           onClick={() => handleSwitchProMode()}

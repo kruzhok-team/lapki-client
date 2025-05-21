@@ -47,7 +47,7 @@ export const defaultSettings = {
   doc: {
     remoteHost: defaultRemoteDocHost,
     localHost: defaultLocalDocHost,
-    type: 'local' as 'local' | 'remote',
+    type: 'local' as ModuleType,
   },
   compiler: {
     host: defaultCompilerHost,

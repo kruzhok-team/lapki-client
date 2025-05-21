@@ -5,8 +5,6 @@ import fixPath from 'fix-path';
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import { existsSync } from 'fs';
 import http from 'http';
-import path from 'path';
-import { resourcesPath } from 'process';
 
 import { findFreePort } from './freePortFinder';
 

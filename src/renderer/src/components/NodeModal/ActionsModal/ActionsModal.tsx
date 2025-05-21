@@ -26,7 +26,8 @@ interface ActionsModalProps {
   controller: CanvasController;
   initialData?: ActionsModalData;
   isOpen: boolean;
-  onSubmit: (data: Action) => void;
+  idx: number | null;
+  onSubmit: (data: Action, idx?: number | null) => void;
   onClose: () => void;
 }
 
@@ -37,6 +38,7 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
   smId,
   isOpen,
   onClose,
+  idx,
 }) => {
   const modelController = useModelContext();
   const model = modelController.model;
@@ -190,12 +192,16 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
     ) {
       return;
     }
+
     if (!selectedComponent || !selectedMethod) return;
-    onSubmit({
-      component: selectedComponent,
-      method: selectedMethod,
-      args: parameters,
-    });
+    onSubmit(
+      {
+        component: selectedComponent,
+        method: selectedMethod,
+        args: parameters,
+      },
+      idx
+    );
     reset();
   };
 

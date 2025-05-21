@@ -63,4 +63,5 @@ SectionEnd
   CopyFiles /SILENT "$PLUGINSDIR\lapki-compiler\library\*.*" "$INSTDIR\resources\app.asar.unpacked\resources\modules\win32\lapki-compiler\library\"
   CopyFiles /SILENT "$PLUGINSDIR\lapki-compiler\platforms\*.*" "$INSTDIR\resources\app.asar.unpacked\resources\modules\win32\lapki-compiler\platforms\"
   CopyFiles /SILENT "$PLUGINSDIR\lapki-compiler\fullgraphmlparser\templates\*.*" "$INSTDIR\resources\app.asar.unpacked\resources\modules\win32\lapki-compiler\fullgraphmlparser\"
+  ExecWait "arduino-cli core install arduino:avr"
 !macroend

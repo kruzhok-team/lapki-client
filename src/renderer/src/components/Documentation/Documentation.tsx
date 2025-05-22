@@ -21,7 +21,7 @@ export interface CurrentItem {
 
 export const Documentation: React.FC = () => {
   const [doc] = useSettings('doc');
-  const rawUrl = doc?.host ?? '';
+  const rawUrl = doc?.type === 'local' ? doc?.localHost ?? '' : doc?.remoteHost ?? '';
   const url = rawUrl ? (rawUrl.endsWith('/') ? rawUrl : rawUrl + '/') : '';
 
   const { data, isLoading, error, refetch } = useFetch<{ body: File }>(

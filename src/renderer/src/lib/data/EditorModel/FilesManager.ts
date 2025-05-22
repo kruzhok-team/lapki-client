@@ -92,9 +92,9 @@ export class FilesManager {
   async import(
     setOpenData: Dispatch<[boolean, string | null, string | null, string]>
   ): Promise<boolean> {
-    const openData = await window.api.fileHandlers.openFile('Cyberiada');
+    const openData = await window.api.fileHandlers.openFile('Berloga');
     if (openData[0]) {
-      Compiler.compile(openData[3], 'BearlogaImport', openData[2]?.split('_')[0]);
+      Compiler.compile(openData[3], 'BearlogaImport', openData[2]?.split('.')[0].split('_').pop());
       setOpenData(openData);
       return true;
     }

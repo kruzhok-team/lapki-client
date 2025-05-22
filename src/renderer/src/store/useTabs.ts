@@ -31,9 +31,7 @@ export const useTabs = create<TabsState>((set) => ({
     set(({ items }) => {
       const tab = items.find(({ name }) => name === activeTab);
       if (!tab) return {};
-      if (tab.type === 'editor') {
-        modelController.model.changeHeadControllerId(tab.canvasId);
-      }
+      changeHeadController(tab, modelController);
       return { activeTab: activeTab };
     });
   },

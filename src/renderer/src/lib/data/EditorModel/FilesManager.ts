@@ -94,7 +94,7 @@ export class FilesManager {
   ): Promise<boolean> {
     const openData = await window.api.fileHandlers.openFile('Berloga');
     if (openData[0]) {
-      Compiler.compile(openData[3], 'BearlogaImport', openData[2]?.split('.')[0]);
+      Compiler.compile(openData[3], 'BearlogaImport', openData[2]?.split('.')[0].split('_').pop());
       setOpenData(openData);
       return true;
     }

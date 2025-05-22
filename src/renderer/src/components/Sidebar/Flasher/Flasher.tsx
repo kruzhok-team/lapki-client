@@ -945,11 +945,11 @@ export const FlasherTab: React.FC = () => {
         <p className="mb-1 mt-1 text-lg font-semibold">Устройства на прошивку</p>
         <FlasherTable addressEnrtyEdit={addressEnrtyEdit} getEntryById={getEntryById} />
       </div>
-      <div className="m-1 flex">
+      <div className="m-1 flex min-h-14">
         <div
           className={twMerge(
             selectedDevicesCount == 0 ? 'opacity-50' : '',
-            'ml-3 mr-3 flex w-3 items-center justify-center gap-1 font-Fira-Mono'
+            'ml-3 mr-3 flex w-5 items-center justify-center gap-1 font-Fira-Mono'
           )}
         >
           {selectedDevicesCount}

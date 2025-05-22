@@ -18,14 +18,15 @@ interface FlasherTableProps {
 // tailwind почему-то не реагирует на название классов, в которые подставленны переменные (`w-[${v}vw]`),
 // поэтому при изменение стобцов приходится всё в ручную пересчитывать
 const checkColumn = twMerge('min-w-9', 'rounded border border-border-primary');
+const stickyStyle = 'sticky top-0 z-10 bg-bg-secondary';
 const nameColumn = 'min-w-[16vw]';
 const typeColumn = 'min-w-[14vw]';
 const addressColumn = 'min-w-[16vw]';
 const firmwareSourceColumn = 'min-w-[20vw] flex-1';
 const selectSmSubColumn = 'min-w-[18vw] flex-1';
-const selectFileSubColumn = 'min-w-[2vw]';
+const selectFileSubColumn = 'min-w-8';
 // высота клеток
-const cellHeight = 'h-[38px]';
+const cellHeight = 'min-h-9';
 
 // список плат МС-ТЮК, которые следует строго проверять на соответствие версий.
 const strictVersionCheck = ['mtrx'];
@@ -214,34 +215,37 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
     return undefined;
   };
 
-  const cellRender = (content: string | JSX.Element, mergeClassName: string) => {
+  const cellRender = (content: string | JSX.Element, mergeClassName: string, colspan?: number) => {
     return (
-      <div
+      <td
         className={twMerge(
           mergeClassName,
           cellHeight,
-          'rounded border border-border-primary bg-transparent px-[9px] py-[6px] text-center text-text-primary outline-none transition-colors'
+          'rounded border border-border-primary px-[9px] py-[6px] text-center text-text-primary outline-none transition-colors'
         )}
+        colSpan={colspan}
       >
         {content}
-      </div>
+      </td>
     );
   };
 
   const headerRender = () => {
     return (
-      <div className="flex font-semibold">
-        <Checkbox
-          className={twMerge(checkColumn, cellHeight)}
-          checked={checkedAll && tableData.length > 0}
-          onCheckedChange={() => changeCheckedAll(!checkedAll)}
-          disabled={tableData.length === 0}
-        />
-        {cellRender('Наименование', nameColumn)}
-        {cellRender('Тип', typeColumn)}
-        {cellRender('Адрес', addressColumn)}
-        {cellRender('Что прошиваем', firmwareSourceColumn)}
-      </div>
+      <tr className={twMerge(stickyStyle, 'items-center justify-start font-semibold')}>
+        <td className={stickyStyle}>
+          <Checkbox
+            className={twMerge(checkColumn, cellHeight)}
+            checked={checkedAll && tableData.length > 0}
+            onCheckedChange={() => changeCheckedAll(!checkedAll)}
+            disabled={tableData.length === 0}
+          />
+        </td>
+        {cellRender('Наименование', twMerge(stickyStyle, nameColumn))}
+        {cellRender('Тип', twMerge(stickyStyle, typeColumn))}
+        {cellRender('Адрес', twMerge(stickyStyle, addressColumn))}
+        {cellRender('Что прошиваем', twMerge(stickyStyle, firmwareSourceColumn), 2)}
+      </tr>
     );
   };
 
@@ -276,12 +280,14 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
       throw Error(`Плата не поддерживается: ${tableItem}`);
     }
     return (
-      <div key={tableItem.targetId} className="flex items-start">
-        <Checkbox
-          className={twMerge(checkColumn, cellHeight)}
-          checked={checked}
-          onCheckedChange={() => onCheckedChangeHandle(tableItem)}
-        />
+      <tr key={tableItem.targetId}>
+        <td>
+          <Checkbox
+            className={twMerge(checkColumn, cellHeight)}
+            checked={checked}
+            onCheckedChange={() => onCheckedChangeHandle(tableItem)}
+          />
+        </td>
         {cellRender(
           <label
             onClick={() => {
@@ -297,59 +303,71 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
         {cellRender(<label>{displayType}</label>, typeColumn)}
         {cellRender(<label>{displayAddress}</label>, addressColumn)}
         {/* (Roundabout1) TODO: центрировать текст опций в выпадающем списке и текстовом поле */}
-        {tableItem.isFile ? (
-          <div
-            className={twMerge(
-              selectSmSubColumn,
-              cellHeight,
-              'rounded border border-border-primary bg-transparent px-[9px] py-[6px] text-text-primary outline-none transition-colors'
-            )}
-          >
-            {fileBaseName.get(tableItem.targetId) ?? 'Ошибка!'}
-          </div>
-        ) : (
-          <Select
-            options={typeId ? stateMachineOptions.get(typeId) : allAddressOptions}
-            containerClassName={selectSmSubColumn}
-            menuPosition="fixed"
-            isSearchable={false}
-            placeholder="Выберите..."
-            noOptionsMessage={() => 'Нет подходящих машин состояний'}
-            value={getAssignedStateMachineOption(tableItem) as SelectOption}
-            onChange={(opt) => {
-              if (opt?.value === undefined) return;
-              onSelectChangeHandle(tableItem, opt.value);
-            }}
-            menuPlacement="auto"
-          />
-        )}
-        <button
-          type="button"
-          className={twMerge(
-            'rounded border border-border-primary',
-            selectFileSubColumn,
-            cellHeight
+        <td>
+          {tableItem.isFile ? (
+            <div
+              className={twMerge(
+                selectSmSubColumn,
+                cellHeight,
+                'rounded border border-border-primary bg-transparent px-[9px] py-[6px] text-text-primary outline-none transition-colors'
+              )}
+            >
+              {fileBaseName.get(tableItem.targetId) ?? 'Ошибка!'}
+            </div>
+          ) : (
+            <Select
+              options={typeId ? stateMachineOptions.get(typeId) : allAddressOptions}
+              containerClassName={selectSmSubColumn}
+              menuPosition="fixed"
+              isSearchable={false}
+              placeholder="Выберите..."
+              noOptionsMessage={() => 'Нет подходящих машин состояний'}
+              value={getAssignedStateMachineOption(tableItem) as SelectOption}
+              onChange={(opt) => {
+                if (opt?.value === undefined) return;
+                onSelectChangeHandle(tableItem, opt.value);
+              }}
+              menuPlacement="auto"
+            />
           )}
-          onClick={() => (tableItem.source ? removeSource(tableItem) : handleSelectFile(tableItem))}
-        >
-          {tableItem.source ? '✖' : '…'}
-        </button>
-      </div>
+        </td>
+        <td>
+          <button
+            type="button"
+            className={twMerge(
+              'rounded border border-border-primary',
+              selectFileSubColumn,
+              cellHeight
+            )}
+            onClick={() =>
+              tableItem.source ? removeSource(tableItem) : handleSelectFile(tableItem)
+            }
+          >
+            {tableItem.source ? '✖' : '…'}
+          </button>
+        </td>
+      </tr>
     );
   };
 
   return (
     <div
       {...props}
-      className="flex max-h-60 flex-col overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
+      className="max-h-60 overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
     >
-      {headerRender()}
       {tableData.length > 0 ? (
-        tableData.map((tableItem) => rowRender(tableItem))
+        <table className="w-full border-separate">
+          <thead className={twMerge(stickyStyle, 'bg-secondary font-semibold')}>
+            {headerRender()}
+          </thead>
+          <tbody>{tableData.map((tableItem) => rowRender(tableItem))}</tbody>
+        </table>
       ) : (
-        <label className="justify-center text-center opacity-70">
-          Добавьте устройства через кнопку «Подключить плату» или кнопку «Адреса плат МС-ТЮК»
-        </label>
+        <div className="flex min-h-20 flex-col items-center justify-center">
+          <label className="text-center opacity-70">
+            Добавьте устройства через кнопку «Подключить плату» или кнопку «Адреса плат МС-ТЮК»
+          </label>
+        </div>
       )}
     </div>
   );

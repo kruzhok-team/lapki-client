@@ -24,6 +24,10 @@
 Для запуска dev-версии потребуется установить Node 18.х и новее c npm, после выполнить команды:
 
 ```bash
+# Загрузить подмодули
+$ git submodule init
+$ git submodule update
+
 # Загрузить зависимости
 $ npm install
 

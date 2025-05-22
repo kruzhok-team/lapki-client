@@ -37,10 +37,7 @@
           "type": "boolean"
         },
         "range": {
-          "type": "string"
-        },
-        "step": {
-          "type": "number"
+          "$ref": "#/definitions/Range"
         },
         "type": {
           "$ref": "#/definitions/ArgType"
@@ -316,6 +313,25 @@
     },
     "Platforms": {
       "$ref": "#/definitions/Platform"
+    },
+    "Range": {
+      "additionalProperties": false,
+      "properties": {
+        "max": {
+          "type": "number"
+        },
+        "min": {
+          "type": "number"
+        },
+        "step": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "min",
+        "max"
+      ],
+      "type": "object"
     },
     "SignalProto": {
       "additionalProperties": false,

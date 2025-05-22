@@ -6,7 +6,7 @@ import { getActionDelimeter } from '@renderer/lib/data/GraphmlBuilder';
 import { PlatformManager } from '@renderer/lib/data/PlatformManager';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { Action as ActionData, Component, Variable } from '@renderer/types/diagram';
-import { getDefaultRange, getMatrixDimensions, isMatrix, parseRange } from '@renderer/utils';
+import { getDefaultRange, getMatrixDimensions, isMatrix } from '@renderer/utils';
 
 import { Picto } from './Picto';
 
@@ -133,8 +133,7 @@ export const Action: React.FC<ActionProps> = (props) => {
                           border: 1,
                           isRounded: false,
                         }}
-                        step={parameter.step ?? 1}
-                        range={parameter.range ? parseRange(parameter.range) : getDefaultRange()}
+                        range={parameter.range ?? getDefaultRange()}
                         isHalf={false}
                       />
                     </>

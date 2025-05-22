@@ -1,10 +1,23 @@
 import { MarkedIconData, Picto, icons } from '@renderer/lib/drawable';
 import { Action, Condition, Event, Variable } from '@renderer/types/diagram';
 import { Platform, ComponentProto } from '@renderer/types/platform';
-import { isMatrix } from '@renderer/utils';
+import { Range } from '@renderer/types/utils';
+import { getDefaultRange, isMatrix } from '@renderer/utils';
 
 import { stateStyle } from '../styles';
 import { isVariable } from '../utils';
+
+export type DrawFunctionParameters = {
+  values: any;
+  range?: Range;
+};
+
+export type DrawFunctionType = (
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  parameters: DrawFunctionParameters
+) => void;
 
 export type VisualCompoData = {
   component: string;
@@ -290,10 +303,9 @@ export class PlatformManager {
       }
     }
 
-    let drawFunction:
-      | ((ctx: CanvasRenderingContext2D, x: number, y: number, values: any) => void)
-      | undefined = undefined;
+    let drawFunction: DrawFunctionType | undefined = undefined;
     let parameter: any | undefined = undefined;
+    let range: Range | undefined = undefined;
     if (argQuery && ev.args && parameterList) {
       const paramValue = ev.args[argQuery];
       if (typeof paramValue === 'undefined') {
@@ -302,6 +314,7 @@ export class PlatformManager {
         parameter = paramValue.value;
       } else if (typeof parameterList[0].type === 'string' && isMatrix(parameterList[0].type)) {
         parameter = paramValue.value;
+        range = parameterList[0].range ?? getDefaultRange();
         drawFunction = this.picto.drawMatrix;
       } else {
         // FIXME
@@ -320,7 +333,10 @@ export class PlatformManager {
         leftIcon,
         rightIcon,
       },
-      parameter,
+      {
+        values: parameter,
+        range,
+      },
       drawFunction
     );
   }
@@ -351,8 +367,9 @@ export class PlatformManager {
 
     let parameter: any | undefined = undefined;
     let drawFunction:
-      | ((ctx: CanvasRenderingContext2D, x: number, y: number, values: any) => void)
+      | ((ctx: CanvasRenderingContext2D, x: number, y: number, parameters: { values: any }) => void)
       | undefined = undefined;
+    let range: Range | undefined = undefined;
     if (argQuery && ac.args && parameterList) {
       const paramValue = ac.args[argQuery];
       if (paramValue === undefined || typeof paramValue.value === 'undefined') {
@@ -377,6 +394,7 @@ export class PlatformManager {
         }
       } else if (typeof parameterList[0].type === 'string' && isMatrix(parameterList[0].type)) {
         parameter = paramValue.value;
+        range = parameterList[0].range ?? getDefaultRange();
         drawFunction = this.picto.drawMatrix;
       } else if (isVariable(paramValue.value)) {
         drawFunction = this.drawParameterPicto;
@@ -399,19 +417,28 @@ export class PlatformManager {
         rightIcon,
         opacity,
       },
-      parameter,
+      {
+        values: parameter,
+        range,
+      },
       drawFunction
     );
   }
 
-  drawParameterPicto = (ctx: CanvasRenderingContext2D, x: number, y: number, value: Variable) => {
-    const compoData = this.resolveComponent(value.component);
+  drawParameterPicto = (
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    parameters: DrawFunctionParameters
+  ) => {
+    const { values } = parameters;
+    const compoData = this.resolveComponent(values.component);
     const component = compoData.component;
     const leftIcon = {
       ...compoData,
       icon: this.getComponentIcon(component),
     };
-    const rightIcon = this.getVariableIcon(component, value.method);
+    const rightIcon = this.getVariableIcon(component, values.method);
 
     this.picto.drawPicto(ctx, x + 50 / this.picto.scale, y + 20 / this.picto.scale, {
       leftIcon,

@@ -6,7 +6,10 @@ import Pen from '@renderer/assets/icons/pen.svg';
 import UnknownIcon from '@renderer/assets/icons/unknown-alt.svg';
 import { Rectangle } from '@renderer/lib/types/graphics';
 import theme, { getColor } from '@renderer/theme';
+import { Range } from '@renderer/types/utils';
+import { getDefaultRange, normalizeRangeValue } from '@renderer/utils';
 
+import { DrawFunctionParameters } from '../data/PlatformManager';
 import { drawImageFit, preloadImagesMap } from '../utils';
 import { drawText, getTextWidth } from '../utils/text';
 
@@ -361,17 +364,17 @@ export class Picto {
    * @param y Y-координата
    * @param ps Контейнер с параметрами пиктограммы
    */
-  drawPicto<T>(
+  drawPicto(
     ctx: CanvasRenderingContext2D,
     x: number,
     y: number,
     ps: PictoProps,
-    parameter?: T,
+    parameters?: DrawFunctionParameters,
     drawCustomParameter?: (
       ctx: CanvasRenderingContext2D,
       x: number,
       y: number,
-      parameter: T,
+      parameters: DrawFunctionParameters,
       bgColor: string,
       fgColor: string
     ) => void
@@ -437,14 +440,14 @@ export class Picto {
         height: iconSize,
       });
     }
-    if (parameter) {
+    if (parameters) {
       if (drawCustomParameter) {
-        drawCustomParameter(ctx, x, y, parameter, bgColor, fgColor);
+        drawCustomParameter(ctx, x, y, parameters, bgColor, fgColor);
         return;
       }
 
-      if (typeof parameter === 'string') {
-        this.drawParameter(ctx, x, y, parameter, bgColor, fgColor);
+      if (typeof parameters.values === 'string') {
+        this.drawParameter(ctx, x, y, parameters.values, bgColor, fgColor);
       }
     }
   }
@@ -475,7 +478,13 @@ export class Picto {
     ctx.restore();
   }
 
-  drawMatrix = (ctx: CanvasRenderingContext2D, x: number, y: number, values: number[][]) => {
+  drawMatrix = (
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    parameters: DrawFunctionParameters
+  ) => {
+    const { values, range = getDefaultRange() } = parameters;
     const width = 5;
     const height = 5;
     const scaledWidth = width / this.scale;
@@ -508,7 +517,7 @@ export class Picto {
           height,
           inactiveColor,
           undefined,
-          1 - value / 100,
+          normalizeRangeValue(value, range),
           1,
           0.25
         );

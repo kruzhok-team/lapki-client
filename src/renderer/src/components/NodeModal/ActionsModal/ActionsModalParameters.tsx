@@ -14,7 +14,6 @@ import {
   getDefaultRange,
   getMatrixDimensions,
   isMatrix,
-  parseRange,
 } from '@renderer/utils';
 import { getComponentAttribute } from '@renderer/utils/ComponentAttribute';
 
@@ -107,7 +106,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
     <div className="flex max-h-[50vh] flex-col gap-2 overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
       <h3 className="mb-1 text-xl">Параметры</h3>
       {protoParameters.map((proto, idx) => {
-        const { name, description = '', type = '', range, step } = proto;
+        const { name, description = '', type = '', range } = proto;
         const parameter = parameters[name] ?? { value: '', order: idx };
         const value = parameter.value;
         const error = errors[name];
@@ -143,7 +142,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
         }
         if (isMatrix(type)) {
           const { width, height } = getMatrixDimensions(type);
-          const parsedRange = range ? parseRange(range, step) : getDefaultRange();
+          const parsedRange = range ?? getDefaultRange();
           if (!value) {
             const newMatrix = createEmptyMatrix(type);
             parameters[name] = {
@@ -177,7 +176,6 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                       border: 2,
                       isRounded: true,
                     },
-                    step: step ?? 1,
                     range: parsedRange,
                     isHalf: type.startsWith('Half'),
                   }}

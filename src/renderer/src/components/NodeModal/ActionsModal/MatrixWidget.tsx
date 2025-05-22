@@ -14,7 +14,6 @@ interface MatrixWidgetProps {
   style: MatrixStyle;
   isHalf: boolean;
   range: Range;
-  step?: number;
   onChange: (rowIndex: number, colIndex: number, newValue: number) => void;
 }
 
@@ -25,7 +24,6 @@ export const MatrixWidget: React.FC<MatrixWidgetProps> = ({
   values,
   isHalf,
   range,
-  step,
 }) => {
   const [brushValue, setBrushValue] = useState(range.max);
   return (
@@ -58,7 +56,7 @@ export const MatrixWidget: React.FC<MatrixWidgetProps> = ({
         {isHalf && (
           <div className="flex w-[300px] items-center gap-1 rounded  p-2">
             <GradientSlider
-              step={step ?? DEFAULT_RANGE_STEP}
+              step={range.step ?? DEFAULT_RANGE_STEP}
               range={range}
               value={brushValue}
               onChange={(e) => setBrushValue(e)}

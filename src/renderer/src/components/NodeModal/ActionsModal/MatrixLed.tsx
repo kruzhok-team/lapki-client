@@ -3,6 +3,7 @@ import React from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import { Range } from '@renderer/types/utils';
+import { normalizeRangeValue } from '@renderer/utils';
 
 export interface MatrixStyle {
   ledWidth: number;
@@ -68,7 +69,7 @@ export const MatrixLed: React.FC<MatrixLedProps> = ({
     >
       <div
         style={{
-          opacity: 1 - (value - range.min) / (range.max - range.min),
+          opacity: normalizeRangeValue(value, range),
         }}
         className="h-full w-full bg-[#343a40]"
       ></div>

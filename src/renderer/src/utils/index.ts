@@ -6,8 +6,15 @@ import { Range } from '@renderer/types/utils';
 
 export const DEFAULT_RANGE_STEP = 1;
 
+// (L140-beep) Нормализовать значение в интервале от 0 до 1.
+// Используется для подстановки в opacity.
+export function normalizeRangeValue(value: number, range: Range): number {
+  return 1 - (value - range.min) / (range.max - range.min);
+}
+
 export function getDefaultRange(): Range {
   return {
+    step: DEFAULT_RANGE_STEP,
     min: 0,
     max: 100,
   };
@@ -19,21 +26,6 @@ export function isString(value: any): value is string {
 
 export function isMatrix(type: string) {
   return type.includes('Matrix');
-}
-
-export function parseRange(input: string, minValue: number = 0): Range {
-  const match = input.match(/^(\[|\() *(-?\d+(?:\.\d+)?) *, *(-?\d+(?:\.\d+)?) *(\]|\))$/);
-
-  if (!match) {
-    throw new Error(`Invalid range format: "${input}"`);
-  }
-  const [, left, minRaw, maxRaw, right] = match;
-  let min = parseFloat(minRaw);
-  let max = parseFloat(maxRaw);
-  if (left === '(') min += minValue;
-  if (right === ')') max -= minValue;
-
-  return { min, max };
 }
 
 /*

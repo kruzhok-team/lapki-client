@@ -7,7 +7,14 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { twMerge } from 'tailwind-merge';
 
-import { ReactComponent as QuestionMark } from '@renderer/assets/icons/question-mark.svg';
+import { ReactComponent as DeleteIcon } from '@renderer/assets/icons/delete.svg';
+import { ReactComponent as DownloadBinIcon } from '@renderer/assets/icons/download-bin.svg';
+import { ReactComponent as FlashVerifyIcon } from '@renderer/assets/icons/flash-verify.svg';
+import { ReactComponent as FlashIcon } from '@renderer/assets/icons/flash.svg';
+import { ReactComponent as MetadataIcon } from '@renderer/assets/icons/metadata.svg';
+import { ReactComponent as PingIcon } from '@renderer/assets/icons/ping.svg';
+import { ReactComponent as ReloadIcon } from '@renderer/assets/icons/reload.svg';
+import { ReactComponent as ViewLogIcon } from '@renderer/assets/icons/view-log.svg';
 import { AvrdudeGuideModal } from '@renderer/components/AvrdudeGuide';
 import { ErrorModal, ErrorModalData } from '@renderer/components/ErrorModal';
 import { Device, MSDevice } from '@renderer/components/Modules/Device';
@@ -303,7 +310,7 @@ export const FlasherTab: React.FC = () => {
   const getOpName = (op: OperationType) => {
     switch (op) {
       case OperationType.ping:
-        return 'Пинг';
+        return 'Окликнуть';
       case OperationType.reset:
         return 'Перезагрузить';
       case OperationType.meta:
@@ -312,6 +319,30 @@ export const FlasherTab: React.FC = () => {
         throw Error('Неизвестная операция');
     }
   };
+
+  const getOpHint = (op: OperationType) => {
+    switch (op) {
+      case OperationType.ping:
+        return 'Окликнуть плату, чтобы проверить связь с ней.';
+      case OperationType.reset:
+        return 'Перезагрузить плату.';
+      case OperationType.meta:
+        return 'Переспросить метаданные платы, если они не были получены ранее.';
+      default:
+        throw Error('Неизвестная операция');
+    }
+  };
+
+  const flashHint = 'Загрузить прошивку в выбранные платы.';
+  const flashVerifyHint =
+    'Загрузить прошивку с проверкой целостности. Увеличивает общее время загрузки, доступно не для всех устройств.';
+  const flashResultHint = useMemo(() => {
+    if (flashResult.size === 0)
+      return 'Выполните загрузку прошивки, и эта кнопка позволит посмотреть её результаты.';
+    return `Открыть вкладки с результатами загрузки прошивок (${flashResult.size} шт.)`;
+  }, [flashResult]);
+  const downloadBinHint =
+    'Выгрузить файлы прошивки из выбранных плат. Доступно не для всех устройств.';
 
   const handleOperation = (op: OperationType) => {
     for (const item of flashTableData) {
@@ -357,7 +388,13 @@ export const FlasherTab: React.FC = () => {
     }
   };
 
-  const handleSendBin = async () => {
+  const handleSendBin = async (doVerify?: boolean) => {
+    if (doVerify !== undefined && managerMSSetting) {
+      setManagerMSSetting({
+        ...managerMSSetting,
+        verification: doVerify,
+      });
+    }
     for (const item of flashTableData) {
       if (!item.isSelected) continue;
       let notFound = false;
@@ -612,88 +649,100 @@ export const FlasherTab: React.FC = () => {
         <WithHint hint={'Убрать отмеченные платы из таблицы.'}>
           {(hintProps) => (
             <button {...hintProps} className="btn-error mr-2 p-2 py-1" onClick={handleRemoveDevs}>
-              Убрать
+              <DeleteIcon className="h-8 w-8" />
             </button>
           )}
         </WithHint>
-        <button
-          className="btn-primary mr-4 p-2 py-1"
-          onClick={() => handleSendBin()}
-          disabled={commonOperationDisabled}
-        >
-          Прошить!
-        </button>
+        <WithHint hint={flashHint}>
+          {(hintProps) => (
+            <button
+              {...hintProps}
+              className="btn-primary mr-2 p-2 py-1"
+              onClick={() => handleSendBin(false)}
+              disabled={commonOperationDisabled}
+            >
+              <FlashIcon className="h-8 w-8" />
+            </button>
+          )}
+        </WithHint>
         {!isProMode ? (
           ''
         ) : (
           <>
-            <div className="mr-4 flex items-center justify-between gap-1">
-              <Switch
-                checked={managerMSSetting?.verification}
-                onCheckedChange={() => {
-                  if (!managerMSSetting) return;
-                  setManagerMSSetting({
-                    ...managerMSSetting,
-                    verification: !managerMSSetting.verification,
-                  });
-                }}
-              />
-              Верификация
-              <WithHint
-                hint={
-                  'Дополнительная проверка целостности загруженной прошивки. Увеличивает общее время загрузки.'
-                }
-              >
-                {(hintProps) => (
-                  <div className="shrink-0" {...hintProps}>
-                    <QuestionMark className="h-5 w-5" />
-                  </div>
-                )}
-              </WithHint>
-            </div>
+            <WithHint hint={flashVerifyHint}>
+              {(hintProps) => (
+                <button
+                  {...hintProps}
+                  className="btn-primary mr-2 p-2 py-1"
+                  onClick={() => handleSendBin(true)}
+                  disabled={commonOperationDisabled}
+                >
+                  <FlashVerifyIcon className="h-8 w-8" />
+                </button>
+              )}
+            </WithHint>
+            <WithHint hint={getOpHint(OperationType.ping)}>
+              {(hintProps) => (
+                <button
+                  {...hintProps}
+                  className="btn-primary mr-2 whitespace-nowrap p-2 py-1"
+                  onClick={() => handleOperation(OperationType.ping)}
+                  disabled={commonOperationDisabled}
+                >
+                  <PingIcon className="h-8 w-8" />
+                </button>
+              )}
+            </WithHint>
+            <WithHint hint={getOpHint(OperationType.reset)}>
+              {(hintProps) => (
+                <button
+                  {...hintProps}
+                  className="btn-primary mr-2 whitespace-nowrap p-2 py-1"
+                  onClick={() => handleOperation(OperationType.reset)}
+                  disabled={commonOperationDisabled}
+                >
+                  <ReloadIcon className="h-8 w-8" />
+                </button>
+              )}
+            </WithHint>
+            <WithHint hint={getOpHint(OperationType.meta)}>
+              {(hintProps) => (
+                <button
+                  {...hintProps}
+                  className="btn-primary mr-2 whitespace-nowrap p-2 py-1"
+                  onClick={() => handleOperation(OperationType.meta)}
+                  disabled={commonOperationDisabled}
+                >
+                  <MetadataIcon className="h-8 w-8" />
+                </button>
+              )}
+            </WithHint>
+            <WithHint hint={downloadBinHint}>
+              {(hintProps) => (
+                <button
+                  {...hintProps}
+                  className="btn-primary mr-2 whitespace-nowrap p-2 py-1"
+                  onClick={handleGetFirmware}
+                  disabled={binaryFolder !== null || commonOperationDisabled}
+                >
+                  <DownloadBinIcon className="h-8 w-8" />
+                </button>
+              )}
+            </WithHint>
           </>
         )}
-        <button
-          className="btn-primary mr-4 whitespace-nowrap p-2 py-1"
-          onClick={handleAddFlashResultTab}
-          disabled={flashResult.size === 0}
-        >
-          Журнал загрузки
-        </button>
-        {!isProMode ? (
-          ''
-        ) : (
-          <>
+        <WithHint hint={flashResultHint} showOnDisabled={true}>
+          {(hintProps) => (
             <button
-              className="btn-primary mr-4 whitespace-nowrap p-2 py-1"
-              onClick={() => handleOperation(OperationType.ping)}
-              disabled={commonOperationDisabled}
+              {...hintProps}
+              className="btn-primary mr-2 whitespace-nowrap p-2 py-1"
+              onClick={handleAddFlashResultTab}
+              disabled={flashResult.size === 0}
             >
-              {getOpName(OperationType.ping)}
+              <ViewLogIcon className="h-8 w-8" />
             </button>
-            <button
-              className="btn-primary mr-4 whitespace-nowrap p-2 py-1"
-              onClick={() => handleOperation(OperationType.reset)}
-              disabled={commonOperationDisabled}
-            >
-              {getOpName(OperationType.reset)}
-            </button>
-            <button
-              className="btn-primary mr-4 whitespace-nowrap p-2 py-1"
-              onClick={() => handleOperation(OperationType.meta)}
-              disabled={commonOperationDisabled}
-            >
-              {getOpName(OperationType.meta)}
-            </button>
-            <button
-              className="btn-primary mr-4 whitespace-nowrap py-1"
-              onClick={handleGetFirmware}
-              disabled={binaryFolder !== null || commonOperationDisabled}
-            >
-              Выгрузка прошивки...
-            </button>
-          </>
-        )}
+          )}
+        </WithHint>
       </div>
     );
   };
@@ -883,7 +932,7 @@ export const FlasherTab: React.FC = () => {
           className="btn-primary mr-2 whitespace-nowrap p-1.5"
           onClick={handleOpenAddressBook}
         >
-          Адреса плат МС-ТЮК
+          Адресная книга
         </button>
         <button
           className="btn-primary mr-2 whitespace-nowrap p-1.5"
@@ -900,7 +949,7 @@ export const FlasherTab: React.FC = () => {
         <div
           className={twMerge(
             selectedDevicesCount == 0 ? 'opacity-50' : '',
-            'ml-2 mr-4 flex items-center justify-between gap-1 font-Fira-Mono'
+            'ml-3 mr-3 flex w-3 items-center justify-center gap-1 font-Fira-Mono'
           )}
         >
           {selectedDevicesCount}

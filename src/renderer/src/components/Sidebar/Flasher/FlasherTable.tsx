@@ -17,7 +17,7 @@ interface FlasherTableProps {
 // размеры столбцов
 // tailwind почему-то не реагирует на название классов, в которые подставленны переменные (`w-[${v}vw]`),
 // поэтому при изменение стобцов приходится всё в ручную пересчитывать
-const checkColumn = twMerge('min-w-[2.25vw]', 'rounded border border-border-primary');
+const checkColumn = twMerge('min-w-9', 'rounded border border-border-primary');
 const nameColumn = 'min-w-[16vw]';
 const typeColumn = 'min-w-[14vw]';
 const addressColumn = 'min-w-[16vw]';

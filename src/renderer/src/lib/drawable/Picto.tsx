@@ -6,7 +6,6 @@ import Pen from '@renderer/assets/icons/pen.svg';
 import UnknownIcon from '@renderer/assets/icons/unknown-alt.svg';
 import { Rectangle } from '@renderer/lib/types/graphics';
 import theme, { getColor } from '@renderer/theme';
-import { Range } from '@renderer/types/utils';
 import { getDefaultRange, normalizeRangeValue } from '@renderer/utils';
 
 import { DrawFunctionParameters } from '../data/PlatformManager';

@@ -22,6 +22,9 @@ export function getContentType(filepath: string) {
 }
 
 export function extractPort(address: string) {
+  if (!address) {
+    return null;
+  }
   const url = new URL(address);
   return url.port;
 }

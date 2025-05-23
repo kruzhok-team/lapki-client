@@ -33,6 +33,10 @@ const handlers = {
   getMetadata: handleGetFileMetadata,
   selectFile: handleFileSelect,
   readFile: handleFileRead,
+  /**
+   * Создание папки.
+   * Возвращает три параметра: созданна ли папка, путь к папке, текст ошибки.
+   */
   createFolder: handleCreateFolder,
   saveBinaryIntoFile: handleSaveBinaryIntoFile,
   existsFile: handleFileExists,

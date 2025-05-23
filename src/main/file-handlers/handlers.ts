@@ -312,6 +312,10 @@ export function handleCreateFolder(folderName: string): HandleFolderCreateReturn
       })
       .then((dir) => {
         const pathToDir = `${dir.filePaths[0]}/${folderName}`;
+        if (dir.canceled) {
+          resolve([true, '', '']);
+          return;
+        }
         if (fs.existsSync(pathToDir)) {
           resolve([false, '', `Папка ${pathToDir} уже существует.`]);
           return;
@@ -321,7 +325,7 @@ export function handleCreateFolder(folderName: string): HandleFolderCreateReturn
           resolve([false, '', `Папку ${pathToDir} не удалось создать.`]);
           return;
         }
-        resolve([true, pathToDir, '']);
+        resolve([false, pathToDir, '']);
       })
       .catch((err) => {
         resolve([false, '', err.message]);

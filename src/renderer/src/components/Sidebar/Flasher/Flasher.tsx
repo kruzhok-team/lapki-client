@@ -856,15 +856,14 @@ export const FlasherTab: React.FC = () => {
   };
 
   const handleGetFirmware = async () => {
-    const [isCreated, directory, error] = await window.api.fileHandlers.createFolder(
+    const [isCanceled, directory, error] = await window.api.fileHandlers.createFolder(
       `прошивки-${Date.now()}`
     );
-    // TODO: выскакивает ошибка, если отказаться от выбора папки
     if (error) {
       ManagerMS.addLog(`Ошибка: ${error}`);
       return;
     }
-    if (!isCreated) {
+    if (isCanceled) {
       return;
     }
     for (const item of flashTableData) {

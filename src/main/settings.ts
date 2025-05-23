@@ -136,7 +136,7 @@ const deepCheck = (path: string, obj: object) => {
     const curObj = obj[key];
     if (!settings.hasSync(newPath)) {
       settings.setSync(newPath, curObj);
-    } else if (typeof curObj === 'object' && !Array.isArray(obj)) {
+    } else if (typeof curObj === 'object' && !Array.isArray(curObj)) {
       deepCheck(newPath, curObj);
     }
   }

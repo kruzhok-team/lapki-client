@@ -35,7 +35,7 @@ const handlers = {
   readFile: handleFileRead,
   /**
    * Создание папки.
-   * Возвращает три параметра: создана ли папка, путь к папке, текст ошибки.
+   * Возвращает три параметра: отмена создания папки, путь к папке, текст ошибки.
    */
   createFolder: handleCreateFolder,
   saveBinaryIntoFile: handleSaveBinaryIntoFile,

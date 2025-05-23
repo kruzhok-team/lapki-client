@@ -71,10 +71,23 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const allParameters = { ...proto.constructorParameters, ...proto.initializationParameters };
     if (!handleNameValidation()) {
       return;
     }
     // Если есть ошибка то не отправляем форму
+    for (const protoParamName in allParameters) {
+      const protoParam = allParameters[protoParamName];
+      if (
+        (!protoParam.optional && parameters[protoParamName] === undefined) ||
+        parameters[protoParamName] === ''
+      ) {
+        setErrors((p) => {
+          return { ...p, protoParamName: 'Ошибка! Обязательный параметр' };
+        });
+        errors[protoParamName] = 'Ошибка! Обязательный параметр';
+      }
+    }
     for (const key in errors) {
       if (errors[key]) return;
     }
@@ -92,7 +105,7 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
 
   // (L140-beep)Как будто у нас нигде нет имени у компонента
   const componentType = proto.name ?? data.type;
-  const componentName = proto.singletone ? componentType : `${componentType} ${id}`;
+  const componentName = proto.singletone ? componentType : `${componentType} [${id}]`;
 
   useLayoutEffect(() => {
     setName(data.name);

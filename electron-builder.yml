@@ -19,6 +19,7 @@ nsis:
   shortcutName: ${productName}
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
+  include: build-installer/installer.nsh
 mac:
   artifactName: ${name}-v${version}.${ext}
   target:
@@ -34,6 +35,8 @@ linux:
     - deb
   maintainer: electronjs.org
   category: Utility
+deb: 
+  afterInstall: build/udev-rules.sh
 npmRebuild: false
 publish:
   provider: generic

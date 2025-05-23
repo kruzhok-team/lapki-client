@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, Dispatch } from 'react';
 import { toast } from 'sonner';
 
 import { SaveModalData } from '@renderer/components';
+import { StateMachinesStackItem } from '@renderer/components/CreateSchemeModal/StateMachinesStack';
 import { Compiler } from '@renderer/components/Modules/Compiler';
 import { importGraphml } from '@renderer/lib/data/GraphmlParser';
 import { useModelContext } from '@renderer/store/ModelContext';
@@ -27,7 +28,11 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   const model = modelController.model;
   const name = modelController.model.useData('', 'name') as string | null;
   const isStale = modelController.model.useData('', 'isStale');
-  const [clearTabs, openTab] = useTabs((state) => [state.clearTabs, state.openTab]);
+  const [clearTabs, openTab, setActiveTab] = useTabs((state) => [
+    state.clearTabs,
+    state.openTab,
+    state.setActiveTab,
+  ]);
 
   const [data, setData] = useState<SaveModalData | null>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -38,23 +43,30 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   };
 
   // Открыть вкладки на каждый контроллер
-  const openTabs = () => {
+  const openTabs = (openAll?: boolean) => {
     changeTab(SidebarIndex.Explorer);
+    let firstTabName = '';
     for (const controllerId in modelController.controllers) {
       if (controllerId === '') continue;
       const controller = modelController.controllers[controllerId];
       if (controller.type === 'scheme') continue; // Схемотехнический экран открываем только по кнопке в меню
       const stateMachines = Object.keys(controller.stateMachinesSub);
       const smId = stateMachines[0] ?? controllerId;
+      const tabName = modelController.model.data.elements.stateMachines[smId].name ?? smId;
       // ID контроллера равен ID канваса.
       openTab(modelController, {
         type: 'editor',
-        name: modelController.model.data.elements.stateMachines[smId].name ?? smId,
+        name: tabName,
         canvasId: controllerId,
       });
       // (chekoopa) ОБСУДИТЬ! Кажется, разумнее сейчас оставить открытие только первой машины состояний.
       // И в будущем сделать открытие всех машин опцией. Но это в будущем.
-      break;
+      // (Roundabout1) Сейчас все вкладки открываются только при создании документа
+      if (!openAll) break;
+      if (!firstTabName) firstTabName = tabName;
+    }
+    if (firstTabName) {
+      setActiveTab(modelController, firstTabName);
     }
   };
 
@@ -114,11 +126,11 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
     }
   };
 
-  const performNewFile = (idx: string) => {
+  const performNewFile = (stateMachines: StateMachinesStackItem[]) => {
     Compiler.setCompilerData(undefined);
-    modelController.files.newFile(idx);
+    modelController.files.newFile(stateMachines);
     clearTabs();
-    openTabs();
+    openTabs(true);
   };
 
   const handleSaveAsFile = async () => {
@@ -129,7 +141,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
         openSaveError(cause);
       }
     } else {
-      toast.success('Схема сохранена!');
+      toast.success('Документ сохранён!');
     }
   };
 
@@ -141,7 +153,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
         openSaveError(cause);
       }
     } else {
-      toast.success('Схема сохранена!');
+      toast.success('Документ сохранён!');
     }
   }, [model, openSaveError]);
 
@@ -209,7 +221,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   };
 
   /**
-   * Временное сохранение схемы в localstorage
+   * Временное сохранение документа в localstorage
    */
   const tempSave = () => {
     window.localStorage.setItem(tempSaveKey, modelController.model.serializer.getAll('Cyberiada'));
@@ -224,12 +236,12 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   };
 
   useEffect(() => {
-    //Сохранение проекта после закрытия редактора
+    //Сохранение документа после закрытия редактора
     const unsubscribe = window.electron.ipcRenderer.on('app-close', () => {
       if (isStale) {
         setData({
           shownName: name,
-          question: 'Хотите сохранить проект перед тем, как закрыть приложение?',
+          question: 'Хотите сохранить документ перед тем, как закрыть приложение?',
           //При нажатии на любую из кнопок, он должен закрывать редактор
           onConfirm: () => {
             return window.electron.ipcRenderer.send('closed');

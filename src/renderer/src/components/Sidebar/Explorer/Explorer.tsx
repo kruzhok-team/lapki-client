@@ -1,4 +1,4 @@
-import React, { useReducer, useRef, RefObject } from 'react';
+import React, { useReducer, useRef, RefObject, useState } from 'react';
 
 import {
   Panel,
@@ -6,21 +6,31 @@ import {
   PanelResizeHandle,
   ImperativePanelHandle,
 } from 'react-resizable-panels';
-import { twMerge } from 'tailwind-merge';
 
-import { ReactComponent as ArrowIcon } from '@renderer/assets/icons/arrow-down.svg';
 import { useModelContext } from '@renderer/store/ModelContext';
 
-import { ComponentsList } from './ComponentsList';
+import { StateMachineComponentList } from './StateMachineComponentList';
 import { StateMachinesHierarchy } from './StateMachinesHierarchy';
+
+import { StateMachinesList } from '../StateMachinesTab';
+
+const collapsedSize = 6;
 
 export const Explorer: React.FC = () => {
   const modelController = useModelContext();
   const isInitialized = modelController.model.useData('', 'isInitialized');
+  const headControllerId = modelController.model.useData('', 'headControllerId');
+  const stateMachinesIds = Object.keys(
+    modelController.controllers[headControllerId].useData('stateMachinesSub')
+  );
 
+  const stateMachinesPanelRef = useRef<ImperativePanelHandle>(null);
   const componentPanelRef = useRef<ImperativePanelHandle>(null);
   const hierarchyPanelRef = useRef<ImperativePanelHandle>(null);
+
   const [, forceUpdate] = useReducer((p) => p + 1, 0);
+
+  const [selectedSm, setSmSelected] = useState<string | null>(null);
 
   const togglePanel = (panelRef: RefObject<ImperativePanelHandle>) => {
     const panel = panelRef.current;
@@ -40,27 +50,42 @@ export const Explorer: React.FC = () => {
       <h3 className="mx-4 border-b border-border-primary py-2 text-center text-lg">Диаграмма</h3>
       <PanelGroup direction="vertical">
         <Panel
-          ref={componentPanelRef}
-          id="panel1"
+          ref={stateMachinesPanelRef}
+          id="panel0"
           collapsible
-          defaultSize={50}
-          minSize={3}
-          collapsedSize={3}
+          minSize={collapsedSize}
+          collapsedSize={collapsedSize}
           onCollapse={forceUpdate}
           onExpand={forceUpdate}
           className="px-4"
         >
-          <button className="my-3 flex items-center" onClick={() => togglePanel(componentPanelRef)}>
-            <ArrowIcon
-              className={twMerge(
-                'rotate-0 transition-transform',
-                componentPanelRef.current?.isCollapsed() && '-rotate-90'
-              )}
-            />
-            <h3 className="font-semibold">Компоненты</h3>
-          </button>
+          <StateMachinesList
+            selectedSm={selectedSm}
+            setSmSelected={setSmSelected}
+            isCollapsed={() => stateMachinesPanelRef.current?.isCollapsed() ?? false}
+            togglePanel={() => togglePanel(stateMachinesPanelRef)}
+          />
+        </Panel>
 
-          {isInitialized ? <ComponentsList /> : 'Недоступно до открытия схемы'}
+        <PanelResizeHandle className="group relative py-1">
+          <div className="absolute left-0 right-0 top-1/2 h-[1px] -translate-y-1/2 bg-border-primary transition-colors group-hover:h-1 group-hover:bg-primary group-active:h-1 group-active:bg-primary"></div>
+        </PanelResizeHandle>
+
+        <Panel
+          ref={componentPanelRef}
+          id="panel1"
+          collapsible
+          minSize={collapsedSize}
+          collapsedSize={collapsedSize}
+          onCollapse={forceUpdate}
+          onExpand={forceUpdate}
+          className="px-4"
+        >
+          <StateMachineComponentList
+            smId={stateMachinesIds.length > 0 ? stateMachinesIds[0] : ''}
+            isCollapsed={() => componentPanelRef.current?.isCollapsed() ?? false}
+            togglePanel={() => togglePanel(componentPanelRef)}
+          />
         </Panel>
 
         <PanelResizeHandle className="group relative py-1">
@@ -71,23 +96,20 @@ export const Explorer: React.FC = () => {
           id="panel2"
           ref={hierarchyPanelRef}
           collapsible
-          minSize={3}
-          collapsedSize={3}
+          minSize={collapsedSize}
+          collapsedSize={collapsedSize}
           onCollapse={forceUpdate}
           onExpand={forceUpdate}
           className="px-4"
         >
-          <button className="my-3 flex items-center" onClick={() => togglePanel(hierarchyPanelRef)}>
-            <ArrowIcon
-              className={twMerge(
-                'rotate-0 transition-transform',
-                hierarchyPanelRef.current?.isCollapsed() && '-rotate-90'
-              )}
+          {isInitialized ? (
+            <StateMachinesHierarchy
+              isCollapsed={() => hierarchyPanelRef.current?.isCollapsed() ?? false}
+              togglePanel={() => togglePanel(hierarchyPanelRef)}
             />
-            <h3 className="font-semibold">Иерархия</h3>
-          </button>
-
-          {isInitialized ? <StateMachinesHierarchy /> : 'Недоступно до открытия схемы'}
+          ) : (
+            <div className="px-4">Недоступно до открытия документа</div>
+          )}
         </Panel>
       </PanelGroup>
     </section>

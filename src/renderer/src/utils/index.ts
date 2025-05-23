@@ -2,9 +2,39 @@ export * from './MatrixActions';
 import { Point } from '@renderer/lib/types/graphics';
 import { Component, StateMachine } from '@renderer/types/diagram';
 import { ArgType } from '@renderer/types/platform';
+import { Range } from '@renderer/types/utils';
+
+export const DEFAULT_RANGE_STEP = 1;
+
+/**
+ * Inverts and normalizes a value to the range [0, 1].
+ * This function is commonly used for opacity adjustments or similar scenarios.
+ *
+ * @param {number} value - The value to normalize.
+ * @param {Range} range - The range object containing `min` and `max` values.
+ * @returns {number} - The normalized value in the range [0, 1].
+ */
+export function normalizeRangeValue(value: number, range: Range): number {
+  if (range.max === range.min) {
+    return 0;
+  }
+  return 1 - (value - range.min) / (range.max - range.min);
+}
+
+export function getDefaultRange(): Range {
+  return {
+    step: DEFAULT_RANGE_STEP,
+    min: 0,
+    max: 100,
+  };
+}
 
 export function isString(value: any): value is string {
   return typeof value === 'string';
+}
+
+export function isMatrix(type: string) {
+  return type.includes('Matrix');
 }
 
 /*

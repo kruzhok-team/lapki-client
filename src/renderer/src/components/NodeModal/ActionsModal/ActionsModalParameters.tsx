@@ -8,7 +8,13 @@ import { CanvasController } from '@renderer/lib/data/ModelController/CanvasContr
 import { isVariable } from '@renderer/lib/utils';
 import { ArgList, Variable } from '@renderer/types/diagram';
 import { ArgType, ArgumentProto } from '@renderer/types/platform';
-import { createEmptyMatrix, formatArgType, getMatrixDimensions } from '@renderer/utils';
+import {
+  createEmptyMatrix,
+  formatArgType,
+  getDefaultRange,
+  getMatrixDimensions,
+  isMatrix,
+} from '@renderer/utils';
 import { getComponentAttribute } from '@renderer/utils/ComponentAttribute';
 
 import { MatrixWidget } from './MatrixWidget';
@@ -86,10 +92,6 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
     });
   };
 
-  const isMatrix = (type: string) => {
-    return type.startsWith('Matrix');
-  };
-
   const getHint = (description: string, type: ArgType) => {
     if (!type || Array.isArray(type) || isMatrix(type)) return description;
     return description + (description ? '\n' : '' + `Тип: {${formatArgType(type)}}`);
@@ -104,7 +106,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
     <div className="flex max-h-[50vh] flex-col gap-2 overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
       <h3 className="mb-1 text-xl">Параметры</h3>
       {protoParameters.map((proto, idx) => {
-        const { name, description = '', type = '' } = proto;
+        const { name, description = '', type = '', range } = proto;
         const parameter = parameters[name] ?? { value: '', order: idx };
         const value = parameter.value;
         const error = errors[name];
@@ -140,6 +142,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
         }
         if (isMatrix(type)) {
           const { width, height } = getMatrixDimensions(type);
+          const parsedRange = range ?? getDefaultRange();
           if (!value) {
             const newMatrix = createEmptyMatrix(type);
             parameters[name] = {
@@ -147,6 +150,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
               order: idx,
             };
           }
+
           if (Array.isArray(value) && Array.isArray(value[0])) {
             return (
               <ComponentFormFieldLabel
@@ -172,6 +176,8 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                       border: 2,
                       isRounded: true,
                     },
+                    range: parsedRange,
+                    isHalf: type.startsWith('Half'),
                   }}
                   onChange={onChange.bind(this, name)}
                 />

@@ -11,7 +11,7 @@ export const getMatrixDimensions = (matrixType: string): Dimensions => {
   };
 };
 
-export const createEmptyMatrix = (matrixType: string): Matrix => {
+export const createEmptyMatrix = (matrixType: string, minValue: number = 0): Matrix => {
   const { width, height } = getMatrixDimensions(matrixType);
 
   if (!width || !height)
@@ -21,7 +21,7 @@ export const createEmptyMatrix = (matrixType: string): Matrix => {
   for (let row = 0; row != height; row += 1) {
     emptyMatrixValue.push([]);
     for (let col = 0; col != width; col += 1) {
-      emptyMatrixValue[row].push(0);
+      emptyMatrixValue[row].push(minValue);
     }
   }
 

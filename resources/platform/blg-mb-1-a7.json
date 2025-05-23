@@ -632,8 +632,12 @@
           "parameters": [
             {
               "name": "Рисунок",
-              "type": "Matrix5x7",
-              "description": "Рисунок, который будет изображен на матрице."
+              "type": "HalfMatrix5x7",
+              "description": "Рисунок, который будет изображен на матрице.",
+              "range": {
+                "min": 0,
+                "max": 100
+              }
             }
           ]
         },

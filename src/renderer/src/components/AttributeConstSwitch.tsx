@@ -1,34 +1,51 @@
 import React from 'react';
 
-import { Switch, WithHint } from './UI';
+import * as RSwitch from '@radix-ui/react-switch';
+import { twMerge } from 'tailwind-merge';
 
+import { ReactComponent as AttributeIcon } from '@renderer/assets/icons/useAttribute.svg';
+import { ReactComponent as ConstIcon } from '@renderer/assets/icons/useConst.svg';
+
+import { WithHint } from './UI';
 interface AttributeConstSwitch {
-  checked?: boolean;
+  isAttribute?: boolean;
   onCheckedChange?: (isAttribute: boolean) => void;
-  hint?: string;
   className?: string;
   isDisabled?: boolean;
 }
 
 export const AttributeConstSwitch: React.FC<AttributeConstSwitch> = ({
-  checked,
+  isAttribute,
   onCheckedChange,
-  hint,
   className,
   isDisabled,
   ...props
 }) => {
+  const getHint = () => {
+    if (!isDisabled) {
+      return isAttribute ? 'Переключиться на константу' : 'Переключиться на атрибут компонента';
+    }
+    return null;
+  };
   return (
     <div {...props}>
-      <WithHint hint={hint}>
+      <WithHint hint={getHint()}>
         {(hintProps) => (
           <div {...hintProps}>
-            <Switch
-              className={className}
-              checked={checked}
+            <RSwitch.Root
+              className={twMerge(
+                'relative h-[25px] w-[42px] cursor-pointer rounded-full bg-bg-secondary shadow-[0_0_0_1px] shadow-border-primary outline-none focus:shadow-[0_0_0_1px]',
+                className
+              )}
+              id="airplane-mode"
+              checked={isAttribute}
               disabled={isDisabled}
               onCheckedChange={onCheckedChange}
-            />
+            >
+              <RSwitch.Thumb className="block size-[21px] translate-x-0.5 rounded-full shadow-[0_0_0_1px] shadow-border-contrast transition duration-100 will-change-transform data-[state=checked]:translate-x-[19px]">
+                {isAttribute ? <AttributeIcon /> : <ConstIcon />}
+              </RSwitch.Thumb>
+            </RSwitch.Root>
           </div>
         )}
       </WithHint>

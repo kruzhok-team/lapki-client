@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, cloneElement, isValidElement } from 'react';
 
 import {
   useFloating,
@@ -22,6 +22,7 @@ interface WithHintProps {
   offset?: OffsetOptions;
   placement?: Placement;
   delay?: number;
+  showOnDisabled?: boolean;
 }
 
 export const WithHint: React.FC<WithHintProps> = ({
@@ -30,6 +31,7 @@ export const WithHint: React.FC<WithHintProps> = ({
   offset = 10,
   placement = 'bottom',
   delay,
+  showOnDisabled = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -52,13 +54,42 @@ export const WithHint: React.FC<WithHintProps> = ({
   });
   const { getReferenceProps, getFloatingProps } = useInteractions([hover]);
 
+  const childNode = children({
+    ref: refs.setReference,
+    ...getReferenceProps(),
+    'data-with-hint': true,
+  });
+
+  const isDisabled =
+    isValidElement(childNode) && (childNode.props.disabled || childNode.props['aria-disabled']);
+
+  // при showOnDisabled заблокированный элемент оборачивается в отдельный span, чтобы работали события
+  const wrappedChild =
+    showOnDisabled && isDisabled ? (
+      <span
+        style={{
+          display: 'inline-block',
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          cursor: (childNode as React.ReactElement).props.style?.cursor || 'not-allowed',
+        }}
+        tabIndex={0}
+        aria-disabled={(childNode as React.ReactElement).props.disabled ? true : undefined}
+        ref={refs.setReference}
+        {...getReferenceProps()}
+        data-with-hint
+      >
+        {cloneElement(childNode as React.ReactElement, {
+          tabIndex: -1,
+          style: { pointerEvents: 'none', ...(childNode as React.ReactElement).props.style },
+        })}
+      </span>
+    ) : (
+      childNode
+    );
+
   return (
     <>
-      {children({
-        ref: refs.setReference,
-        ...getReferenceProps(),
-        'data-with-hint': true,
-      })}
+      {wrappedChild}
       {isOpen &&
         hint &&
         createPortal(

@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 
+import { generateSmId } from '@renderer/lib/utils';
+import { Platform } from '@renderer/types/platform';
+
 import { PlatformSelection } from './PlatformSelection';
+import { StateMachinesStackItem } from './StateMachinesStack';
 import { TemplateSelection } from './TemplateSelection';
 
 import { Modal } from '../UI/Modal/Modal';
@@ -10,7 +14,7 @@ import { Tabs } from '../UI/Tabs/Tabs';
 interface CreateSchemeModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (idx: string) => void;
+  onCreate: (stateMachines: StateMachinesStackItem[]) => void;
   onCreateFromTemplate: (type: string, name: string) => void;
 }
 
@@ -26,14 +30,16 @@ export const CreateSchemeModal: React.FC<CreateSchemeModalProps> = ({
   const [selectedTemplate, setSelectedTemplate] = useState<{ type: string; name: string } | null>(
     null
   );
+  const [selectedStateMachineIndex, setSelectedStateMachineIndex] = useState<number | null>(null);
+  const [selectedStateMachines, setSelectedStateMachines] = useState<StateMachinesStackItem[]>([]);
 
-  const submitDisabled = tabValue === 0 ? !selectedPlatformIdx : !selectedTemplate;
+  const submitDisabled = tabValue === 0 ? selectedStateMachines.length === 0 : !selectedTemplate;
 
   const submit = () => {
     if (tabValue === 0) {
-      if (!selectedPlatformIdx) return;
+      if (selectedStateMachines.length === 0) return;
 
-      onCreate(selectedPlatformIdx);
+      onCreate(selectedStateMachines);
     } else if (tabValue === 1) {
       if (!selectedTemplate) return;
 
@@ -53,6 +59,22 @@ export const CreateSchemeModal: React.FC<CreateSchemeModalProps> = ({
   const handleCLose = () => {
     onClose();
     setSelectedPlatformIdx(null);
+    setSelectedTemplate(null);
+    setSelectedStateMachineIndex(null);
+    setSelectedStateMachines([]);
+  };
+
+  const isDuplicateSmId = (smId: string) => {
+    return selectedStateMachines.some((sm) => sm.id === smId);
+  };
+
+  const handleAddPlatform = (platform: Platform) => {
+    const smId = generateSmId(isDuplicateSmId, platform);
+    setSelectedStateMachines([...selectedStateMachines, { id: smId, platform: platform }]);
+  };
+
+  const handleDeleteStateMachine = (index: number) => {
+    setSelectedStateMachines(selectedStateMachines.toSpliced(index, 1));
   };
 
   return (
@@ -61,21 +83,25 @@ export const CreateSchemeModal: React.FC<CreateSchemeModalProps> = ({
       onRequestClose={handleCLose}
       onSubmit={handleSubmit}
       submitDisabled={submitDisabled}
-      title="Создание схемы"
+      title="Создание документа"
       submitLabel="Создать"
     >
       <Tabs
         className="mb-4"
-        tabs={['Создать пустую', 'Выбрать пример']}
+        tabs={['Платформы', 'Шаблоны']}
         value={tabValue}
         onChange={setTabValue}
       />
 
       <TabPanel value={0} tabValue={tabValue}>
         <PlatformSelection
+          selectedStateMachines={selectedStateMachines}
           selectedPlatformIdx={selectedPlatformIdx}
+          selectedStateMachineIndex={selectedStateMachineIndex}
+          setSelectedStateMachineIndex={setSelectedStateMachineIndex}
           setSelectedPlatformIdx={setSelectedPlatformIdx}
-          onDoubleClick={submit}
+          onAddPlatform={handleAddPlatform}
+          onDeletePlatform={handleDeleteStateMachine}
         />
       </TabPanel>
 

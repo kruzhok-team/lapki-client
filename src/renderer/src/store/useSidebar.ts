@@ -2,12 +2,12 @@ import { create } from 'zustand';
 // (Roundabout) TODO: поменять систему индексов
 export enum SidebarIndex {
   Menu,
-  StateMachineList,
   Explorer,
   Compiler,
-  Flasher,
+  Flasher, // исключение: является полноценной, а не боковой вкладкой
   History,
-  Settings = 7, // 6-ой элемент - это документация, но она не является вкладкой
+  Documentation, // исключение: открывается с правого бока
+  Settings,
 }
 
 interface SidebarState {

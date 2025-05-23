@@ -166,7 +166,12 @@ export const useFlasherHooks = () => {
     } else {
       if (Flasher.currentFlashingDevice.isMSDevice()) {
         const msDev = Flasher.currentFlashingDevice as MSDevice;
-        flashResultKey = `${ManagerMS.getFlashingAddress()?.name} - ${msDev.displayName()}`;
+        const getName = () => {
+          const addressInfo = ManagerMS.getFlashingAddress();
+          if (!addressInfo) return 'Неизвестная плата';
+          return addressInfo.name ? addressInfo.name : addressInfo.address;
+        };
+        flashResultKey = `${getName()} - ${msDev.displayName()}`;
         addressInfo = ManagerMS.getFlashingAddress();
         ManagerMS.flashingAddressEndLog(result);
       } else {
@@ -543,7 +548,7 @@ export const useFlasherHooks = () => {
       }
       case 'flash-open-serial-monitor':
         // если не удалось закрыть монитор порта перед прошивкой, то повторяем попытку
-        console.log('flash-open-serial-monitor');
+        // console.log('flash-open-serial-monitor');
         if (Flasher.currentFlashingDevice) {
           SerialMonitor.closeMonitor(Flasher.currentFlashingDevice.deviceID);
           Flasher.flash(Flasher.currentFlashingDevice);

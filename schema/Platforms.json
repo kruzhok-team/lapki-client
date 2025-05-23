@@ -207,6 +207,9 @@
           },
           "type": "array"
         },
+        "componentDeclaration": {
+          "type": "boolean"
+        },
         "components": {
           "additionalProperties": {
             "$ref": "#/definitions/ComponentProto"

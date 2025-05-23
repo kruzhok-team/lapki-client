@@ -60,7 +60,7 @@ export const Tabs: React.FC = () => {
       case 'code':
         return <CodeEditor initialValue={item.code} language={item.language} />;
       case 'serialMonitor':
-        return <SerialMonitorTab />;
+        return <SerialMonitorTab isTabOpen={item.isOpen} />;
       case 'managerMS':
         return <FlasherTab />;
       default:
@@ -86,10 +86,7 @@ export const Tabs: React.FC = () => {
             onDragStart={() => handleDrag(tab.name)}
             onDrop={() => handleDrop(tab.name)}
             onMouseDown={() => {
-              if (tab.type === 'editor') {
-                modelController.model.changeHeadControllerId(tab.canvasId);
-              }
-              setActiveTab(tab.name);
+              setActiveTab(modelController, tab.name);
             }}
             onClose={() => {
               closeTab(tab.name, modelController);

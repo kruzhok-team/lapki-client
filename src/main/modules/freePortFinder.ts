@@ -1,8 +1,11 @@
 // нахождение незанятого порта для запуска модуля
 
+import settings from 'electron-settings';
 import freePortFinder from 'find-free-port';
 
 import { error } from 'console';
+
+import { extractPort } from '../utils';
 
 // список небезопасных портов для хрома. Источник:https://chromium.googlesource.com/chromium/src.git/+/refs/heads/master/net/base/port_util.cc
 const UNSAFE_CHROME_PORTS: number[] = [
@@ -36,7 +39,12 @@ const DYNAMIC_PORTS: number = 49152;
 @param {string} host - хост на котором следует искать свободные порты, по-умолчанию указан адрес локального хоста
 @throws {Error} - ошибка из find-free-port
 */
-export async function findFreePort(startPort: number = DYNAMIC_PORTS, host: string = '127.0.0.1') {
+export async function findFreePort(data: {
+  startPort?: number;
+  host?: string;
+  usedPorts?: number[];
+}) {
+  let { startPort = DYNAMIC_PORTS, host = '127.0.0.1', usedPorts = [] } = data;
   if (startPort < USER_PORTS) {
     startPort = USER_PORTS;
   }
@@ -46,10 +54,21 @@ export async function findFreePort(startPort: number = DYNAMIC_PORTS, host: stri
 
   const [freep] = (await freePortFinder(startPort, host)) as [number];
 
-  if (freep <= LAST_UNSAFE_PORT && UNSAFE_CHROME_PORTS.includes(freep)) {
+  if (
+    (freep <= LAST_UNSAFE_PORT && UNSAFE_CHROME_PORTS.includes(freep)) ||
+    usedPorts.includes(freep)
+  ) {
     //await findFreePort(action, Math.floor(Math.random() * 65536));
-    return findFreePort(startPort + 1);
+    return findFreePort({ startPort: startPort + 1, usedPorts });
   }
 
   return freep;
+}
+
+export function getUsedPorts(): number[] {
+  return [
+    Number(settings.getSync('compiler.localPort')),
+    Number(settings.getSync('flasher.localPort')),
+    Number(extractPort(settings.getSync('doc.localHost') as string)),
+  ];
 }

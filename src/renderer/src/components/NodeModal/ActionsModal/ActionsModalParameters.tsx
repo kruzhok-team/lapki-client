@@ -7,7 +7,7 @@ import { Select, SelectOption, WithHint } from '@renderer/components/UI';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { isVariable } from '@renderer/lib/utils';
 import { ArgList, Variable } from '@renderer/types/diagram';
-import { ArgumentProto } from '@renderer/types/platform';
+import { ArgType, ArgumentProto } from '@renderer/types/platform';
 import { createEmptyMatrix, formatArgType, getMatrixDimensions } from '@renderer/utils';
 import { getComponentAttribute } from '@renderer/utils/ComponentAttribute';
 
@@ -22,12 +22,7 @@ interface ActionsModalParametersProps {
   setErrors: React.Dispatch<React.SetStateAction<Record<string, string>>>;
 
   componentOptions: SelectOption[];
-  methodOptionsSearch: (selectedParameterComponent: string | null) => {
-    value: string;
-    label: string;
-    hint: string | undefined;
-    icon: JSX.Element;
-  }[];
+  methodOptionsSearch: (selectedParameterComponent: string | null) => SelectOption[];
 
   smId: string;
   controller: CanvasController;
@@ -91,22 +86,30 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
     });
   };
 
+  const isMatrix = (type: string) => {
+    return type.startsWith('Matrix');
+  };
+
+  const getHint = (description: string, type: ArgType) => {
+    if (!type || Array.isArray(type) || isMatrix(type)) return description;
+    return description + (description ? '\n' : '' + `Тип: {${formatArgType(type)}}`);
+  };
+
   if (protoParameters.length === 0) {
     return null;
     // return <div className="flex text-text-inactive">Параметров нет</div>;
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      <h3 className="mb-1 text-xl">Параметры:</h3>
+    <div className="flex max-h-[50vh] flex-col gap-2 overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
+      <h3 className="mb-1 text-xl">Параметры</h3>
       {protoParameters.map((proto, idx) => {
         const { name, description = '', type = '' } = proto;
         const parameter = parameters[name] ?? { value: '', order: idx };
         const value = parameter.value;
         const error = errors[name];
-        const hint =
-          description + (type && `${description ? '\n' : ''}Тип: ${formatArgType(type)}`);
-        const label = name + ':';
+        const hint = getHint(description, type);
+        const label = name;
         if (Array.isArray(type)) {
           const valueAliases = proto.valueAlias;
           const options =
@@ -119,9 +122,15 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                 }))
               : type.map((value) => ({ label: value, value }));
           return (
-            <ComponentFormFieldLabel key={name} label={label} hint={hint}>
+            <ComponentFormFieldLabel
+              key={name}
+              label={label}
+              labelClassName="whitespace-pre"
+              hint={hint}
+              error={error}
+              childrenDivClassname="ml-[50px] w-[300px]"
+            >
               <Select
-                className="w-[300px] pl-[50px]"
                 options={options}
                 value={options.find((o) => o.value === value)}
                 onChange={(opt) => handleInputChange(name, idx, opt?.value ?? '')}
@@ -129,7 +138,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
             </ComponentFormFieldLabel>
           );
         }
-        if (type.startsWith('Matrix')) {
+        if (isMatrix(type)) {
           const { width, height } = getMatrixDimensions(type);
           if (!value) {
             const newMatrix = createEmptyMatrix(type);
@@ -144,6 +153,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                 as="div"
                 key={name}
                 label={label}
+                labelClassName="whitespace-pre"
                 hint={hint}
                 error={error}
                 name={name}
@@ -190,7 +200,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
         }
         const methodOptions = methodOptionsSearch(selectedParameterComponent);
         return (
-          <div className="flex items-center space-x-2" key={name}>
+          <div className="flex space-x-2" key={name}>
             <div className="mt-[4px]">
               <AttributeConstSwitch
                 checked={currentChecked}
@@ -198,6 +208,11 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                   setCheckedTo(name, !currentChecked);
                   handleInputChange(name, idx, '');
                 }}
+                hint={
+                  currentChecked
+                    ? 'Переключиться на константу'
+                    : 'Переключиться на атрибут компонента'
+                }
               />
             </div>
             {currentChecked ? (
@@ -205,7 +220,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                 <div className="flex">
                   <label className="grid grid-cols-[max-content,1fr] items-center justify-start gap-2">
                     <div className="flex min-w-28 items-center gap-1">
-                      <span>{label}</span>
+                      <span className="whitespace-pre">{label}</span>
                       {hint && (
                         <WithHint hint={hint}>
                           {(props) => (
@@ -255,6 +270,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
               <ComponentFormFieldLabel
                 key={name}
                 label={label}
+                labelClassName="whitespace-pre"
                 hint={hint}
                 error={error}
                 value={value as string}

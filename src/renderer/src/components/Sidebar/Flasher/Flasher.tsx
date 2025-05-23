@@ -5,8 +5,16 @@ import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 're
 
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
+import { twMerge } from 'tailwind-merge';
 
-import { ReactComponent as QuestionMark } from '@renderer/assets/icons/question-mark.svg';
+import { ReactComponent as DeleteIcon } from '@renderer/assets/icons/delete.svg';
+import { ReactComponent as DownloadBinIcon } from '@renderer/assets/icons/download-bin.svg';
+import { ReactComponent as FlashVerifyIcon } from '@renderer/assets/icons/flash-verify.svg';
+import { ReactComponent as FlashIcon } from '@renderer/assets/icons/flash.svg';
+import { ReactComponent as MetadataIcon } from '@renderer/assets/icons/metadata.svg';
+import { ReactComponent as PingIcon } from '@renderer/assets/icons/ping.svg';
+import { ReactComponent as ReloadIcon } from '@renderer/assets/icons/reload.svg';
+import { ReactComponent as ViewLogIcon } from '@renderer/assets/icons/view-log.svg';
 import { AvrdudeGuideModal } from '@renderer/components/AvrdudeGuide';
 import { ErrorModal, ErrorModalData } from '@renderer/components/ErrorModal';
 import { Device, MSDevice } from '@renderer/components/Modules/Device';
@@ -36,6 +44,8 @@ import { MsGetAddressModal } from './MsGetAddressModal';
 
 import { ManagerMS } from '../../Modules/ManagerMS';
 import { Switch, WithHint } from '../../UI';
+
+const monitorTabName = 'Монитор порта';
 
 export const FlasherTab: React.FC = () => {
   const modelController = useModelContext();
@@ -69,12 +79,19 @@ export const FlasherTab: React.FC = () => {
 
   const openTab = useTabs((state) => state.openTab);
   const closeTab = useTabs((state) => state.closeTab);
+  const tabs = useTabs((state) => state.items);
+  const isMonitorOpen = tabs.find((tab) => tab.name === monitorTabName) !== undefined;
 
   const [isAddressBookOpen, openAddressBook, closeAddressBook] = useModal(false);
   const [isMsGetAddressOpen, openMsGetAddressModal, closeMsGetAddressModal] = useModal(false);
   const [isDeviceListOpen, openDeviceList, closeDeviceList] = useModal(false);
   const [isDeviceMsListOpen, openDeviceMsList, closeDeviceMsList] = useModal(false);
   const [isAvrdudeGuideModalOpen, openAvrdudeGuideModal, closeAvrdudeGuideModal] = useModal(false);
+
+  const [isProMode, setProMode] = useState(false);
+  const handleSwitchProMode = () => {
+    setProMode(!isProMode);
+  };
 
   const [isAddressEnrtyEditOpen, openAddressEnrtyEdit, closeAddressEnrtyEdit] = useModal(false); // для редактирования существующих записей в адресной книге
   const addressEntryEditForm = useForm<AddressData>();
@@ -89,6 +106,9 @@ export const FlasherTab: React.FC = () => {
     setIsMsgModalOpen(true);
   };
 
+  const selectedDevicesCount = useMemo(() => {
+    return flashTableData.filter((item) => item.isSelected).length;
+  }, [flashTableData]);
   const noConnection = connectionStatus !== ClientStatus.CONNECTED;
   const commonOperationDisabled =
     noConnection ||
@@ -263,15 +283,39 @@ export const FlasherTab: React.FC = () => {
   const getOpName = (op: OperationType) => {
     switch (op) {
       case OperationType.ping:
-        return 'Пинг';
+        return 'Окликнуть';
       case OperationType.reset:
         return 'Перезагрузить';
       case OperationType.meta:
-        return 'Получить метаданные';
+        return 'Переспросить метаданные';
       default:
         throw Error('Неизвестная операция');
     }
   };
+
+  const getOpHint = (op: OperationType) => {
+    switch (op) {
+      case OperationType.ping:
+        return 'Окликнуть плату, чтобы проверить связь с ней.';
+      case OperationType.reset:
+        return 'Перезагрузить плату.';
+      case OperationType.meta:
+        return 'Переспросить метаданные платы, если они не были получены ранее.';
+      default:
+        throw Error('Неизвестная операция');
+    }
+  };
+
+  const flashHint = 'Загрузить прошивку в выбранные платы.';
+  const flashVerifyHint =
+    'Загрузить прошивку с проверкой целостности. Увеличивает общее время загрузки, доступно не для всех устройств.';
+  const flashResultHint = useMemo(() => {
+    if (flashResult.size === 0)
+      return 'Выполните загрузку прошивки, и эта кнопка позволит посмотреть её результаты.';
+    return `Открыть вкладки с результатами загрузки прошивок (${flashResult.size} шт.)`;
+  }, [flashResult]);
+  const downloadBinHint =
+    'Выгрузить файлы прошивки из выбранных плат. Доступно не для всех устройств.';
 
   const handleOperation = (op: OperationType) => {
     for (const item of flashTableData) {
@@ -317,7 +361,13 @@ export const FlasherTab: React.FC = () => {
     }
   };
 
-  const handleSendBin = async () => {
+  const handleSendBin = async (doVerify?: boolean) => {
+    if (doVerify !== undefined && managerMSSetting) {
+      setManagerMSSetting({
+        ...managerMSSetting,
+        verification: doVerify,
+      });
+    }
     for (const item of flashTableData) {
       if (!item.isSelected) continue;
       let notFound = false;
@@ -512,14 +562,22 @@ export const FlasherTab: React.FC = () => {
   const handleAddSerialMonitorTab = () => {
     openTab(modelController, {
       type: 'serialMonitor',
-      name: 'Монитор порта',
+      name: monitorTabName,
+      isOpen: isMonitorOpen,
     });
   };
 
   const needAvrdude = useMemo(() => {
     if (!flasherSetting?.type || flasherSetting.type === 'remote' || hasAvrdude) return false;
-    return flashTableData.some((item) => item.targetType === FirmwareTargetType.dev);
-  }, [flashTableData, hasAvrdude, flasherSetting?.type]);
+    return flashTableData.some((item) => {
+      if (item.targetType !== FirmwareTargetType.dev) {
+        return false;
+      }
+      const dev = devices.get(item.targetId as string);
+      if (!dev) return false;
+      return dev.isArduinoDevice();
+    });
+  }, [flashTableData, hasAvrdude, flasherSetting?.type, devices]);
 
   // вывод сообщения об отсутствии avrdude и кнопка с подсказкой для пользователя
   const avrdudeCheck = () => {
@@ -527,11 +585,146 @@ export const FlasherTab: React.FC = () => {
     return (
       <button
         type="button"
-        className="btn-primary mr-4 border-warning bg-warning"
+        className="btn-primary mr-1 border-warning bg-warning p-0 px-2"
         onClick={openAvrdudeGuideModal}
       >
         Программа avrdude не найдена!
       </button>
+    );
+  };
+
+  const failureButtons = () => {
+    if (!errorMessage) return;
+    return (
+      <>
+        <button
+          className="btn-primary mr-2 p-0 px-2"
+          onClick={handleReconnect}
+          disabled={
+            flasherSetting?.type === 'local' && connectionStatus === ClientStatus.CONNECTING
+          }
+        >
+          {displayReconnect()}
+        </button>
+        <button
+          className="btn-primary mr-2 border-warning bg-warning p-0 px-2"
+          onClick={handleErrorMessageDisplay}
+        >
+          Описание ошибки
+        </button>
+      </>
+    );
+  };
+
+  const operationButtons = () => {
+    return (
+      <div className="m-1 flex items-center gap-0 overflow-x-auto">
+        <WithHint hint={'Убрать отмеченные платы из таблицы.'}>
+          {(hintProps) => (
+            <button {...hintProps} className="btn-error mr-2 p-2 py-1" onClick={handleRemoveDevs}>
+              <DeleteIcon className="h-8 w-8" />
+            </button>
+          )}
+        </WithHint>
+        <WithHint hint={flashHint}>
+          {(hintProps) => (
+            <button
+              {...hintProps}
+              className="btn-primary mr-2 p-2 py-1"
+              onClick={() => handleSendBin(false)}
+              disabled={commonOperationDisabled}
+            >
+              <FlashIcon className="h-8 w-8" />
+            </button>
+          )}
+        </WithHint>
+        {!isProMode ? (
+          ''
+        ) : (
+          <>
+            <WithHint hint={flashVerifyHint}>
+              {(hintProps) => (
+                <button
+                  {...hintProps}
+                  className="btn-primary mr-2 p-2 py-1"
+                  onClick={() => handleSendBin(true)}
+                  disabled={commonOperationDisabled}
+                >
+                  <FlashVerifyIcon className="h-8 w-8" />
+                </button>
+              )}
+            </WithHint>
+            <WithHint hint={getOpHint(OperationType.ping)}>
+              {(hintProps) => (
+                <button
+                  {...hintProps}
+                  className="btn-primary mr-2 whitespace-nowrap p-2 py-1"
+                  onClick={() => handleOperation(OperationType.ping)}
+                  disabled={commonOperationDisabled}
+                >
+                  <PingIcon className="h-8 w-8" />
+                </button>
+              )}
+            </WithHint>
+            <WithHint hint={getOpHint(OperationType.reset)}>
+              {(hintProps) => (
+                <button
+                  {...hintProps}
+                  className="btn-primary mr-2 whitespace-nowrap p-2 py-1"
+                  onClick={() => handleOperation(OperationType.reset)}
+                  disabled={commonOperationDisabled}
+                >
+                  <ReloadIcon className="h-8 w-8" />
+                </button>
+              )}
+            </WithHint>
+            <WithHint hint={getOpHint(OperationType.meta)}>
+              {(hintProps) => (
+                <button
+                  {...hintProps}
+                  className="btn-primary mr-2 whitespace-nowrap p-2 py-1"
+                  onClick={() => handleOperation(OperationType.meta)}
+                  disabled={commonOperationDisabled}
+                >
+                  <MetadataIcon className="h-8 w-8" />
+                </button>
+              )}
+            </WithHint>
+            <WithHint hint={downloadBinHint}>
+              {(hintProps) => (
+                <button
+                  {...hintProps}
+                  className="btn-primary mr-2 whitespace-nowrap p-2 py-1"
+                  onClick={handleGetFirmware}
+                  disabled={binaryFolder !== null || commonOperationDisabled}
+                >
+                  <DownloadBinIcon className="h-8 w-8" />
+                </button>
+              )}
+            </WithHint>
+          </>
+        )}
+        <WithHint hint={flashResultHint} showOnDisabled={true}>
+          {(hintProps) => (
+            <button
+              {...hintProps}
+              className="btn-primary mr-2 whitespace-nowrap p-2 py-1"
+              onClick={handleAddFlashResultTab}
+              disabled={flashResult.size === 0}
+            >
+              <ViewLogIcon className="h-8 w-8" />
+            </button>
+          )}
+        </WithHint>
+      </div>
+    );
+  };
+
+  const selectorHint = () => {
+    return (
+      <div className="mr-4 flex items-center justify-between gap-1 p-2">
+        <span className="opacity-50">Выберите платы для работы с ними…</span>{' '}
+      </div>
     );
   };
 
@@ -687,127 +880,69 @@ export const FlasherTab: React.FC = () => {
 
   return (
     <section className="mr-3 flex h-full flex-col overflow-auto bg-bg-secondary">
-      <label className="m-2">{serverStatus()}</label>
-      <div className="m-2" hidden={errorMessage ? false : true}>
-        <button
-          className="btn-primary mr-4"
-          onClick={handleReconnect}
-          disabled={
-            flasherSetting?.type === 'local' && connectionStatus === ClientStatus.CONNECTING
-          }
-        >
-          {displayReconnect()}
-        </button>
-        <button
-          className="btn-primary border-warning bg-warning"
-          onClick={handleErrorMessageDisplay}
-        >
-          Описание ошибки
-        </button>
+      <div className="m-2">
+        <span className="m-1 mr-3">{serverStatus()}</span>
+        {failureButtons()}
+        {avrdudeCheck()}
       </div>
-      <div className="m-2 flex">
-        <button className="btn-primary mr-4" onClick={openDeviceList} disabled={noConnection}>
+      <div className="m-2 mt-0 flex min-h-10 overflow-x-auto">
+        <button
+          className="btn-primary mr-2 whitespace-nowrap p-1.5"
+          onClick={openDeviceList}
+          disabled={noConnection}
+        >
           Подключить плату
         </button>
         <button
-          className="btn-primary mr-4"
+          className="btn-primary mr-2 whitespace-nowrap p-1.5"
           onClick={openDeviceMsList}
           disabled={noConnection}
           hidden={devicesMsCnt < 2}
         >
           Выбрать МС-ТЮК
         </button>
-        <button className="btn-primary mr-4" onClick={handleOpenAddressBook}>
-          Адреса плат МС-ТЮК
+        <button
+          className="btn-primary mr-2 whitespace-nowrap p-1.5"
+          onClick={handleOpenAddressBook}
+        >
+          Адресная книга
         </button>
-        <button className="btn-primary mr-4" onClick={handleAddSerialMonitorTab}>
+        <button
+          className="btn-primary mr-2 whitespace-nowrap p-1.5"
+          onClick={handleAddSerialMonitorTab}
+        >
           Монитор порта
         </button>
       </div>
       <div className="m-2">
-        <label>Устройства на прошивку</label>
+        <p className="mb-1 mt-1 text-lg font-semibold">Устройства на прошивку</p>
         <FlasherTable addressEnrtyEdit={addressEnrtyEdit} getEntryById={getEntryById} />
       </div>
-      <div className="m-2 flex">
-        <WithHint hint={'Убрать отмеченные платы из таблицы.'}>
-          {(hintProps) => (
-            <button {...hintProps} className="btn-error mr-6" onClick={handleRemoveDevs}>
-              Убрать
-            </button>
+      <div className="m-1 flex min-h-14">
+        <div
+          className={twMerge(
+            selectedDevicesCount == 0 ? 'opacity-50' : '',
+            'ml-3 mr-3 flex w-5 items-center justify-center gap-1 font-Fira-Mono'
           )}
-        </WithHint>
-        <button
-          className="btn-primary mr-4"
-          onClick={() => handleSendBin()}
-          disabled={commonOperationDisabled}
         >
-          Прошить!
-        </button>
-        <div className="mr-4 flex items-center justify-between gap-1">
-          <Switch
-            checked={managerMSSetting.verification}
-            onCheckedChange={() =>
-              setManagerMSSetting({
-                ...managerMSSetting,
-                verification: !managerMSSetting.verification,
-              })
-            }
-          />
-          Верификация
-          <WithHint
-            hint={
-              'Дополнительная проверка целостности загруженной прошивки. Увеличивает общее время загрузки.'
-            }
-          >
-            {(hintProps) => (
-              <div className="shrink-0" {...hintProps}>
-                <QuestionMark className="h-5 w-5" />
-              </div>
-            )}
-          </WithHint>
+          {selectedDevicesCount}
         </div>
+        {selectedDevicesCount > 0 ? operationButtons() : selectorHint()}
+        <div className="flex-1"></div>
         <button
-          className="btn-primary mr-4"
-          onClick={() => handleOperation(OperationType.ping)}
-          disabled={commonOperationDisabled}
+          className={twMerge(
+            'btn-primary ml-auto mr-4 p-2 py-1',
+            isProMode ? '' : 'bg-bg-secondary text-border-contrast'
+          )}
+          style={{ marginLeft: 'auto' }}
+          onClick={() => handleSwitchProMode()}
         >
-          {getOpName(OperationType.ping)}
-        </button>
-        <button
-          className="btn-primary mr-4"
-          onClick={() => handleOperation(OperationType.reset)}
-          disabled={commonOperationDisabled}
-        >
-          {getOpName(OperationType.reset)}
-        </button>
-        <button
-          className="btn-primary mr-4"
-          onClick={() => handleOperation(OperationType.meta)}
-          disabled={commonOperationDisabled}
-        >
-          {getOpName(OperationType.meta)}
+          Продвинутый
         </button>
       </div>
-      <div className="m-2">
-        <button
-          className="btn-primary mr-4"
-          onClick={handleAddFlashResultTab}
-          disabled={flashResult.size === 0}
-        >
-          Результаты прошивки
-        </button>
-        <button
-          className="btn-primary mr-4"
-          onClick={handleGetFirmware}
-          disabled={binaryFolder !== null || commonOperationDisabled}
-        >
-          Выгрузка прошивки...
-        </button>
-        {avrdudeCheck()}
-      </div>
-      <div className="m-2">Журнал действий</div>
+      <div className="m-2 mt-5 text-lg font-semibold">Журнал действий</div>
       <div
-        className="mx-2 min-h-20 overflow-y-auto whitespace-break-spaces bg-bg-primary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
+        className="mx-2 min-h-20 flex-1 overflow-y-auto whitespace-break-spaces bg-bg-primary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
         ref={logContainerRef}
       >
         {log.map((msg, index) => (

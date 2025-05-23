@@ -13,7 +13,7 @@ interface AddressBookModalProps {
   addressBookSetting: AddressData[] | null;
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (entryId: number) => void;
+  onSubmit: (entryIds: (string | number)[]) => void;
   onRemove: (index: number) => void;
   onSwapEntries: (index1: number, index2: number) => void;
   getID: (index: number) => number | null;
@@ -39,6 +39,12 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
   const [selectedEntry, setSelectedEntry] = useState<number | undefined>(undefined);
   // индекс записи для переноса при начале drag
   const [dragIndex, setDragIndex] = useState<number | undefined>(undefined);
+
+  // выбрано всё
+  const [checkedAll, setCheckedAll] = useState<boolean>(false);
+  // не отмеченные адреса
+  // TODO: переделать тип ключа на string после мёржа PR
+  const [checked, setChecked] = useState<Set<number | string>>(new Set());
 
   /**
    * замена двух записей при drag&drop
@@ -66,12 +72,41 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
   const { handleSubmit: hookHandleSubmit } = useForm();
 
   const handleSubmit = hookHandleSubmit(() => {
-    if (selectedEntry === undefined || addressBookSetting === null) return;
-    const ID = getID(selectedEntry);
-    if (ID !== null) {
-      onSubmit(ID);
-    }
+    if (addressBookSetting === null) return;
+    onSubmit(Array.from(checked));
+    onClose();
   });
+
+  const handleChangeCheckedAll = () => {
+    if (addressBookSetting === null) return;
+    setCheckedAll(!checkedAll);
+    if (checkedAll) {
+      setChecked(new Set());
+      return;
+    }
+    const newChecked: Set<number | string> = new Set();
+    for (let i = 0; i < addressBookSetting.length; i++) {
+      const ID = getID(i);
+      if (ID === null) continue;
+      newChecked.add(ID);
+    }
+    setChecked(newChecked);
+  };
+
+  const handleChangeChecked = (ID: number | string, isChecked: boolean) => {
+    setChecked((oldValue) => {
+      const newValue = new Set(oldValue);
+      if (isChecked) {
+        newValue.delete(ID);
+      } else {
+        newValue.add(ID);
+      }
+      return newValue;
+    });
+    if (checkedAll) {
+      setCheckedAll(!checkedAll);
+    }
+  };
 
   return (
     <div>
@@ -80,7 +115,7 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
         onRequestClose={onClose}
         title="Адресная книга"
         onSubmit={handleSubmit}
-        submitDisabled={selectedEntry === undefined}
+        submitDisabled={checked.size === 0}
         submitLabel="Добавить в таблицу прошивок"
       >
         <div className="flex gap-2 pl-4">
@@ -94,24 +129,29 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
                 // заголовок таблицы
                 isSelected={false}
                 data={{ name: 'Название', address: 'Адрес', type: 'Тип', meta: undefined }}
+                isChecked={checkedAll}
                 onSelect={() => undefined}
                 onEdit={() => undefined}
                 onDragStart={() => undefined}
                 onDrop={() => undefined}
+                onCheckChange={handleChangeCheckedAll}
               />
             )}
             {addressBookSetting?.map((field, index) => {
               const ID = getID(index);
               if (ID === null) return;
+              const isChecked = checked.has(ID);
               return (
-                <div key={getID(index)}>
+                <div key={ID}>
                   <AddressBookRow
                     isSelected={index === selectedEntry}
                     data={field}
+                    isChecked={isChecked}
                     onSelect={() => setSelectedEntry(index)}
                     onEdit={() => handleEdit(field, index)}
                     onDragStart={() => setDragIndex(index)}
                     onDrop={() => handleSwapEntries(index)}
+                    onCheckChange={() => handleChangeChecked(ID, isChecked)}
                   />
                 </div>
               );

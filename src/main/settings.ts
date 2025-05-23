@@ -127,7 +127,6 @@ const checkRecentFiles = () => {
 };
 
 const deepCheck = (path: string, obj: object) => {
-  console.log(path, obj);
   const getNewPath = (key: string) => {
     if (path) return `${path}.${key}`;
     return key;
@@ -136,8 +135,7 @@ const deepCheck = (path: string, obj: object) => {
     const newPath = getNewPath(key);
     const curObj = obj[key];
     if (!settings.hasSync(newPath)) {
-      //settings.setSync(key, obj[key]);
-      console.log('settings.setSync', newPath, curObj);
+      settings.setSync(newPath, curObj);
     } else if (typeof curObj === 'object' && !Array.isArray(obj)) {
       deepCheck(newPath, curObj);
     }
@@ -147,18 +145,6 @@ const deepCheck = (path: string, obj: object) => {
 export const initSettings = () => {
   deepCheck('', defaultSettings);
   checkRecentFiles();
-  // FIXME
-  // (Roundabout1): костыль, нужно будет реализовать проверку наличия всех значений для ключей при инициализации.
-  const monitorSettings = settings.getSync('serialmonitor' as SettingsKey);
-  if (monitorSettings && !monitorSettings['textMode']) {
-    settings.setSync('serialmonitor.textMode', 'text');
-  }
-  // FIXME
-  // (Roundabout1): тот же костыль, но для документации.
-  const docSettings = settings.getSync('doc' as SettingsKey);
-  if (docSettings && !docSettings['type']) {
-    settings.setSync('doc', defaultSettings['doc']);
-  }
 };
 
 export const initSettingsHandlers = (webContents: WebContents) => {

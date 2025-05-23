@@ -366,9 +366,7 @@ export class PlatformManager {
     }
 
     let parameter: any | undefined = undefined;
-    let drawFunction:
-      | ((ctx: CanvasRenderingContext2D, x: number, y: number, parameters: { values: any }) => void)
-      | undefined = undefined;
+    let drawFunction: DrawFunctionType | undefined = undefined;
     let range: Range | undefined = undefined;
     if (argQuery && ac.args && parameterList) {
       const paramValue = ac.args[argQuery];

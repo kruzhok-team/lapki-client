@@ -443,7 +443,7 @@ function labelParameters(args: ArgList, method: MethodProto): ArgList {
   const labeledArgs: ArgList = { ...args };
   method.parameters?.forEach((element, index) => {
     delete labeledArgs[index];
-    if (element.type && !Array.isArray(element.type) && isMatrix('Matrix')) {
+    if (element.type && !Array.isArray(element.type) && isMatrix(element.type)) {
       const { width, height } = getMatrixDimensions(element.type);
       labeledArgs[element.name] = {
         value: parseMatrixFromString(args[index].value as string, width, height),

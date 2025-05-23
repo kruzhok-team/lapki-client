@@ -6,9 +6,18 @@ import { Range } from '@renderer/types/utils';
 
 export const DEFAULT_RANGE_STEP = 1;
 
-// (L140-beep) Нормализовать значение в интервале от 0 до 1.
-// Используется для подстановки в opacity.
+/**
+ * Inverts and normalizes a value to the range [0, 1].
+ * This function is commonly used for opacity adjustments or similar scenarios.
+ *
+ * @param {number} value - The value to normalize.
+ * @param {Range} range - The range object containing `min` and `max` values.
+ * @returns {number} - The normalized value in the range [0, 1].
+ */
 export function normalizeRangeValue(value: number, range: Range): number {
+  if (range.max === range.min) {
+    return 0;
+  }
   return 1 - (value - range.min) / (range.max - range.min);
 }
 

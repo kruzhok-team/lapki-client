@@ -86,6 +86,7 @@ export type Platform = {
   staticActionDelimeter: string;
   headerFileExtension?: string;
   defaultSetupFunctions?: string[];
+  componentDeclaration?: boolean;
   hidden?: boolean;
   components: { [name: string]: ComponentProto };
   parameters?: { [name: string]: ParameterProto };

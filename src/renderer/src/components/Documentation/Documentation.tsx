@@ -21,10 +21,11 @@ export interface CurrentItem {
 
 export const Documentation: React.FC = () => {
   const [doc] = useSettings('doc');
-  const url = doc?.host ?? '';
+  const rawUrl = doc?.type === 'local' ? doc?.localHost ?? '' : doc?.remoteHost ?? '';
+  const url = rawUrl ? (rawUrl.endsWith('/') ? rawUrl : rawUrl + '/') : '';
 
   const { data, isLoading, error, refetch } = useFetch<{ body: File }>(
-    url && `${url}/index.json?nocache=true`
+    url && `${url}index.json?nocache=true`
   );
 
   const [activeTab, setActiveTab] = useState<number>(0);

@@ -7,3 +7,6 @@ out
 pnpm-lock.yaml
 *.tsbuildinfo
 qt-temp.ts
+
+# lapki-compiler
+ACCESS_TOKENS.txt

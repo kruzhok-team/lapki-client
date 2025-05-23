@@ -2,19 +2,20 @@
   "name": "Arduino Uno",
   "id": "ArduinoUno",
   "nameTag": "ArduinoUno",
-  "description": "Платформа для программирования микроконтроллера Arduino Uno. Включает в себя компоненты для взаимодействия с кнопками, светодиодами, Serial и другими элементами, которые могут понадобиться в процессе.\n Соберите схему, запрограммируйте Arduino Uno и насладитесь результатом вашей работы!",
+  "description": "Платформа для программирования микроконтроллера Arduino Uno. Включает в себя компоненты для взаимодействия с кнопками, светодиодами, последовательным портом и другими элементами, которые могут понадобиться в процессе.\nСоберите схему, запрограммируйте Arduino Uno и насладитесь результатом вашей работы!",
   "icon": "путь/до/иконки",
   "staticComponents": false,
   "version": "1.0",
   "standardVersion": "1.0",
   "formatVersion": "1.0",
-  "language": "C++",
+  "language": "c",
   "author": "Maxim Klypin",
   "visual": true,
   "compile": true,
   "mainFunction": false,
   "mainFileExtension": "ino",
   "staticActionDelimeter": "::",
+  "headerFileExtension": "h",
   "compilingSettings": [
     {
       "command": "arduino-cli",
@@ -24,36 +25,71 @@
   "delimeter": ";",
   "components": {
     "Button": {
-      "description": "Компонент для взаимодействия с физической кнопкой",
+      "name": "Кнопка",
+      "description": "Компонент для взаимодействия с физической кнопкой.",
       "img": "arduino/button.svg",
       "signals": {
         "isPressed": {
+          "alias": "Зажата",
           "img": "arduino/isPressed.svg",
-          "description": "Создает сигнал, если кнопка была нажата",
+          "description": "Это событие вызывается до тех пор, пока кнопка зажата.",
           "checkMethod": "isPressed"
         },
         "clicked": {
+          "alias": "Клик",
           "img": "arduino/clicked.svg",
-          "description": "Создает сигнал, если кнопка была кликнута",
+          "description": "Кнопку быстро нажали и отпустили.",
           "checkMethod": "clicked"
+        },
+        "isReleased": {
+          "alias": "Отжата",
+          "img": "common/isReleased.svg",
+          "description": "Кнопка отпущена.",
+          "checkMethod": "isReleased"
         }
       },
       "constructorParameters": {
         "pin": {
+          "name": "Пин",
           "type": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
-          "description": "Пин, к которому подключена кнопка"
+          "valueAlias": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "A0",
+            "A1",
+            "A2",
+            "A3",
+            "A4",
+            "A5"
+          ],
+          "description": "Пин, к которому подключена кнопка."
         },
         "buttonMode": {
+          "name": "Подтяжка",
           "type": ["BUTTON_PULLUP", "BUTTON_PULLDOWN"],
-          "description": "buttonMode indicates BUTTON_PULLUP or BUTTON_PULLDOWN resistor",
+          "valueAlias": ["К питанию", "К земле"],
+          "description": "К питанию (BUTTON_PULLUP) — подключение кнопки без резистора.\nК земле (BUTTON_PULLDOWN)— подключение кнопки с резистором.",
           "optional": true
         }
       },
       "variables": {
         "value": {
+          "alias": "Значение",
           "img": "common/value.svg",
           "type": "int",
-          "description": "Текущее значение на пине"
+          "description": "Текущее значение на пине."
         }
       },
       "loopActions": ["scan"],
@@ -63,51 +99,170 @@
       "singletone": false
     },
 
+    "ServoWrapper": {
+      "name": "Сервопривод",
+      "description": "Компонент для взаимодействия с сервоприводом.",
+      "img": "arduino/servo.svg",
+      "signals": {},
+      "constructorParameters": {
+        "pin": {
+          "name": "Пин",
+          "type": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
+          "valueAlias": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "A0",
+            "A1",
+            "A2",
+            "A3",
+            "A4",
+            "A5"
+          ],
+          "description": "Пин, к которому подключен сервопривод."
+        },
+        "min": {
+          "name": "Мин. угол",
+          "type": "uint16_t",
+          "description": "Ширина импульса в микросекундах, соответствующая минимальному углу (0 градусов) на сервоприводе (Рекомендуемое значение: 544)."
+        },
+        "max": {
+          "name": "Макс. угол",
+          "type": "uint16_t",
+          "description": "Ширина импульса в микросекундах, соответствующая максимальному углу (180 градусов) на сервоприводе (Рекомендуемое значение: 2400)."
+        }
+      },
+      "variables": {
+        "angle": {
+          "alias": "Угол",
+          "img": "arduino/angle.svg",
+          "type": "int",
+          "description": "Текущий угол поворота сервопривода в градусах."
+        },
+        "angleMicroseconds": {
+          "alias": "Период",
+          "img": "arduino/preciseAngle.svg",
+          "type": "int",
+          "description": "Текущий угол поворота сервопривода в микросекундах."
+        }
+      },
+      "loopActions": [],
+      "buildFiles": ["Servo.hpp", "Servo.cpp", "Servo.h", "ServoTimers.h"],
+      "importFiles": ["Servo.hpp"],
+      "methods": {
+        "write": {
+          "alias": "Установить угол",
+          "img": "arduino/setAngle.svg",
+          "parameters": [
+            {
+              "name": "Угол",
+              "type": "unsigned int",
+              "description": "Угол поворота сервопривода (градусы)."
+            }
+          ],
+          "description": "Задать угол поворота сервопривода в градусах."
+        },
+        "writeMicroseconds": {
+          "alias": "Установить период",
+          "img": "arduino/setAnglePrecise.svg",
+          "parameters": [
+            {
+              "name": "Угол",
+              "type": "unsigned int",
+              "description": "Задать угол поворота сервопривода (микросекунды)."
+            }
+          ],
+          "description": "Задать угол поворота сервопривода в микросекундах."
+        }
+      },
+      "singletone": false
+    },
+
     "LED": {
-      "description": "Компонент для взаимодействия со светодиодом",
+      "name": "Светодиод",
+      "description": "Компонент для взаимодействия со светодиодом.",
       "img": "arduino/led.svg",
       "signals": {},
       "constructorParameters": {
         "pin": {
+          "name": "Пин",
           "type": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
-          "description": "Пин, к которому подключен светодиод"
+          "valueAlias": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "A0",
+            "A1",
+            "A2",
+            "A3",
+            "A4",
+            "A5"
+          ],
+          "description": "Пин, к которому подключен светодиод."
         }
       },
       "variables": {
         "value": {
+          "alias": "Значение",
           "img": "common/value.svg",
           "type": "int",
-          "description": "Текущее значение на пине"
+          "description": "Текущее значение на пине."
         }
       },
       "methods": {
         "on": {
+          "alias": "Зажечь",
           "img": "arduino/switch-on.svg",
-          "description": "Зажечь светодиод"
+          "description": "Зажечь светодиод."
         },
         "off": {
+          "alias": "Погасить",
           "img": "arduino/switch-off.svg",
-          "description": "Выключить светодиод"
+          "description": "Выключить светодиод."
         },
         "toggle": {
+          "alias": "Переключить",
           "img": "arduino/toggle.svg",
-          "description": "Меняет состояние кнопки на противоположное"
+          "description": "Меняет состояние светодиода на противоположное."
         },
         "blink": {
+          "alias": "Мигнуть",
           "img": "arduino/blink.svg",
           "parameters": [
             {
-              "name": "interval",
+              "name": "Интервал",
               "type": "unsigned int",
-              "description": "Длительность каждого мигания (мс)"
+              "description": "Длительность каждого мигания (мс)."
             },
             {
-              "name": "times",
+              "name": "Миганий",
               "type": "byte",
-              "description": "Количество миганий"
+              "description": "Количество миганий."
             }
           ],
-          "description": "Мигает кнопкой определенное количество раз с определенной длительностью каждого мигания"
+          "description": "Мигает светодиодом определенное количество раз с определенной длительностью каждого мигания."
         }
       },
       "buildFiles": ["LED.h", "LED.ino"],
@@ -116,34 +271,40 @@
     },
 
     "Timer": {
+      "name": "Таймер",
       "description": "Программный таймер",
       "img": "arduino/timer.svg",
       "signals": {
         "timeout": {
+          "alias": "Тайм-аут",
           "img": "arduino/timeout.svg",
-          "description": "Время вышло!",
+          "description": "Прошёл очередной интервал таймера.",
           "checkMethod": "timeout"
         }
       },
       "constructorParameters": {},
       "methods": {
         "reset": {
+          "alias": "Сброс",
           "img": "arduino/reset.svg",
-          "description": "Сбросить таймер, отчет начнется сначала"
+          "description": "Сбросить таймер, отчет начнется сначала."
         },
         "disable": {
+          "alias": "Отключить",
           "img": "arduino/timer-stop.svg",
           "description": "Отключить таймер."
         },
         "enable": {
+          "alias": "Включить",
           "img": "arduino/timer-start.svg",
           "description": "Включить таймер."
         },
         "start": {
+          "alias": "Старт",
           "img": "arduino/start.svg",
           "parameters": [
             {
-              "name": "interval",
+              "name": "Интервал",
               "type": "unsigned long",
               "description": "Интервал срабатывания (в миллисекундах)."
             }
@@ -156,57 +317,64 @@
       "singletone": false,
       "variables": {
         "difference": {
+          "alias": "Разница",
           "img": "arduino/difference.svg",
           "type": "unsigned long",
-          "description": "Оставшееся время до окончания таймера."
+          "description": "Оставшееся время (в миллисекундах) до окончания таймера."
         }
       }
     },
     "Counter": {
+      "name": "Счетчик",
       "description": "Переменная-счетчик.",
       "img": "arduino/counter.svg",
       "signals": {},
       "constructorParameters": {},
       "methods": {
         "add": {
+          "alias": "Увеличить",
           "img": "arduino/add.svg",
-          "description": "Добавить value к значению счетчика",
+          "description": "Добавить указанное значение к счетчику.",
           "parameters": [
             {
-              "name": "value",
+              "name": "Значение",
               "type": "int"
             }
           ]
         },
         "sub": {
+          "alias": "Уменьшить",
           "img": "arduino/sub.svg",
-          "description": "Вычесть value к значению счетчика",
+          "description": "Вычесть указанное значение из счетчика.",
           "parameters": [
             {
-              "name": "value",
+              "name": "Значение",
               "type": "int"
             }
           ]
         },
         "set": {
+          "alias": "Установить",
           "img": "common/set.svg",
-          "description": "Установить value к значению счетчика",
+          "description": "Установить значение счетчика.",
           "parameters": [
             {
-              "name": "value",
+              "name": "Значение",
               "type": "int"
             }
           ]
         },
         "reset": {
+          "alias": "Сброс",
           "img": "arduino/reset.svg",
           "description": "Обнулить значение счетчика."
         }
       },
       "variables": {
         "value": {
+          "alias": "Значение",
           "img": "common/value.svg",
-          "description": "Текущее значение счетчика",
+          "description": "Текущее значение счетчика.",
           "type": "int"
         }
       },
@@ -215,59 +383,62 @@
       "singletone": false
     },
     "QHsmSerial": {
-      "description": "Класс-надстройка над Serial. Вызывает сигналы при получении данных.",
+      "name": "Последовательный порт",
+      "description": "Компонент для передачи и чтения данных с последовательного порта. Для взаимодействия с портом воспользуйтесь монитором порта, который находится во вкладке Загрузчика в IDE.",
       "img": "arduino/serial.svg",
       "signals": {
         "noByteReceived": {
+          "alias": "Байт не получен",
           "img": "arduino/noByteReceived.svg",
-          "description": "Был вызван read, но данные не были получены",
+          "description": "Из последовательного порта не пришёл байт. Событие будет повторяться, пока из порта не придут данные.",
           "checkMethod": "noByteReceived"
         },
         "byteReceived": {
+          "alias": "Получен байт",
           "img": "arduino/byteReceived.svg",
-          "description": "Были получены данные",
+          "description": "Из последовательного порта пришёл байт.",
           "checkMethod": "byteReceived"
         }
       },
       "initializationParameters": {
         "baud": {
-          "description": "Установить частоту работы Serial",
+          "name": "Скорость\nпередачи",
+          "description": "Задаёт частоту обмена информации в бодах.\nДля корректной передачи данных необходимо, чтобы все устройства, между которыми происходит коммуникация, были настроены на одинаковую частоту.",
           "type": "unsigned long"
         }
       },
       "initializationFunction": "init",
       "methods": {
         "println": {
+          "alias": "Вывод с переносом",
           "img": "arduino/println.svg",
-          "description": "Вывести данные в Serial монитор с добавлением \\n в конце",
+          "description": "Вывести данные из последовательного порта с переносом на новую строку. Это значит, что следующее сообщение будет находиться на новой строке.",
           "parameters": [
             {
-              "name": "data",
-              "description": "Данные для вывода",
+              "name": "Данные",
+              "description": "Данные для вывода с последовательного порта. Используйте кавычки \"\", если нужно отправить строку, а не число.",
               "type": "int | char[]"
             }
           ]
         },
         "print": {
+          "alias": "Вывод",
           "img": "arduino/print.svg",
-          "description": "Вывести данные в Serial монитор.",
+          "description": "Вывести данные из последовательного порта.",
           "parameters": [
             {
-              "name": "data",
-              "description": "Данные для вывода",
+              "name": "Данные",
+              "description": "Данные для вывода с последовательного порта. Используйте кавычки \"\", если нужно отправить строку, а не число.",
               "type": "int | char[]"
             }
           ]
-        },
-        "read": {
-          "img": "arduino/read.svg",
-          "description": "Запросить данные из Serial."
         }
       },
       "variables": {
         "lastByte": {
+          "alias": "Последний байт",
           "type": "int",
-          "description": "Последний прочитанный байт.",
+          "description": "Последний прочитанный байт с последовательного порта.",
           "img": "common/value.svg"
         }
       },
@@ -277,25 +448,29 @@
       "singletone": true
     },
     "PWM": {
-      "description": "Класс, реализующий ШИМ",
+      "name": "ШИМ",
+      "description": "ШИМ — это широтно-импульсная модуляция. Она используется для регулирования напряжения на пинах. Это позволяет управлять яркостью светодиодов, скоростью вращения моторов и т.д.",
       "img": "arduino/pwm.svg",
       "signals": {},
       "constructorParameters": {
         "pin": {
+          "name": "Пин",
           "type": [3, 5, 6, 9, 10, 11],
-          "description": "Пин, на котором будет установлен ШИМ"
+          "description": "Пин для широтно-импульсной модуляции."
         }
       },
       "methods": {
         "write": {
+          "alias": "Установить",
           "img": "arduino/write.svg",
           "parameters": [
             {
-              "name": "value",
-              "type": "int"
+              "name": "Напряжение",
+              "type": "uint8_t",
+              "description": "Задаётся в диапазоне от 0 до 255 включительно, где 0 - отсутствие напряжения, а 255 - максимально возможное напряжение."
             }
           ],
-          "description": "Установить значение на ШИМ"
+          "description": "Установить напряжение на пин."
         }
       },
       "buildFiles": ["PWM.h", "PWM.ino"],
@@ -305,30 +480,57 @@
     },
 
     "DigitalOut": {
-      "description": "Класс для подачи LOW, HIGH на пин",
+      "name": "Цифровой вывод",
+      "description": "Этот компонент позволяет устанавливать состояние пина в одно из двух значений: низкое или высокое.",
       "img": "arduino/digitalOut.svg",
       "signals": {},
       "constructorParameters": {
         "pin": {
+          "name": "Пин",
           "type": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
-          "description": "Пин, на который будет подаваться сигнал."
+          "valueAlias": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "A0",
+            "A1",
+            "A2",
+            "A3",
+            "A4",
+            "A5"
+          ],
+          "description": "Пин для управления напряжением."
         }
       },
       "methods": {
         "low": {
-          "img": "arduino/switch-off.svg",
-          "description": "Подать LOW на пин."
+          "alias": "В низкое напряжение",
+          "img": "arduino/low.svg",
+          "description": "При вызове этого метода на пин будет подано низкое напряжение."
         },
         "high": {
-          "img": "arduino/switch-on.svg",
-          "description": "Подать HIGH на пин."
+          "alias": "В высокое напряжение",
+          "img": "arduino/high.svg",
+          "description": "При вызове этого метода на пин будет подано высокое напряжение."
         }
       },
       "variables": {
         "value": {
+          "alias": "Напряжение",
           "img": "common/value.svg",
           "type": "int",
-          "description": "Текущее значение на пине."
+          "description": "Текущее напряжение на пине. Оно может принимать два состояния: 0 — низкое напряжение или 1 — высокое напряжение. Меняется только при вызове методов этого компонента."
         }
       },
       "buildFiles": ["DigitalOut.h", "DigitalOut.ino"],
@@ -337,37 +539,65 @@
     },
 
     "DigitalIn": {
-      "description": "Класс для считывания сигнала с пина",
+      "name": "Цифровой ввод",
+      "description": "Этот компонент предназначен для считывания состояния пина и отслеживания изменений напряжения на нем.",
       "img": "arduino/digitalIn.svg",
       "signals": {
         "isChanged": {
-          "img": "arduino/toggle.svg",
-          "description": "Сигнал вызывается, когда меняется значение на пине.",
+          "alias": "Изменение",
+          "img": "arduino/isChanged.svg",
+          "description": "Напряжение на пине изменилось.",
           "checkMethod": "isChanged"
         },
         "isLow": {
+          "alias": "Низкое напряжение",
           "img": "arduino/isLow.svg",
-          "description": "Сигнал вызывается, когда значение на пине меняется на LOW",
+          "description": "Напряжение на пине изменилось на низкое.",
           "checkMethod": "isLow"
         },
         "isHigh": {
+          "alias": "Высокое напряжение",
           "img": "arduino/isHigh.svg",
-          "description": "Сигнал вызывается, когда значение на пине меняется на HIGH",
+          "description": "Напряжение на пине изменилось на высокое.",
           "checkMethod": "isHigh"
         }
       },
       "constructorParameters": {
         "pin": {
+          "name": "Пин",
           "type": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
-          "description": "Пин, с которого будут считываться данные."
+          "valueAlias": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "A0",
+            "A1",
+            "A2",
+            "A3",
+            "A4",
+            "A5"
+          ],
+          "description": "Пин с которого будет считываться напряжение."
         }
       },
       "methods": {},
       "variables": {
         "value": {
+          "alias": "Напряжение",
           "img": "common/value.svg",
           "type": "int",
-          "description": "Текущее значение на пине."
+          "description": "Текущее напряжение на пине. Оно может принимать два состояния: 0 — низкое напряжение или 1 — высокое напряжение."
         }
       },
       "buildFiles": ["DigitalIn.h", "DigitalIn.ino"],
@@ -376,7 +606,8 @@
     },
 
     "AnalogOut": {
-      "description": "Класс для установки значения на аналоговые пины",
+      "name": "Аналоговый вывод",
+      "description": "Этот компонент позволяет управлять уровнем напряжения на аналоговых пинах.",
       "img": "arduino/analogOut.svg",
       "signals": {},
       "methods": {
@@ -384,24 +615,26 @@
           "img": "arduino/write.svg",
           "parameters": [
             {
-              "name": "value",
-              "type": "int"
+              "name": "Напряжение",
+              "type": "uint8_t",
+              "description": "Задаётся в диапазоне от 0 до 255 включительно, где 0 - отсутствие напряжения, а 255 - максимально возможное напряжение."
             }
           ],
-          "description": "Установить значение на аналоговый пин"
+          "description": "Установить напряжение на пин."
         }
       },
       "constructorParameters": {
         "pin": {
           "type": ["A0", "A1", "A2", "A3", "A4", "A5"],
-          "description": "Пин, на который будет подаваться сигнал."
+          "description": "Пин для управления напряжением."
         }
       },
       "variables": {
         "value": {
+          "alias": "Напряжение",
           "img": "common/value.svg",
           "type": "int",
-          "description": "Текущее значение на пине."
+          "description": "Установленное напряжение на пине. Обновляется при каждом вызове метода «Установить»."
         }
       },
       "buildFiles": ["AnalogOut.h", "AnalogOut.ino"],
@@ -410,20 +643,22 @@
     },
 
     "AnalogIn": {
-      "description": "Класс для получения значения с аналогового пина",
+      "name": "Аналоговый ввод",
+      "description": "Компонент для получения текущего напряжения на аналоговом пине.",
       "img": "arduino/analogIn.svg",
       "signals": {},
       "methods": {},
       "constructorParameters": {
         "pin": {
           "type": ["A0", "A1", "A2", "A3", "A4", "A5"],
-          "description": "Пин, с которого будут считываться данные."
+          "description": "Пин с которого будет считываться напряжение."
         }
       },
       "variables": {
         "value": {
+          "alias": "Напряжение",
           "type": "int",
-          "description": "Данные, считанные с аналогового пина"
+          "description": "Текущее напряжение на пине. Это переменная автоматически обновляется при изменении напряжения."
         }
       },
       "loopActions": ["read"],
@@ -433,33 +668,112 @@
     },
 
     "ShiftRegister": {
-      "description": "Класс вывода байта информации на порт вход/выхода последовательно (побитно).",
+      "name": "Сдвиговый регистр",
+      "description": "Компонент для взаимодействия со сдвиговым регистром — микросхемой, позволяющий увеличить количество цифровых пинов.",
       "img": "arduino/shiftRegister.svg",
       "signals": {},
       "methods": {
         "shift": {
+          "alias": "Сдвиг",
           "img": "arduino/shift.svg",
-          "description": "Выводит байт информации на порт вход/выхода последовательно (побитно).\nВывод может осуществляться как с первого (левого), так и с последнего (правого) бита. \nКаждый бит последовательно подается на заданный порт, после чего подается сигнал на синхронизирующий порт вход/выход, информируя о доступности к считыванию бита.",
+          "description": "Вывод байта на линию входных данных регистра.\nКаждый бит байта последовательно подается на линию в порядке, указанном при создании компонента.",
           "parameters": [
             {
-              "name": "value",
-              "type": "int"
+              "name": "Байт",
+              "type": "uint8_t",
+              "description": "Байт для передачи на линию входных данных регистра.\nСовет: для того, чтобы передать двоичную запись числа, нужно добавить «0b» перед записью.\nПример: 0b01111010"
             }
           ]
         }
       },
       "constructorParameters": {
         "dataPin": {
+          "name": "Вход",
           "type": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
-          "description": "Пин вход/выхода, на который выводятся биты"
+          "valueAlias": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "A0",
+            "A1",
+            "A2",
+            "A3",
+            "A4",
+            "A5"
+          ],
+          "description": "Пин линии входных данных для внутренней памяти регистра."
         },
         "clockPin": {
+          "name": "Такт",
           "type": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
-          "description": "Пин по которому производится синхронизация "
+          "valueAlias": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "A0",
+            "A1",
+            "A2",
+            "A3",
+            "A4",
+            "A5"
+          ],
+          "description": "Пин линии такта, которая переносит биты из линии входных данных в память регистра."
+        },
+        "latchPin": {
+          "name": "Строб",
+          "type": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
+          "valueAlias": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "A0",
+            "A1",
+            "A2",
+            "A3",
+            "A4",
+            "A5"
+          ],
+          "description": "Пин линии строба данных, которая переносит данные из памяти регистра на выход.",
+          "optional": true
         },
         "bitOrder": {
+          "name": "Порядок\nбитов",
           "type": ["MSBFIRST", "LSBFIRST"],
-          "description": "Порядок битов. MSBFIRST - первый бит самый значимый, LSBFIRST - последний",
+          "valueAlias": ["Первый бит", "Последний бит"],
+          "description": "Порядок записи битов.\nПервый бит (MSBFIRST) — начиная с младшего.\nПоследний бит (LSBFIRST) — начиная со старшего.",
           "optional": true
         }
       },
@@ -469,21 +783,82 @@
       "singletone": false
     },
 
+    "Random": {
+      "name": "Генератор случайностей",
+      "description": "Генерация псевдо-случайного числа.",
+      "img": "common/random.svg",
+      "constructorParameters": {},
+      "signals": {},
+      "methods": {
+        "setSeed": {
+          "alias": "Установить затравку",
+          "img": "common/randomSeed.svg",
+          "parameters": [
+            {
+              "name": "Затравка",
+              "type": "unsigned long"
+            }
+          ],
+          "description": "Продвинутая функция для отладки. Вручную устанавливает затравку для генератора случайностей, чтобы он выдавал одинаковые последовательности значений при каждом запуске программы. Для нормальной работы этого не требуется, и затравка будет взята из встроенного генератора истинных случайных чисел."
+        },
+        "doRandom": {
+          "alias": "Сгенерировать",
+          "img": "common/randomRoll.svg",
+          "description": "Сгенерировать случайное число"
+        },
+        "doRangeRandom": {
+          "alias": "Сгенерировать в диапазоне",
+          "img": "common/randomRange.svg",
+          "parameters": [
+            {
+              "name": "Начало",
+              "type": "signed long long"
+            },
+            {
+              "name": "Конец",
+              "type": "signed long long"
+            }
+          ],
+          "description": "Сгенерировать случайное число в заданном диапазоне [начало; конец). Конец в диапазон не входит."
+        }
+      },
+      "buildFiles": ["Random.hpp"],
+      "importFiles": ["Random.hpp"],
+      "singletone": false,
+      "variables": {
+        "value": {
+          "alias": "Целое число",
+          "img": "common/valueSigned.svg",
+          "type": "signed long",
+          "description": "Сгенерированное целое число со знаком."
+        },
+        "uValue": {
+          "alias": "Натуральное число",
+          "img": "common/valueUnsigned.svg",
+          "type": "unsigned long",
+          "description": "Сгенерированное беззнаковое целое число."
+        }
+      }
+    },
+
     "UserSignal": {
-      "description": "Пользовательский сигнал",
+      "name": "Свой сигнал",
+      "description": "Компонент для создания произвольных, искусственных событий. Бывает полезным для упрощения диаграммы.",
       "img": "common/userSignal.svg",
       "signals": {
         "isCalled": {
+          "alias": "Вызов",
           "img": "common/signalIsCalled.svg",
-          "description": "Сработал сигнал",
+          "description": "Вызвано искусственное событие.",
           "checkMethod": "isCalled"
         }
       },
       "constructorParameters": {},
       "methods": {
         "call": {
+          "alias": "Вызвать",
           "img": "common/signalCall.svg",
-          "description": "Вызов сигнала"
+          "description": "Вызвать искусственное событие."
         }
       },
       "buildFiles": ["UserSignal.hpp"],
@@ -493,46 +868,51 @@
     },
 
     "Iterator": {
-      "description": "Итератор",
+      "name": "Итератор",
+      "description": "Компонент для выполнения цикла с параметром, то есть для выполнения повторяющихся операций, зависящих от значения счётчика. Итерация – это один повтор цепочки операций.",
       "img": "common/iterator.svg",
       "signals": {
         "onEnd": {
+          "alias": "Конец цикла",
           "img": "common/onIterationEnd.svg",
-          "description": "Итерации завершены",
+          "description": "Это событие срабатывает после того, как будет выполнена последняя итерация цикла.",
           "checkMethod": "onEnd"
         },
         "onIteration": {
+          "alias": "Итерация",
           "img": "common/onIteration.svg",
-          "description": "Очередная итерация",
+          "description": "Это событие срабатывает, когда нужно выполнить очередную итерацию цикла. Выполняется на каждой итерации, пока цикл не завершится.",
           "checkMethod": "onIteration"
         }
       },
       "constructorParameters": {},
       "methods": {
-        "break_": {
-          "img": "arduino/timer-stop.svg",
-          "description": "Остановить итератор."
+        "stop": {
+          "alias": "Стоп",
+          "img": "common/break.svg",
+          "description": "Завершить цикл досрочно."
         },
         "start": {
+          "alias": "Старт",
           "img": "arduino/start.svg",
           "parameters": [
             {
-              "name": "from",
+              "name": "От",
               "type": "unsigned long",
               "description": "Начальное значение."
             },
             {
-              "name": "to",
+              "name": "До",
               "type": "unsigned long",
               "description": "Конечное значение."
             },
             {
-              "name": "step",
+              "name": "Шаг",
               "type": "unsigned long",
               "description": "Шаг для изменения значения."
             }
           ],
-          "description": "Запустить итератор. Будет сигнал раз в итерацию."
+          "description": "Метод запускает новый цикл. На вход передаётся три аргумента: начальное значение счётчика, конечное значение, и шаг (значение, на которое увеличивается счетчик на каждой итерации)."
         }
       },
       "buildFiles": ["Iterator.hpp"],
@@ -540,9 +920,424 @@
       "singletone": false,
       "variables": {
         "index": {
+          "alias": "Индекс",
           "img": "common/iteratorIndex.svg",
           "type": "unsigned long",
-          "description": "Текущий индекс итерации"
+          "description": "Текущее значение счётчика в заданном для цикла диапазоне. "
+        }
+      }
+    },
+
+    "CalcInt": {
+      "name": "Калькулятор (целые числа)",
+      "description": "Компонент для вычислений над целым числом. Хранит число, над которым можно совершать арифметические и двоичные операции. Результат операции перезаписывает предыдущее число, и к нему можно обратиться через атрибут. Обратите внимание, число хранится в 32-разрядном знаковом формате.",
+      "img": "math/calcInt.svg",
+      "signals": {
+        "isOverflow": {
+          "alias": "Переполнение значения",
+          "img": "math/overflow.svg",
+          "description": "Произошло переполнение хранимого значения калькулятора (в него попытались записать слишком большое значение).",
+          "checkMethod": "isOverflow"
+        },
+        "isZeroDivision": {
+          "alias": "Деление на ноль",
+          "img": "math/divZero.svg",
+          "description": "Произошло деление на ноль. Значению калькулятора верить нельзя, в нём может быть что-то странное.",
+          "checkMethod": "isZeroDivision"
+        }
+      },
+      "methods": {
+        "set": {
+          "alias": "Установить",
+          "img": "common/set.svg",
+          "description": "Установить значение, которое будет храниться в калькуляторе.",
+          "parameters": [
+            {
+              "name": "Значение",
+              "type": "int32_t",
+              "description": "Новое значение для калькулятора."
+            }
+          ]
+        },
+        "add": {
+          "alias": "Прибавить",
+          "img": "math/add.svg",
+          "description": "Прибавить значение к хранимому числу калькулятора.",
+          "parameters": [
+            {
+              "name": "Слагаемое",
+              "type": "int32_t",
+              "description": "Слагаемое для операции."
+            }
+          ]
+        },
+        "sub": {
+          "alias": "Вычесть",
+          "img": "math/sub.svg",
+          "description": "Вычесть значение из хранимого числа калькулятора.",
+          "parameters": [
+            {
+              "name": "Вычитаемое",
+              "type": "int32_t",
+              "description": "Вычитаемое для операции."
+            }
+          ]
+        },
+        "mul": {
+          "alias": "Умножить",
+          "img": "math/mul.svg",
+          "description": "Умножить значение хранимого числа калькулятора.",
+          "parameters": [
+            {
+              "name": "Множитель",
+              "type": "int32_t",
+              "description": "Множитель для операции."
+            }
+          ]
+        },
+        "div": {
+          "alias": "Разделить",
+          "img": "math/div.svg",
+          "description": "Целочисленное деление хранимого числа калькулятора. При делении на ноль значение не изменяется и возникает сигнал.",
+          "parameters": [
+            {
+              "name": "Делитель",
+              "type": "int32_t",
+              "description": "Делитель для операции."
+            }
+          ]
+        },
+        "mod": {
+          "alias": "Остаток от деления",
+          "img": "math/mod.svg",
+          "description": "Получить остаток от деления хранимого числа калькулятора на указанный делитель. При делении на ноль значение не изменяется и возникает сигнал.",
+          "parameters": [
+            {
+              "name": "Делитель",
+              "type": "int32_t",
+              "description": "Делитель для операции."
+            }
+          ]
+        },
+        "neg": {
+          "alias": "Поменять знак",
+          "img": "math/neg.svg",
+          "description": "Поменять знак у хранимого числа калькулятора.",
+          "parameters": []
+        },
+        "abs": {
+          "alias": "Модуль",
+          "img": "math/abs.svg",
+          "description": "Установить абсолютное значение для хранимого числа калькулятора.",
+          "parameters": []
+        },
+        "bitAnd": {
+          "alias": "Битовое И",
+          "img": "math/bitAnd.svg",
+          "description": "Побитовое И между хранимым числом калькулятора и параметром.",
+          "parameters": [
+            {
+              "name": "Значение",
+              "type": "int32_t",
+              "description": "Значение для операции."
+            }
+          ]
+        },
+        "bitOr": {
+          "alias": "Битовое ИЛИ",
+          "img": "math/bitOr.svg",
+          "description": "Побитовое ИЛИ между хранимым числом калькулятора и параметром.",
+          "parameters": [
+            {
+              "name": "Значение",
+              "type": "int32_t",
+              "description": "Значение для операции."
+            }
+          ]
+        },
+        "bitXor": {
+          "alias": "Битовое исключающее ИЛИ",
+          "img": "math/bitXor.svg",
+          "description": "Побитовая операция XOR между хранимым числом калькулятора и параметром.",
+          "parameters": [
+            {
+              "name": "Значение",
+              "type": "int32_t",
+              "description": "Значение для операции."
+            }
+          ]
+        },
+        "bitNot": {
+          "alias": "Битовое НЕ",
+          "img": "math/bitNot.svg",
+          "description": "Побитовое отрицание для хранимого числа калькулятора.",
+          "parameters": []
+        },
+        "shiftLeft": {
+          "alias": "Битовый сдвиг влево",
+          "img": "math/shiftLeft.svg",
+          "description": "Побитовый сдвиг влево для хранимого числа калькулятора.",
+          "parameters": [
+            {
+              "name": "Сдвиг",
+              "type": "int32_t",
+              "description": "Количество бит для сдвига."
+            }
+          ]
+        },
+        "shiftRight": {
+          "alias": "Битовый сдвиг вправо",
+          "img": "math/shiftRight.svg",
+          "description": "Побитовый сдвиг вправо для хранимого числа калькулятора.",
+          "parameters": [
+            {
+              "name": "Сдвиг",
+              "type": "int32_t",
+              "description": "Количество бит для сдвига."
+            }
+          ]
+        }
+      },
+      "variables": {
+        "value": {
+          "alias": "Результат",
+          "img": "common/value.svg",
+          "type": "int32_t",
+          "description": "Хранимое число калькулятора."
+        }
+      },
+      "constructorParameters": {},
+      "buildFiles": ["CalcInt.hpp", "OverflowHelpers.hpp"],
+      "importFiles": ["CalcInt.hpp"],
+      "singletone": false
+    },
+
+    "CalcFloat": {
+      "name": "Калькулятор (плавающая точка)",
+      "description": "Компонент для вычислений над числом c плавающей точкой. Хранит число, над которым можно совершать арифметические операции. Результат операции перезаписывает предыдущее число, и к нему можно обратиться через атрибут. Обратите внимание, число с плавающей точкой — это приближённое представление действительных чисел в памяти вычислительных устройств.",
+      "img": "math/calcFloat.svg",
+      "signals": {
+        "isOverflow": {
+          "alias": "Переполнение значения",
+          "img": "math/overflow.svg",
+          "description": "Произошло переполнение хранимого значения калькулятора (в него попытались записать слишком большое значение).",
+          "checkMethod": "isOverflow"
+        },
+        "isZeroDivision": {
+          "alias": "Деление на ноль",
+          "img": "math/divZero.svg",
+          "description": "Произошло деление на ноль. Значению калькулятора верить нельзя, в нём может быть что-то странное.",
+          "checkMethod": "isZeroDivision"
+        }
+      },
+      "methods": {
+        "set": {
+          "alias": "Установить",
+          "img": "common/set.svg",
+          "description": "Установить значение, которое будет храниться в калькуляторе.",
+          "parameters": [
+            {
+              "name": "Значение",
+              "type": "float",
+              "description": "Новое значение для калькулятора."
+            }
+          ]
+        },
+        "add": {
+          "alias": "Прибавить",
+          "img": "math/add.svg",
+          "description": "Прибавить значение к хранимому числу калькулятора.",
+          "parameters": [
+            {
+              "name": "Слагаемое",
+              "type": "float",
+              "description": "Слагаемое для операции."
+            }
+          ]
+        },
+        "sub": {
+          "alias": "Вычесть",
+          "img": "math/sub.svg",
+          "description": "Вычесть значение из хранимого числа калькулятора.",
+          "parameters": [
+            {
+              "name": "Вычитаемое",
+              "type": "float",
+              "description": "Вычитаемое для операции."
+            }
+          ]
+        },
+        "mul": {
+          "alias": "Умножить",
+          "img": "math/mul.svg",
+          "description": "Умножить значение хранимого числа калькулятора.",
+          "parameters": [
+            {
+              "name": "Множитель",
+              "type": "float",
+              "description": "Множитель для операции."
+            }
+          ]
+        },
+        "div": {
+          "alias": "Разделить",
+          "img": "math/div.svg",
+          "description": "Деление хранимого числа калькулятора. При делении на ноль значение не изменяется и возникает сигнал.",
+          "parameters": [
+            {
+              "name": "Делитель",
+              "type": "float",
+              "description": "Делитель для операции."
+            }
+          ]
+        },
+        "mod": {
+          "alias": "Остаток от деления",
+          "img": "math/mod.svg",
+          "description": "Получить остаток от деления хранимого числа калькулятора на указанный делитель. При делении на ноль значение не изменяется и возникает сигнал.",
+          "parameters": [
+            {
+              "name": "Делитель",
+              "type": "float",
+              "description": "Делитель для операции."
+            }
+          ]
+        },
+        "neg": {
+          "alias": "Поменять знак",
+          "img": "math/neg.svg",
+          "description": "Поменять знак у хранимого числа калькулятора.",
+          "parameters": []
+        },
+        "abs": {
+          "alias": "Модуль",
+          "img": "math/abs.svg",
+          "description": "Установить абсолютное значение для хранимого числа калькулятора.",
+          "parameters": []
+        },
+        "pow": {
+          "alias": "Степень",
+          "img": "math/pow.svg",
+          "description": "Возвести хранимое число калькулятора в степень.",
+          "parameters": [
+            {
+              "name": "Степень",
+              "type": "float",
+              "description": "Значение для операции (возводимая степень)."
+            }
+          ]
+        },
+        "sqrt": {
+          "alias": "Корень",
+          "img": "math/sqrt.svg",
+          "description": "Взять квадратный корень от хранимого числа калькулятора.",
+          "parameters": []
+        },
+        "log": {
+          "alias": "Логарифм",
+          "img": "math/log.svg",
+          "description": "Логарифм от хранимого числа калькулятора с задаваемым основанием.",
+          "parameters": [
+            {
+              "name": "Основание",
+              "type": "float",
+              "description": "Значение для операции (основание логарифма)."
+            }
+          ]
+        }
+      },
+      "variables": {
+        "value": {
+          "alias": "Результат",
+          "img": "common/value.svg",
+          "type": "float",
+          "description": "Хранимое число калькулятора."
+        }
+      },
+      "constructorParameters": {},
+      "buildFiles": ["CalcFloat.hpp", "OverflowHelpers.hpp"],
+      "importFiles": ["CalcFloat.hpp"],
+      "singletone": false
+    },
+
+    "Array": {
+      "name": "Массив",
+      "description": "Статический массив значений. Не умеет изменять длину.",
+      "img": "common/array.svg",
+      "signals": {},
+      "constructorParameters": {
+        "size": {
+          "name": "Размер",
+          "type": "uint16_t",
+          "description": "Размер массива (должен быть не более, чем 65535 элементов).",
+          "optional": false
+        }
+      },
+      "methods": {
+        "set": {
+          "alias": "Установить значение",
+          "img": "common/set-value.svg",
+          "description": "Установить значение элементу с указываемым индексом.",
+          "parameters": [
+            {
+              "name": "Индекс",
+              "img": "common/arrayIndex.svg",
+              "description": "Индекс элемента массива.",
+              "type": "uint16_t"
+            },
+            {
+              "name": "Значение",
+              "img": "common/value.svg",
+              "description": "Новое значение для элемента массива.",
+              "type": "int16_t"
+            }
+          ]
+        },
+        "peek": {
+          "alias": "Установить индекс",
+          "img": "common/arrayPeek.svg",
+          "description": "Переместиться на элемент с заданным индексом.",
+          "parameters": [
+            {
+              "name": "Индекс",
+              "img": "common/arrayIndex.svg",
+              "description": "Индекс элемента массива.",
+              "type": "uint16_t"
+            }
+          ]
+        },
+        "next": {
+          "alias": "Сместить индекс вправо",
+          "img": "common/arrayNext.svg",
+          "description": "Переместиться на элемент со следующим индексом."
+        },
+        "prev": {
+          "alias": "Сместить индекс влево",
+          "img": "common/arrayPrev.svg",
+          "description": "Переместиться на элемент с предыдущим индексом."
+        }
+      },
+      "buildFiles": ["Array.hpp"],
+      "importFiles": ["Array.hpp"],
+      "singletone": false,
+      "variables": {
+        "value": {
+          "alias": "Текущее значение",
+          "img": "common/value.svg",
+          "type": "int16_t",
+          "description": "Значение элемента массива с текущим индексом."
+        },
+        "index": {
+          "alias": "Значение указателя",
+          "img": "common/arrayIndex.svg",
+          "type": "uint16_t",
+          "description": "Текущий индекс."
+        },
+        "size": {
+          "alias": "Длина массива",
+          "img": "common/arraySize.svg",
+          "type": "uint16_t",
+          "description": "Размер массива."
         }
       }
     }

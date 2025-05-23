@@ -116,7 +116,7 @@ export const OpenRecentModal: React.FC<OpenRecentModalProps> = ({
     return (
       <div>
         Не удалось найти последние файлы, которые были открыты в IDE. Они появятся в этом окне,
-        после сохранения новой схемы, либо загрузки существующей.
+        после сохранения нового документа, либо загрузки существующего через кнопку «Открыть».
       </div>
     );
   };
@@ -128,7 +128,7 @@ export const OpenRecentModal: React.FC<OpenRecentModalProps> = ({
       onRequestClose={onClose}
       onSubmit={handleSubmit}
       submitDisabled={selectedFileIdx === null}
-      title="Последние схемы"
+      title="Последние документы"
       submitLabel="Открыть"
     >
       {recentFiles.length > 0 ? renderFileList() : renderNoFileList()}

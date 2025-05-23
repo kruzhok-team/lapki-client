@@ -48,70 +48,76 @@ export const Explorer: React.FC = () => {
   return (
     <section className="flex h-full flex-col">
       <h3 className="mx-4 border-b border-border-primary py-2 text-center text-lg">Диаграмма</h3>
-      <PanelGroup direction="vertical">
-        <Panel
-          ref={stateMachinesPanelRef}
-          id="panel0"
-          collapsible
-          minSize={collapsedSize}
-          collapsedSize={collapsedSize}
-          onCollapse={forceUpdate}
-          onExpand={forceUpdate}
-          className="px-4"
-        >
-          <StateMachinesList
-            selectedSm={selectedSm}
-            setSmSelected={setSmSelected}
-            isCollapsed={() => stateMachinesPanelRef.current?.isCollapsed() ?? false}
-            togglePanel={() => togglePanel(stateMachinesPanelRef)}
-          />
-        </Panel>
-
-        <PanelResizeHandle className="group relative py-1">
-          <div className="absolute left-0 right-0 top-1/2 h-[1px] -translate-y-1/2 bg-border-primary transition-colors group-hover:h-1 group-hover:bg-primary group-active:h-1 group-active:bg-primary"></div>
-        </PanelResizeHandle>
-
-        <Panel
-          ref={componentPanelRef}
-          id="panel1"
-          collapsible
-          minSize={collapsedSize}
-          collapsedSize={collapsedSize}
-          onCollapse={forceUpdate}
-          onExpand={forceUpdate}
-          className="px-4"
-        >
-          <StateMachineComponentList
-            smId={stateMachinesIds.length > 0 ? stateMachinesIds[0] : ''}
-            isCollapsed={() => componentPanelRef.current?.isCollapsed() ?? false}
-            togglePanel={() => togglePanel(componentPanelRef)}
-          />
-        </Panel>
-
-        <PanelResizeHandle className="group relative py-1">
-          <div className="absolute left-0 right-0 top-1/2 h-[1px] -translate-y-1/2 bg-border-primary transition-colors group-hover:h-1 group-hover:bg-primary group-active:h-1 group-active:bg-primary"></div>
-        </PanelResizeHandle>
-
-        <Panel
-          id="panel2"
-          ref={hierarchyPanelRef}
-          collapsible
-          minSize={collapsedSize}
-          collapsedSize={collapsedSize}
-          onCollapse={forceUpdate}
-          onExpand={forceUpdate}
-          className="px-4"
-        >
-          {isInitialized ? (
-            <StateMachinesHierarchy
-              isCollapsed={() => hierarchyPanelRef.current?.isCollapsed() ?? false}
-              togglePanel={() => togglePanel(hierarchyPanelRef)}
+      {!isInitialized ? (
+        <div className="p-4 text-text-inactive">
+          <em>Недоступно до открытия документа</em>
+        </div>
+      ) : (
+        <PanelGroup direction="vertical">
+          <Panel
+            ref={stateMachinesPanelRef}
+            id="panel0"
+            collapsible
+            minSize={collapsedSize}
+            collapsedSize={collapsedSize}
+            onCollapse={forceUpdate}
+            onExpand={forceUpdate}
+            className="px-4"
+          >
+            <StateMachinesList
+              selectedSm={selectedSm}
+              setSmSelected={setSmSelected}
+              isCollapsed={() => stateMachinesPanelRef.current?.isCollapsed() ?? false}
+              togglePanel={() => togglePanel(stateMachinesPanelRef)}
             />
-          ) : (
-            <div className="px-4">Недоступно до открытия документа</div>
-          )}
-        </Panel>
-      </PanelGroup>
+          </Panel>
+
+          <PanelResizeHandle className="group relative py-1">
+            <div className="absolute left-0 right-0 top-1/2 h-[1px] -translate-y-1/2 bg-border-primary transition-colors group-hover:h-1 group-hover:bg-primary group-active:h-1 group-active:bg-primary"></div>
+          </PanelResizeHandle>
+
+          <Panel
+            ref={componentPanelRef}
+            id="panel1"
+            collapsible
+            minSize={collapsedSize}
+            collapsedSize={collapsedSize}
+            onCollapse={forceUpdate}
+            onExpand={forceUpdate}
+            className="px-4"
+          >
+            <StateMachineComponentList
+              smId={stateMachinesIds.length > 0 ? stateMachinesIds[0] : ''}
+              isCollapsed={() => componentPanelRef.current?.isCollapsed() ?? false}
+              togglePanel={() => togglePanel(componentPanelRef)}
+            />
+          </Panel>
+
+          <PanelResizeHandle className="group relative py-1">
+            <div className="absolute left-0 right-0 top-1/2 h-[1px] -translate-y-1/2 bg-border-primary transition-colors group-hover:h-1 group-hover:bg-primary group-active:h-1 group-active:bg-primary"></div>
+          </PanelResizeHandle>
+
+          <Panel
+            id="panel2"
+            ref={hierarchyPanelRef}
+            collapsible
+            minSize={collapsedSize}
+            collapsedSize={collapsedSize}
+            onCollapse={forceUpdate}
+            onExpand={forceUpdate}
+            className="px-4"
+          >
+            {isInitialized ? (
+              <StateMachinesHierarchy
+                isCollapsed={() => hierarchyPanelRef.current?.isCollapsed() ?? false}
+                togglePanel={() => togglePanel(hierarchyPanelRef)}
+              />
+            ) : (
+              <div className="px-4">Недоступно до открытия документа</div>
+            )}
+          </Panel>
+        </PanelGroup>
+      )}
     </section>
   );
 };

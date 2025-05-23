@@ -103,8 +103,14 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
       {smName ?? smId}
       {isInitialized ? (
         <div className="mb-2 mt-1 select-none overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
-          {sortedComponents.length === 0 ? (
-            <p className="text-text-inactive">Нет компонентов</p>
+          {headControllerId === '' ? (
+            <p className="text-text-inactive">
+              <i>Нет активной диаграммы</i>
+            </p>
+          ) : sortedComponents.length === 0 ? (
+            <p className="text-text-inactive">
+              <i>Нет компонентов</i>
+            </p>
           ) : (
             sortedComponents.map((id) => {
               const name = components[id].name;

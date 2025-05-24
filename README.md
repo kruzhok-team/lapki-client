@@ -25,8 +25,7 @@
 
 ```bash
 # Загрузить подмодули
-$ git submodule init
-$ git submodule update
+$ git submodule update --init --recursive
 
 # Загрузить зависимости
 $ npm install

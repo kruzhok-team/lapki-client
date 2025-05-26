@@ -31,7 +31,7 @@ export async function handleFileOpen(platform: string, path?: string): HandleFil
     const platforms: Map<string, Array<string>> = new Map([
       ['ide', ['json']],
       ['Cyberiada', ['graphml']],
-      ['Berloga', ['xml']],
+      ['Berloga', ['xml', 'graphml']],
     ]);
 
     let filePath = path;

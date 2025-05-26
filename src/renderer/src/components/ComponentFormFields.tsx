@@ -39,13 +39,8 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
   const handleInputChange = (name: string, value: string) => {
     const type = allParameters[name]?.type;
 
-    if (
-      !['label', 'labelColor'].includes(name) &&
-      type &&
-      typeof type === 'string' &&
-      validators[type]
-    ) {
-      if (!validators[type](value)) {
+    if (!['label', 'labelColor'].includes(name) && type) {
+      if (typeof type === 'string' && validators[type] && !validators[type](value)) {
         setErrors((p) => ({ ...p, [name]: `Неправильный тип (${formatArgType(type)})` }));
       } else {
         setErrors((p) => ({ ...p, [name]: '' }));
@@ -156,7 +151,7 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
           return (
             <ComponentFormFieldLabel
               key={idx}
-              error={errors[idx]}
+              error={error}
               label={name}
               labelClassName="whitespace-pre"
               hint={param.description}

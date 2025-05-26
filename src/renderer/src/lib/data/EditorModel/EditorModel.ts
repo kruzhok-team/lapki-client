@@ -505,7 +505,6 @@ export class EditorModel {
     return true;
   }
 
-  //
   createChoiceState(args: CreateChoiceStateParams) {
     const {
       smId,
@@ -652,6 +651,7 @@ export class EditorModel {
     return true;
   }
 
+  //
   deleteEvent(smId: string, stateId: string, eventIdx: number) {
     const state = this.data.elements.stateMachines[smId].states[stateId];
     if (!state) return false;
@@ -663,6 +663,7 @@ export class EditorModel {
     return true;
   }
 
+  //
   deleteEventAction(smId: string, stateId: string, event: EventSelection) {
     const state = this.data.elements.stateMachines[smId].states[stateId];
     if (!state) return false;
@@ -690,6 +691,7 @@ export class EditorModel {
     return id;
   }
 
+  //
   changeTransition(args: ChangeTransitionParams) {
     const { id, smId, label, ...other } = args;
 
@@ -711,6 +713,7 @@ export class EditorModel {
     return true;
   }
 
+  //
   //TODO: Выделение пока будет так работать, в дальнейшем требуется доработка
   changeTransitionSelection(smId: string, id: string, selection: boolean) {
     const transition = this.data.elements.stateMachines[smId].transitions[id];
@@ -722,7 +725,7 @@ export class EditorModel {
     this.triggerDataUpdate('elements.transitions');
     return true;
   }
-
+  //
   changeStateMachinePosition(id: string, position: Point) {
     const sm = this.data.elements.stateMachines[id];
     if (!sm) return false;
@@ -730,7 +733,7 @@ export class EditorModel {
 
     return true;
   }
-
+  //
   changeTransitionPosition(smId: string, id: string, position: Point) {
     const transition = this.data.elements.stateMachines[smId].transitions[id];
     if (!transition || !transition.label) return false;
@@ -741,7 +744,7 @@ export class EditorModel {
 
     return true;
   }
-
+  //
   deleteTransition(smId: string, id: string) {
     const transition = this.data.elements.stateMachines[smId].transitions[id];
     if (!transition) return false;
@@ -790,7 +793,7 @@ export class EditorModel {
 
     return name;
   }
-
+  //
   editComponent(smId: string, id: string, parameters: Component['parameters'], name?: string) {
     const component = this.data.elements.stateMachines[smId].components[id];
     if (!component) return false;
@@ -801,7 +804,7 @@ export class EditorModel {
 
     return true;
   }
-
+  //
   changeComponentName(smId: string, id: string, newId: string) {
     const component = this.data.elements.stateMachines[smId].components[id];
     if (!component) return false;
@@ -814,7 +817,7 @@ export class EditorModel {
 
     return true;
   }
-
+  //
   deleteComponent(smId: string, name: string) {
     const component = this.data.elements.stateMachines[smId].components[name];
     if (!component) return false;
@@ -825,7 +828,7 @@ export class EditorModel {
 
     return true;
   }
-
+  //
   swapComponents(smId: string, args: SwapComponentsParams) {
     const { name1, name2 } = args;
 
@@ -839,7 +842,7 @@ export class EditorModel {
 
     return true;
   }
-
+  //
   changeComponentPosition(smId: string, id: string, position: Point) {
     const component = this.data.elements.stateMachines[smId].components[id];
     if (!component) return false;
@@ -850,7 +853,7 @@ export class EditorModel {
 
     return true;
   }
-
+  //
   changeComponentSelection(smId: string, name: string, selection: boolean) {
     const component = this.data.elements.stateMachines[smId].components[name];
     if (!component) return false;
@@ -895,7 +898,7 @@ export class EditorModel {
 
     return id;
   }
-
+  //
   changeNoteText(smId: string, id: string, text: string) {
     if (!this.data.elements.stateMachines[smId].notes.hasOwnProperty(id)) return false;
 
@@ -905,7 +908,7 @@ export class EditorModel {
 
     return true;
   }
-
+  //
   //TODO: (XidFanSan) Выделение пока будет так работать, в дальнейшем требуется доработка
   changeNoteSelection(smId: string, id: string, selection: boolean) {
     const note = this.data.elements.stateMachines[smId].notes[id];
@@ -914,6 +917,8 @@ export class EditorModel {
     note.selection = selection;
     return true;
   }
+
+  //
   changeNoteBackgroundColor(smId: string, id: string, color: string | undefined) {
     if (!this.data.elements.stateMachines[smId].notes.hasOwnProperty(id)) return false;
 
@@ -924,6 +929,7 @@ export class EditorModel {
     return true;
   }
 
+  //
   changeNoteTextColor(smId: string, id: string, color: string | undefined) {
     if (!this.data.elements.stateMachines[smId].notes.hasOwnProperty(id)) return false;
 
@@ -934,6 +940,7 @@ export class EditorModel {
     return true;
   }
 
+  //
   changeNoteFontSize(smId: string, id: string, fontSize: number | undefined) {
     if (!this.data.elements.stateMachines[smId].notes.hasOwnProperty(id)) return false;
 
@@ -944,6 +951,7 @@ export class EditorModel {
     return true;
   }
 
+  //
   changeNotePosition(smId: string, id: string, position: Point) {
     const note = this.data.elements.stateMachines[smId].notes[id];
     if (!note) return false;
@@ -955,6 +963,7 @@ export class EditorModel {
     return true;
   }
 
+  //
   deleteNote(smId: string, id: string) {
     const note = this.data.elements.stateMachines[smId].notes[id];
     if (!note) return false;
@@ -966,6 +975,7 @@ export class EditorModel {
     return true;
   }
 
+  //
   setMeta(smId: string, meta: Meta) {
     if (!this.data.elements.stateMachines[smId]) return false;
 

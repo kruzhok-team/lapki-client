@@ -312,6 +312,7 @@ export class EditorModel {
     return id;
   }
 
+  //
   changeState(args: ChangeStateParams) {
     const { smId, id, events, color } = args;
 
@@ -326,6 +327,7 @@ export class EditorModel {
     return true;
   }
 
+  //
   changeStateName(smId: string, id: string, name: string) {
     const state = this.data.elements.stateMachines[smId].states[id];
     if (!state) return false;
@@ -337,6 +339,7 @@ export class EditorModel {
     return true;
   }
 
+  //
   changeStateSelection(smId: string, id: string, selection: boolean) {
     const state = this.data.elements.stateMachines[smId].states[id];
     if (!state) return false;
@@ -348,6 +351,7 @@ export class EditorModel {
     return true;
   }
 
+  //
   changeStatePosition(smId: string, id: string, position: Point) {
     const state = this.data.elements.stateMachines[smId].states[id];
     if (!state) return false;
@@ -359,6 +363,7 @@ export class EditorModel {
     return true;
   }
 
+  //
   linkState(smId: string, parentId: string, childId: string) {
     const parent = this.data.elements.stateMachines[smId].states[parentId];
     const child = this.data.elements.stateMachines[smId].states[childId];
@@ -372,6 +377,7 @@ export class EditorModel {
     return true;
   }
 
+  //
   unlinkState(smId: string, id: string) {
     const state = this.data.elements.stateMachines[smId].states[id];
 
@@ -388,6 +394,7 @@ export class EditorModel {
     return true;
   }
 
+  //
   deleteState(smId: string, id: string) {
     const state = this.data.elements.stateMachines[smId].states[id];
     if (!state) return false;
@@ -409,6 +416,7 @@ export class EditorModel {
     return id;
   }
 
+  //
   deleteInitialState(smId: string, id: string) {
     const state = this.data.elements.stateMachines[smId].initialStates[id];
     if (!state) return false;
@@ -420,6 +428,7 @@ export class EditorModel {
     return true;
   }
 
+  //
   changeInitialStatePosition(smId: string, id: string, position: Point) {
     const state = this.data.elements.stateMachines[smId].initialStates[id];
     if (!state) return false;
@@ -458,6 +467,7 @@ export class EditorModel {
     return id;
   }
 
+  //
   deleteFinalState(smId: string, id: string) {
     const state = this.data.elements.stateMachines[smId].finalStates[id];
     if (!state) return false;
@@ -469,6 +479,7 @@ export class EditorModel {
     return true;
   }
 
+  //
   changeFinalStatePosition(smId: string, id: string, position: Point) {
     const state = this.data.elements.stateMachines[smId].finalStates[id];
     if (!state) return false;
@@ -480,6 +491,7 @@ export class EditorModel {
     return true;
   }
 
+  //
   linkFinalState(smId: string, stateId: string, parentId: string) {
     const state = this.data.elements.stateMachines[smId].finalStates[stateId];
     const parent = this.data.elements.stateMachines[smId].states[parentId];
@@ -493,6 +505,7 @@ export class EditorModel {
     return true;
   }
 
+  //
   createChoiceState(args: CreateChoiceStateParams) {
     const {
       smId,
@@ -520,6 +533,7 @@ export class EditorModel {
     return id;
   }
 
+  //
   deleteChoiceState(smId: string, id: string) {
     const state = this.data.elements.stateMachines[smId].choiceStates[id];
     if (!state) return false;
@@ -531,6 +545,7 @@ export class EditorModel {
     return true;
   }
 
+  //
   changeChoiceStatePosition(smId: string, id: string, position: Point) {
     const state = this.data.elements.stateMachines[smId].choiceStates[id];
     if (!state) return false;
@@ -542,6 +557,7 @@ export class EditorModel {
     return true;
   }
 
+  //
   linkChoiceState(smId: string, stateId: string, parentId: string) {
     const state = this.data.elements.stateMachines[smId].choiceStates[stateId];
     const parent = this.data.elements.stateMachines[smId].states[parentId];
@@ -555,6 +571,7 @@ export class EditorModel {
     return true;
   }
 
+  //
   changeChoiceStateSelection(smId: string, id: string, selection: boolean) {
     const state = this.data.elements.stateMachines[smId].choiceStates[id];
     if (!state) return false;
@@ -566,6 +583,7 @@ export class EditorModel {
     return true;
   }
 
+  //
   createEvent(smId: string, stateId: string, eventData: EventData, eventIdx?: number) {
     const state = this.data.elements.stateMachines[smId].states[stateId];
     if (!state) return false;
@@ -581,6 +599,7 @@ export class EditorModel {
     return true;
   }
 
+  //
   createEventAction(smId: string, stateId: string, event: EventSelection, value: Action) {
     const state = this.data.elements.stateMachines[smId].states[stateId];
     if (!state) return false;
@@ -598,6 +617,7 @@ export class EditorModel {
     return true;
   }
 
+  //
   changeEvent(smId: string, stateId: string, eventIdx: number, newValue: Event) {
     const state = this.data.elements.stateMachines[smId].states[stateId];
     if (!state) return false;
@@ -613,6 +633,7 @@ export class EditorModel {
     return true;
   }
 
+  //
   changeEventAction(
     smId: string,
     stateId: string,
@@ -693,11 +714,12 @@ export class EditorModel {
   //TODO: Выделение пока будет так работать, в дальнейшем требуется доработка
   changeTransitionSelection(smId: string, id: string, selection: boolean) {
     const transition = this.data.elements.stateMachines[smId].transitions[id];
-    if (!transition || !transition.label) return false;
+    if (!transition || this.data.elements.stateMachines[smId].initialStates[transition.sourceId])
+      return false;
 
     transition.selection = selection;
 
-    this.triggerDataUpdate('elements.states');
+    this.triggerDataUpdate('elements.transitions');
     return true;
   }
 

@@ -849,15 +849,17 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       numberOfConnectedActions += 1;
     });
 
-    if (canUndo) {
-      this.history.do({
-        type: 'deleteTransition',
-        args: { smId, id: id, prevData: structuredClone(transition) },
-        numberOfConnectedActions,
-      });
+    const prevTransition = structuredClone(transition);
+    if (this.model.deleteTransition(smId, id)) {
+      if (canUndo) {
+        this.history.do({
+          type: 'deleteTransition',
+          args: { smId, id: id, prevData: prevTransition },
+          numberOfConnectedActions,
+        });
+      }
+      this.emit('deleteTransition', args);
     }
-    this.model.deleteTransition(smId, id);
-    this.emit('deleteTransition', args);
   }
 
   private getDrawBounds(smId: string, stateId: string) {
@@ -1800,7 +1802,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
           this.deleteComponent({ smId, id: key });
         }
       });
-      this.emit('deleteSelected', smId);
     }
   };
 

@@ -239,6 +239,9 @@ export const SerialMonitorTab: React.FC<SerialMonitorTabProps> = ({ isTabOpen })
   };
 
   const settingTextMode = (newTextMode: TextModeType) => {
+    if (newTextMode === monitorSetting.textMode) {
+      return;
+    }
     switch (newTextMode) {
       case 'hex':
         setMessages(SerialMonitor.toHex(bytesFromDevice));

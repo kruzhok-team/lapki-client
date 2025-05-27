@@ -109,7 +109,6 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
           canvasId: schemeEditorId,
           name: 'Схемоэкран',
         });
-        modelController.changeHeadControllerId(schemeEditorId);
       },
       disabled: !isInitialized,
       hidden: noSchemeScreen || controller.type === 'scheme',

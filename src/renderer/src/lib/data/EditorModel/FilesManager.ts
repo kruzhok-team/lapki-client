@@ -6,6 +6,7 @@ import { Binary, SourceFile } from '@renderer/types/CompilerTypes';
 import { Elements, emptyElements, emptyStateMachine } from '@renderer/types/diagram';
 import { Either, makeLeft, makeRight } from '@renderer/types/Either';
 import { TemplatesList } from '@renderer/types/templates';
+import { getBerlogaRobot } from '@renderer/utils';
 
 import { importGraphml } from '../GraphmlParser';
 import { ModelController } from '../ModelController';
@@ -94,7 +95,7 @@ export class FilesManager {
   ): Promise<boolean> {
     const openData = await window.api.fileHandlers.openFile('Berloga');
     if (openData[0]) {
-      Compiler.compile(openData[3], 'BearlogaImport', openData[2]?.split('.')[0].split('_').pop());
+      Compiler.compile(openData[3], 'BearlogaImport', getBerlogaRobot(openData[2]));
       setOpenData(openData);
       return true;
     }

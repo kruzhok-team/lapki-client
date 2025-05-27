@@ -6,6 +6,38 @@ import { Range } from '@renderer/types/utils';
 
 export const DEFAULT_RANGE_STEP = 1;
 
+export function isBerlogaRobot(value: any): boolean {
+  return ['Autoborder', 'Stapler', 'Smoker', 'Generator'].includes(value);
+}
+
+function newConvention(value: string) {
+  const robotName = value.split('_').pop();
+  return isBerlogaRobot(robotName) ? robotName : null;
+}
+
+function oldConvention(value: string) {
+  const robotName = value.split('_')[0];
+  return isBerlogaRobot(robotName) ? robotName : null;
+}
+
+/**
+ * Вытащить название робота из названия схемы Берлоги
+ *
+ * По очереди парсит название по старой и новой конвеции
+ * названий схем.
+ * @param value - название файла с расширением
+ * @returns название робота или null
+ */
+export function getBerlogaRobot(value: string | null): string | null {
+  if (!value) return null;
+
+  const filename = value.split('.')[0];
+
+  if (filename === undefined) return null;
+
+  return newConvention(filename) ?? oldConvention(filename) ?? null;
+}
+
 /**
  * Inverts and normalizes a value to the range [0, 1].
  * This function is commonly used for opacity adjustments or similar scenarios.

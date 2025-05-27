@@ -693,11 +693,12 @@ export class EditorModel {
   //TODO: Выделение пока будет так работать, в дальнейшем требуется доработка
   changeTransitionSelection(smId: string, id: string, selection: boolean) {
     const transition = this.data.elements.stateMachines[smId].transitions[id];
-    if (!transition || !transition.label) return false;
+    if (!transition || this.data.elements.stateMachines[smId].initialStates[transition.sourceId])
+      return false;
 
     transition.selection = selection;
 
-    this.triggerDataUpdate('elements.states');
+    this.triggerDataUpdate('elements.transitions');
     return true;
   }
 
@@ -892,6 +893,7 @@ export class EditorModel {
     note.selection = selection;
     return true;
   }
+
   changeNoteBackgroundColor(smId: string, id: string, color: string | undefined) {
     if (!this.data.elements.stateMachines[smId].notes.hasOwnProperty(id)) return false;
 

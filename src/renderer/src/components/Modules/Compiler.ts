@@ -89,7 +89,7 @@ export class Compiler extends ClientWS {
   static async compile(
     data: Elements | string | StateMachine,
     mode: 'BearlogaImport' | 'BearlogaExport' | 'CGML',
-    subPlatform?: string,
+    subPlatform?: string | null,
     bearlogaSmId?: string
   ) {
     this.setCompilerData(undefined);

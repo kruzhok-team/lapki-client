@@ -126,25 +126,6 @@ export const SerialMonitorTab: React.FC<SerialMonitorTabProps> = ({ isTabOpen })
   }, [devices]);
 
   useEffect(() => {
-    if (!monitorSetting?.textMode) return;
-    switch (monitorSetting.textMode) {
-      case 'hex':
-        setMessages(SerialMonitor.toHex(bytesFromDevice));
-        break;
-      case 'text':
-        setMessages(SerialMonitor.toText(bytesFromDevice));
-        break;
-      default:
-        console.log('Неизвестный режим монитора порта! Перевод в режим текста...');
-        settingTextMode('text');
-        return;
-    }
-    setInputError('');
-    SerialMonitor.addLog(`Перевод в режим «${TextModeOptions[monitorSetting.textMode].label}».`);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [monitorSetting?.textMode]);
-
-  useEffect(() => {
     setInputError('');
   }, [connectionStatus]);
 
@@ -191,7 +172,7 @@ export const SerialMonitorTab: React.FC<SerialMonitorTabProps> = ({ isTabOpen })
           if (hasErr) {
             const errorText = `Неправильный ввод. В режиме «${
               TextModeOptions[monitorSetting.textMode].label
-            }» строка должна состоять из двузначных шестнадцатеричных чисел, разделённых пробелами. Каждое число представляет один байт.`;
+            }» строка должна состоять из двузначных шестнадцатеричных чисел. Каждое число представляет один байт.`;
             setInputError(errorText);
             SerialMonitor.addLog(errorText);
             return;
@@ -258,6 +239,21 @@ export const SerialMonitorTab: React.FC<SerialMonitorTabProps> = ({ isTabOpen })
   };
 
   const settingTextMode = (newTextMode: TextModeType) => {
+    if (newTextMode === monitorSetting.textMode) {
+      return;
+    }
+    switch (newTextMode) {
+      case 'hex':
+        setMessages(SerialMonitor.toHex(bytesFromDevice));
+        break;
+      case 'text':
+        setMessages(SerialMonitor.toText(bytesFromDevice));
+        break;
+      default:
+        SerialMonitor.addLog('Неизвестный режим монитора порта!');
+        return;
+    }
+    SerialMonitor.addLog(`Перевод в режим «${TextModeOptions[newTextMode].label}».`);
     setMonitorSetting({
       ...monitorSetting,
       textMode: newTextMode,

@@ -13,10 +13,11 @@ interface FilterProps {
   onCollapseAll: () => void;
   search: string;
   onChangeSearch: (value: string) => void;
+  disabled?: boolean;
 }
 
 export const Filter: React.FC<FilterProps> = (props) => {
-  const { onExpandAll, onCollapseAll, search, onChangeSearch } = props;
+  const { onExpandAll, onCollapseAll, search, onChangeSearch, disabled } = props;
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleChangeSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -38,6 +39,7 @@ export const Filter: React.FC<FilterProps> = (props) => {
           placeholder="Поиск..."
           value={search}
           onChange={handleChangeSearch}
+          disabled={disabled}
         />
         <button
           className={twMerge(

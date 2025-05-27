@@ -68,7 +68,7 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
     onSwapComponents(smId, splittedDragName, splittedName);
   };
 
-  const isDisabled = !isInitialized;
+  const isDisabled = !isInitialized || headControllerId === '';
 
   useEffect(() => {
     if (isCollapsed()) togglePanel();

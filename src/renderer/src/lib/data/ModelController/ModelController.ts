@@ -665,12 +665,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.unwatch(specificCanvas);
     delete this.controllers[specificCanvas.id];
 
-    if (Object.values(this.controllers).length === 1) {
-      this.changeHeadControllerId('');
-    } else {
-      this.changeHeadControllerId(Object.values(this.controllers)[1].id);
-    }
-
     if (canUndo) {
       this.history.do({
         type: 'deleteStateMachine',

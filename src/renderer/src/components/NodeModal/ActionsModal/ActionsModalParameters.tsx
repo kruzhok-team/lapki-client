@@ -28,7 +28,7 @@ interface ActionsModalParametersProps {
   setErrors: React.Dispatch<React.SetStateAction<Record<string, string>>>;
 
   componentOptions: SelectOption[];
-  methodOptionsSearch: (selectedParameterComponent: string | null) => SelectOption[];
+  attributeOptionsSearch: (selectedParameterComponent: string | null) => SelectOption[];
 
   smId: string;
   controller: CanvasController;
@@ -41,7 +41,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
   errors,
   setErrors,
   componentOptions,
-  methodOptionsSearch,
+  attributeOptionsSearch,
   smId,
   controller,
 }) => {
@@ -134,7 +134,8 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
             >
               <Select
                 options={options}
-                value={options.find((o) => o.value === value)}
+                // ReactSelect не сбрасывает внутреннее состояние на undefined.
+                value={options.find((o) => o.value === value) ?? null}
                 onChange={(opt) => handleInputChange(name, idx, opt?.value ?? '')}
               />
             </ComponentFormFieldLabel>
@@ -204,7 +205,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
           isChecked.set(name, true);
           currentChecked = true;
         }
-        const methodOptions = methodOptionsSearch(selectedParameterComponent);
+        const attributeOptions = attributeOptionsSearch(selectedParameterComponent);
         return (
           <div className="flex space-x-2" key={name}>
             <div className="mt-[4px]">
@@ -254,7 +255,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                     />
                     <Select
                       containerClassName="w-[250px]"
-                      options={methodOptions}
+                      options={attributeOptions}
                       onChange={(opt) =>
                         handleComponentAttributeChange(
                           name,
@@ -263,7 +264,9 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                           opt?.value ?? ''
                         )
                       }
-                      value={methodOptions.find((o) => o.value === selectedParameterMethod) ?? null}
+                      value={
+                        attributeOptions.find((o) => o.value === selectedParameterMethod) ?? null
+                      }
                       isSearchable={false}
                       noOptionsMessage={() => 'Нет подходящих атрибутов'}
                       placeholder="Выберите атрибут..."

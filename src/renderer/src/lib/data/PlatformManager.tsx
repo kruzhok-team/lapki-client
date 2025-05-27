@@ -225,6 +225,15 @@ export class PlatformManager {
     return this.picto.getMarkedIcon(iconQuery, className);
   }
 
+  getRawComponentIcon(name: string, className?: string): React.ReactNode {
+    return this.picto.getMarkedIcon(
+      {
+        icon: this.getComponentIcon(name),
+      },
+      className
+    );
+  }
+
   getEventIcon(component: string, method: string) {
     const icon = this.eventToIcon.get(`${component}/${method}`);
     if (icon === undefined) {

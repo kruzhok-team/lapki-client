@@ -1,3 +1,5 @@
+import { Range } from './utils';
+
 export type ArgType = string | string[] | number[];
 
 export type ArgumentProto = {
@@ -7,6 +9,7 @@ export type ArgumentProto = {
   type?: ArgType;
   optional?: boolean;
   valueAlias?: string[];
+  range?: Range;
 };
 
 export type ParameterProto = {

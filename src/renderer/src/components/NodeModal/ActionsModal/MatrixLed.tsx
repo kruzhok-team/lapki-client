@@ -1,4 +1,9 @@
+import React from 'react';
+
 import { twMerge } from 'tailwind-merge';
+
+import { Range } from '@renderer/types/utils';
+import { normalizeRangeValue } from '@renderer/utils';
 
 export interface MatrixStyle {
   ledWidth: number;
@@ -14,6 +19,9 @@ interface MatrixLedProps {
   value: number;
   isClickable: boolean;
   style: MatrixStyle;
+  currentBrushValue: number;
+  range: Range;
+  isHalf: boolean;
   onChange: (rowIndex: number, colIndex: number, newValue: number) => void;
 }
 
@@ -24,8 +32,24 @@ export const MatrixLed: React.FC<MatrixLedProps> = ({
   value,
   onChange,
   style,
+  currentBrushValue,
+  range,
+  isHalf,
 }) => {
   const { isRounded, margin, ledHeight, ledWidth } = style;
+
+  const handleClick = () => {
+    if (!isClickable) return;
+
+    if (isHalf) return onChange(rowIndex, colIndex, currentBrushValue);
+
+    if (value !== range.max) {
+      return onChange(rowIndex, colIndex, range.max);
+    }
+
+    return onChange(rowIndex, colIndex, range.min);
+  };
+
   return (
     <button
       style={{
@@ -34,15 +58,21 @@ export const MatrixLed: React.FC<MatrixLedProps> = ({
         width: ledWidth * 4,
       }}
       className={twMerge(
-        'border-2 border-border-primary',
-        value === 0 && 'bg-matrix-inactive',
-        value >= 1 && 'bg-matrix-active',
-        isRounded && 'rounded'
+        'border-2 border-border-primary bg-matrix-active',
+        isRounded && 'rounded',
+        isClickable && 'cursor-pointer',
+        'transition-colors duration-200'
       )}
       type="button"
-      onClick={
-        isClickable ? onChange.bind(this, rowIndex, colIndex, value === 0 ? 1 : 0) : undefined
-      }
-    ></button>
+      onClick={handleClick}
+      title={`Значение: ${value}`}
+    >
+      <div
+        style={{
+          opacity: normalizeRangeValue(value, range),
+        }}
+        className="h-full w-full bg-[#343a40]"
+      ></div>
+    </button>
   );
 };

@@ -2,9 +2,71 @@ export * from './MatrixActions';
 import { Point } from '@renderer/lib/types/graphics';
 import { Component, StateMachine } from '@renderer/types/diagram';
 import { ArgType } from '@renderer/types/platform';
+import { Range } from '@renderer/types/utils';
+
+export const DEFAULT_RANGE_STEP = 1;
+
+export function isBerlogaRobot(value: any): boolean {
+  return ['Autoborder', 'Stapler', 'Smoker', 'Generator'].includes(value);
+}
+
+function newConvention(value: string) {
+  const robotName = value.split('_').pop();
+  return isBerlogaRobot(robotName) ? robotName : null;
+}
+
+function oldConvention(value: string) {
+  const robotName = value.split('_')[0];
+  return isBerlogaRobot(robotName) ? robotName : null;
+}
+
+/**
+ * Вытащить название робота из названия схемы Берлоги
+ *
+ * По очереди парсит название по старой и новой конвеции
+ * названий схем.
+ * @param value - название файла с расширением
+ * @returns название робота или null
+ */
+export function getBerlogaRobot(value: string | null): string | null {
+  if (!value) return null;
+
+  const filename = value.split('.')[0];
+
+  if (filename === undefined) return null;
+
+  return newConvention(filename) ?? oldConvention(filename) ?? null;
+}
+
+/**
+ * Inverts and normalizes a value to the range [0, 1].
+ * This function is commonly used for opacity adjustments or similar scenarios.
+ *
+ * @param {number} value - The value to normalize.
+ * @param {Range} range - The range object containing `min` and `max` values.
+ * @returns {number} - The normalized value in the range [0, 1].
+ */
+export function normalizeRangeValue(value: number, range: Range): number {
+  if (range.max === range.min) {
+    return 0;
+  }
+  return 1 - (value - range.min) / (range.max - range.min);
+}
+
+export function getDefaultRange(): Range {
+  return {
+    step: DEFAULT_RANGE_STEP,
+    min: 0,
+    max: 100,
+  };
+}
 
 export function isString(value: any): value is string {
   return typeof value === 'string';
+}
+
+export function isMatrix(type: string) {
+  return type.includes('Matrix');
 }
 
 /*

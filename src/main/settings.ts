@@ -7,6 +7,8 @@ import { defaultCompilerHost, defaultCompilerPort, defaultRemoteDocHost } from '
 
 type ModuleType = 'local' | 'remote';
 
+export type FlasherType = 'simple' | 'pro';
+
 type MetaType =
   | {
       RefBlHw: string; // Описывает физическое окружение контроллера (плату)
@@ -99,6 +101,7 @@ export const defaultSettings = {
      * Если true, то будет показываться инструкция по получению адреса
      */
     hideGetAddressModal: false,
+    mode: 'simple' as FlasherType,
   },
   autoSave: {
     /**

@@ -10,6 +10,7 @@ import { useTabs } from '@renderer/store/useTabs';
 import { noTextMode, noSchemeScreen } from '@renderer/version';
 
 import { OpenRecentModal } from '../OpenRecentModal';
+import { ReferenceModal } from '../ReferenceModal/ReferenceModal';
 import { Badge, WithHint } from '../UI';
 
 interface MenuItem {
@@ -49,6 +50,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
   const { propertiesModalProps, openPropertiesModal } = useProperties(controller);
   const [isTextModeModalOpen, openTextModeModal, closeTextModeModal] = useModal(false);
   const [isRecentModalOpen, openRecentModal, closeRecentModal] = useModal(false);
+  const [isReferenceModalOpen, openReferenceModal, closeReferenceModal] = useModal(false);
   const visual = controller.useData('visual');
 
   const items: MenuItem[] = [
@@ -87,6 +89,10 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
       text: 'Свойства',
       onClick: openPropertiesModal,
       disabled: !isInitialized,
+    },
+    {
+      text: 'Справочник',
+      onClick: () => openReferenceModal(),
     },
     // {
     //   text: 'Открыть редактор',
@@ -244,6 +250,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
         onClose={closeRecentModal}
         onSubmit={(filePath) => props.onRequestOpenFile(filePath)}
       />
+      <ReferenceModal isOpen={isReferenceModalOpen} onClose={closeReferenceModal} />
     </section>
   );
 };

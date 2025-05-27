@@ -3,11 +3,15 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/add.svg';
+import { ReactComponent as EditIcon } from '@renderer/assets/icons/edit.svg';
+import { ReactComponent as LensIcon } from '@renderer/assets/icons/serial_monitor.svg';
 import { ReactComponent as SubtractIcon } from '@renderer/assets/icons/subtract.svg';
 import { Modal } from '@renderer/components/UI';
+import { useModal } from '@renderer/hooks';
 import { AddressData } from '@renderer/types/FlasherTypes';
 
 import { AddressBookRow } from './AddressBookRow';
+import { MetaDataModal } from './MetaData';
 
 interface AddressBookModalProps {
   addressBookSetting: AddressData[] | null;
@@ -39,6 +43,8 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
   const [selectedEntry, setSelectedEntry] = useState<number | undefined>(undefined);
   // индекс записи для переноса при начале drag
   const [dragIndex, setDragIndex] = useState<number | undefined>(undefined);
+
+  const [isMetaDataOpen, openMetaData, closeMetaData] = useModal(false);
 
   /**
    * замена двух записей при drag&drop
@@ -72,6 +78,19 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
       onSubmit(ID);
     }
   });
+
+  const metaDataModal = () => {
+    if (addressBookSetting !== null && selectedEntry !== undefined) {
+      return (
+        <MetaDataModal
+          addressData={addressBookSetting[selectedEntry]}
+          isOpen={isMetaDataOpen}
+          onClose={closeMetaData}
+        />
+      );
+    }
+    return null;
+  };
 
   return (
     <div>
@@ -134,9 +153,26 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
             >
               <SubtractIcon />
             </button>
+            <button
+              type="button"
+              className="btn-secondary p-1"
+              onClick={() => addressEnrtyEdit(addressBookSetting![selectedEntry!])}
+              disabled={selectedEntry === undefined}
+            >
+              <EditIcon />
+            </button>
+            <button
+              type="button"
+              className="btn-secondary p-1"
+              onClick={() => openMetaData()}
+              disabled={selectedEntry === undefined}
+            >
+              <LensIcon />
+            </button>
           </div>
         </div>
       </Modal>
+      {metaDataModal()}
     </div>
   );
 };

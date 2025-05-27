@@ -21,8 +21,8 @@ export const MetaDataModal: React.FC<MetaDataModalProps> = ({ addressData, isOpe
     const metaStr = `bootloader REF_HW: ${meta.RefBlHw}
 bootloader REF_FW: ${meta.RefBlFw}
 bootloader REF_CHIP: ${meta.RefBlChip}
-booloader REF_PROTOCOL: ${meta.RefBlProtocol}
-booloader USER_CODE: ${meta.RefBlUserCode}
+bootloader REF_PROTOCOL: ${meta.RefBlProtocol}
+bootloader USER_CODE: ${meta.RefBlUserCode}
 cybergene REF_FW: ${meta.RefCgFw}
 cybergene REF_HW: ${meta.RefCgHw}
 cybergene REF_PROTOCOL: ${meta.RefCgProtocol}`;

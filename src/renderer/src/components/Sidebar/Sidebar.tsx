@@ -6,6 +6,7 @@ import { ReactComponent as MenuIcon } from '@renderer/assets/icons/document.svg'
 import { ReactComponent as DocumentationIcon } from '@renderer/assets/icons/documentation.svg';
 import { ReactComponent as FlasherIcon } from '@renderer/assets/icons/flasher.svg';
 import { ReactComponent as HistoryIcon } from '@renderer/assets/icons/history.svg';
+import { ReactComponent as SerialMonitorIcon } from '@renderer/assets/icons/serial_monitor.svg';
 import { ReactComponent as SettingsIcon } from '@renderer/assets/icons/settings.svg';
 import { useSettings } from '@renderer/hooks';
 import { useFlasherHooks } from '@renderer/hooks/useFlasherHooks';
@@ -48,6 +49,7 @@ interface SidebarProps {
 }
 
 const flasherTabName = 'Загрузчик';
+const monitorTabName = 'Монитор порта';
 
 export const Sidebar: React.FC<SidebarProps> = ({
   callbacks: {
@@ -78,6 +80,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   ]);
   const [openTab, tabs] = useTabs((state) => [state.openTab, state.items]);
   const isFlasherTabOpen = tabs.find((tab) => tab.name === flasherTabName) !== undefined;
+  const isSerialMonitorTabOpen = tabs.find((tab) => tab.name === monitorTabName) !== undefined;
 
   const isEditorDataStale = modelController.model.useData('', 'isStale');
 
@@ -109,6 +112,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
     });
   };
 
+  // добавление вкладки с serial monitor
+  // пока клиент может мониторить только один порт
+  const handleSerialMonitorClick = () => {
+    openTab(modelController, {
+      type: 'serialMonitor',
+      name: monitorTabName,
+      isOpen: isSerialMonitorTabOpen,
+    });
+  };
+
   // при добавлении новой вкладки или изменения их расположения нужно обновить SidebarIndex из useSidebar
   const menus = useMemo(
     () => [
@@ -130,9 +143,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
         setCompilerStatus={setCompilerStatus}
         openImportError={openImportError}
       />,
-      undefined,
+      null,
+      null,
       <History />,
-      undefined,
+      null,
       <Setting
         openCompilerSettings={openCompilerSettings}
         openLoaderSettings={openLoaderSettings}
@@ -171,9 +185,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
       },
       {
         Icon: <FlasherIcon />,
-        hint: 'Загрузчик',
+        hint: flasherTabName,
         action: handleFlasherClick,
         isActive: isFlasherTabOpen,
+      },
+      {
+        Icon: <SerialMonitorIcon />,
+        hint: monitorTabName,
+        action: handleSerialMonitorClick,
+        isActive: isSerialMonitorTabOpen,
       },
       {
         Icon: <HistoryIcon />,

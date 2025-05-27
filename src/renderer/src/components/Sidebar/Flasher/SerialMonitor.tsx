@@ -239,6 +239,9 @@ export const SerialMonitorTab: React.FC<SerialMonitorTabProps> = ({ isTabOpen })
   };
 
   const settingTextMode = (newTextMode: TextModeType) => {
+    if (newTextMode === monitorSetting.textMode) {
+      return;
+    }
     switch (newTextMode) {
       case 'hex':
         setMessages(SerialMonitor.toHex(bytesFromDevice));
@@ -250,7 +253,7 @@ export const SerialMonitorTab: React.FC<SerialMonitorTabProps> = ({ isTabOpen })
         SerialMonitor.addLog('Неизвестный режим монитора порта!');
         return;
     }
-    SerialMonitor.addLog(`Перевод в режим «${TextModeOptions[monitorSetting.textMode].label}».`);
+    SerialMonitor.addLog(`Перевод в режим «${TextModeOptions[newTextMode].label}».`);
     setMonitorSetting({
       ...monitorSetting,
       textMode: newTextMode,

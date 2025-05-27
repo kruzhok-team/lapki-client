@@ -19,7 +19,7 @@ export type ComponentInfoProps = {
 };
 
 export const ComponentInfo: React.FC<ComponentInfoProps> = ({ component, manager, className }) => {
-  const component_name = component.name ?? component.idx;
+  const componentName = component.name ?? component.idx;
 
   const prettyName = (name: string | undefined, defaultName: string) => {
     if (name) {
@@ -34,7 +34,7 @@ export const ComponentInfo: React.FC<ComponentInfoProps> = ({ component, manager
 
   const prettyType = (valueAlias: ArgType | undefined, type: ArgType | undefined) => {
     if (valueAlias) {
-      if (typeof valueAlias === 'object') {
+      if (Array.isArray(valueAlias)) {
         return `[${valueAlias.join(', ')}]`;
       }
       return `(${valueAlias})`;
@@ -42,7 +42,7 @@ export const ComponentInfo: React.FC<ComponentInfoProps> = ({ component, manager
     if (!type) {
       return '';
     }
-    if (typeof type === 'object') {
+    if (Array.isArray(type)) {
       return `[${type.join(', ')}]`;
     }
     return `${type}`;
@@ -74,7 +74,7 @@ export const ComponentInfo: React.FC<ComponentInfoProps> = ({ component, manager
           component.idx,
           twMerge('mr-2 size-10', component.img ? '' : 'rounded-full bg-gray-200 p-1')
         )}
-        <span className="text-lg font-semibold">{component_name}</span>
+        <span className="text-lg font-semibold">{componentName}</span>
       </div>
       <div className="text-sm text-gray-600">
         {convert(stringToHTML(component.description || 'Нет описания для этого компонента.'))}

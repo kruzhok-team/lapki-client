@@ -59,6 +59,10 @@ export type FlasherType =
   | 'ms-device'
   | 'ms-reset'
   | 'ms-reset-result'
+  | 'ms-get-connected-boards'
+  | 'ms-connected-boards'
+  | 'ms-get-connected-boards-error'
+  | 'ms-get-connected-boards-backtrack'
   | 'ms-get-meta-data'
   | 'ms-meta-data'
   | 'ms-meta-data-error'
@@ -90,6 +94,8 @@ export type FlasherPayload =
   | MSAddressAction
   | MetaData
   | FlashBacktrackMs
+  | MSAddresses
+  | MSGetConnectedBoardsBackTrack
   | MSAddressAndMeta
   | MSGetFirmware;
 export type FlasherMessage = {
@@ -237,9 +243,12 @@ export type FirmwaresType = {
   isFile: boolean;
 };
 
+// Маловероятно, но в теории возможно совпадение адреса платы МС-ТЮК c серийным номером устройства другого типа,
+// в таком случае будет две записи с одним targetId.
+// Поэтому в таблице необходимо делать поиск по targetId и targetType, чтобы не перепутать разные устройства.
 export type FlashTableItem = {
   isSelected: boolean;
-  targetId: number | string;
+  targetId: string;
   targetType: FirmwareTargetType;
   source?: string; // id машины состояний или путь к файлу
   isFile: boolean;
@@ -307,4 +316,14 @@ export type GetFirmwareQueueItem = {
   dev: MSDevice;
   addressInfo: AddressData;
   blockSize: number;
+};
+
+export type MSAddresses = {
+  deviceID: string;
+  addresses: string[];
+};
+
+export type MSGetConnectedBoardsBackTrack = {
+  address: string;
+  code: number;
 };

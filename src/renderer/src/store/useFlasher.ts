@@ -31,13 +31,20 @@ interface FlasherState {
   setErrorMessage: (newError: string | undefined) => void;
   flashTableData: FlashTableItem[];
   setFlashTableData: (newFlashTableData: FlashTableItem[]) => void;
+  inFlashTableData: (flashTableItem: FlashTableItem) => boolean;
+  /**
+   *
+   * @param flashTableItem переменная для добавления в таблицу
+   * @returns true, если запись таблицы новая, иначе false
+   */
+  addToFlashTable: (flashTableItem: FlashTableItem) => boolean;
   hasAvrdude: boolean;
   setHasAvrdude: (newHasAvrdude: boolean) => void;
   binaryFolder: string | null;
   setBinaryFolder: (newBinaryFolder: string | null) => void;
 }
 
-export const useFlasher = create<FlasherState>((set) => ({
+export const useFlasher = create<FlasherState>((set, get) => ({
   isFlashing: false,
   setIsFlashing: (newFlashing) => set({ isFlashing: newFlashing }),
   connectionStatus: ClientStatus.NO_CONNECTION,
@@ -59,6 +66,21 @@ export const useFlasher = create<FlasherState>((set) => ({
   flashTableData: [],
   setFlashTableData: (newFlashTableData: FlashTableItem[]) =>
     set({ flashTableData: newFlashTableData }),
+  inFlashTableData: (flashTableItem: FlashTableItem) => {
+    const flashTableData = get().flashTableData;
+    return flashTableData.some(
+      (item) =>
+        item.targetType === flashTableItem.targetType && item.targetId === flashTableItem.targetId
+    );
+  },
+  addToFlashTable: (flashTableItem: FlashTableItem) => {
+    const isInTable = get().inFlashTableData(flashTableItem);
+    if (isInTable) return false;
+    set((state) => ({
+      flashTableData: state.flashTableData.concat(flashTableItem),
+    }));
+    return true;
+  },
   hasAvrdude: false,
   setHasAvrdude: (newHasAvrdude: boolean) => set({ hasAvrdude: newHasAvrdude }),
   binaryFolder: null,

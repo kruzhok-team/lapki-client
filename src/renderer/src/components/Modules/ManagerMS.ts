@@ -266,4 +266,11 @@ export class ManagerMS {
       this.flashingAddressLog(`ошибка выгрузки прошивки: ${error}`);
     }
   }
+
+  static getConnectedBoards(deviceID: string, addresses: string[]) {
+    Flasher.send('ms-get-connected-boards', {
+      deviceID: deviceID,
+      addresses: addresses,
+    });
+  }
 }

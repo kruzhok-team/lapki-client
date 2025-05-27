@@ -250,7 +250,7 @@ export const SerialMonitorTab: React.FC<SerialMonitorTabProps> = ({ isTabOpen })
         SerialMonitor.addLog('Неизвестный режим монитора порта!');
         return;
     }
-    SerialMonitor.addLog(`Перевод в режим «${TextModeOptions[monitorSetting.textMode].label}».`);
+    SerialMonitor.addLog(`Перевод в режим «${TextModeOptions[newTextMode].label}».`);
     setMonitorSetting({
       ...monitorSetting,
       textMode: newTextMode,

@@ -17,12 +17,12 @@ export const ReferenceModal: React.FC<ReferenceModalProps> = ({ onClose, ...prop
 
   useEffect(() => {
     if (!props.isOpen) return;
-    const plaforms = getAvailablePlatforms();
-    if (plaforms.length === 0) {
+    const platforms = getAvailablePlatforms();
+    if (platforms.length === 0) {
       console.error('Нет доступных платформ для отображения справочника');
       return;
     }
-    setPlatformList(plaforms);
+    setPlatformList(platforms);
   }, [props.isOpen]);
 
   useEffect(() => {
@@ -37,7 +37,7 @@ export const ReferenceModal: React.FC<ReferenceModalProps> = ({ onClose, ...prop
     if (!platformList.some((p) => p.idx === selectedPlatform?.idx)) {
       setSelectedPlatform(platformList[0]);
     }
-    // (chekoopa): линтер требует selectedPlaftorm, но он здесь не нужен,
+    // (chekoopa): линтер требует selectedPlatform, но он здесь не нужен,
     // т.к. это условие срабатывает только при изменении platformList
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [platformList]);

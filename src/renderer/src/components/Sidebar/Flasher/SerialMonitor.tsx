@@ -172,7 +172,7 @@ export const SerialMonitorTab: React.FC<SerialMonitorTabProps> = ({ isTabOpen })
           if (hasErr) {
             const errorText = `Неправильный ввод. В режиме «${
               TextModeOptions[monitorSetting.textMode].label
-            }» строка должна состоять из двузначных шестнадцатеричных чисел, разделённых пробелами. Каждое число представляет один байт.`;
+            }» строка должна состоять из двузначных шестнадцатеричных чисел. Каждое число представляет один байт.`;
             setInputError(errorText);
             SerialMonitor.addLog(errorText);
             return;

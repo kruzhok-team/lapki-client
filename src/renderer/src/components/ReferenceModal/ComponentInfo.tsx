@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
@@ -58,6 +58,15 @@ export const ComponentInfo: React.FC<ComponentInfoProps> = ({ component, manager
       className={twMerge(
         className,
         'overflow-auto pr-4 scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb'
+      )}
+      ref={useCallback(
+        (node: HTMLDivElement | null) => {
+          if (node) {
+            node.scrollTop = 0;
+          }
+        },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [component]
       )}
     >
       <div className="mb-2 flex items-center">

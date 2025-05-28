@@ -90,6 +90,45 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
     setAllAddressOptions(newAllAddressOptions);
   }, [stateMachinesId]);
 
+  useEffect(() => {
+    const getTypeID = (item: FlashTableItem) => {
+      if (item.targetType === FirmwareTargetType.dev) {
+        const dev = devices.get(item.targetId as string);
+        if (!dev) return null;
+        return getDevicePlatform(dev) ?? null;
+      } else if (item.targetType === FirmwareTargetType.tjc_ms) {
+        const addressData = getEntryById(item.targetId as number);
+        if (!addressData) {
+          return null;
+        }
+        const typeId = addressData.type ?? null;
+        if (typeId && !isStrictVersionCheck(typeId)) {
+          return platformWithoutVersion(typeId);
+        }
+        return typeId;
+      }
+      return null;
+    };
+
+    setTableData(
+      tableData.map((item) => {
+        if (item.source) return item;
+        const typeId = getTypeID(item);
+        const options = typeId ? stateMachineOptions.get(typeId) : allAddressOptions;
+        if (!options) return item;
+        if (options.length === 1) {
+          return {
+            ...item,
+            source: options[0].value,
+            isFile: false,
+          };
+        }
+        return item;
+      })
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stateMachineOptions, allAddressOptions, tableData.length]);
+
   const stateMachineOption = (sm: StateMachine | null | undefined, smId: string) => {
     if (!sm) return null;
     return {
@@ -257,6 +296,7 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
     );
   };
 
+  // (Roundabout1) TODO: добавить поля для рендера в FlashTableItem (displayName, displayType и т.д.)
   const rowRender = (tableItem: FlashTableItem) => {
     const checked = tableItem.isSelected;
     // Реализовать рендер для arduino

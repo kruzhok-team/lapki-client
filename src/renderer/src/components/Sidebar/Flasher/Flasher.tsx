@@ -37,7 +37,7 @@ import {
 } from '@renderer/types/FlasherTypes';
 
 import { AddressBookModal } from './AddressBook';
-import { AddressEntryEditModal } from './AddressEntryModal';
+import { AddressEntryEditModal, AddressEntryForm } from './AddressEntryModal';
 import { DeviceList } from './DeviceList';
 import { FlasherTable } from './FlasherTable';
 import { MsGetAddressModal } from './MsGetAddressModal';
@@ -97,9 +97,9 @@ export const FlasherTab: React.FC = () => {
   };
 
   const [isAddressEnrtyEditOpen, openAddressEnrtyEdit, closeAddressEnrtyEdit] = useModal(false); // для редактирования существующих записей в адресной книге
-  const addressEntryEditForm = useForm<AddressData>();
+  const addressEntryEditForm = useForm<AddressEntryForm>();
   const [isAddressEnrtyAddOpen, openAddressEnrtyAdd, closeAddressEnrtyAdd] = useModal(false); // для добавления новых записей в адресную книгу
-  const addressEntryAddForm = useForm<AddressData>();
+  const addressEntryAddForm = useForm<AddressEntryForm>();
 
   const [msgModalData, setMsgModalData] = useState<ErrorModalData>();
   const [isMsgModalOpen, setIsMsgModalOpen] = useState(false);
@@ -185,6 +185,7 @@ export const FlasherTab: React.FC = () => {
     - bootloader REF_FW: ${meta.RefBlFw}
     - bootloader REF_CHIP: ${meta.RefBlChip}
     - booloader REF_PROTOCOL: ${meta.RefBlProtocol}
+    - booloader USER_CODE: ${meta.RefBlUserCode}
     - cybergene REF_FW: ${meta.RefCgFw}
     - cybergene REF_HW: ${meta.RefCgHw}
     - cybergene REF_PROTOCOL: ${meta.RefCgProtocol}
@@ -510,19 +511,25 @@ export const FlasherTab: React.FC = () => {
   /**
    * Обновление адресной книги после редактирования
    */
-  const addressEntryEditSubmitHandle = (data: AddressData) => {
+  const addressEntryEditSubmitHandle = (data: AddressEntryForm) => {
     if (addressBookSetting === null) return;
     // TODO: найти более оптимальный вариант
     const index = addressBookSetting.findIndex((entry) => {
       return entry.address === data.address;
     });
     if (index === -1) return;
-    onEdit(data, index);
+    const addressData = addressBookSetting[index];
+    onEdit({ ...addressData, name: data.name, address: data.address, type: data.type }, index);
   };
 
-  const addressEntryAddSubmitHandle = (data: AddressData) => {
+  const addressEntryAddSubmitHandle = (data: AddressEntryForm) => {
     addressEntryAddForm.reset();
-    onAdd(data);
+    onAdd({
+      address: data.address,
+      name: data.name,
+      type: data.type,
+      meta: undefined,
+    });
   };
 
   /**
@@ -530,7 +537,11 @@ export const FlasherTab: React.FC = () => {
    * @param data данные, которые нужно отредактированть
    */
   const addressEnrtyEdit = (data: AddressData) => {
-    addressEntryEditForm.reset(data);
+    addressEntryEditForm.reset({
+      ...data,
+      addressEditBlock: true,
+      typeEditBlock: data.type !== '' && data.type !== undefined,
+    });
     openAddressEnrtyEdit();
   };
 
@@ -1007,22 +1018,22 @@ export const FlasherTab: React.FC = () => {
         openAddressEnrtyAdd={openAddressEnrtyAdd}
       />
       <AddressEntryEditModal
+        title="Редактирование записи"
         addressBookSetting={addressBookSetting}
         form={addressEntryEditForm}
         isOpen={isAddressEnrtyEditOpen}
         onClose={closeAddressEnrtyEdit}
         onSubmit={addressEntryEditSubmitHandle}
         submitLabel="Сохранить"
-        allowAddressEdit={false}
       />
       <AddressEntryEditModal
+        title="Добавление записи"
         addressBookSetting={addressBookSetting}
         form={addressEntryAddForm}
         isOpen={isAddressEnrtyAddOpen}
         onClose={closeAddressEnrtyAdd}
         onSubmit={addressEntryAddSubmitHandle}
         submitLabel="Добавить"
-        allowAddressEdit={true}
       />
       <MsGetAddressModal
         isOpen={isMsGetAddressOpen}

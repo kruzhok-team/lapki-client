@@ -212,7 +212,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       },
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isEditorDataStale, isDocOpen, isFlasherTabOpen]
+    [isEditorDataStale, isDocOpen, isFlasherTabOpen, isSerialMonitorTabOpen]
   );
 
   return (

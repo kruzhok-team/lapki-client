@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
@@ -46,6 +46,49 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
 
   const [checkedAll, setCheckedAll] = useState<boolean>(true);
   const [fileBaseName, setFileBaseName] = useState<Map<number | string, string>>(new Map());
+  const [stateMachineOptions, setStateMachineOptions] = useState<Map<string, SelectOption[]>>(
+    new Map()
+  );
+  const [allAddressOptions, setAllAddressOptions] = useState<SelectOption[]>([]);
+
+  useEffect(() => {
+    const newStateMachineOptions: typeof stateMachineOptions = new Map();
+    const newAllAddressOptions: typeof allAddressOptions = [];
+    // составление словаря, где ключ - это платформа, а значение - это список доступных на данный момент машин состояний на этой платформе
+    // также здесь составляется список всех доступных платформ для выпадающего списка на случай, если тип платы неизвестен
+    [...Object.entries(stateMachinesId)].forEach(([smId, sm]) => {
+      if (!smId) return;
+      let key: string = '';
+      if (sm.platform.startsWith('tjc')) {
+        if (isStrictVersionCheck(sm.platform)) {
+          key = sm.platform;
+        } else {
+          key = platformWithoutVersion(sm.platform);
+        }
+      } else {
+        key = sm.platform;
+      }
+      const value = newStateMachineOptions.get(key) ?? [];
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      newStateMachineOptions.set(key, [...value, stateMachineOption(sm, smId)!]);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      newAllAddressOptions.push(stateMachineOption(sm, smId)!);
+    });
+
+    const noPlatformOptions = newStateMachineOptions.get('');
+    if (noPlatformOptions !== undefined) {
+      for (const key of newStateMachineOptions.keys()) {
+        if (key === '') continue;
+        const options = newStateMachineOptions.get(key);
+        if (options !== undefined) {
+          newStateMachineOptions.set(key, options.concat(noPlatformOptions));
+        }
+      }
+    }
+
+    setStateMachineOptions(newStateMachineOptions);
+    setAllAddressOptions(newAllAddressOptions);
+  }, [stateMachinesId]);
 
   const stateMachineOption = (sm: StateMachine | null | undefined, smId: string) => {
     if (!sm) return null;
@@ -71,41 +114,6 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
       return platform.includes(`-${platformType}-`);
     });
   };
-
-  const stateMachineOptions = new Map<string, SelectOption[]>();
-  const allAddressOptions: SelectOption[] = [];
-
-  // составление словаря, где ключ - это платформа, а значение - это список доступных на данный момент машин состояний на этой платформе
-  // также здесь составляется список всех доступных платформ для выпадающего списка на случай, если тип платы неизвестен
-  [...Object.entries(stateMachinesId)].forEach(([smId, sm]) => {
-    if (!smId) return;
-    let key: string = '';
-    if (sm.platform.startsWith('tjc')) {
-      if (isStrictVersionCheck(sm.platform)) {
-        key = sm.platform;
-      } else {
-        key = platformWithoutVersion(sm.platform);
-      }
-    } else {
-      key = sm.platform;
-    }
-    const value = stateMachineOptions.get(key) ?? [];
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    stateMachineOptions.set(key, [...value, stateMachineOption(sm, smId)!]);
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    allAddressOptions.push(stateMachineOption(sm, smId)!);
-  });
-
-  const noPlatformOptions = stateMachineOptions.get('');
-  if (noPlatformOptions !== undefined) {
-    for (const key of stateMachineOptions.keys()) {
-      if (key === '') continue;
-      const options = stateMachineOptions.get(key);
-      if (options !== undefined) {
-        stateMachineOptions.set(key, options.concat(noPlatformOptions));
-      }
-    }
-  }
 
   const handleSelectFile = async (tableItem: FlashTableItem) => {
     const [canceled, filePath, basename] = await window.api.fileHandlers.selectFile(

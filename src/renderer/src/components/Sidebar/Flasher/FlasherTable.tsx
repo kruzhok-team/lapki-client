@@ -91,43 +91,45 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
   }, [stateMachinesId]);
 
   useEffect(() => {
-    const getTypeID = (item: FlashTableItem) => {
-      if (item.targetType === FirmwareTargetType.dev) {
-        const dev = devices.get(item.targetId as string);
-        if (!dev) return null;
-        return getDevicePlatform(dev) ?? null;
-      } else if (item.targetType === FirmwareTargetType.tjc_ms) {
-        const addressData = getEntryById(item.targetId as number);
-        if (!addressData) {
-          return null;
-        }
-        const typeId = addressData.type ?? null;
-        if (typeId && !isStrictVersionCheck(typeId)) {
-          return platformWithoutVersion(typeId);
-        }
-        return typeId;
-      }
-      return null;
-    };
-
     setTableData(
       tableData.map((item) => {
         if (item.source) return item;
-        const typeId = getTypeID(item);
-        const options = typeId ? stateMachineOptions.get(typeId) : allAddressOptions;
-        if (!options) return item;
-        if (options.length === 1) {
-          return {
-            ...item,
-            source: options[0].value,
-            isFile: false,
-          };
-        }
-        return item;
+        return {
+          ...item,
+          source: defaultSm(getTypeID(item)),
+        };
       })
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stateMachineOptions, allAddressOptions, tableData.length]);
+
+  const getTypeID = (item: FlashTableItem) => {
+    if (item.targetType === FirmwareTargetType.dev) {
+      const dev = devices.get(item.targetId as string);
+      if (!dev) return null;
+      return getDevicePlatform(dev) ?? null;
+    } else if (item.targetType === FirmwareTargetType.tjc_ms) {
+      const addressData = getEntryById(item.targetId as number);
+      if (!addressData) {
+        return null;
+      }
+      const typeId = addressData.type ?? null;
+      if (typeId && !isStrictVersionCheck(typeId)) {
+        return platformWithoutVersion(typeId);
+      }
+      return typeId;
+    }
+    return null;
+  };
+
+  const defaultSm = (typeId: string | null) => {
+    const options = typeId ? stateMachineOptions.get(typeId) : allAddressOptions;
+    if (!options) return undefined;
+    if (options.length === 1) {
+      return options[0].value;
+    }
+    return undefined;
+  };
 
   const stateMachineOption = (sm: StateMachine | null | undefined, smId: string) => {
     if (!sm) return null;
@@ -179,26 +181,25 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
     });
   };
 
-  const removeSource = (tableItem: FlashTableItem) => {
+  const handleRemoveFileSource = (tableItem: FlashTableItem) => {
+    setFileBaseName((oldMap) => {
+      const newMap = new Map(oldMap);
+      newMap.delete(tableItem.targetId);
+      return newMap;
+    });
+
     setTableData(
       tableData.map((item) => {
-        if (item.targetId === tableItem.targetId) {
+        if (item.targetType === tableItem.targetType && item.targetId === tableItem.targetId) {
           return {
             ...item,
-            source: undefined,
+            source: defaultSm(getTypeID(tableItem)),
             isFile: false,
           };
         }
         return item;
       })
     );
-    if (tableItem.isFile) {
-      setFileBaseName((oldMap) => {
-        const newMap = new Map(oldMap);
-        newMap.delete(tableItem.targetId);
-        return newMap;
-      });
-    }
   };
 
   const onCheckedChangeHandle = (tableItem: FlashTableItem) => {
@@ -392,7 +393,7 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
               cellHeight
             )}
             onClick={() =>
-              tableItem.isFile ? removeSource(tableItem) : handleSelectFile(tableItem)
+              tableItem.isFile ? handleRemoveFileSource(tableItem) : handleSelectFile(tableItem)
             }
           >
             {tableItem.isFile ? '✖' : '…'}

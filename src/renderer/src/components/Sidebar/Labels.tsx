@@ -22,7 +22,6 @@ export const Labels: React.FC<LabelsProps> = ({ items }) => {
   return (
     <div className="flex flex-col border-r border-border-primary bg-bg-primary">
       {items.map(({ Icon, bottom = false, hint, action, isActive }, i) => {
-        console.log(Icon, isActive);
         const activeIcon = isActive ?? activeTab === i;
         return (
           <WithHint key={i} hint={hint} placement="right" offset={5} delay={100}>

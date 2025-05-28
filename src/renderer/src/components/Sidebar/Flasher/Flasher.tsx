@@ -9,6 +9,7 @@ import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as DeleteIcon } from '@renderer/assets/icons/delete.svg';
 import { ReactComponent as DownloadBinIcon } from '@renderer/assets/icons/download-bin.svg';
+import { ReactComponent as FactoryBinIcon } from '@renderer/assets/icons/factory-reset.svg';
 import { ReactComponent as FlashVerifyIcon } from '@renderer/assets/icons/flash-verify.svg';
 import { ReactComponent as FlashIcon } from '@renderer/assets/icons/flash.svg';
 import { ReactComponent as MetadataIcon } from '@renderer/assets/icons/metadata.svg';
@@ -344,6 +345,8 @@ export const FlasherTab: React.FC = () => {
   }, [flashResult]);
   const downloadBinHint =
     'Выгрузить файлы прошивки из выбранных плат. Доступно не для всех устройств.';
+  const factoryBinHint =
+    'Загрузить «заводскую» прошивку в выбранные платы. Доступно не для всех устройств.';
 
   const handleOperation = (op: OperationType) => {
     for (const item of flashTableData) {
@@ -502,6 +505,10 @@ export const FlasherTab: React.FC = () => {
     ManagerMS.binStart();
   };
 
+  const handleFlashFactoryBin = async () => {
+    ManagerMS.addLog('Загрузка заводской прошивки не реализована...');
+  };
+
   const handleRemoveDevs = () => {
     const newTable: FlashTableItem[] = [];
     for (const item of flashTableData) {
@@ -656,7 +663,7 @@ export const FlasherTab: React.FC = () => {
 
   const operationButtons = () => {
     return (
-      <div className="m-1 flex items-center gap-0 overflow-x-auto">
+      <div className="flex min-h-16 items-center gap-0 overflow-x-auto overflow-y-hidden">
         <WithHint hint={'Убрать отмеченные платы из таблицы.'}>
           {(hintProps) => (
             <button {...hintProps} className="btn-error mr-2 p-2 py-1" onClick={handleRemoveDevs}>
@@ -737,6 +744,18 @@ export const FlasherTab: React.FC = () => {
                   disabled={binaryFolder !== null || commonOperationDisabled}
                 >
                   <DownloadBinIcon className="h-8 w-8" />
+                </button>
+              )}
+            </WithHint>
+            <WithHint hint={factoryBinHint}>
+              {(hintProps) => (
+                <button
+                  {...hintProps}
+                  className="btn-primary mr-2 whitespace-nowrap p-2 py-1"
+                  onClick={handleFlashFactoryBin}
+                  disabled={commonOperationDisabled}
+                >
+                  <FactoryBinIcon className="h-8 w-8" />
                 </button>
               )}
             </WithHint>
@@ -955,7 +974,7 @@ export const FlasherTab: React.FC = () => {
         <p className="mb-1 mt-1 text-lg font-semibold">Устройства на прошивку</p>
         <FlasherTable addressEnrtyEdit={addressEnrtyEdit} getEntryById={getEntryById} />
       </div>
-      <div className="m-1 flex min-h-14">
+      <div className="m-1 flex min-h-16">
         <div
           className={twMerge(
             selectedDevicesCount == 0 ? 'opacity-50' : '',

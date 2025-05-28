@@ -344,10 +344,10 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
               cellHeight
             )}
             onClick={() =>
-              tableItem.source ? removeSource(tableItem) : handleSelectFile(tableItem)
+              tableItem.isFile ? removeSource(tableItem) : handleSelectFile(tableItem)
             }
           >
-            {tableItem.source ? '✖' : '…'}
+            {tableItem.isFile ? '✖' : '…'}
           </button>
         </td>
       </tr>

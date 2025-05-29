@@ -386,12 +386,6 @@ export const FlasherTab: React.FC = () => {
   };
 
   const handleSendBin = async (doVerify?: boolean) => {
-    if (doVerify !== undefined && managerMSSetting) {
-      setManagerMSSetting({
-        ...managerMSSetting,
-        verification: doVerify,
-      });
-    }
     for (const item of flashTableData) {
       if (!item.isSelected) continue;
       let notFound = false;
@@ -406,7 +400,7 @@ export const FlasherTab: React.FC = () => {
             break;
           }
           devName = dev.displayName();
-          if (managerMSSetting?.verification) {
+          if (doVerify) {
             ManagerMS.addLog(
               `${devName}: верификация прошивки для данного устройства не поддерживается.`
             );
@@ -469,7 +463,7 @@ export const FlasherTab: React.FC = () => {
             addressInfo: address,
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             device: dev!, // проверка осуществляется ранее в этой функции
-            verification: managerMSSetting ? managerMSSetting.verification : false,
+            verification: doVerify ?? false,
             binaries: new Blob([binData]),
             isFile: true,
           });
@@ -489,7 +483,7 @@ export const FlasherTab: React.FC = () => {
           addressInfo: address,
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           device: dev!, // проверка осуществляется ранее в этой функции
-          verification: managerMSSetting ? managerMSSetting.verification : false,
+          verification: doVerify ?? false,
           binaries: smData.binary,
           isFile: false,
         });

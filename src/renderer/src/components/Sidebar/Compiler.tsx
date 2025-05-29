@@ -164,7 +164,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
     const { host, port, localPort, type } = compilerSetting;
     Compiler.bindReact(setCompilerData, setCompilerStatus, setImportData, setSecondsUntilReconnect);
     const autoReconnect = type === 'remote';
-    if (type === 'local' && port !== localPort) {
+    if (type === 'local') {
         Compiler.connect(host, localPort, autoReconnect);
     } else {
       Compiler.connect(host, port, autoReconnect);

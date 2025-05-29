@@ -204,6 +204,7 @@ export class Compiler extends ClientWS {
   }
 
   static onOpenHandler(): void {
+    console.log(`Compiler: connected to ${Compiler.host}:${Compiler.port}!`);
     super.onOpenHandler();
   }
 }

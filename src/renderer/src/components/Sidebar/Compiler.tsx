@@ -161,11 +161,14 @@ export const CompilerTab: React.FC<CompilerProps> = ({
 
   useEffect(() => {
     if (!compilerSetting) return;
-
-    const { host, port } = compilerSetting;
-
+    const { host, port, localPort, type } = compilerSetting;
     Compiler.bindReact(setCompilerData, setCompilerStatus, setImportData, setSecondsUntilReconnect);
-    Compiler.connect(host, port);
+    const autoReconnect = type === 'remote';
+    if (type === 'local' && port !== localPort) {
+        Compiler.connect(host, localPort, autoReconnect);
+    } else {
+      Compiler.connect(host, port, autoReconnect);
+    }
   }, [compilerSetting]);
 
   const button = [

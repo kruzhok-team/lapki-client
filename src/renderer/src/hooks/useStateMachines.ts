@@ -68,13 +68,12 @@ export const useStateMachines = () => {
     const sm = modelController.model.data.elements.stateMachines[idx];
 
     if (!sm) return;
-
-    const [newSmId, canvasId] = modelController.duplicateStateMachine(idx);
+    const [newSmId, newName, canvasId] = modelController.duplicateStateMachine(idx);
 
     openTab(modelController, {
       type: 'editor',
       canvasId: canvasId,
-      name: sm.name ?? newSmId,
+      name: newName ?? newSmId,
     });
     editClose();
   };

@@ -45,8 +45,6 @@ import { MsGetAddressModal } from './MsGetAddressModal';
 import { ManagerMS } from '../../Modules/ManagerMS';
 import { Switch, WithHint } from '../../UI';
 
-const monitorTabName = 'Монитор порта';
-
 export const FlasherTab: React.FC = () => {
   const modelController = useModelContext();
   const [flasherSetting] = useSettings('flasher');
@@ -86,8 +84,6 @@ export const FlasherTab: React.FC = () => {
 
   const openTab = useTabs((state) => state.openTab);
   const closeTab = useTabs((state) => state.closeTab);
-  const tabs = useTabs((state) => state.items);
-  const isMonitorOpen = tabs.find((tab) => tab.name === monitorTabName) !== undefined;
 
   const [isAddressBookOpen, openAddressBook, closeAddressBook] = useModal(false);
   const [isMsGetAddressOpen, openMsGetAddressModal, closeMsGetAddressModal] = useModal(false);
@@ -595,16 +591,6 @@ export const FlasherTab: React.FC = () => {
     }
   };
 
-  // добавление вкладки с serial monitor
-  // пока клиент может мониторить только один порт
-  const handleAddSerialMonitorTab = () => {
-    openTab(modelController, {
-      type: 'serialMonitor',
-      name: monitorTabName,
-      isOpen: isMonitorOpen,
-    });
-  };
-
   const needAvrdude = useMemo(() => {
     if (!flasherSetting?.type || flasherSetting.type === 'remote' || hasAvrdude) return false;
     return flashTableData.some((item) => {
@@ -943,12 +929,6 @@ export const FlasherTab: React.FC = () => {
           onClick={handleOpenAddressBook}
         >
           Адресная книга
-        </button>
-        <button
-          className="btn-primary mr-2 whitespace-nowrap p-1.5"
-          onClick={handleAddSerialMonitorTab}
-        >
-          Монитор порта
         </button>
       </div>
       <div className="m-2">

@@ -20,6 +20,12 @@ Remove-Item resources/modules/win32/gcc-arm-none-eabi.zip
 echo arm-gcc downloaded!
 
 # Define the relative paths you want to add (relative to $BasePath)
+param(
+    [Parameter(Mandatory=$true)]
+    [string]$BasePath
+)
+
+# Define the relative paths you want to add (relative to $BasePath)
 $PATHS = @(
     "gcc-arm-none-eabi\bin"
     "arduino-cli\"
@@ -34,7 +40,10 @@ $currentPath = [Environment]::GetEnvironmentVariable("PATH", "User")
 $pathDirs = $currentPath -split ';'
 
 # Process each relative path
-foreach ($fullPath in $PATHS) {
+foreach ($relativePath in $PATHS) {
+    $fullPath = Join-Path -Path $BasePath -ChildPath $relativePath
+    
+    # Normalize the path (resolve any . or .. and ensure consistent slashes)
     $fullPath = [System.IO.Path]::GetFullPath($fullPath)
     
     # Check if the path exists and isn't already in PATH

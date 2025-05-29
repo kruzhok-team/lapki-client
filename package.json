@@ -28,7 +28,7 @@
     "bundle:win": "electron-builder --win --config",
     "bundle:linux": "electron-builder --linux --config",
     "bundle:mac": "electron-builder --mac --config",
-    "prepare:win": "build\\prepare_compiler_resources.bat"
+    "prepare:win": "build\\move_compiler_resourses.bat build"
   },
   "dependencies": {
     "@codemirror/lang-cpp": "^6.0.2",

@@ -18,7 +18,8 @@ import {
   HandleFileSelectReturn,
   HandleFileReadReturn,
   HandleFolderCreateReturn,
-  handleSaveBinaryIntoFileReturn,
+  HandleSaveBinaryIntoFileReturn,
+  HandleGetDefaultFirmwareReturn,
 } from './handlersTypes';
 
 import { basePath } from '../utils';
@@ -293,7 +294,7 @@ export function handleGetFileMetadata(absolute_path: string) {
 }
 
 /**
- * Проверка рна существование файла
+ * Проверка на существование файла
  * @param path путь к файлу
  * @returns существует ли файл
  */
@@ -336,7 +337,7 @@ export function handleCreateFolder(folderName: string): HandleFolderCreateReturn
 export function handleSaveBinaryIntoFile(
   filePath: string,
   binary: Uint8Array
-): handleSaveBinaryIntoFileReturn {
+): HandleSaveBinaryIntoFileReturn {
   return new Promise((resolve) => {
     fs.appendFile(filePath, binary, function (err) {
       if (err) {
@@ -345,5 +346,13 @@ export function handleSaveBinaryIntoFile(
         resolve(['']);
       }
     });
+  });
+}
+
+export function handleGetDefaultFirmwarePath(typeId: string): HandleGetDefaultFirmwareReturn {
+  return new Promise((resolve) => {
+    switch(typeId) {
+      case 'blg-mb-1-a7'
+    }
   });
 }

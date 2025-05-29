@@ -392,7 +392,7 @@ export const FlasherTab: React.FC = () => {
     }
   };
 
-  const handleSendBin = async (doVerify?: boolean) => {
+  const handleSendBin = async (doVerify?: boolean, uploadFactory?: boolean) => {
     if (doVerify !== undefined && managerMSSetting) {
       setManagerMSSetting({
         ...managerMSSetting,
@@ -457,17 +457,25 @@ export const FlasherTab: React.FC = () => {
         );
         continue;
       }
-      if (!item.source) {
+      const getSource = () => {
+        if (uploadFactory) {
+          console.log();
+          return undefined;
+        }
+        return item.source;
+      };
+      const source = getSource();
+      if (!source) {
         ManagerMS.addLog(
           `${devName}: прошивка пропущена, так как для этой платы не указана прошивка.`
         );
         continue;
       }
       if (item.isFile) {
-        const [binData, errorMessage] = await window.api.fileHandlers.readFile(item.source);
+        const [binData, errorMessage] = await window.api.fileHandlers.readFile(source);
         if (errorMessage !== null) {
           ManagerMS.addLog(
-            `Ошибка! Не удалось извлечь данные из файла ${item.source}. Текст ошибки: ${errorMessage}`
+            `Ошибка! Не удалось извлечь данные из файла ${source}. Текст ошибки: ${errorMessage}`
           );
           continue;
         }
@@ -487,7 +495,7 @@ export const FlasherTab: React.FC = () => {
           ManagerMS.addLog(noBinary);
           continue;
         }
-        const smData = compilerData.state_machines[item.source];
+        const smData = compilerData.state_machines[source];
         if (!smData || !smData.binary || smData.binary.length === 0) {
           ManagerMS.addLog(noBinary);
           continue;
@@ -503,10 +511,6 @@ export const FlasherTab: React.FC = () => {
       }
     }
     ManagerMS.binStart();
-  };
-
-  const handleFlashFactoryBin = async () => {
-    ManagerMS.addLog('Загрузка заводской прошивки не реализована...');
   };
 
   const handleRemoveDevs = () => {
@@ -752,7 +756,7 @@ export const FlasherTab: React.FC = () => {
                 <button
                   {...hintProps}
                   className="btn-primary mr-2 whitespace-nowrap p-2 py-1"
-                  onClick={handleFlashFactoryBin}
+                  onClick={() => handleSendBin(false, true)}
                   disabled={commonOperationDisabled}
                 >
                   <FactoryBinIcon className="h-8 w-8" />

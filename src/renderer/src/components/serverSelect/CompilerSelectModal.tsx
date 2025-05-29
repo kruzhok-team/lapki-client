@@ -1,11 +1,10 @@
-import { useEffect, useLayoutEffect } from 'react';
+import { useLayoutEffect } from 'react';
 
 import { Controller, useForm } from 'react-hook-form';
 
 import { Modal, Select, TextField } from '@renderer/components/UI';
 import { useSettings } from '@renderer/hooks';
 import { removeNonNumbers } from '@renderer/utils';
-import { Compiler } from '../Modules/Compiler';
 
 type FormValues = Main['settings']['compiler'];
 
@@ -47,19 +46,6 @@ export const CompilerSelectModal: React.FC<CompilerSelectModalProps> = ({ onClos
 
     reset(compilerSetting);
   };
-
-  useEffect(() => {
-    if (!compilerSetting) return;
-    const { host, port, localPort, type } = compilerSetting;
-    const autoReconnect = type === 'remote';
-    if (type === 'local' && port !== localPort) {
-      setCompilerSetting({ ...compilerSetting, port: localPort }).then(() => {
-        Compiler.connect(host, localPort, autoReconnect);
-      });
-    } else {
-      Compiler.connect(host, port, autoReconnect);
-    }
-  }, [compilerSetting, setCompilerSetting]);
 
   useLayoutEffect(() => {
     if (!compilerSetting || compilerSetting.localPort === undefined) return;

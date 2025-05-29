@@ -123,6 +123,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   // при добавлении новой вкладки или изменения их расположения нужно обновить SidebarIndex из useSidebar
+  // если вкладка не является левой боковой панелью, то на её место вписать null
   const menus = useMemo(
     () => [
       <Menu

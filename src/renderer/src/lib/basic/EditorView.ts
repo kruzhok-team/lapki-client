@@ -438,17 +438,7 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
       if (dx === 0 && dy === 0) {
         return;
       }
-      this.mouseDownNode.position = {
-        x: this.mouseDownNode.position.x - dx * this.app.controller.scale,
-        y: this.mouseDownNode.position.y - dy * this.app.controller.scale,
-      };
-
-      if (this.mouseDownNode.parent) {
-        this.mouseDownNode.position = {
-          x: Math.max(0, this.mouseDownNode.position.x),
-          y: Math.max(0, this.mouseDownNode.position.y),
-        };
-      }
+      this.mouseDownNode.handleMove(dx, dy);
       this.app.canvas.element.style.cursor = 'grabbing';
       this.isDirty = true;
     } else {
@@ -481,8 +471,8 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
     }
 
     return {
-      dx: this.app.controller.offset.x - offsetX,
-      dy: this.app.controller.offset.y - offsetY,
+      dx: offsetX - this.app.controller.offset.x,
+      dy: offsetY - this.app.controller.offset.y,
     };
   };
 }

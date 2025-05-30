@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
+import { ReactComponent as SelectFileIcon } from '@renderer/assets/icons/upload-file.svg';
 import { Device } from '@renderer/components/Modules/Device';
 import { Checkbox, Select, SelectOption } from '@renderer/components/UI';
 import { useModelContext } from '@renderer/store/ModelContext';
@@ -396,7 +397,7 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
               tableItem.isFile ? handleRemoveFileSource(tableItem) : handleSelectFile(tableItem)
             }
           >
-            {tableItem.isFile ? '✖' : '…'}
+            {tableItem.isFile ? '✖' : <SelectFileIcon className="opacity-80" />}
           </button>
         </td>
       </tr>

@@ -156,6 +156,9 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
             <button
               type="button"
               className="btn-secondary p-1"
+              // (Roundabout1) Если значение selectedEntry не определено, то кнопка будет заблокирована,
+              // также кнопка не будет отрисована пока не загрузится адресная книга, поэтому доп. проверка не нужна здесь
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
               onClick={() => addressEnrtyEdit(addressBookSetting![selectedEntry!])}
               disabled={selectedEntry === undefined}
             >

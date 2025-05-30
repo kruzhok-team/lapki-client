@@ -14,6 +14,45 @@
   "delimeter": "",
   "staticActionDelimeter": "::",
   "components": {
+    "LED": {
+      "name": "Светодиод",
+      "description": "Компонент для отладки машины состояний",
+      "img": "bearloga/ability_activate.svg",
+      "signals": {},
+      "variables": {
+        "Brightness": {
+          "alias": "Яркость",
+          "img": "bearloga/count_foe.svg",
+          "description": "Количество юнитов противника на игровом поле"
+        },
+        "IsOn": {
+          "alias": "Включён",
+          "img": "bearloga/count_ally.svg",
+          "description": "Количество юнитов противника на игровом поле"
+        }
+      },
+      "methods": {
+        "TurnOn": {
+          "alias": "Включить",
+          "img": "bearloga/find_foe_by_distance.svg",
+          "parameters": [
+            {
+              "name": "Цвет",
+              "type": ["red", "green", "blue"],
+              "valueAlias": ["красный", "зеленый"]
+            }
+          ],
+          "description": "Включить свитодиод с выбранным цветом."
+        },
+        "TurnOff": {
+          "alias": "Включить",
+          "img": "bearloga/find_foe_by_distance.svg",
+          "parameters": [],
+          "description": "Выключить светодиод."
+        }
+      },
+      "singletone": true
+    },
     "Scaner": {
       "name": "Сенсор",
       "description": "Сенсор позволяет сканировать окружение юнита для поиска, отбора и подсчета количества врагов в качестве цели для оружия или атакующей способности. Цикл работы сенсора представляет собой запуск (через действие) поиска по заданному критерию, при нахождении подходящего юнита возникает соответствующее событие и юнит помечается целью.",

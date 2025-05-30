@@ -397,7 +397,7 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
               tableItem.isFile ? handleRemoveFileSource(tableItem) : handleSelectFile(tableItem)
             }
           >
-            {tableItem.isFile ? '✖' : <SelectFileIcon className="opacity-80" />}
+            {tableItem.isFile ? '✖' : <SelectFileIcon className="opacity-70" />}
           </button>
         </td>
       </tr>

@@ -181,7 +181,7 @@
       "importFiles": ["SpeakerNote.hpp"],
       "methods": {
         "setupNote": {
-          "img": "arduino/start.svg",
+          "img": "blg-mb/setupEvent.svg",
           "parameters": [
             {
               "name": "Нота",

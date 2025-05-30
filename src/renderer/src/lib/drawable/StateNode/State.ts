@@ -120,8 +120,7 @@ export class State extends Shape {
 
     ctx.roundRect(x, y, width, height, [6 / this.scale, 6 / this.scale, 0, 0]);
     ctx.fill();
-
-    drawText(ctx, this.data.name || 'Без названия', {
+    drawText(ctx, this.data.name ?? 'Без названия', {
       x: x + paddingX,
       y: y + paddingY,
       textAlign: 'left',

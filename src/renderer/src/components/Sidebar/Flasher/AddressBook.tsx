@@ -66,6 +66,7 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
 
   const handleRemove = () => {
     if (selectedEntry === undefined) return;
+    setSelectedEntry(undefined);
     onRemove(selectedEntry);
   };
 

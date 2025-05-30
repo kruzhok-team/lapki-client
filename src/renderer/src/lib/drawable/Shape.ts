@@ -184,6 +184,10 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
     };
   }
 
+  get isDraggable() {
+    return this.canDrag;
+  }
+
   private dragEnd() {
     const dragEndPosition = { ...this.position };
     if (
@@ -216,15 +220,21 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
   };
 
   handleMouseMove = (e: MyMouseEvent) => {
-    if (!this.isMouseDown || !this.canDrag) return;
+    if (!this.handleMove(e.dx, e.dy)) return;
 
     if (Math.abs(e.dx) > 1 && Math.abs(e.dy) > 1) {
       clearTimeout(this.mouseDownTimerId);
     }
 
+    this.emit('drag', { event: e });
+  };
+
+  handleMove = (dx: number, dy: number) => {
+    if (!this.isMouseDown || !this.canDrag) return false;
+
     this.position = {
-      x: this.position.x + e.dx * this.app.controller.scale,
-      y: this.position.y + e.dy * this.app.controller.scale,
+      x: this.position.x + dx * this.app.controller.scale,
+      y: this.position.y + dy * this.app.controller.scale,
     };
 
     if (this.parent) {
@@ -234,7 +244,7 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
       };
     }
 
-    this.emit('drag', { event: e });
+    return true;
   };
 
   handleMouseUp = (e: MyMouseEvent) => {

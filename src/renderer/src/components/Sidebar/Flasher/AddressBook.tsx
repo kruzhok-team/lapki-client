@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/add.svg';
 import { ReactComponent as EditIcon } from '@renderer/assets/icons/edit.svg';
-import { ReactComponent as LensIcon } from '@renderer/assets/icons/serial_monitor.svg';
+import { ReactComponent as LensIcon } from '@renderer/assets/icons/metadata.svg';
 import { ReactComponent as SubtractIcon } from '@renderer/assets/icons/subtract.svg';
 import { Modal } from '@renderer/components/UI';
 import { useModal } from '@renderer/hooks';

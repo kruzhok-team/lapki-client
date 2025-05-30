@@ -76,7 +76,7 @@ export const ComponentReferenceV: React.FC<ComponentReferenceProps> = ({ platfor
     const idx = entry?.value ?? null;
     setCursor(idx);
     if (idx) {
-      const selectedEntry = platformComponents.find((c) => c.idx == idx) ?? null;
+      const selectedEntry = platformComponents.find((c) => c.idx === idx) ?? null;
       setEntry(selectedEntry);
     } else {
       setEntry(null);

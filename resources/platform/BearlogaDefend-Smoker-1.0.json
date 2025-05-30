@@ -22,19 +22,19 @@
       "variables": {
         "Brightness": {
           "alias": "Яркость",
-          "img": "bearloga/count_foe.svg",
+          "img": "bearloga/brightness.svg",
           "description": "Количество юнитов противника на игровом поле"
         },
         "IsOn": {
           "alias": "Включён",
-          "img": "bearloga/count_ally.svg",
+          "img": "bearloga/is_on.svg",
           "description": "Количество юнитов противника на игровом поле"
         }
       },
       "methods": {
         "TurnOn": {
           "alias": "Включить",
-          "img": "bearloga/find_foe_by_distance.svg",
+          "img": "bearloga/turn_on.svg",
           "parameters": [
             {
               "name": "Цвет",
@@ -46,7 +46,7 @@
         },
         "TurnOff": {
           "alias": "Включить",
-          "img": "bearloga/find_foe_by_distance.svg",
+          "img": "bearloga/turn_off.svg",
           "parameters": [],
           "description": "Выключить светодиод."
         }
@@ -239,6 +239,16 @@
         "DistanceTo": {
           "alias": "ДистанцияДо",
           "img": "bearloga/target_distance.svg",
+          "description": "Единиц дистанции до целевого юнита."
+        },
+        "RivalType": {
+          "alias": "ВидПротивника",
+          "img": "bearloga/type.svg",
+          "description": "Единиц дистанции до целевого юнита."
+        },
+        "RivalRole": {
+          "alias": "РольПротивника",
+          "img": "bearloga/role.svg",
           "description": "Единиц дистанции до целевого юнита."
         }
       },

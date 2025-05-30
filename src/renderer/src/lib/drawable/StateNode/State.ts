@@ -120,8 +120,7 @@ export class State extends Shape {
 
     ctx.roundRect(x, y, width, height, [6 / this.scale, 6 / this.scale, 0, 0]);
     ctx.fill();
-    const name = this.data.name !== undefined ? this.data.name : 'Без названия'
-    drawText(ctx, name, {
+    drawText(ctx, this.data.name ?? 'Без названия', {
       x: x + paddingX,
       y: y + paddingY,
       textAlign: 'left',

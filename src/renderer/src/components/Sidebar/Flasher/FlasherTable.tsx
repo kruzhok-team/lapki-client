@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
+import { ReactComponent as SelectFileIcon } from '@renderer/assets/icons/upload-file.svg';
 import { Device } from '@renderer/components/Modules/Device';
-import { Checkbox, Select, SelectOption } from '@renderer/components/UI';
+import { Checkbox, Select, SelectOption, WithHint } from '@renderer/components/UI';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { useFlasher } from '@renderer/store/useFlasher';
 import { StateMachine } from '@renderer/types/diagram';
@@ -385,19 +386,31 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
           )}
         </td>
         <td>
-          <button
-            type="button"
-            className={twMerge(
-              'rounded border border-border-primary',
-              selectFileSubColumn,
-              cellHeight
-            )}
-            onClick={() =>
-              tableItem.isFile ? handleRemoveFileSource(tableItem) : handleSelectFile(tableItem)
+          <WithHint
+            hint={
+              tableItem.isFile
+                ? 'Убрать файл из таблицы.'
+                : 'Выбрать файл с прошивкой для загрузки в плату.'
             }
+            placement="left"
           >
-            {tableItem.isFile ? '✖' : '…'}
-          </button>
+            {(hintProps) => (
+              <button
+                {...hintProps}
+                type="button"
+                className={twMerge(
+                  'rounded border border-border-primary',
+                  selectFileSubColumn,
+                  cellHeight
+                )}
+                onClick={() =>
+                  tableItem.isFile ? handleRemoveFileSource(tableItem) : handleSelectFile(tableItem)
+                }
+              >
+                {tableItem.isFile ? '✖' : <SelectFileIcon className="opacity-70" />}
+              </button>
+            )}
+          </WithHint>
         </td>
       </tr>
     );

@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/add.svg';
 import { ReactComponent as EditIcon } from '@renderer/assets/icons/edit.svg';
-import { ReactComponent as LensIcon } from '@renderer/assets/icons/serial_monitor.svg';
+import { ReactComponent as LensIcon } from '@renderer/assets/icons/metadata.svg';
 import { ReactComponent as SubtractIcon } from '@renderer/assets/icons/subtract.svg';
 import { Modal } from '@renderer/components/UI';
 import { useModal } from '@renderer/hooks';
@@ -66,6 +66,7 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
 
   const handleRemove = () => {
     if (selectedEntry === undefined) return;
+    setSelectedEntry(undefined);
     onRemove(selectedEntry);
   };
 
@@ -156,6 +157,9 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
             <button
               type="button"
               className="btn-secondary p-1"
+              // (Roundabout1) Если значение selectedEntry не определено, то кнопка будет заблокирована,
+              // также кнопка не будет отрисована пока не загрузится адресная книга, поэтому доп. проверка не нужна здесь
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
               onClick={() => addressEnrtyEdit(addressBookSetting![selectedEntry!])}
               disabled={selectedEntry === undefined}
             >

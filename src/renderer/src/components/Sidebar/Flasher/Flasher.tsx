@@ -320,26 +320,74 @@ export const FlasherTab: React.FC = () => {
   const getOpHint = (op: OperationType) => {
     switch (op) {
       case OperationType.ping:
-        return 'Окликнуть плату, чтобы проверить связь с ней.';
+        return (
+          <p>
+            <b>Пинг</b>
+            <br />
+            Окликнуть плату, чтобы проверить связь с ней.
+          </p>
+        );
       case OperationType.reset:
-        return 'Перезагрузить плату.';
+        return (
+          <p>
+            <b>Сброс</b>
+            <br />
+            Перезагрузить плату.
+          </p>
+        );
       case OperationType.meta:
-        return 'Переспросить метаданные платы, если они не были получены ранее.';
+        return (
+          <p>
+            <b>Метаданные</b>
+            <br />
+            Переспросить метаданные платы, если они не были получены ранее.
+          </p>
+        );
       default:
         throw Error('Неизвестная операция');
     }
   };
 
-  const flashHint = 'Загрузить прошивку в выбранные платы.';
-  const flashVerifyHint =
-    'Загрузить прошивку с проверкой целостности. Увеличивает общее время загрузки, доступно не для всех устройств.';
+  const removeHint = (
+    <p>
+      <b>Удалить</b>
+      <br />
+      Убрать отмеченные платы из таблицы.
+    </p>
+  );
+  const flashHint = (
+    <p>
+      <b>Прошить</b>
+      <br />
+      Загрузить прошивку в выбранные платы.
+    </p>
+  );
+  const flashVerifyHint = (
+    <p>
+      <b>Прошить с проверкой</b>
+      <br />
+      Загрузить прошивку с проверкой целостности. Увеличивает общее время загрузки, доступно не для
+      всех устройств.
+    </p>
+  );
   const flashResultHint = useMemo(() => {
     if (flashResult.size === 0)
       return 'Выполните загрузку прошивки, и эта кнопка позволит посмотреть её результаты.';
-    return `Открыть вкладки с результатами загрузки прошивок (${flashResult.size} шт.)`;
+    return (
+      <p>
+        <b>Журнал загрузки</b>
+        <br />
+        Открыть вкладки с результатами загрузки прошивок (${flashResult.size} шт.)
+      </p>
+    );
   }, [flashResult]);
-  const downloadBinHint =
-    'Выгрузить файлы прошивки из выбранных плат. Доступно не для всех устройств.';
+  const downloadBinHint = (
+    <p>
+      <b>Скачать прошивку</b>
+      <br />
+      Выгрузить файлы прошивки из выбранных плат. Доступно не для всех устройств.
+    </p>
+  );
 
   const handleOperation = (op: OperationType) => {
     for (const item of flashTableData) {
@@ -637,7 +685,7 @@ export const FlasherTab: React.FC = () => {
   const operationButtons = () => {
     return (
       <div className="m-1 flex items-center gap-0 overflow-x-auto">
-        <WithHint hint={'Убрать отмеченные платы из таблицы.'}>
+        <WithHint hint={removeHint}>
           {(hintProps) => (
             <button {...hintProps} className="btn-error mr-2 p-2 py-1" onClick={handleRemoveDevs}>
               <DeleteIcon className="h-8 w-8" />

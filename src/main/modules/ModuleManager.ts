@@ -115,6 +115,8 @@ export class ModuleManager {
           default:
             chprocess = spawn(modulePath);
         }
+      }
+      if (chprocess !== undefined) {
         chprocess.on('error', function (err) {
           if (err.code === 'ENOENT') {
             ModuleManager.moduleStatus.set(
@@ -126,8 +128,6 @@ export class ModuleManager {
           }
           console.error(`${module} spawn error: ` + err);
         });
-      }
-      if (chprocess !== undefined) {
         ModuleManager.moduleStatus.set(module, new ModuleStatus(1));
         this.localProccesses.set(module, chprocess);
         chprocess.stdout.on('data', (data) => {

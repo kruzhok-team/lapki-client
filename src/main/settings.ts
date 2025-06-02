@@ -49,7 +49,7 @@ export const defaultSettings = {
     localPort: 0,
     remoteHost: defaultCompilerHost,
     remotePort: defaultCompilerPort,
-    type: 'local' as ModuleType,
+    type: (process.platform === 'win32' ? 'local' : 'remote') as ModuleType,
   },
   flasher: {
     host: 'localhost',
@@ -111,7 +111,7 @@ export type SettingsKey = keyof Settings;
 const noResetKeys: SettingsKey[] = ['addressBookMS', 'recentFiles'];
 
 /**
- * Удаление недавних файлов, пути которых невозможно отыскать
+ * Удаление недавних файлов, путей которых невозможно отыскать
  */
 const checkRecentFiles = () => {
   const key = 'recentFiles' as SettingsKey;

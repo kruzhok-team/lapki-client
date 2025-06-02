@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
+import { ReactComponent as SelectFileIcon } from '@renderer/assets/icons/upload-file.svg';
 import { Device } from '@renderer/components/Modules/Device';
-import { Checkbox, Select, SelectOption } from '@renderer/components/UI';
+import { Checkbox, Select, SelectOption, WithHint } from '@renderer/components/UI';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { useFlasher } from '@renderer/store/useFlasher';
 import { StateMachine } from '@renderer/types/diagram';
@@ -17,15 +18,16 @@ interface FlasherTableProps {
 // размеры столбцов
 // tailwind почему-то не реагирует на название классов, в которые подставленны переменные (`w-[${v}vw]`),
 // поэтому при изменение стобцов приходится всё в ручную пересчитывать
-const checkColumn = twMerge('min-w-[2.25vw]', 'rounded border border-border-primary');
+const checkColumn = twMerge('min-w-9', 'rounded border border-border-primary');
+const stickyStyle = 'sticky top-0 z-10 bg-bg-secondary';
 const nameColumn = 'min-w-[16vw]';
 const typeColumn = 'min-w-[14vw]';
 const addressColumn = 'min-w-[16vw]';
 const firmwareSourceColumn = 'min-w-[20vw] flex-1';
 const selectSmSubColumn = 'min-w-[18vw] flex-1';
-const selectFileSubColumn = 'min-w-[2vw]';
+const selectFileSubColumn = 'min-w-8';
 // высота клеток
-const cellHeight = 'h-[38px]';
+const cellHeight = 'min-h-9';
 
 // список плат МС-ТЮК, которые следует строго проверять на соответствие версий.
 const strictVersionCheck = ['mtrx'];
@@ -45,6 +47,90 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
 
   const [checkedAll, setCheckedAll] = useState<boolean>(true);
   const [fileBaseName, setFileBaseName] = useState<Map<number | string, string>>(new Map());
+  const [stateMachineOptions, setStateMachineOptions] = useState<Map<string, SelectOption[]>>(
+    new Map()
+  );
+  const [allAddressOptions, setAllAddressOptions] = useState<SelectOption[]>([]);
+
+  useEffect(() => {
+    const newStateMachineOptions: typeof stateMachineOptions = new Map();
+    const newAllAddressOptions: typeof allAddressOptions = [];
+    // составление словаря, где ключ - это платформа, а значение - это список доступных на данный момент машин состояний на этой платформе
+    // также здесь составляется список всех доступных платформ для выпадающего списка на случай, если тип платы неизвестен
+    [...Object.entries(stateMachinesId)].forEach(([smId, sm]) => {
+      if (!smId) return;
+      let key: string = '';
+      if (sm.platform.startsWith('tjc')) {
+        if (isStrictVersionCheck(sm.platform)) {
+          key = sm.platform;
+        } else {
+          key = platformWithoutVersion(sm.platform);
+        }
+      } else {
+        key = sm.platform;
+      }
+      const value = newStateMachineOptions.get(key) ?? [];
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      newStateMachineOptions.set(key, [...value, stateMachineOption(sm, smId)!]);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      newAllAddressOptions.push(stateMachineOption(sm, smId)!);
+    });
+
+    const noPlatformOptions = newStateMachineOptions.get('');
+    if (noPlatformOptions !== undefined) {
+      for (const key of newStateMachineOptions.keys()) {
+        if (key === '') continue;
+        const options = newStateMachineOptions.get(key);
+        if (options !== undefined) {
+          newStateMachineOptions.set(key, options.concat(noPlatformOptions));
+        }
+      }
+    }
+
+    setStateMachineOptions(newStateMachineOptions);
+    setAllAddressOptions(newAllAddressOptions);
+  }, [stateMachinesId]);
+
+  useEffect(() => {
+    setTableData(
+      tableData.map((item) => {
+        if (item.source) return item;
+        return {
+          ...item,
+          source: defaultSm(getTypeID(item)),
+        };
+      })
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stateMachineOptions, allAddressOptions, tableData.length]);
+
+  const getTypeID = (item: FlashTableItem) => {
+    if (item.targetType === FirmwareTargetType.dev) {
+      const dev = devices.get(item.targetId as string);
+      if (!dev) return null;
+      return getDevicePlatform(dev) ?? null;
+    } else if (item.targetType === FirmwareTargetType.tjc_ms) {
+      const addressData = getEntryById(item.targetId as number);
+      if (!addressData) {
+        return null;
+      }
+      const typeId = addressData.type ?? null;
+      if (typeId && !isStrictVersionCheck(typeId)) {
+        return platformWithoutVersion(typeId);
+      }
+      return typeId;
+    }
+    return null;
+  };
+
+  const defaultSm = (typeId: string | null) => {
+    const options = typeId ? stateMachineOptions.get(typeId) : allAddressOptions;
+    if (!options) return undefined;
+    if (options.length === 1) {
+      return options[0].value;
+    }
+    return undefined;
+  };
 
   const stateMachineOption = (sm: StateMachine | null | undefined, smId: string) => {
     if (!sm) return null;
@@ -71,41 +157,6 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
     });
   };
 
-  const stateMachineOptions = new Map<string, SelectOption[]>();
-  const allAddressOptions: SelectOption[] = [];
-
-  // составление словаря, где ключ - это платформа, а значение - это список доступных на данный момент машин состояний на этой платформе
-  // также здесь составляется список всех доступных платформ для выпадающего списка на случай, если тип платы неизвестен
-  [...Object.entries(stateMachinesId)].forEach(([smId, sm]) => {
-    if (!smId) return;
-    let key: string = '';
-    if (sm.platform.startsWith('tjc')) {
-      if (isStrictVersionCheck(sm.platform)) {
-        key = sm.platform;
-      } else {
-        key = platformWithoutVersion(sm.platform);
-      }
-    } else {
-      key = sm.platform;
-    }
-    const value = stateMachineOptions.get(key) ?? [];
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    stateMachineOptions.set(key, [...value, stateMachineOption(sm, smId)!]);
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    allAddressOptions.push(stateMachineOption(sm, smId)!);
-  });
-
-  const noPlatformOptions = stateMachineOptions.get('');
-  if (noPlatformOptions !== undefined) {
-    for (const key of stateMachineOptions.keys()) {
-      if (key === '') continue;
-      const options = stateMachineOptions.get(key);
-      if (options !== undefined) {
-        stateMachineOptions.set(key, options.concat(noPlatformOptions));
-      }
-    }
-  }
-
   const handleSelectFile = async (tableItem: FlashTableItem) => {
     const [canceled, filePath, basename] = await window.api.fileHandlers.selectFile(
       'прошивки',
@@ -131,26 +182,25 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
     });
   };
 
-  const removeSource = (tableItem: FlashTableItem) => {
+  const handleRemoveFileSource = (tableItem: FlashTableItem) => {
+    setFileBaseName((oldMap) => {
+      const newMap = new Map(oldMap);
+      newMap.delete(tableItem.targetId);
+      return newMap;
+    });
+
     setTableData(
       tableData.map((item) => {
-        if (item.targetId === tableItem.targetId) {
+        if (item.targetType === tableItem.targetType && item.targetId === tableItem.targetId) {
           return {
             ...item,
-            source: undefined,
+            source: defaultSm(getTypeID(tableItem)),
             isFile: false,
           };
         }
         return item;
       })
     );
-    if (tableItem.isFile) {
-      setFileBaseName((oldMap) => {
-        const newMap = new Map(oldMap);
-        newMap.delete(tableItem.targetId);
-        return newMap;
-      });
-    }
   };
 
   const onCheckedChangeHandle = (tableItem: FlashTableItem) => {
@@ -214,37 +264,41 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
     return undefined;
   };
 
-  const cellRender = (content: string | JSX.Element, mergeClassName: string) => {
+  const cellRender = (content: string | JSX.Element, mergeClassName: string, colspan?: number) => {
     return (
-      <div
+      <td
         className={twMerge(
           mergeClassName,
           cellHeight,
-          'rounded border border-border-primary bg-transparent px-[9px] py-[6px] text-center text-text-primary outline-none transition-colors'
+          'rounded border border-border-primary px-[9px] py-[6px] text-center text-text-primary outline-none transition-colors'
         )}
+        colSpan={colspan}
       >
         {content}
-      </div>
+      </td>
     );
   };
 
   const headerRender = () => {
     return (
-      <div className="flex font-semibold">
-        <Checkbox
-          className={twMerge(checkColumn, cellHeight)}
-          checked={checkedAll && tableData.length > 0}
-          onCheckedChange={() => changeCheckedAll(!checkedAll)}
-          disabled={tableData.length === 0}
-        />
-        {cellRender('Наименование', nameColumn)}
-        {cellRender('Тип', typeColumn)}
-        {cellRender('Адрес', addressColumn)}
-        {cellRender('Что прошиваем', firmwareSourceColumn)}
-      </div>
+      <tr className={twMerge(stickyStyle, 'items-center justify-start font-semibold')}>
+        <td className={stickyStyle}>
+          <Checkbox
+            className={twMerge(checkColumn, cellHeight)}
+            checked={checkedAll && tableData.length > 0}
+            onCheckedChange={() => changeCheckedAll(!checkedAll)}
+            disabled={tableData.length === 0}
+          />
+        </td>
+        {cellRender('Наименование', twMerge(stickyStyle, nameColumn))}
+        {cellRender('Тип', twMerge(stickyStyle, typeColumn))}
+        {cellRender('Адрес', twMerge(stickyStyle, addressColumn))}
+        {cellRender('Что прошиваем', twMerge(stickyStyle, firmwareSourceColumn), 2)}
+      </tr>
     );
   };
 
+  // (Roundabout1) TODO: добавить поля для рендера в FlashTableItem (displayName, displayType и т.д.)
   const rowRender = (tableItem: FlashTableItem) => {
     const checked = tableItem.isSelected;
     // Реализовать рендер для arduino
@@ -275,81 +329,111 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
     } else {
       throw Error(`Плата не поддерживается: ${tableItem}`);
     }
-    return (
-      <div key={tableItem.targetId} className="flex items-start">
-        <Checkbox
-          className={twMerge(checkColumn, cellHeight)}
-          checked={checked}
-          onCheckedChange={() => onCheckedChangeHandle(tableItem)}
-        />
-        {cellRender(
-          <label
-            onClick={() => {
-              if (addressData) {
-                addressEnrtyEdit(addressData);
-              }
-            }}
-          >
-            {displayName}
-          </label>,
-          nameColumn
-        )}
-        {cellRender(<label>{displayType}</label>, typeColumn)}
-        {cellRender(<label>{displayAddress}</label>, addressColumn)}
-        {/* (Roundabout1) TODO: центрировать текст опций в выпадающем списке и текстовом поле */}
-        {tableItem.isFile ? (
-          <div
-            className={twMerge(
-              selectSmSubColumn,
-              cellHeight,
-              'rounded border border-border-primary bg-transparent px-[9px] py-[6px] text-text-primary outline-none transition-colors'
-            )}
-          >
-            {fileBaseName.get(tableItem.targetId) ?? 'Ошибка!'}
-          </div>
-        ) : (
-          <Select
-            options={typeId ? stateMachineOptions.get(typeId) : allAddressOptions}
-            containerClassName={selectSmSubColumn}
-            menuPosition="fixed"
-            isSearchable={false}
-            placeholder="Выберите..."
-            noOptionsMessage={() => 'Нет подходящих машин состояний'}
-            value={getAssignedStateMachineOption(tableItem) as SelectOption}
-            onChange={(opt) => {
-              if (opt?.value === undefined) return;
-              onSelectChangeHandle(tableItem, opt.value);
-            }}
-            menuPlacement="auto"
-          />
-        )}
-        <button
-          type="button"
-          className={twMerge(
-            'rounded border border-border-primary',
-            selectFileSubColumn,
-            cellHeight
-          )}
-          onClick={() => (tableItem.source ? removeSource(tableItem) : handleSelectFile(tableItem))}
+    const devInfoDisplay = (displayInfo: string, column: string) => {
+      return cellRender(
+        <label
+          onDoubleClick={() => {
+            if (addressData) {
+              addressEnrtyEdit(addressData);
+            }
+          }}
+          className={addressData ? 'cursor-pointer' : ''}
         >
-          {tableItem.source ? '✖' : '…'}
-        </button>
-      </div>
+          {displayInfo}
+        </label>,
+        column
+      );
+    };
+    return (
+      <tr key={tableItem.targetId}>
+        <td>
+          <Checkbox
+            className={twMerge(checkColumn, cellHeight)}
+            checked={checked}
+            onCheckedChange={() => onCheckedChangeHandle(tableItem)}
+          />
+        </td>
+        {devInfoDisplay(displayName, nameColumn)}
+        {devInfoDisplay(displayType, typeColumn)}
+        {devInfoDisplay(displayAddress, addressColumn)}
+        {/* (Roundabout1) TODO: центрировать текст опций в выпадающем списке и текстовом поле */}
+        <td>
+          {tableItem.isFile ? (
+            <div
+              className={twMerge(
+                selectSmSubColumn,
+                cellHeight,
+                'rounded border border-border-primary bg-transparent px-[9px] py-[6px] text-text-primary outline-none transition-colors'
+              )}
+            >
+              {fileBaseName.get(tableItem.targetId) ?? 'Ошибка!'}
+            </div>
+          ) : (
+            <Select
+              options={typeId ? stateMachineOptions.get(typeId) : allAddressOptions}
+              containerClassName={selectSmSubColumn}
+              menuPosition="fixed"
+              isSearchable={false}
+              placeholder="Выберите..."
+              noOptionsMessage={() => 'Нет подходящих машин состояний'}
+              value={getAssignedStateMachineOption(tableItem) as SelectOption}
+              onChange={(opt) => {
+                if (opt?.value === undefined) return;
+                onSelectChangeHandle(tableItem, opt.value);
+              }}
+              menuPlacement="auto"
+            />
+          )}
+        </td>
+        <td>
+          <WithHint
+            hint={
+              tableItem.isFile
+                ? 'Убрать файл из таблицы.'
+                : 'Выбрать файл с прошивкой для загрузки в плату.'
+            }
+            placement="left"
+          >
+            {(hintProps) => (
+              <button
+                {...hintProps}
+                type="button"
+                className={twMerge(
+                  'rounded border border-border-primary',
+                  selectFileSubColumn,
+                  cellHeight
+                )}
+                onClick={() =>
+                  tableItem.isFile ? handleRemoveFileSource(tableItem) : handleSelectFile(tableItem)
+                }
+              >
+                {tableItem.isFile ? '✖' : <SelectFileIcon className="opacity-70" />}
+              </button>
+            )}
+          </WithHint>
+        </td>
+      </tr>
     );
   };
 
   return (
     <div
       {...props}
-      className="flex max-h-60 flex-col overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
+      className="max-h-60 overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
     >
-      {headerRender()}
       {tableData.length > 0 ? (
-        tableData.map((tableItem) => rowRender(tableItem))
+        <table className="w-full border-separate">
+          <thead className={twMerge(stickyStyle, 'bg-secondary font-semibold')}>
+            {headerRender()}
+          </thead>
+          <tbody>{tableData.map((tableItem) => rowRender(tableItem))}</tbody>
+        </table>
       ) : (
-        <label className="justify-center text-center opacity-70">
-          Добавьте устройства через кнопку «Подключить плату» или кнопку «Адреса плат МС-ТЮК»
-        </label>
+        <div className="flex min-h-20 flex-col items-center justify-center">
+          <label className="text-center opacity-70">
+            Добавьте устройства через кнопку «Подключить плату» или кнопку «Адреса плат МС-ТЮК»
+          </label>
+        </div>
       )}
     </div>
   );

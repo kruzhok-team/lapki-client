@@ -101,24 +101,30 @@ export const StateMachinesList: React.FC<StateMachinesListProps> = ({
       {header()}
       {isInitialized ? (
         <div className="overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
-          {[...Object.entries(elements)].map(
-            ([id, sm]) =>
-              id !== '' && (
-                <Component
-                  key={id}
-                  name={sm.name || id}
-                  isSelected={id === selectedSm}
-                  icon={<StateMachineIcon className="size-8 fill-border-contrast" />}
-                  onSelect={() => setSmSelected(id)}
-                  onEdit={() => onCallContextMenu(id, sm)}
-                  onDelete={() => undefined}
-                  onCallContextMenu={() => onRequestEditStateMachine(id)}
-                  // TODO (L140-beep): Доделать свап машин состояний
-                  onDragStart={() => console.log('setDragState')}
-                  onDrop={() => console.log('onDrop')}
-                  isDragging={id === ''}
-                />
-              )
+          {Object.keys(elements).length === 1 ? (
+            <p className="text-text-inactive">
+              <i>Нет машин состояний</i>
+            </p>
+          ) : (
+            [...Object.entries(elements)].map(
+              ([id, sm]) =>
+                id !== '' && (
+                  <Component
+                    key={id}
+                    name={sm.name || id}
+                    isSelected={id === selectedSm}
+                    icon={<StateMachineIcon className="size-8 fill-border-contrast" />}
+                    onSelect={() => setSmSelected(id)}
+                    onEdit={() => onCallContextMenu(id, sm)}
+                    onDelete={() => undefined}
+                    onCallContextMenu={() => onRequestEditStateMachine(id)}
+                    // TODO (L140-beep): Доделать свап машин состояний
+                    onDragStart={() => console.log('setDragState')}
+                    onDrop={() => console.log('onDrop')}
+                    isDragging={id === ''}
+                  />
+                )
+            )
           )}
         </div>
       ) : (

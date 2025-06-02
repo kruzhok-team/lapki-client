@@ -166,7 +166,7 @@ export const MainContainer: React.FC = () => {
           <Tabs />
           <div
             className={twMerge(
-              'absolute right-0 top-0 flex h-full',
+              'absolute right-0 top-0 z-50 flex h-full',
               !!isMounted && 'top-[44.19px] h-[calc(100vh-44.19px)]'
             )}
           >

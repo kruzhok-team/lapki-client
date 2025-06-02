@@ -89,7 +89,7 @@ export class Compiler extends ClientWS {
   static async compile(
     data: Elements | string | StateMachine,
     mode: 'BearlogaImport' | 'BearlogaExport' | 'CGML',
-    subPlatform?: string,
+    subPlatform?: string | null,
     bearlogaSmId?: string
   ) {
     this.setCompilerData(undefined);
@@ -204,6 +204,7 @@ export class Compiler extends ClientWS {
   }
 
   static onOpenHandler(): void {
+    console.log(`Compiler: connected to ${Compiler.host}:${Compiler.port}!`);
     super.onOpenHandler();
   }
 }

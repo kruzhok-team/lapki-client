@@ -181,11 +181,24 @@
       "importFiles": ["SpeakerNote.hpp"],
       "methods": {
         "setupNote": {
-          "img": "arduino/start.svg",
+          "img": "blg-mb/setupEvent.svg",
           "parameters": [
             {
               "name": "Нота",
-              "type": ["Note_c", "Note_cH", "Note_d", "Note_dH", "Note_e", "Note_f", "Note_fH", "Note_g", "Note_gH", "Note_a", "Note_b", "Note_h"],
+              "type": [
+                "Note_c",
+                "Note_cH",
+                "Note_d",
+                "Note_dH",
+                "Note_e",
+                "Note_f",
+                "Note_fH",
+                "Note_g",
+                "Note_gH",
+                "Note_a",
+                "Note_b",
+                "Note_h"
+              ],
               "valueAlias": ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "H"],
               "description": "Проигрываемая нота.",
               "optional": false
@@ -541,9 +554,29 @@
           "alias": "Услышан громкий звук"
         }
       },
-      "constructorParameters": {},
+      "constructorParameters": {
+        "cooldown": {
+          "name": "Интервал\nсрабатывания",
+          "description": "Определяет, как часто микрофон сможет реагировать на новый громкий звук после предыдущего в миллисекундах. Чем больше значение, тем дольше он «отдыхает» (по умолчанию 0)",
+          "optional": true,
+          "type": "unsigned long"
+        }
+      },
       "variables": {},
       "methods": {
+        "setCooldown": {
+          "img": "blg-mb/setCooldown.svg",
+          "parameters": [
+            {
+              "name": "Интервал\nсрабатывания",
+              "type": "uint16_t",
+              "description": "Интервал срабатывания (в миллисекундах)",
+              "optional": false
+            }
+          ],
+          "description": "Настраивает интервал срабатывания между звуками, на которые мишка реагирует",
+          "alias": "Установить интервал срабатывания"
+        },
         "setupEvent": {
           "img": "blg-mb/volumeThreshold.svg",
           "parameters": [
@@ -599,8 +632,12 @@
           "parameters": [
             {
               "name": "Рисунок",
-              "type": "Matrix5x7",
-              "description": "Рисунок, который будет изображен на матрице."
+              "type": "HalfMatrix5x7",
+              "description": "Рисунок, который будет изображен на матрице.",
+              "range": {
+                "min": 0,
+                "max": 100
+              }
             }
           ]
         },

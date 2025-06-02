@@ -3,7 +3,9 @@ import settings from 'electron-settings';
 
 import { existsSync } from 'fs';
 
-import { defaultCompilerHost, defaultCompilerPort, defaultDocHost } from './version';
+import { defaultCompilerHost, defaultCompilerPort, defaultRemoteDocHost } from './version';
+
+type ModuleType = 'local' | 'remote';
 
 type MetaType =
   | {
@@ -38,17 +40,21 @@ type RecentFile = {
 
 export const defaultSettings = {
   doc: {
-    host: defaultDocHost,
+    remoteHost: defaultRemoteDocHost,
+    localHost: '',
+    type: 'local' as ModuleType,
   },
   compiler: {
     host: defaultCompilerHost,
     port: defaultCompilerPort,
+    localPort: 0,
+    type: 'remote' as ModuleType,
   },
   flasher: {
     host: 'localhost',
     port: 0,
     localPort: 0, //! Это ручками менять нельзя, инициализируется при запуске
-    type: 'local' as 'local' | 'remote',
+    type: 'local' as ModuleType,
   },
   // см. SerialMonitor.tsx в renderer для того, чтобы узнать допустимые значения
   serialmonitor: {
@@ -80,11 +86,6 @@ export const defaultSettings = {
    * Параметры менеджера МС-ТЮК
    */
   managerMS: {
-    /**
-     * Параметр, отправляемый загрузчику при запросе прошивки.
-     * Если true, то загрузчик потратит дополнительное время на проверку прошивки.
-     */
-    verification: false,
     /**
      * Если true, то будет автоматическая прокрутка окна с логами
      */
@@ -120,18 +121,25 @@ const checkRecentFiles = () => {
   );
 };
 
-export const initSettings = () => {
-  for (const key in defaultSettings) {
-    if (!settings.hasSync(key)) {
-      settings.setSync(key, defaultSettings[key]);
+const deepCheck = (path: string, obj: object) => {
+  const getNewPath = (key: string) => {
+    if (path) return `${path}.${key}`;
+    return key;
+  };
+  for (const key in obj) {
+    const newPath = getNewPath(key);
+    const curObj = obj[key];
+    if (!settings.hasSync(newPath)) {
+      settings.setSync(newPath, curObj);
+    } else if (curObj !== null && typeof curObj === 'object' && !Array.isArray(curObj)) {
+      deepCheck(newPath, curObj);
     }
   }
+};
+
+export const initSettings = () => {
+  deepCheck('', defaultSettings);
   checkRecentFiles();
-  // (Roundabout1): костыль, нужно будет реализовать проверку наличия всех значений для ключей при инициализации.
-  const monitorSettings = settings.getSync('serialmonitor' as SettingsKey);
-  if (monitorSettings && !monitorSettings['textMode']) {
-    settings.setSync('serialmonitor.textMode', 'text');
-  }
 };
 
 export const initSettingsHandlers = (webContents: WebContents) => {
@@ -155,7 +163,7 @@ export const initSettingsHandlers = (webContents: WebContents) => {
 
 // изменение настройки и отправка сообщения через webContents
 async function settingsChange(webContents: WebContents, key: SettingsKey, value) {
-  await settings.set(key, value);
+  await settings.set(key, structuredClone(value));
 
   settingsChangeSend(webContents, key, value);
 }

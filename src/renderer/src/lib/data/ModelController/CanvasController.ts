@@ -129,7 +129,6 @@ export type CanvasControllerEvents = {
   selectComponent: SelectDrawable;
   selectChoice: SelectDrawable;
   selectTransition: SelectDrawable;
-  deleteSelected: string;
 
   changeStateSelection: ChangeSelectionParams;
   changeState: ChangeStateParams;
@@ -398,7 +397,6 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     this.off('loadData', this.loadData);
     this.off('initPlatform', this.initPlatform);
     this.off('initEvents', this.transitions.initEvents);
-    this.off('deleteSelected', this.deleteSelected);
   }
 
   watchDrawable() {
@@ -760,44 +758,6 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     this.app.view.isDirty = true;
   };
 
-  private deleteSelected = (smId: string) => {
-    this.states.forEachState((state) => {
-      if (!state.isSelected) return;
-
-      if (state.eventBox.selection) {
-        this.states.deleteEvent({ smId, stateId: state.id, event: state.eventBox.selection });
-        state.eventBox.selection = undefined;
-        return;
-      }
-
-      this.states.deleteState({ smId: smId, id: state.id });
-    });
-
-    this.states.data.choiceStates.forEach((state) => {
-      if (!state.isSelected) return;
-
-      this.states.deleteChoiceState({ smId: smId, id: state.id });
-    });
-
-    this.transitions.forEach((transition) => {
-      if (!transition.isSelected) return;
-
-      this.transitions.deleteTransition({ smId: smId, id: transition.id });
-    });
-
-    this.notes.forEach((note) => {
-      if (!note.isSelected) return;
-
-      this.notes.deleteNote({ smId: smId, id: note.id });
-    });
-
-    this.components.forEach((component) => {
-      if (!component.isSelected) return;
-
-      this.components.deleteComponent({ smId: smId, id: component.id });
-    });
-  };
-
   selectNote = (args: SelectDrawable) => {
     const note = this.notes.items.get(args.id);
     if (!note) {
@@ -964,7 +924,6 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     this.model.on('deleteStateMachine', this.deleteStateMachine);
     this.model.on('loadData', this.loadData);
     this.model.on('initEvents', this.transitions.initEvents);
-    this.model.on('deleteSelected', this.deleteSelected);
   }
 
   setMountStatus = (status: boolean) => {

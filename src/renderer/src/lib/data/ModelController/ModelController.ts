@@ -273,14 +273,15 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const note = sm.notes[id];
     if (!note) return;
 
+    const prevSize = note.fontSize;
+    if (!this.model.changeNoteFontSize(smId, id, fontSize)) return;
+
     if (canUndo) {
       this.history.do({
         type: 'changeNoteFontSize',
-        args: { smId, id, fontSize, prevFontSize: note.fontSize },
+        args: { smId, id, fontSize, prevFontSize: prevSize },
       });
     }
-
-    this.model.changeNoteFontSize(smId, id, fontSize);
 
     this.emit('changeNoteFontSize', args);
   }
@@ -291,14 +292,15 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const note = sm.notes[id];
     if (!note) return;
 
+    const prevColor = note.textColor;
+    if (!this.model.changeNoteTextColor(smId, id, textColor)) return;
+
     if (canUndo) {
       this.history.do({
         type: 'changeNoteTextColor',
-        args: { smId, id, color: textColor, prevColor: note.textColor },
+        args: { smId, id, color: textColor, prevColor },
       });
     }
-
-    this.model.changeNoteTextColor(smId, id, textColor);
 
     this.emit('changeNoteTextColor', args);
   }
@@ -309,14 +311,15 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const note = sm.notes[id];
     if (!note) return;
 
+    const prevBg = note.backgroundColor;
+    if (!this.model.changeNoteBackgroundColor(smId, id, backgroundColor)) return;
+
     if (canUndo) {
       this.history.do({
         type: 'changeNoteBackgroundColor',
-        args: { smId, id, color: args.backgroundColor, prevColor: note.backgroundColor },
+        args: { smId, id, color: args.backgroundColor, prevColor: prevBg },
       });
     }
-
-    this.model.changeNoteBackgroundColor(smId, id, backgroundColor);
     this.emit('changeNoteBackgroundColor', args);
   }
 
@@ -386,9 +389,9 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   selectComponent = (args: SelectDrawable) => {
     this.removeSelection([args.id]);
 
-    this.model.changeComponentSelection(args.smId, args.id, true);
+    if (!this.model.changeComponentSelection(args.smId, args.id, true)) return;
+
     this.emit('changeComponentSelection', { ...args, value: true });
-    // this.emit('selectComponent', args);
   };
 
   createComponent(args: CreateComponentParams, canUndo = true) {
@@ -418,7 +421,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const transition = this.model.data.elements.stateMachines[args.smId].transitions[args.id];
     if (!transition) return;
 
-    this.model.changeTransition(args);
+    if (!this.model.changeTransition(args)) return;
+
     if (canUndo) {
       this.history.do({
         type: 'changeTransition',
@@ -566,23 +570,27 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       position.x = Math.max(0, position.x);
       position.y = Math.max(0, position.y);
     }
+    const prevData = structuredClone(transitionFromInitialState);
+
+    if (
+      !this.model.changeTransition({
+        ...transitionFromInitialState,
+        smId: smId,
+        id: id,
+        targetId: stateId,
+      })
+    )
+      return;
 
     if (canUndo) {
       this.history.do({
         type: 'changeTransition',
         args: {
           args: { smId, id, ...transitionFromInitialState, targetId: stateId },
-          prevData: structuredClone({ ...transitionFromInitialState }),
+          prevData: prevData,
         },
       });
     }
-
-    this.model.changeTransition({
-      ...transitionFromInitialState,
-      smId: smId,
-      id: id,
-      targetId: stateId,
-    });
 
     this.emit('changeTransition', {
       ...transitionFromInitialState,
@@ -657,12 +665,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.unwatch(specificCanvas);
     delete this.controllers[specificCanvas.id];
 
-    if (Object.values(this.controllers).length === 1) {
-      this.changeHeadControllerId('');
-    } else {
-      this.changeHeadControllerId(Object.values(this.controllers)[1].id);
-    }
-
     if (canUndo) {
       this.history.do({
         type: 'deleteStateMachine',
@@ -684,11 +686,13 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const sm = this.model.data.elements.stateMachines[smId];
     const state = sm.initialStates[id];
     if (!state) return;
+    const prevPosition = structuredClone(state.position);
+    if (!this.model.changeInitialStatePosition(smId, id, endPosition)) return;
 
     if (canUndo) {
       this.history.do({
         type: 'changeInitialStatePosition',
-        args: { smId, id, startPosition: startPosition ?? state.position, endPosition },
+        args: { smId, id, startPosition: startPosition ?? prevPosition, endPosition },
       });
     }
 
@@ -709,18 +713,20 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
     if (!state) return;
 
+    const prevPosition = structuredClone(state.position);
+    if (!this.model.changeStatePosition(smId, id, endPosition)) return;
+
     if (canUndo) {
       this.history.do({
         type: 'changeStatePosition',
         args: {
           smId,
           id,
-          startPosition: startPosition ?? state.position,
+          startPosition: startPosition ?? prevPosition,
           endPosition: { ...endPosition },
         },
       });
     }
-    this.model.changeStatePosition(smId, id, endPosition);
     this.emit('changeStatePosition', {
       smId,
       id,
@@ -759,7 +765,9 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       (transitionId) => sm.transitions[transitionId].sourceId == id
     );
     if (!transitionId) return;
-    this.model.deleteInitialState(smId, id); // Удаляем модель
+
+    if (!this.model.deleteInitialState(smId, id)) return;
+
     if (canUndo) {
       this.history.do({
         type: 'deleteInitialState',
@@ -776,15 +784,16 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const { id, smId, text } = args;
     const note = this.model.data.elements.stateMachines[smId].notes[id];
     if (!note) return;
+    const prevText = note.text;
+
+    if (!this.model.changeNoteText(smId, id, text)) return;
 
     if (canUndo) {
       this.history.do({
         type: 'changeNoteText',
-        args: { smId, id, text, prevText: note.text },
+        args: { smId, id, text, prevText: prevText },
       });
     }
-
-    this.model.changeNoteText(smId, id, text);
     this.emit('changeNoteText', args);
   };
 
@@ -793,7 +802,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const note = this.model.data.elements.stateMachines[smId].notes[id];
     if (!note) return;
 
-    this.model.changeNotePosition(smId, id, endPosition);
+    if (!this.model.changeNotePosition(smId, id, endPosition)) return;
 
     if (canUndo) {
       this.history.do({
@@ -821,15 +830,17 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       });
     }
 
+    const prevNote = structuredClone(note);
+
+    if (!this.model.deleteNote(smId, id)) return;
+
     if (canUndo) {
       this.history.do({
         type: 'deleteNote',
-        args: { smId, id, prevData: structuredClone(note) },
+        args: { smId, id, prevData: prevNote },
         numberOfConnectedActions,
       });
     }
-
-    this.model.deleteNote(smId, id);
     this.emit('deleteNote', args);
   }
 
@@ -849,14 +860,16 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       numberOfConnectedActions += 1;
     });
 
+    const prevTransition = structuredClone(transition);
+    if (!this.model.deleteTransition(smId, id)) return;
+
     if (canUndo) {
       this.history.do({
         type: 'deleteTransition',
-        args: { smId, id: id, prevData: structuredClone(transition) },
+        args: { smId, id: id, prevData: prevTransition },
         numberOfConnectedActions,
       });
     }
-    this.model.deleteTransition(smId, id);
     this.emit('deleteTransition', args);
   }
 
@@ -973,7 +986,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     );
     numberOfConnectedActions += 1;
 
-    this.model.unlinkState(smId, id);
+    if (!this.model.unlinkState(smId, id)) return;
 
     const [, siblingIds] = this.getSiblings(
       smId,
@@ -1033,7 +1046,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       numberOfConnectedActions += 1;
     }
 
-    this.model.linkState(smId, parentId, childId);
+    if (!this.model.linkState(smId, parentId, childId)) return;
     const parentCompoundPosition = this.compoundPosition(smId, parentId);
     this.changeStatePosition(
       {
@@ -1075,7 +1088,13 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       if (!prevParentId) {
         this.history.do({
           type: 'linkState',
-          args: { smId, parentId, childId, dragEndPos: child.position, prevPosition: prevPosition },
+          args: {
+            smId,
+            parentId,
+            childId,
+            dragEndPos: child.position,
+            prevPosition: prevPosition,
+          },
           numberOfConnectedActions,
         });
       } else {
@@ -1170,6 +1189,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const state = this.model.data.elements.stateMachines[smId].states[id];
     if (!state) return;
 
+    if (!this.model.changeState(args)) return;
+
     if (canUndo) {
       const prevEvents = structuredClone(state.events);
       const prevColor = state.color;
@@ -1180,7 +1201,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       });
     }
 
-    this.model.changeState(args);
     this.emit('changeState', args);
   }
 
@@ -1188,14 +1208,16 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const state = this.model.data.elements.stateMachines[smId].states[id];
     if (!state) return;
 
+    const prevName = state.name;
+    if (!this.model.changeStateName(smId, id, name)) return;
+
     if (canUndo) {
       this.history.do({
         type: 'changeStateName',
-        args: { smId, id, name, prevName: state.name },
+        args: { smId, id, name, prevName: prevName },
       });
     }
 
-    this.model.changeStateName(smId, id, name);
     this.emit('changeStateName', { smId, id, name });
   };
 
@@ -1240,7 +1262,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const prevComponent = structuredClone(
       this.model.data.elements.stateMachines[smId].components[id]
     );
-    this.model.editComponent(smId, id, parameters, name);
+    if (!this.model.editComponent(smId, id, parameters, name)) return;
+
     if (newId) {
       this.renameComponent(smId, id, newId, {
         ...this.model.data.elements.stateMachines[smId].components[id],
@@ -1259,13 +1282,14 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   changeComponentPosition = (args: ChangePosition, _canUndo = true) => {
     const { smId, id, startPosition = { x: 0, y: 0 }, endPosition } = args;
+    if (!this.model.changeComponentPosition(smId, id, endPosition)) return;
+
     if (_canUndo) {
       this.history.do({
         type: 'changeComponentPosition',
         args: { smId, name: id, startPosition, endPosition },
       });
     }
-    this.model.changeComponentPosition(smId, id, endPosition);
     this.emit('changeComponentPosition', {
       smId,
       id: id,
@@ -1279,8 +1303,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const prevComponent = structuredClone(
       this.model.data.elements.stateMachines[smId].components[id]
     );
-    this.model.deleteComponent(smId, id);
 
+    if (!this.model.deleteComponent(smId, id)) return;
     if (canUndo) {
       this.history.do({
         type: 'deleteComponent',
@@ -1292,22 +1316,18 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   }
 
   swapComponents(args: SwapComponentsParams, canUndo = true) {
-    this.model.swapComponents(args.smId, args);
-
+    if (!this.model.swapComponents(args.smId, args)) return;
     if (canUndo) {
       this.history.do({
         type: 'swapComponents',
         args,
       });
     }
-
-    // Нужно ли вызывать сигнал?
-    // this.editor.view.isDirty = true;
-    // this.scheme.view.isDirty = true;
   }
 
   private renameComponent(smId: string, name: string, newId: string, data: Component) {
-    this.model.changeComponentName(smId, name, newId);
+    if (!this.model.changeComponentName(smId, name, newId)) return;
+
     this.emit('renameComponent', { ...data, smId: smId, id: name, newId: newId });
   }
 
@@ -1411,16 +1431,16 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       this.deleteTransition({ smId, id: transition[0] }, canUndo);
       numberOfConnectedActions += 1;
     });
+    const prevState = structuredClone(state);
+    if (!this.model.deleteState(smId, id)) return;
 
     if (canUndo) {
       this.history.do({
         type: 'deleteState',
-        args: { smId, id, stateData: { ...structuredClone(state), parentId } },
+        args: { smId, id, stateData: { ...prevState, parentId } },
         numberOfConnectedActions,
       });
     }
-
-    this.model.deleteState(smId, id); // Удаляем модель
     this.emit('deleteState', args);
   }
 
@@ -1612,15 +1632,16 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       this.deleteTransition({ smId, id: transitionId }, canUndo);
       numberOfConnectedActions += 1;
     });
+    const prevState = structuredClone(state);
+    if (!this.model.deleteFinalState(smId, id)) return;
 
     if (canUndo) {
       this.history.do({
         type: 'deleteFinalState',
-        args: { smId, id, stateData: { ...structuredClone(state), parentId } },
+        args: { smId, id, stateData: { ...prevState, parentId } },
         numberOfConnectedActions,
       });
     }
-    this.model.deleteFinalState(smId, id); // Удаляем модель
 
     this.emit('deleteFinal', args);
   }
@@ -1631,7 +1652,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const parent = sm.states[parentId];
     if (!state || !parent) return;
 
-    this.model.linkChoiceState(smId, stateId, parentId);
+    if (!this.model.linkChoiceState(smId, stateId, parentId)) return;
+
     this.emit('linkChoiceState', { smId, childId: stateId, parentId });
   }
 
@@ -1684,19 +1706,21 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       numberOfConnectedActions += 1;
     });
 
+    const prevState = structuredClone(state);
+    if (!this.model.deleteChoiceState(smId, id)) return;
     if (canUndo) {
       this.history.do({
         type: 'deleteChoiceState',
-        args: { smId, id, stateData: { ...structuredClone(state), parentId } },
+        args: { smId, id, stateData: { ...prevState, parentId } },
         numberOfConnectedActions,
       });
     }
-    this.model.deleteChoiceState(smId, id); // Удаляем модель
     this.emit('deleteChoice', args);
   }
 
   changeFinalStatePosition = (args: ChangePosition, canUndo = true) => {
-    this.model.changeFinalStatePosition(args.smId, args.id, args.endPosition);
+    if (!this.model.changeFinalStatePosition(args.smId, args.id, args.endPosition)) return;
+
     const { startPosition } = args;
     if (canUndo && startPosition !== undefined) {
       this.history.do({
@@ -1708,7 +1732,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   };
 
   changeChoiceStatePosition = (args: ChangePosition, canUndo = true) => {
-    this.model.changeChoiceStatePosition(args.smId, args.id, args.endPosition);
+    if (!this.model.changeChoiceStatePosition(args.smId, args.id, args.endPosition)) return;
     this.emit('changeChoicePosition', args);
     const { startPosition } = args;
     if (canUndo && startPosition !== undefined) {
@@ -1800,7 +1824,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
           this.deleteComponent({ smId, id: key });
         }
       });
-      this.emit('deleteSelected', smId);
     }
   };
 
@@ -1830,7 +1853,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const state = this.model.data.elements.stateMachines[smId].states[stateId];
     if (!state) return;
 
-    this.model.createEvent(smId, stateId, eventData, eventIdx);
+    if (!this.model.createEvent(smId, stateId, eventData, eventIdx)) return;
 
     this.emit('createEvent', args);
   }
@@ -1840,7 +1863,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const state = this.model.data.elements.stateMachines[smId].states[stateId];
     if (!state) return;
 
-    this.model.createEventAction(smId, stateId, event, value);
+    if (!this.model.createEventAction(smId, stateId, event, value)) return;
     this.emit('createEventAction', args);
   }
 
@@ -1855,7 +1878,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (actionIdx !== null) {
       const prevValue = structuredClone(state.events[eventIdx].do[actionIdx]);
 
-      this.model.changeEventAction(smId, stateId, event, newValue);
+      if (!this.model.changeEventAction(smId, stateId, event, newValue)) return;
       this.emit('changeEventAction', { smId, stateId, event, newValue });
 
       if (canUndo) {
@@ -1867,7 +1890,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     } else {
       const prevValue = structuredClone(state.events[eventIdx].trigger);
 
-      this.model.changeEvent(smId, stateId, eventIdx, newValue);
+      if (!this.model.changeEvent(smId, stateId, eventIdx, newValue)) return;
       this.emit('changeEvent', { smId, stateId, event, newValue });
       if (canUndo) {
         this.history.do({
@@ -1895,7 +1918,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
       const prevValue = state.events[eventIdx].do[actionIdx];
 
-      this.model.deleteEventAction(smId, stateId, event);
+      if (!this.model.deleteEventAction(smId, stateId, event)) return;
       this.emit('deleteEventAction', { smId, stateId, event });
       if (canUndo) {
         this.history.do({
@@ -1906,7 +1929,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     } else {
       const prevValue = state.events[eventIdx];
 
-      this.model.deleteEvent(smId, stateId, eventIdx);
+      if (!this.model.deleteEvent(smId, stateId, eventIdx)) return;
       this.emit('deleteEvent', { smId, stateId, event });
       if (canUndo) {
         this.history.do({
@@ -2116,7 +2139,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     return [componentMap, duplicatedComponents];
   }
 
-  duplicateStateMachine(smId: string) {
+  duplicateStateMachine(smId: string): [string, string | undefined, string] {
     const stateMachine = this.model.data.elements.stateMachines[smId];
 
     if (!stateMachine) throw new Error('Duplicated state machine does not exist!');
@@ -2138,14 +2161,16 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       const oldComponentId = componentMap[newComponentId];
       this.model.renameComponentInEvents(newStateMachine, oldComponentId, newComponentId);
     }
+
+    const newName =
+      newStateMachine.name !== undefined
+        ? this.validator.getStateMachineName(newStateMachine.name)
+        : undefined;
     const canvasId: string = this.createStateMachine(
       newSmId,
       {
         ...newStateMachine,
-        name:
-          newStateMachine.name !== undefined
-            ? this.validator.getStateMachineName(newStateMachine.name)
-            : undefined,
+        name: newName,
         components: duplicatedComponents,
         position: {
           x: newStateMachine.position.x + PASTE_POSITION_OFFSET_STEP,
@@ -2155,7 +2180,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       true
     );
 
-    return [newSmId, canvasId];
+    return [newSmId, newName, canvasId];
   }
 
   selectState = (args: SelectDrawable) => {
@@ -2241,36 +2266,41 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       Object.keys(sm.choiceStates)
         .filter((value) => !exclude.includes(value))
         .forEach((id) => {
-          this.model.changeChoiceStateSelection(smId, id, false);
-          this.emit('changeChoiceSelection', { smId, id, value: false });
+          if (this.model.changeChoiceStateSelection(smId, id, false)) {
+            this.emit('changeChoiceSelection', { smId, id, value: false });
+          }
         });
 
       Object.keys(sm.states)
         .filter((value) => !exclude.includes(value))
         .forEach((id) => {
-          this.model.changeStateSelection(smId, id, false);
-          this.emit('changeStateSelection', { smId, id, value: false });
+          if (this.model.changeStateSelection(smId, id, false)) {
+            this.emit('changeStateSelection', { smId, id, value: false });
+          }
         });
 
       Object.keys(sm.transitions)
         .filter((value) => !exclude.includes(value))
         .forEach((id) => {
-          this.model.changeTransitionSelection(smId, id, false);
-          this.emit('changeTransitionSelection', { smId, id, value: false });
+          if (this.model.changeTransitionSelection(smId, id, false)) {
+            this.emit('changeTransitionSelection', { smId, id, value: false });
+          }
         });
 
       Object.keys(sm.notes)
         .filter((value) => !exclude.includes(value))
         .forEach((id) => {
-          this.model.changeNoteSelection(smId, id, false);
-          this.emit('changeNoteSelection', { smId, id, value: false });
+          if (this.model.changeNoteSelection(smId, id, false)) {
+            this.emit('changeNoteSelection', { smId, id, value: false });
+          }
         });
 
       Object.keys(sm.components)
         .filter((value) => !exclude.includes(value))
         .forEach((id) => {
-          this.model.changeComponentSelection(smId, id, false);
-          this.emit('changeComponentSelection', { smId, id, value: false });
+          if (this.model.changeComponentSelection(smId, id, false)) {
+            this.emit('changeComponentSelection', { smId, id, value: false });
+          }
         });
     }
   }

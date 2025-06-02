@@ -70,7 +70,7 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
     return getPropertyOptions(selectedComponent, isEditingEvent ? 'signals' : 'methods');
   }, [selectedComponent, platforms, isEditingEvent, visual]);
 
-  const methodOptionsSearch = (selectedParameterComponent: string | null) => {
+  const attributeOptionsSearch = (selectedParameterComponent: string | null) => {
     if (!selectedParameterComponent) return [];
     return getPropertyOptions(selectedParameterComponent, 'variables');
   };
@@ -165,7 +165,7 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
               return false;
             }
             // существует ли атрибут с таким названием у данного компонента
-            const attributeOptions = methodOptionsSearch(componentAttribute[0]);
+            const attributeOptions = attributeOptionsSearch(componentAttribute[0]);
             if (
               !attributeOptions.find((opt) => {
                 return opt.value === componentAttribute[1];
@@ -173,7 +173,7 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
             ) {
               setErrors((p) => ({
                 ...p,
-                [name]: `Ошибка! Не удалось найти метод с таким названием.`,
+                [name]: `Ошибка! Не удалось найти атрибут с таким названием.`,
               }));
               return false;
             }
@@ -285,7 +285,7 @@ export const ActionsModal: React.FC<ActionsModalProps> = ({
         componentOptions={componentWithVariablesOptions}
         controller={controller}
         smId={smId}
-        methodOptionsSearch={methodOptionsSearch}
+        attributeOptionsSearch={attributeOptionsSearch}
       />
     </Modal>
   );

@@ -83,7 +83,7 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
         parameters[protoParamName] === ''
       ) {
         setErrors((p) => {
-          return { ...p, protoParamName: 'Ошибка! Обязательный параметр' };
+          return { ...p, [protoParamName]: 'Ошибка! Обязательный параметр' };
         });
         errors[protoParamName] = 'Ошибка! Обязательный параметр';
       }
@@ -103,7 +103,6 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
     onClose();
   };
 
-  // (L140-beep)Как будто у нас нигде нет имени у компонента
   const componentType = proto.name ?? data.type;
   const componentName = proto.singletone ? componentType : `${componentType} [${id}]`;
 

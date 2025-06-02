@@ -7,6 +7,7 @@ import { StateMachinesStackItem } from '@renderer/components/CreateSchemeModal/S
 import { Compiler } from '@renderer/components/Modules/Compiler';
 import { importGraphml } from '@renderer/lib/data/GraphmlParser';
 import { useModelContext } from '@renderer/store/ModelContext';
+import { useFlasher } from '@renderer/store/useFlasher';
 import { SidebarIndex, useSidebar } from '@renderer/store/useSidebar';
 import { useTabs } from '@renderer/store/useTabs';
 import { Elements } from '@renderer/types/diagram';
@@ -24,6 +25,7 @@ interface useFileOperationsArgs {
 export const useFileOperations = (args: useFileOperationsArgs) => {
   const { openLoadError, openSaveError, openCreateSchemeModal, openImportError } = args;
   const { changeTab } = useSidebar();
+  const { flashTableData, setFlashTableData } = useFlasher();
   const modelController = useModelContext();
   const model = modelController.model;
   const name = modelController.model.useData('', 'name') as string | null;
@@ -40,6 +42,20 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   const onClose = () => {
     window.electron.ipcRenderer.send('reset-close');
     setIsOpen(false);
+  };
+
+  // сброс данных компилятора и загрузчика
+  const resetModulesData = () => {
+    Compiler.setCompilerData(undefined);
+    setFlashTableData(
+      flashTableData.map((item) => {
+        return {
+          ...item,
+          source: undefined,
+          isFile: false,
+        };
+      })
+    );
   };
 
   // Открыть вкладки на каждый контроллер
@@ -88,7 +104,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
 
   const performOpenFile = async (path?: string) => {
     const result = await modelController.files.open(openImportError, path);
-    Compiler.setCompilerData(undefined);
+    resetModulesData();
 
     if (result && isLeft(result)) {
       const cause = unwrapEither(result);
@@ -105,7 +121,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
 
   const handleOpenFromTemplate = async (type: string, name: string) => {
     await modelController.files.createFromTemplate(type, name, openImportError);
-    Compiler.setCompilerData(undefined);
+    resetModulesData();
     clearTabs();
     openTabs();
   };
@@ -127,7 +143,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   };
 
   const performNewFile = (stateMachines: StateMachinesStackItem[]) => {
-    Compiler.setCompilerData(undefined);
+    resetModulesData();
     modelController.files.newFile(stateMachines);
     clearTabs();
     openTabs(true);
@@ -191,7 +207,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
     if (setOpenData) {
       const result = await modelController.files.import(setOpenData);
       if (result) {
-        Compiler.setCompilerData(undefined);
+        resetModulesData();
         clearTabs();
         openTabs();
       }
@@ -204,7 +220,7 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   ) => {
     const result = modelController.files.initImportData(importData, openData);
     if (result) {
-      Compiler.setCompilerData(undefined);
+      resetModulesData();
       clearTabs();
       openTabs();
     }

@@ -54,9 +54,9 @@ export const ComponentFormFieldLabel: React.FC<ComponentFormFieldLabelProps> = (
                 {...props}
                 value={props.value ?? ''}
               />
-              <p className="text-sm text-error">{error}</p>
             </div>
           )}
+          <p className="text-sm text-error">{error}</p>
         </div>
       </Component>
     </div>

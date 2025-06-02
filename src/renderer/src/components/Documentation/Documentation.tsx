@@ -13,6 +13,8 @@ import { Navigation } from './components/Navigation';
 import { Show } from './components/Show';
 import { Tree } from './components/Tree';
 
+import Reference from '../ReferenceModal/Reference';
+
 export interface CurrentItem {
   isHtml: boolean;
   url: string;
@@ -21,7 +23,7 @@ export interface CurrentItem {
 
 export const Documentation: React.FC = () => {
   const [doc] = useSettings('doc');
-  const rawUrl = doc?.host ?? '';
+  const rawUrl = doc?.type === 'local' ? doc?.localHost ?? '' : doc?.remoteHost ?? '';
   const url = rawUrl ? (rawUrl.endsWith('/') ? rawUrl : rawUrl + '/') : '';
 
   const { data, isLoading, error, refetch } = useFetch<{ body: File }>(
@@ -120,7 +122,16 @@ export const Documentation: React.FC = () => {
             <Close width="1rem" height="1rem" />
           </button>
         </div>
-        <div className="grid grid-cols-2 gap-1 pb-2">
+        <div className="grid grid-cols-3 gap-1 pb-2">
+          <button
+            className={twMerge(
+              'rounded border border-primary p-2',
+              activeTab === -1 && 'bg-primary text-text-secondary'
+            )}
+            onClick={() => setActiveTab(-1)}
+          >
+            Компоненты
+          </button>
           <button
             className={twMerge(
               'rounded border border-primary p-2',
@@ -142,6 +153,8 @@ export const Documentation: React.FC = () => {
           </button>
         </div>
         <div className="h-full overflow-y-hidden">
+          <div className={twMerge('h-full', activeTab !== -1 && 'hidden')}>{<Reference />}</div>
+
           <div className={twMerge('h-full', activeTab !== 0 && 'hidden')}>
             {<Tree root={data.body} borderWidth={0} onItemClick={onItemClick} />}
           </div>

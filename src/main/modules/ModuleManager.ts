@@ -95,12 +95,21 @@ export class ModuleManager {
             break;
           }
           case 'lapki-compiler': {
-            modulePath = this.getCompilerPath();
             const port = await findFreePort({ usedPorts });
-            await settings.set('compiler.localPort', port);
-            defaultSettings.compiler.localPort = Number(port);
             const compilerArgs = [`--server-port=${port}`];
-            chprocess = spawn(modulePath, compilerArgs);
+            switch (platform) {
+              case 'win32':
+                modulePath = this.getCompilerPath();
+                await settings.set('compiler.localPort', port);
+                defaultSettings.compiler.localPort = Number(port);
+                chprocess = spawn(modulePath, compilerArgs);
+                break;
+              default:
+                await settings.set('compiler.type', 'remote');
+                console.log(
+                  `К сожалению, локальный компилятор не поддерживается на данной платформе (${platform}).`
+                );
+            }
             break;
           }
           default:

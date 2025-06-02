@@ -78,7 +78,6 @@ export const CompilerSelectModal: React.FC<CompilerSelectModalProps> = ({ onClos
               onChange(v.value);
 
               if (!compilerSetting) return;
-              debugger;
               if (v.value === 'local') {
                 setValue('localPort', compilerSetting.localPort);
                 setValue('localhHost', 'localhost');

@@ -45,10 +45,11 @@ export const defaultSettings = {
     type: 'local' as ModuleType,
   },
   compiler: {
-    host: defaultCompilerHost,
-    port: defaultCompilerPort,
+    localhHost: 'localhost',
     localPort: 0,
-    type: 'remote' as ModuleType,
+    remoteHost: defaultCompilerHost,
+    remotePort: defaultCompilerPort,
+    type: 'local' as ModuleType,
   },
   flasher: {
     host: 'localhost',

@@ -51,13 +51,13 @@ export const CompilerSelectModal: React.FC<CompilerSelectModalProps> = ({ onClos
     if (!compilerSetting || compilerSetting.localPort === undefined) return;
 
     setValue('type', compilerSetting.type);
-    setValue('host', compilerSetting.host ?? '');
-    setValue(
-      'port',
-      compilerSetting.type === 'local'
-        ? Number(compilerSetting.localPort ?? '')
-        : Number(compilerSetting.port)
-    );
+    if (compilerSetting.type === 'remote') {
+      setValue('remoteHost', compilerSetting.remoteHost ?? '');
+      setValue('remotePort', Number(compilerSetting.remotePort));
+    } else {
+      setValue('localhHost', compilerSetting.localhHost);
+      setValue('localPort', compilerSetting.localPort);
+    }
   }, [setValue, compilerSetting]);
 
   return (
@@ -78,12 +78,13 @@ export const CompilerSelectModal: React.FC<CompilerSelectModalProps> = ({ onClos
               onChange(v.value);
 
               if (!compilerSetting) return;
-              if (v.value !== 'local') {
-                setValue('port', compilerSetting.port);
-                setValue('host', compilerSetting.host);
+              debugger;
+              if (v.value === 'local') {
+                setValue('localPort', compilerSetting.localPort);
+                setValue('localhHost', 'localhost');
               } else {
-                setValue('port', compilerSetting.localPort);
-                setValue('host', 'localhost');
+                setValue('remotePort', compilerSetting.remotePort);
+                setValue('remoteHost', compilerSetting.remoteHost);
               }
             };
 
@@ -106,14 +107,16 @@ export const CompilerSelectModal: React.FC<CompilerSelectModalProps> = ({ onClos
           maxLength={80}
           className="disabled:opacity-50"
           label="Хост:"
-          {...register('host')}
+          {...register(watch('type') === 'local' ? 'localhHost' : 'remoteHost')}
           placeholder="Напишите адрес хоста"
           disabled={isSecondaryFieldsDisabled}
         />
         <TextField
           className="disabled:opacity-50"
           label="Порт:"
-          {...register('port', { valueAsNumber: true })}
+          {...register(watch('type') === 'local' ? 'localPort' : 'remotePort', {
+            valueAsNumber: true,
+          })}
           placeholder="Напишите порт"
           onInput={(event) => {
             const { target } = event;

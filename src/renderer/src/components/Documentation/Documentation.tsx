@@ -112,7 +112,7 @@ export const Documentation: React.FC = () => {
     }
 
     return (
-      <section className="flex h-full select-none flex-col px-2 pt-4">
+      <section className="flex h-screen select-none flex-col bg-bg-primary px-2 pt-4">
         <div className="relative mb-3 flex items-center justify-between border-b border-border-primary pb-1">
           <h1 className="text-2xl font-bold">Документация</h1>
           <button
@@ -181,15 +181,17 @@ export const Documentation: React.FC = () => {
   }, [error]);
 
   return (
-    <Resizable
-      enable={{ left: true }}
-      size={{ width: width, height: '100%' }}
-      minWidth={minWidth}
-      maxWidth={maxWidth}
-      onResize={handleResize}
-      className="border-l border-border-primary bg-bg-secondary"
-    >
-      <div className="h-full">{renderContent()}</div>
-    </Resizable>
+    <div className="h-screen">
+      <Resizable
+        enable={{ left: true }}
+        minWidth={minWidth}
+        maxWidth={maxWidth}
+        onResize={handleResize}
+        className=" pointer-events-auto z-[100]  h-screen border-l border-border-primary bg-bg-secondary"
+        style={{ '--doc-width': `${width}px` } as React.CSSProperties}
+      >
+        <div className="pointer-events-auto z-[100] h-screen">{renderContent()}</div>
+      </Resizable>
+    </div>
   );
 };

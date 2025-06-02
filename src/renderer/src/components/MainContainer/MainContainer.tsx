@@ -150,12 +150,12 @@ export const MainContainer: React.FC = () => {
 
   return (
     <div className="h-screen select-none">
-      <div className="flex h-full w-full flex-row overflow-x-hidden">
+      <div className="grid h-full w-full grid-cols-[auto_1fr_auto] overflow-x-hidden">
         <Sidebar callbacks={operations} openImportError={openImportError} />
 
         <div
           className={twMerge(
-            ' relative w-full min-w-80 bg-bg-primary',
+            'relative min-w-80 bg-bg-primary',
             'after:pointer-events-none after:absolute after:inset-0 after:z-50 after:block after:bg-bg-hover after:opacity-0 after:transition-all after:content-[""]',
             isDragActive && 'opacity-30'
           )}
@@ -164,15 +164,13 @@ export const MainContainer: React.FC = () => {
           <input {...getInputProps()} />
 
           <Tabs />
-          <div
-            className={twMerge(
-              'absolute right-0 top-0 z-50 flex h-full',
-              !!isMounted && 'top-[44.19px] h-[calc(100vh-44.19px)]'
-            )}
-          >
-            <Documentation />
-            <EditorSettings />
-          </div>
+        </div>
+
+        <div
+          className={twMerge('flex h-full', !!isMounted && 'top-[44.19px] h-[calc(100vh-44.19px)]')}
+        >
+          <Documentation />
+          <EditorSettings />
         </div>
 
         {isMounted && (
@@ -182,15 +180,25 @@ export const MainContainer: React.FC = () => {
         )}
       </div>
 
-      <SaveRemindModal {...saveModalProps} />
-      <ErrorModal {...errorModalProps} />
-      <CreateSchemeModal
-        isOpen={isCreateSchemeModalOpen}
-        onCreate={performNewFile}
-        onClose={closeCreateSchemeModal}
-        onCreateFromTemplate={handleOpenFromTemplate}
-      />
-      <UpdateModal />
+      <div id="modal-root" className="pointer-events-none fixed inset-0">
+        <div className="pointer-events-auto">
+          <SaveRemindModal {...saveModalProps} />
+          <ErrorModal {...errorModalProps} />
+          <CreateSchemeModal
+            isOpen={isCreateSchemeModalOpen}
+            onCreate={performNewFile}
+            onClose={closeCreateSchemeModal}
+            onCreateFromTemplate={handleOpenFromTemplate}
+          />
+          <UpdateModal />
+          <RestoreDataModal
+            isOpen={isRestoreDataModalOpen}
+            onClose={closeRestoreDataModal}
+            onRestore={restoreData}
+            onCancelRestore={cancelRestoreData}
+          />
+        </div>
+      </div>
 
       <Toaster
         offset="3rem"
@@ -200,13 +208,6 @@ export const MainContainer: React.FC = () => {
             success: 'bg-[#9bcb64]',
           },
         }}
-      />
-
-      <RestoreDataModal
-        isOpen={isRestoreDataModalOpen}
-        onClose={closeRestoreDataModal}
-        onRestore={restoreData}
-        onCancelRestore={cancelRestoreData}
       />
     </div>
   );

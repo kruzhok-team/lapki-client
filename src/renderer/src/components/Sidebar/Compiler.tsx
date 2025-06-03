@@ -161,11 +161,11 @@ export const CompilerTab: React.FC<CompilerProps> = ({
 
   useEffect(() => {
     if (!compilerSetting) return;
-    const { localhHost, localPort, remoteHost, remotePort, type } = compilerSetting;
+    const { localHost, localPort, remoteHost, remotePort, type } = compilerSetting;
     Compiler.bindReact(setCompilerData, setCompilerStatus, setImportData, setSecondsUntilReconnect);
     const autoReconnect = type === 'remote';
     if (type === 'local') {
-        Compiler.connect(localhHost, localPort, autoReconnect);
+      Compiler.connect(localHost, localPort, autoReconnect);
     } else {
       Compiler.connect(remoteHost, remotePort, autoReconnect);
     }

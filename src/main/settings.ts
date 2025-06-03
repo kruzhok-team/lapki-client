@@ -45,10 +45,11 @@ export const defaultSettings = {
     type: 'local' as ModuleType,
   },
   compiler: {
-    localhHost: 'localhost',
+    localHost: 'localhost',
     localPort: 0,
     remoteHost: defaultCompilerHost,
     remotePort: defaultCompilerPort,
+    // FIXME (L140-beep): реализация локального компилятора на Linux и macOS
     type: (process.platform === 'win32' ? 'local' : 'remote') as ModuleType,
   },
   flasher: {
@@ -111,7 +112,7 @@ export type SettingsKey = keyof Settings;
 const noResetKeys: SettingsKey[] = ['addressBookMS', 'recentFiles'];
 
 /**
- * Удаление недавних файлов, путей которых невозможно отыскать
+ * Удаление недавних файлов, пути которых невозможно отыскать
  */
 const checkRecentFiles = () => {
   const key = 'recentFiles' as SettingsKey;

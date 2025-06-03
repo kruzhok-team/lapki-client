@@ -196,9 +196,9 @@ export const Documentation: React.FC<DocumentationProps> = ({ width, onWidthChan
       minWidth={minWidth}
       maxWidth={maxWidth}
       onResize={handleResize}
-      className=" pointer-events-auto z-[100]  h-screen border-l border-border-primary bg-bg-secondary"
+      className="h-screen border-l border-border-primary bg-bg-secondary"
     >
-      <div className="pointer-events-auto z-[100] h-screen">{renderContent()}</div>
+      <div className="h-screen">{renderContent()}</div>
     </Resizable>
   );
 };

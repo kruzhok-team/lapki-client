@@ -61,7 +61,7 @@ export const Modal: React.FC<ModalProps> = ({
         className
       )}
       overlayClassName={twMerge(
-        'bg-[rgba(0,0,0,0.6)] fixed inset-0 backdrop-blur z-[60]',
+        'bg-[rgba(0,0,0,0.6)] fixed inset-0 backdrop-blur z-50',
         overlayClassName
       )}
       closeTimeoutMS={100}

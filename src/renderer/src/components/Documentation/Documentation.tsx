@@ -190,17 +190,15 @@ export const Documentation: React.FC<DocumentationProps> = ({ width, onWidthChan
   }, [error]);
 
   return (
-    <div className="h-screen">
-      <Resizable
-        enable={{ left: true }}
-        size={{ width: width, height: '100%' }}
-        minWidth={minWidth}
-        maxWidth={maxWidth}
-        onResize={handleResize}
-        className=" pointer-events-auto z-[100]  h-screen border-l border-border-primary bg-bg-secondary"
-      >
-        <div className="pointer-events-auto z-[100] h-screen">{renderContent()}</div>
-      </Resizable>
-    </div>
+    <Resizable
+      enable={{ left: true }}
+      size={{ width: width, height: '100%' }}
+      minWidth={minWidth}
+      maxWidth={maxWidth}
+      onResize={handleResize}
+      className=" pointer-events-auto z-[100]  h-screen border-l border-border-primary bg-bg-secondary"
+    >
+      <div className="pointer-events-auto z-[100] h-screen">{renderContent()}</div>
+    </Resizable>
   );
 };

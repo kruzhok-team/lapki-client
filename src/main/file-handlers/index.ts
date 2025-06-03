@@ -14,6 +14,7 @@ import {
   handleFileExists,
   handleCreateFolder,
   handleSaveBinaryIntoFile,
+  handleGetDefaultFirmwarePath,
 } from './handlers';
 
 /**
@@ -40,6 +41,7 @@ const handlers = {
   createFolder: handleCreateFolder,
   saveBinaryIntoFile: handleSaveBinaryIntoFile,
   existsFile: handleFileExists,
+  getDefaultFirmwarePath: handleGetDefaultFirmwarePath,
 };
 
 /**

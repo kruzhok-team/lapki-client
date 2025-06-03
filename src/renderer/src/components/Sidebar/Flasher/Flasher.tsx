@@ -500,25 +500,50 @@ export const FlasherTab: React.FC = () => {
         );
         continue;
       }
-      const getSource = () => {
+      const getSource = async () => {
         if (uploadFactory) {
-          console.log();
-          return undefined;
+          const getTypeId = () => {
+            if (item.targetType === FirmwareTargetType.dev && dev) {
+              return ManagerMS.getDevicePlatform(dev);
+            } else if (item.targetId === FirmwareTargetType.tjc_ms && address) {
+              return address.type;
+            } else {
+              return null;
+            }
+          };
+          const typeId = getTypeId();
+          if (!typeId) {
+            ManagerMS.addLog(
+              'Ошибка! Не удалось определить тип устройства. Загрузка заводской прошивки будет пропущена для этого устройства.'
+            );
+            return null;
+          }
+          const [valid, path] = await window.api.fileHandlers.getDefaultFirmwarePath(typeId);
+          if (!valid) {
+            ManagerMS.addLog(
+              `${devName}: Загрузка заводской прошивки не поддерживается для данного устройства.`
+            );
+            return null;
+          }
+          return path;
+        }
+        if (!item.source) {
+          ManagerMS.addLog(
+            `${devName}: Прошивка пропущена, так как для этой платы не указана прошивка.`
+          );
+          return null;
         }
         return item.source;
       };
-      const source = getSource();
+      const source = await getSource();
       if (!source) {
-        ManagerMS.addLog(
-          `${devName}: прошивка пропущена, так как для этой платы не указана прошивка.`
-        );
         continue;
       }
-      if (item.isFile) {
+      if (item.isFile || uploadFactory) {
         const [binData, errorMessage] = await window.api.fileHandlers.readFile(source);
         if (errorMessage !== null) {
           ManagerMS.addLog(
-            `Ошибка! Не удалось извлечь данные из файла ${source}. Текст ошибки: ${errorMessage}`
+            `${devName}: Ошибка! Не удалось извлечь данные из файла ${source}. Текст ошибки: ${errorMessage}`
           );
           continue;
         }

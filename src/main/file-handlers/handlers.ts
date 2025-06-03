@@ -349,10 +349,19 @@ export function handleSaveBinaryIntoFile(
   });
 }
 
+// (Roundabout1) TODO: Добавить пути к прошивкам к описанию платформ
+const firmwarePath = new Map([['blg-mb-1-a7', 'blg-mb-1-a7.bin']]);
+
 export function handleGetDefaultFirmwarePath(typeId: string): HandleGetDefaultFirmwareReturn {
   return new Promise((resolve) => {
-    switch(typeId) {
-      case 'blg-mb-1-a7'
+    const file = firmwarePath.get(typeId);
+    if (!file) {
+      resolve([false, '']);
     }
+    const path = `${basePath}/firmwares/${file}`;
+    if (!fs.existsSync(path)) {
+      resolve([false, path]);
+    }
+    resolve([true, path]);
   });
 }

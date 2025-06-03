@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as SelectFileIcon } from '@renderer/assets/icons/upload-file.svg';
-import { Device } from '@renderer/components/Modules/Device';
+import { ManagerMS } from '@renderer/components/Modules/ManagerMS';
 import { Checkbox, Select, SelectOption, WithHint } from '@renderer/components/UI';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { useFlasher } from '@renderer/store/useFlasher';
@@ -108,7 +108,7 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
     if (item.targetType === FirmwareTargetType.dev) {
       const dev = devices.get(item.targetId as string);
       if (!dev) return null;
-      return getDevicePlatform(dev) ?? null;
+      return ManagerMS.getDevicePlatform(dev) ?? null;
     } else if (item.targetType === FirmwareTargetType.tjc_ms) {
       const addressData = getEntryById(item.targetId as number);
       if (!addressData) {
@@ -248,22 +248,6 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
     );
   };
 
-  const getDevicePlatform = (device: Device) => {
-    // TODO: подумать, можно ли найти более надёжный способ сверки платформ на клиенте и сервере
-    // названия платформ на загрузчике можно посмотреть здесь: https://github.com/kruzhok-team/lapki-flasher/blob/main/src/device_list.JSON
-    const name = device.name.toLocaleLowerCase();
-    switch (name) {
-      case 'arduino micro':
-      case 'arduino micro (bootloader)':
-        return 'ArduinoMicro';
-      case 'arduino uno':
-        return 'ArduinoUno';
-      case 'кибермишка':
-        return 'blg-mb-1-a7';
-    }
-    return undefined;
-  };
-
   const cellRender = (content: string | JSX.Element, mergeClassName: string, colspan?: number) => {
     return (
       <td
@@ -325,7 +309,7 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
         return;
       }
       displayName = dev.displayName();
-      typeId = getDevicePlatform(dev);
+      typeId = ManagerMS.getDevicePlatform(dev);
     } else {
       throw Error(`Плата не поддерживается: ${tableItem}`);
     }

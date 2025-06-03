@@ -505,7 +505,7 @@ export const FlasherTab: React.FC = () => {
           const getTypeId = () => {
             if (item.targetType === FirmwareTargetType.dev && dev) {
               return ManagerMS.getDevicePlatform(dev);
-            } else if (item.targetId === FirmwareTargetType.tjc_ms && address) {
+            } else if (item.targetType === FirmwareTargetType.tjc_ms && address) {
               return address.type;
             } else {
               return null;

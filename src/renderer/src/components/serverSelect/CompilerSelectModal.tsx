@@ -1,10 +1,10 @@
-import { useLayoutEffect } from 'react';
+import { useLayoutEffect, useMemo, useState } from 'react';
 
 import { Controller, useForm } from 'react-hook-form';
 
 import { Modal, Select, TextField } from '@renderer/components/UI';
 import { useSettings } from '@renderer/hooks';
-import { removeNonNumbers } from '@renderer/utils';
+import { getUserOS, removeNonNumbers } from '@renderer/utils';
 
 type FormValues = Main['settings']['compiler'];
 
@@ -29,13 +29,14 @@ export const CompilerSelectModal: React.FC<CompilerSelectModalProps> = ({ onClos
     watch,
     setValue,
   } = useForm<FormValues>();
-
   const isSecondaryFieldsDisabled = watch('type') === 'local';
-
+  const [warning, setWarning] = useState<string | null>(null);
   const currentServerLabel = `Текущий тип сервера: ${
     compilerSetting?.type === 'local' ? 'локальный' : 'удалённый'
   }`;
-
+  const userOS = useMemo(() => {
+    return getUserOS();
+  }, []);
   const handleSubmit = hookHandleSubmit((data) => {
     setCompilerSetting({ ...compilerSetting, ...data });
     onClose();
@@ -48,16 +49,26 @@ export const CompilerSelectModal: React.FC<CompilerSelectModalProps> = ({ onClos
   };
 
   useLayoutEffect(() => {
+    if (!isSecondaryFieldsDisabled) {
+      setWarning('');
+      return;
+    }
+    if (userOS !== 'Windows') {
+      setWarning('Пока что ваша платформа не поддерживает локальный компилятор :(');
+    }
+  }, [isSecondaryFieldsDisabled, setWarning, userOS]);
+
+  useLayoutEffect(() => {
     if (!compilerSetting || compilerSetting.localPort === undefined) return;
 
     setValue('type', compilerSetting.type);
-    setValue('host', compilerSetting.host ?? '');
-    setValue(
-      'port',
-      compilerSetting.type === 'local'
-        ? Number(compilerSetting.localPort ?? '')
-        : Number(compilerSetting.port)
-    );
+    if (compilerSetting.type === 'remote') {
+      setValue('remoteHost', compilerSetting.remoteHost ?? '');
+      setValue('remotePort', Number(compilerSetting.remotePort));
+    } else {
+      setValue('localHost', compilerSetting.localHost);
+      setValue('localPort', compilerSetting.localPort);
+    }
   }, [setValue, compilerSetting]);
 
   return (
@@ -78,12 +89,12 @@ export const CompilerSelectModal: React.FC<CompilerSelectModalProps> = ({ onClos
               onChange(v.value);
 
               if (!compilerSetting) return;
-              if (v.value !== 'local') {
-                setValue('port', compilerSetting.port);
-                setValue('host', compilerSetting.host);
+              if (v.value === 'local') {
+                setValue('localPort', compilerSetting.localPort);
+                setValue('localHost', 'localhost');
               } else {
-                setValue('port', compilerSetting.localPort);
-                setValue('host', 'localhost');
+                setValue('remotePort', compilerSetting.remotePort);
+                setValue('remoteHost', compilerSetting.remoteHost);
               }
             };
 
@@ -106,14 +117,16 @@ export const CompilerSelectModal: React.FC<CompilerSelectModalProps> = ({ onClos
           maxLength={80}
           className="disabled:opacity-50"
           label="Хост:"
-          {...register('host')}
+          {...register(watch('type') === 'local' ? 'localHost' : 'remoteHost')}
           placeholder="Напишите адрес хоста"
           disabled={isSecondaryFieldsDisabled}
         />
         <TextField
           className="disabled:opacity-50"
           label="Порт:"
-          {...register('port', { valueAsNumber: true })}
+          {...register(watch('type') === 'local' ? 'localPort' : 'remotePort', {
+            valueAsNumber: true,
+          })}
           placeholder="Напишите порт"
           onInput={(event) => {
             const { target } = event;
@@ -126,11 +139,11 @@ export const CompilerSelectModal: React.FC<CompilerSelectModalProps> = ({ onClos
           disabled={isSecondaryFieldsDisabled}
         />
       </div>
-
       <div>{currentServerLabel}</div>
-      <button type="button" className="btn-secondary" onClick={resetSetting}>
+      <button type="button" className="btn-secondary mt-4" onClick={resetSetting}>
         Сбросить настройки
       </button>
+      {warning && <div className="mt-2 text-warning">{warning}</div>}
     </Modal>
   );
 };

@@ -10,6 +10,21 @@ export function isBerlogaRobot(value: any): boolean {
   return ['Autoborder', 'Stapler', 'Smoker', 'Generator'].includes(value);
 }
 
+export function getUserOS() {
+  const platform = navigator.userAgent;
+  let osName: string | null = null;
+
+  if (platform.includes('Win')) {
+    osName = 'Windows';
+  } else if (platform.includes('Mac')) {
+    osName = 'MacOS';
+  } else if (platform.includes('X11') || platform.includes('Linux')) {
+    osName = 'Linux';
+  }
+
+  return osName;
+}
+
 function newConvention(value: string) {
   const robotName = value.split('_').pop();
   return isBerlogaRobot(robotName) ? robotName : null;

@@ -303,7 +303,7 @@ export class Picto {
     ctx.fillStyle = 'none';
     ctx.lineWidth = 3 / this.scale;
     ctx.beginPath();
-    ctx.roundRect(x, y, eventWidth / this.scale, eventHeight / this.scale, 5);
+    ctx.roundRect(x, y, eventWidth / this.scale, eventHeight / this.scale, 5 / this.scale);
     ctx.stroke();
     ctx.restore();
   }

@@ -13,14 +13,19 @@ type ComponentEntry = ComponentProto & {
 };
 
 export type ComponentInfoProps = {
-  component: ComponentEntry;
+  component: ComponentEntry | null;
   manager: PlatformManager;
   className?: string;
+  noTitle?: boolean;
+  noTypeIcons?: boolean;
 };
 
-export const ComponentInfo: React.FC<ComponentInfoProps> = ({ component, manager, className }) => {
-  const componentName = component.name ?? component.idx;
-
+export const ComponentInfo: React.FC<ComponentInfoProps> = ({
+  component,
+  manager,
+  className,
+  ...props
+}) => {
   const prettyName = (name: string | undefined, defaultName: string) => {
     if (name) {
       return (
@@ -53,30 +58,44 @@ export const ComponentInfo: React.FC<ComponentInfoProps> = ({ component, manager
     return <p className="text-sm/5">{description}</p>;
   };
 
+  const scrollToTopRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      if (node) {
+        node.scrollTop = 0;
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [component]
+  );
+
+  if (!component) {
+    return (
+      <div className={twMerge(className, 'p-4 opacity-70')}>
+        <p>Выберите компонент для отображения информации.</p>
+      </div>
+    );
+  }
+
+  const componentName = component.name ?? component.idx;
+
   return (
     <div
       className={twMerge(
         className,
         'overflow-auto pr-4 scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb'
       )}
-      ref={useCallback(
-        (node: HTMLDivElement | null) => {
-          if (node) {
-            node.scrollTop = 0;
-          }
-        },
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [component]
-      )}
+      ref={scrollToTopRef}
     >
-      <div className="mb-2 flex items-center">
-        {manager.getRawComponentIcon(
-          component.idx,
-          twMerge('mr-2 size-10', component.img ? '' : 'rounded-full bg-gray-200 p-1')
-        )}
-        <span className="text-lg font-semibold">{componentName}</span>
-      </div>
-      <div className="text-sm text-gray-600">
+      {!props.noTitle && (
+        <div className="mb-2 flex items-center">
+          {manager.getRawComponentIcon(
+            component.idx,
+            twMerge('mr-2 size-10', component.img ? '' : 'rounded-full bg-gray-200 p-1')
+          )}
+          <span className="text-lg font-semibold">{componentName}</span>
+        </div>
+      )}
+      <div className="text-sm">
         {convert(stringToHTML(component.description || 'Нет описания для этого компонента.'))}
       </div>
       {/* Параметры */}
@@ -100,6 +119,7 @@ export const ComponentInfo: React.FC<ComponentInfoProps> = ({ component, manager
       {component.variables && Object.keys(component.variables).length > 0 && (
         <>
           <hr className="mt-4" />
+          {props.noTypeIcons && <p className="mt-4 italic">Атрибуты:</p>}
           <div>
             {Object.entries(component.variables).map(([variableName, variableData]) => (
               <div className="mt-4">
@@ -108,9 +128,11 @@ export const ComponentInfo: React.FC<ComponentInfoProps> = ({ component, manager
                     className="mr-2 size-8 object-contain"
                     src={manager.getVariableIconUrl(component.idx, variableName)}
                   />
-                  <span className="mr-1 cursor-help" title="атрибут">
-                    🔢
-                  </span>
+                  {!props.noTypeIcons && (
+                    <span className="mr-1 cursor-help" title="атрибут">
+                      🔢
+                    </span>
+                  )}
                   {prettyName(variableData.alias, variableName)}
                 </div>
                 {prettyDescription(variableData.description)}
@@ -123,6 +145,7 @@ export const ComponentInfo: React.FC<ComponentInfoProps> = ({ component, manager
       {component.signals && Object.keys(component.signals).length > 0 && (
         <>
           <hr className="mt-4" />
+          {props.noTypeIcons && <p className="mt-4 italic">События:</p>}
           <div>
             {Object.entries(component.signals).map(([eventName, eventData]) => (
               <div className="mt-4">
@@ -131,9 +154,11 @@ export const ComponentInfo: React.FC<ComponentInfoProps> = ({ component, manager
                     className="mr-2 size-8 object-contain"
                     src={manager.getEventIconUrl(component.idx, eventName)}
                   />
-                  <span className="mr-1 cursor-help" title="событие">
-                    🚩
-                  </span>
+                  {!props.noTypeIcons && (
+                    <span className="mr-1 cursor-help" title="событие">
+                      🚩
+                    </span>
+                  )}
                   {prettyName(eventData.alias, eventName)}
                 </div>
                 {prettyDescription(eventData.description)}
@@ -146,6 +171,7 @@ export const ComponentInfo: React.FC<ComponentInfoProps> = ({ component, manager
       {component.methods && Object.keys(component.methods).length > 0 && (
         <>
           <hr className="mt-4" />
+          {props.noTypeIcons && <p className="mt-4 italic">Действия:</p>}
           <div>
             {Object.entries(component.methods).map(([methodName, methodData]) => (
               <div className="mt-4">
@@ -154,9 +180,11 @@ export const ComponentInfo: React.FC<ComponentInfoProps> = ({ component, manager
                     className="mr-2 size-8 object-contain"
                     src={manager.getActionIconUrl(component.idx, methodName)}
                   />
-                  <span className="mr-1 cursor-help" title="действие">
-                    ⚙️
-                  </span>
+                  {!props.noTypeIcons && (
+                    <span className="mr-1 cursor-help" title="действие">
+                      ⚙️
+                    </span>
+                  )}
                   {prettyName(methodData.alias, methodName)}
                 </div>
                 {prettyDescription(methodData.description)}

@@ -27,7 +27,9 @@
     "build:linux": "npm run build && npm run bundle:linux",
     "bundle:win": "electron-builder --win --config",
     "bundle:linux": "electron-builder --linux --config",
-    "bundle:mac": "electron-builder --mac --config"
+    "bundle:mac": "electron-builder --mac --config",
+    "prepare:win": "build\\move_compiler_resourses.bat build",
+    "dependencies:win": "powershell \"& build\\download_compiler_deps.ps1 resources\\modules\\win32\""
   },
   "dependencies": {
     "@codemirror/lang-cpp": "^6.0.2",

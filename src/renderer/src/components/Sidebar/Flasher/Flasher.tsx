@@ -46,8 +46,6 @@ import { MsGetAddressModal } from './MsGetAddressModal';
 import { ManagerMS } from '../../Modules/ManagerMS';
 import { Switch, WithHint } from '../../UI';
 
-const monitorTabName = 'Монитор порта';
-
 export const FlasherTab: React.FC = () => {
   const modelController = useModelContext();
   const [flasherSetting] = useSettings('flasher');
@@ -87,8 +85,6 @@ export const FlasherTab: React.FC = () => {
 
   const openTab = useTabs((state) => state.openTab);
   const closeTab = useTabs((state) => state.closeTab);
-  const tabs = useTabs((state) => state.items);
-  const isMonitorOpen = tabs.find((tab) => tab.name === monitorTabName) !== undefined;
 
   const [isAddressBookOpen, openAddressBook, closeAddressBook] = useModal(false);
   const [isMsGetAddressOpen, openMsGetAddressModal, closeMsGetAddressModal] = useModal(false);
@@ -325,28 +321,81 @@ export const FlasherTab: React.FC = () => {
   const getOpHint = (op: OperationType) => {
     switch (op) {
       case OperationType.ping:
-        return 'Окликнуть плату, чтобы проверить связь с ней.';
+        return (
+          <p>
+            <b>Пинг</b>
+            <br />
+            Окликнуть плату, чтобы проверить связь с ней.
+          </p>
+        );
       case OperationType.reset:
-        return 'Перезагрузить плату.';
+        return (
+          <p>
+            <b>Сброс</b>
+            <br />
+            Перезагрузить плату.
+          </p>
+        );
       case OperationType.meta:
-        return 'Переспросить метаданные платы, если они не были получены ранее.';
+        return (
+          <p>
+            <b>Метаданные</b>
+            <br />
+            Переспросить метаданные платы, если они не были получены ранее.
+          </p>
+        );
       default:
         throw Error('Неизвестная операция');
     }
   };
 
-  const flashHint = 'Загрузить прошивку в выбранные платы.';
-  const flashVerifyHint =
-    'Загрузить прошивку с проверкой целостности. Увеличивает общее время загрузки, доступно не для всех устройств.';
+  const removeHint = (
+    <p>
+      <b>Удалить</b>
+      <br />
+      Убрать отмеченные платы из таблицы.
+    </p>
+  );
+  const flashHint = (
+    <p>
+      <b>Прошить</b>
+      <br />
+      Загрузить прошивку в выбранные платы.
+    </p>
+  );
+  const flashVerifyHint = (
+    <p>
+      <b>Прошить с проверкой</b>
+      <br />
+      Загрузить прошивку с проверкой целостности. Увеличивает общее время загрузки, доступно не для
+      всех устройств.
+    </p>
+  );
   const flashResultHint = useMemo(() => {
     if (flashResult.size === 0)
       return 'Выполните загрузку прошивки, и эта кнопка позволит посмотреть её результаты.';
-    return `Открыть вкладки с результатами загрузки прошивок (${flashResult.size} шт.)`;
+    return (
+      <p>
+        <b>Журнал загрузки</b>
+        <br />
+        Открыть вкладки с результатами загрузки прошивок (${flashResult.size} шт.)
+      </p>
+    );
   }, [flashResult]);
-  const downloadBinHint =
-    'Выгрузить файлы прошивки из выбранных плат. Доступно не для всех устройств.';
-  const factoryBinHint =
-    'Загрузить «заводскую» прошивку в выбранные платы. Доступно не для всех устройств.';
+  const downloadBinHint = (
+    <p>
+      <b>Скачать прошивку</b>
+      <br />
+      Выгрузить файлы прошивки из выбранных плат. Доступно не для всех устройств.
+    </p>
+  );
+  const factoryBinHint = (
+    <p>
+      <b>Загрузить «заводскую» прошивку</b>
+      <br />
+      Загрузить «заводскую» прошивку в выбранные платы. Доступно не для всех устройств.
+    </p>
+  );
 
   const handleOperation = (op: OperationType) => {
     for (const item of flashTableData) {
@@ -393,12 +442,6 @@ export const FlasherTab: React.FC = () => {
   };
 
   const handleSendBin = async (doVerify?: boolean, uploadFactory?: boolean) => {
-    if (doVerify !== undefined && managerMSSetting) {
-      setManagerMSSetting({
-        ...managerMSSetting,
-        verification: doVerify,
-      });
-    }
     for (const item of flashTableData) {
       if (!item.isSelected) continue;
       let notFound = false;
@@ -413,7 +456,7 @@ export const FlasherTab: React.FC = () => {
             break;
           }
           devName = dev.displayName();
-          if (managerMSSetting?.verification) {
+          if (doVerify) {
             ManagerMS.addLog(
               `${devName}: верификация прошивки для данного устройства не поддерживается.`
             );
@@ -484,7 +527,7 @@ export const FlasherTab: React.FC = () => {
             addressInfo: address,
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             device: dev!, // проверка осуществляется ранее в этой функции
-            verification: managerMSSetting ? managerMSSetting.verification : false,
+            verification: doVerify ?? false,
             binaries: new Blob([binData]),
             isFile: true,
           });
@@ -504,7 +547,7 @@ export const FlasherTab: React.FC = () => {
           addressInfo: address,
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           device: dev!, // проверка осуществляется ранее в этой функции
-          verification: managerMSSetting ? managerMSSetting.verification : false,
+          verification: doVerify ?? false,
           binaries: smData.binary,
           isFile: false,
         });
@@ -606,16 +649,6 @@ export const FlasherTab: React.FC = () => {
     }
   };
 
-  // добавление вкладки с serial monitor
-  // пока клиент может мониторить только один порт
-  const handleAddSerialMonitorTab = () => {
-    openTab(modelController, {
-      type: 'serialMonitor',
-      name: monitorTabName,
-      isOpen: isMonitorOpen,
-    });
-  };
-
   const needAvrdude = useMemo(() => {
     if (!flasherSetting?.type || flasherSetting.type === 'remote' || hasAvrdude) return false;
     return flashTableData.some((item) => {
@@ -667,8 +700,8 @@ export const FlasherTab: React.FC = () => {
 
   const operationButtons = () => {
     return (
-      <div className="flex min-h-16 items-center gap-0 overflow-x-auto overflow-y-hidden">
-        <WithHint hint={'Убрать отмеченные платы из таблицы.'}>
+      <div className="m-1 flex items-center gap-0 overflow-x-auto">
+        <WithHint hint={removeHint}>
           {(hintProps) => (
             <button {...hintProps} className="btn-error mr-2 p-2 py-1" onClick={handleRemoveDevs}>
               <DeleteIcon className="h-8 w-8" />
@@ -966,12 +999,6 @@ export const FlasherTab: React.FC = () => {
           onClick={handleOpenAddressBook}
         >
           Адресная книга
-        </button>
-        <button
-          className="btn-primary mr-2 whitespace-nowrap p-1.5"
-          onClick={handleAddSerialMonitorTab}
-        >
-          Монитор порта
         </button>
       </div>
       <div className="m-2">

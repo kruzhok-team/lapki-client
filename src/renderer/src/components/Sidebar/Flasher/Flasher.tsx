@@ -518,7 +518,10 @@ export const FlasherTab: React.FC = () => {
             );
             return null;
           }
-          const [valid, path] = await window.api.fileHandlers.getDefaultFirmwarePath(typeId);
+          const [valid, path] = await window.api.fileHandlers.getDefaultFirmwarePath(
+            typeId,
+            dev?.isArduinoDevice() ? 'hex' : 'bin'
+          );
           if (!valid) {
             ManagerMS.addLog(
               `${devName}: Загрузка заводской прошивки не поддерживается для данного устройства.`

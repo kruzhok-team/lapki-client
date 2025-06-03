@@ -21,7 +21,12 @@ export interface CurrentItem {
   path: string;
 }
 
-export const Documentation: React.FC = () => {
+export interface DocumentationProps {
+  width: number;
+  onWidthChange: (width: number) => void;
+}
+
+export const Documentation: React.FC<DocumentationProps> = ({ width, onWidthChange }) => {
   const [doc] = useSettings('doc');
   const rawUrl = doc?.type === 'local' ? doc?.localHost ?? '' : doc?.remoteHost ?? '';
   const url = rawUrl ? (rawUrl.endsWith('/') ? rawUrl : rawUrl + '/') : '';
@@ -37,8 +42,6 @@ export const Documentation: React.FC = () => {
     state.isOpen,
     state.onDocumentationToggle,
   ]);
-
-  const [width, setWidth] = useState(0);
   const [minWidth, setMinWidth] = useState(5);
   const [maxWidth, setMaxWidth] = useState('60vw');
 
@@ -51,7 +54,8 @@ export const Documentation: React.FC = () => {
       onDocumentationToggle();
     }
     //Получаем ширину блока документации
-    setWidth(parseInt(ref.style.width));
+    const width = parseInt(ref.style.width);
+    onWidthChange(width);
   };
 
   useEffect(() => {

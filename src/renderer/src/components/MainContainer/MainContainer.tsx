@@ -44,6 +44,7 @@ export const MainContainer: React.FC = () => {
   const isStale = modelController.model.useData('', 'isStale');
   const isInitialized = modelController.model.useData('', 'isInitialized');
   const basename = modelController.model.useData('', 'basename');
+  const [docWidth, setDocWidth] = useState<number>(0);
 
   const { errorModalProps, openLoadError, openPlatformError, openSaveError, openImportError } =
     useErrorModal();
@@ -167,13 +168,10 @@ export const MainContainer: React.FC = () => {
           </div>
         </div>
 
-        <div
-          className={twMerge(
-            'fixed right-0 top-0 z-[90] flex h-screen',
-            !!isMounted && 'top-[44.19px] h-[calc(100vh-44.19px)]'
-          )}
-        >
-          <Documentation />
+        <div className="fixed right-0 top-0 z-[90] flex h-screen">
+          <Documentation onWidthChange={setDocWidth} width={docWidth} />
+        </div>
+        <div className="fixed top-0 z-[40] flex h-screen" style={{ right: `${docWidth}px` }}>
           <EditorSettings />
         </div>
       </div>

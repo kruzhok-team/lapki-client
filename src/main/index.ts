@@ -17,7 +17,6 @@ import {
   settingsChangeSend,
 } from './settings';
 import { getAllTemplates, getTemplate } from './templates';
-import { basePath } from './utils';
 
 import icon from '../../resources/icon.png?asset';
 

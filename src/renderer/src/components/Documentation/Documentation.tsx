@@ -99,6 +99,11 @@ export const Documentation: React.FC<DocumentationProps> = ({ width, onWidthChan
     });
   };
 
+  const onClose = () => {
+    onWidthChange(0);
+    onDocumentationToggle();
+  };
+
   const renderContent = () => {
     if (isLoading) {
       return <div>Загрузка...</div>;
@@ -121,7 +126,7 @@ export const Documentation: React.FC<DocumentationProps> = ({ width, onWidthChan
           <h1 className="text-2xl font-bold">Документация</h1>
           <button
             className="rounded-full p-3 outline-none transition-colors hover:bg-bg-hover active:bg-bg-active"
-            onClick={() => onDocumentationToggle()}
+            onClick={() => onClose()}
           >
             <Close width="1rem" height="1rem" />
           </button>

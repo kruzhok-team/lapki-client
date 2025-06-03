@@ -168,32 +168,36 @@ export const MainContainer: React.FC = () => {
           </div>
         </div>
 
-        <div className="fixed right-0 top-0 z-[90] flex h-screen">
+        <div className="fixed right-0 top-0 z-[90] h-screen">
           <Documentation onWidthChange={setDocWidth} width={docWidth} />
         </div>
-        <div className="fixed top-0 z-[40] flex h-screen" style={{ right: `${docWidth}px` }}>
+        <div
+          className={twMerge(
+            'absolute h-full',
+            !!isMounted && 'top-[44.19px] h-[calc(100vh-44.19px)]'
+          )}
+          style={{ right: `${docWidth}px` }}
+        >
           <EditorSettings />
         </div>
       </div>
 
-      <div id="modal-root" className="pointer-events-none fixed inset-0 z-[100]">
-        <div className="pointer-events-auto relative">
-          <SaveRemindModal {...saveModalProps} />
-          <ErrorModal {...errorModalProps} />
-          <CreateSchemeModal
-            isOpen={isCreateSchemeModalOpen}
-            onCreate={performNewFile}
-            onClose={closeCreateSchemeModal}
-            onCreateFromTemplate={handleOpenFromTemplate}
-          />
-          <UpdateModal />
-          <RestoreDataModal
-            isOpen={isRestoreDataModalOpen}
-            onClose={closeRestoreDataModal}
-            onRestore={restoreData}
-            onCancelRestore={cancelRestoreData}
-          />
-        </div>
+      <div className="z-[100]">
+        <SaveRemindModal {...saveModalProps} />
+        <ErrorModal {...errorModalProps} />
+        <CreateSchemeModal
+          isOpen={isCreateSchemeModalOpen}
+          onCreate={performNewFile}
+          onClose={closeCreateSchemeModal}
+          onCreateFromTemplate={handleOpenFromTemplate}
+        />
+        <UpdateModal />
+        <RestoreDataModal
+          isOpen={isRestoreDataModalOpen}
+          onClose={closeRestoreDataModal}
+          onRestore={restoreData}
+          onCancelRestore={cancelRestoreData}
+        />
       </div>
 
       {isMounted && (

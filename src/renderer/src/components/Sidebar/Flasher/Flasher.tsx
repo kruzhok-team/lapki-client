@@ -531,9 +531,7 @@ export const FlasherTab: React.FC = () => {
           return path;
         }
         if (!item.source) {
-          ManagerMS.addLog(
-            `${devName}: Прошивка пропущена, так как для этой платы не указана прошивка.`
-          );
+          ManagerMS.addLog(`${devName}: Для этого устройства не указана прошивка. Пропускаю его.`);
           return null;
         }
         return item.source;

@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as SelectFileIcon } from '@renderer/assets/icons/upload-file.svg';
-import { Device } from '@renderer/components/Modules/Device';
 import { ManagerMS } from '@renderer/components/Modules/ManagerMS';
 import { Checkbox, Select, SelectOption, WithHint } from '@renderer/components/UI';
 import { useModelContext } from '@renderer/store/ModelContext';

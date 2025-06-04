@@ -2,7 +2,6 @@ import { useSyncExternalStore } from 'react';
 
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
-import { EventSelection } from '@renderer/lib/drawable';
 import {
   AddDragendStateSig,
   ChangeComponentPosition,

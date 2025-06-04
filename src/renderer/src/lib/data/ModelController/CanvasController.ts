@@ -36,6 +36,7 @@ import {
   LinkTransitionParams,
   RenameComponentParams,
   SelectDrawable,
+  SelectEvent,
   UnlinkStateParams,
 } from '@renderer/lib/types';
 import {
@@ -129,7 +130,7 @@ export type CanvasControllerEvents = {
   selectComponent: SelectDrawable;
   selectChoice: SelectDrawable;
   selectTransition: SelectDrawable;
-
+  selectEvent: SelectEvent;
   changeStateSelection: ChangeSelectionParams;
   changeState: ChangeStateParams;
 

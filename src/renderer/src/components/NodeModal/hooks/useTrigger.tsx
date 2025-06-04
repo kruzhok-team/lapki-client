@@ -6,6 +6,7 @@ import { SelectOption } from '@renderer/components/UI';
 import { serializeEvent } from '@renderer/lib/data/GraphmlBuilder';
 import { variableRegex } from '@renderer/lib/data/GraphmlParser';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
+import { systemComponent } from '@renderer/lib/data/PlatformManager';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { Component, Event } from '@renderer/types/diagram';
 import { getFilteredOptions } from '@renderer/utils';
@@ -58,8 +59,11 @@ export const useTrigger = (
         return;
       }
 
-      const name =
-        componentsData[id] && visual && componentsData[id].name ? componentsData[id].name : id;
+      const name = !visual
+        ? id
+        : id === 'System'
+        ? systemComponent.name
+        : componentsData[id]?.name ?? id;
       return {
         value: id,
         label: name,

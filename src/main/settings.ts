@@ -45,10 +45,12 @@ export const defaultSettings = {
     type: 'local' as ModuleType,
   },
   compiler: {
-    host: defaultCompilerHost,
-    port: defaultCompilerPort,
+    localHost: 'localhost',
     localPort: 0,
-    type: 'remote' as ModuleType,
+    remoteHost: defaultCompilerHost,
+    remotePort: defaultCompilerPort,
+    // FIXME (L140-beep): реализация локального компилятора на Linux и macOS
+    type: (process.platform === 'win32' ? 'local' : 'remote') as ModuleType,
   },
   flasher: {
     host: 'localhost',

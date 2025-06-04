@@ -95,17 +95,28 @@ export class ModuleManager {
             break;
           }
           case 'lapki-compiler': {
-            modulePath = this.getCompilerPath();
             const port = await findFreePort({ usedPorts });
-            await settings.set('compiler.localPort', port);
-            defaultSettings.compiler.localPort = Number(port);
             const compilerArgs = [`--server-port=${port}`];
-            chprocess = spawn(modulePath, compilerArgs);
+            switch (platform) {
+              case 'win32':
+                modulePath = this.getCompilerPath();
+                await settings.set('compiler.localPort', port);
+                defaultSettings.compiler.localPort = Number(port);
+                chprocess = spawn(modulePath, compilerArgs);
+                break;
+              default:
+                await settings.set('compiler.type', 'remote');
+                console.log(
+                  `К сожалению, локальный компилятор не поддерживается на данной платформе (${platform}).`
+                );
+            }
             break;
           }
           default:
             chprocess = spawn(modulePath);
         }
+      }
+      if (chprocess !== undefined) {
         chprocess.on('error', function (err) {
           if (err.code === 'ENOENT') {
             ModuleManager.moduleStatus.set(
@@ -117,8 +128,6 @@ export class ModuleManager {
           }
           console.error(`${module} spawn error: ` + err);
         });
-      }
-      if (chprocess !== undefined) {
         ModuleManager.moduleStatus.set(module, new ModuleStatus(1));
         this.localProccesses.set(module, chprocess);
         chprocess.stdout.on('data', (data) => {

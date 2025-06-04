@@ -14,4 +14,5 @@ export type HandleBinFileOpenReturn = Promise<
 export type HandleFileSelectReturn = Promise<[boolean, string, string]>;
 export type HandleFileReadReturn = Promise<[Buffer | null, string | null]>;
 export type HandleFolderCreateReturn = Promise<[boolean, string, string]>;
-export type handleSaveBinaryIntoFileReturn = Promise<[string]>;
+export type HandleSaveBinaryIntoFileReturn = Promise<[string]>;
+export type HandleGetDefaultFirmwareReturn = Promise<[boolean, string]>;

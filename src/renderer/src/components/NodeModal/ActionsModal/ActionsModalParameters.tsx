@@ -187,7 +187,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
           }
         }
         const platform = controller.platform[smId];
-        let currentChecked = isChecked.get(name);
+        let isAttribute = isChecked.get(name);
         let selectedParameterMethod: string | null = null;
         let selectedParameterComponent: string | null = null;
         if (typeof value === 'string') {
@@ -196,28 +196,28 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
             setCheckedTo(name, componentAttribute != null);
           }
           selectedParameterComponent =
-            currentChecked && componentAttribute ? componentAttribute[0] : null;
+            isAttribute && componentAttribute ? componentAttribute[0] : null;
           selectedParameterMethod =
-            currentChecked && componentAttribute ? componentAttribute[1] : null;
+            isAttribute && componentAttribute ? componentAttribute[1] : null;
         } else if (isVariable(value)) {
           selectedParameterComponent = value.component;
           selectedParameterMethod = value.method;
           isChecked.set(name, true);
-          currentChecked = true;
+          isAttribute = true;
         }
         const attributeOptions = attributeOptionsSearch(selectedParameterComponent);
         return (
           <div className="flex space-x-2" key={name}>
             <div className="mt-[4px]">
               <AttributeConstSwitch
-                isAttribute={currentChecked ?? false}
+                isAttribute={isAttribute ?? false}
                 onCheckedChange={() => {
-                  setCheckedTo(name, !currentChecked);
+                  setCheckedTo(name, !isAttribute);
                   handleInputChange(name, idx, '');
                 }}
               />
             </div>
-            {currentChecked ? (
+            {isAttribute ? (
               <div>
                 <div className="flex">
                   <label className="grid grid-cols-[max-content,1fr] items-center justify-start gap-2">

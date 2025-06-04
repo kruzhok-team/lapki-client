@@ -54,9 +54,9 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
     tabValue,
     onTabChange,
 
-    isParamOneInput1,
+    isParamOneInput1: isAttribute1,
     handleParamOneInput1,
-    isParamOneInput2,
+    isParamOneInput2: isAttribute2,
     handleParamOneInput2,
 
     componentOptionsParam1,
@@ -169,13 +169,13 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
             <div className="flex items-start">
               <div className="mr-2 mt-[6px]">
                 <AttributeConstSwitch
-                  isAttribute={isParamOneInput1}
-                  onCheckedChange={() => handleParamOneInput1(!isParamOneInput1)}
+                  isAttribute={isAttribute1}
+                  onCheckedChange={() => handleParamOneInput1(!isAttribute1)}
                   isDisabled={isElse}
                   className={twMerge(isElse && 'cursor-default opacity-50')}
                 />
               </div>
-              {isParamOneInput1 ? (
+              {isAttribute1 ? (
                 <div className="flex gap-2">
                   <Select
                     containerClassName={twMerge('w-[290px]', isElse && 'opacity-50')}
@@ -233,13 +233,13 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
             <div className="flex items-start">
               <div className="mr-2 mt-[6px]">
                 <AttributeConstSwitch
-                  isAttribute={isParamOneInput2}
-                  onCheckedChange={() => handleParamOneInput2(!isParamOneInput2)}
+                  isAttribute={isAttribute2}
+                  onCheckedChange={() => handleParamOneInput2(!isAttribute2)}
                   isDisabled={isElse}
                   className={twMerge(isElse && 'cursor-default opacity-50')}
                 />
               </div>
-              {isParamOneInput2 ? (
+              {isAttribute2 ? (
                 <div className="flex gap-2">
                   <Select
                     containerClassName={twMerge('w-[290px]', isElse && 'opacity-50')}

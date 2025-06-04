@@ -378,7 +378,7 @@ export const FlasherTab: React.FC = () => {
       <p>
         <b>Журнал загрузки</b>
         <br />
-        Открыть вкладки с результатами загрузки прошивок (${flashResult.size} шт.)
+        Открыть вкладки с результатами загрузки прошивок ({flashResult.size} шт.)
       </p>
     );
   }, [flashResult]);

@@ -92,9 +92,13 @@ export const FlasherTab: React.FC = () => {
   const [isDeviceMsListOpen, openDeviceMsList, closeDeviceMsList] = useModal(false);
   const [isAvrdudeGuideModalOpen, openAvrdudeGuideModal, closeAvrdudeGuideModal] = useModal(false);
 
-  const [isProMode, setProMode] = useState(false);
+  const isProMode = managerMSSetting?.mode === 'pro' ? true : false;
   const handleSwitchProMode = () => {
-    setProMode(!isProMode);
+    if (!managerMSSetting) return;
+    setManagerMSSetting({
+      ...managerMSSetting,
+      mode: isProMode ? 'simple' : 'pro',
+    });
   };
 
   const [isAddressEnrtyEditOpen, openAddressEnrtyEdit, closeAddressEnrtyEdit] = useModal(false); // для редактирования существующих записей в адресной книге

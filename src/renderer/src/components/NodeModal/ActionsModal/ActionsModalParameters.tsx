@@ -171,9 +171,9 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                     values: parameters[name].value as number[][],
                     isClickable: true,
                     style: {
-                      ledHeight: 16,
-                      ledWidth: 16,
-                      margin: 1,
+                      ledHeight: 12,
+                      ledWidth: 12,
+                      margin: 0.5,
                       border: 2,
                       isRounded: true,
                     },

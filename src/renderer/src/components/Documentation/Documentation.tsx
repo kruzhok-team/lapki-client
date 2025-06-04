@@ -54,8 +54,7 @@ export const Documentation: React.FC<DocumentationProps> = ({ width, onWidthChan
       onDocumentationToggle();
     }
     //Получаем ширину блока документации
-    const width = parseInt(ref.style.width);
-    onWidthChange(width);
+    onWidthChange(parseInt(ref.style.width));
   };
 
   useEffect(() => {

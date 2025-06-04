@@ -92,9 +92,13 @@ export const FlasherTab: React.FC = () => {
   const [isDeviceMsListOpen, openDeviceMsList, closeDeviceMsList] = useModal(false);
   const [isAvrdudeGuideModalOpen, openAvrdudeGuideModal, closeAvrdudeGuideModal] = useModal(false);
 
-  const [isProMode, setProMode] = useState(false);
+  const isProMode = managerMSSetting?.mode === 'multi-pro' ? true : false;
   const handleSwitchProMode = () => {
-    setProMode(!isProMode);
+    if (!managerMSSetting) return;
+    setManagerMSSetting({
+      ...managerMSSetting,
+      mode: isProMode ? 'multi-basic' : 'multi-pro',
+    });
   };
 
   const [isAddressEnrtyEditOpen, openAddressEnrtyEdit, closeAddressEnrtyEdit] = useModal(false); // для редактирования существующих записей в адресной книге
@@ -185,8 +189,8 @@ export const FlasherTab: React.FC = () => {
     - bootloader REF_HW: ${meta.RefBlHw} (${metaID.type})
     - bootloader REF_FW: ${meta.RefBlFw}
     - bootloader REF_CHIP: ${meta.RefBlChip}
-    - booloader REF_PROTOCOL: ${meta.RefBlProtocol}
-    - booloader USER_CODE: ${meta.RefBlUserCode}
+    - bootloader REF_PROTOCOL: ${meta.RefBlProtocol}
+    - bootloader USER_CODE: ${meta.RefBlUserCode}
     - cybergene REF_FW: ${meta.RefCgFw}
     - cybergene REF_HW: ${meta.RefCgHw}
     - cybergene REF_PROTOCOL: ${meta.RefCgProtocol}

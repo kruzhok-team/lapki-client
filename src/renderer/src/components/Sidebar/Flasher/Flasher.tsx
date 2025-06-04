@@ -9,6 +9,7 @@ import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as DeleteIcon } from '@renderer/assets/icons/delete.svg';
 import { ReactComponent as DownloadBinIcon } from '@renderer/assets/icons/download-bin.svg';
+import { ReactComponent as FactoryBinIcon } from '@renderer/assets/icons/factory-reset.svg';
 import { ReactComponent as FlashVerifyIcon } from '@renderer/assets/icons/flash-verify.svg';
 import { ReactComponent as FlashIcon } from '@renderer/assets/icons/flash.svg';
 import { ReactComponent as MetadataIcon } from '@renderer/assets/icons/metadata.svg';
@@ -37,15 +38,13 @@ import {
 } from '@renderer/types/FlasherTypes';
 
 import { AddressBookModal } from './AddressBook';
-import { AddressEntryEditModal } from './AddressEntryModal';
+import { AddressEntryEditModal, AddressEntryForm } from './AddressEntryModal';
 import { DeviceList } from './DeviceList';
 import { FlasherTable } from './FlasherTable';
 import { MsGetAddressModal } from './MsGetAddressModal';
 
 import { ManagerMS } from '../../Modules/ManagerMS';
 import { Switch, WithHint } from '../../UI';
-
-const monitorTabName = 'Монитор порта';
 
 export const FlasherTab: React.FC = () => {
   const modelController = useModelContext();
@@ -86,8 +85,6 @@ export const FlasherTab: React.FC = () => {
 
   const openTab = useTabs((state) => state.openTab);
   const closeTab = useTabs((state) => state.closeTab);
-  const tabs = useTabs((state) => state.items);
-  const isMonitorOpen = tabs.find((tab) => tab.name === monitorTabName) !== undefined;
 
   const [isAddressBookOpen, openAddressBook, closeAddressBook] = useModal(false);
   const [isMsGetAddressOpen, openMsGetAddressModal, closeMsGetAddressModal] = useModal(false);
@@ -101,9 +98,9 @@ export const FlasherTab: React.FC = () => {
   };
 
   const [isAddressEnrtyEditOpen, openAddressEnrtyEdit, closeAddressEnrtyEdit] = useModal(false); // для редактирования существующих записей в адресной книге
-  const addressEntryEditForm = useForm<AddressData>();
+  const addressEntryEditForm = useForm<AddressEntryForm>();
   const [isAddressEnrtyAddOpen, openAddressEnrtyAdd, closeAddressEnrtyAdd] = useModal(false); // для добавления новых записей в адресную книгу
-  const addressEntryAddForm = useForm<AddressData>();
+  const addressEntryAddForm = useForm<AddressEntryForm>();
 
   const [msgModalData, setMsgModalData] = useState<ErrorModalData>();
   const [isMsgModalOpen, setIsMsgModalOpen] = useState(false);
@@ -189,6 +186,7 @@ export const FlasherTab: React.FC = () => {
     - bootloader REF_FW: ${meta.RefBlFw}
     - bootloader REF_CHIP: ${meta.RefBlChip}
     - booloader REF_PROTOCOL: ${meta.RefBlProtocol}
+    - booloader USER_CODE: ${meta.RefBlUserCode}
     - cybergene REF_FW: ${meta.RefCgFw}
     - cybergene REF_HW: ${meta.RefCgHw}
     - cybergene REF_PROTOCOL: ${meta.RefCgProtocol}
@@ -323,26 +321,82 @@ export const FlasherTab: React.FC = () => {
   const getOpHint = (op: OperationType) => {
     switch (op) {
       case OperationType.ping:
-        return 'Окликнуть плату, чтобы проверить связь с ней.';
+        return (
+          <p>
+            <b>Пинг</b>
+            <br />
+            Окликнуть плату, чтобы проверить связь с ней.
+          </p>
+        );
       case OperationType.reset:
-        return 'Перезагрузить плату.';
+        return (
+          <p>
+            <b>Сброс</b>
+            <br />
+            Перезагрузить плату.
+          </p>
+        );
       case OperationType.meta:
-        return 'Переспросить метаданные платы, если они не были получены ранее.';
+        return (
+          <p>
+            <b>Метаданные</b>
+            <br />
+            Переспросить метаданные платы, если они не были получены ранее.
+          </p>
+        );
       default:
         throw Error('Неизвестная операция');
     }
   };
 
-  const flashHint = 'Загрузить прошивку в выбранные платы.';
-  const flashVerifyHint =
-    'Загрузить прошивку с проверкой целостности. Увеличивает общее время загрузки, доступно не для всех устройств.';
+  const removeHint = (
+    <p>
+      <b>Удалить</b>
+      <br />
+      Убрать отмеченные платы из таблицы.
+    </p>
+  );
+  const flashHint = (
+    <p>
+      <b>Прошить</b>
+      <br />
+      Загрузить прошивку в выбранные платы.
+    </p>
+  );
+  const flashVerifyHint = (
+    <p>
+      <b>Прошить с проверкой</b>
+      <br />
+      Загрузить прошивку с проверкой целостности. Увеличивает общее время загрузки, доступно не для
+      всех устройств.
+    </p>
+  );
   const flashResultHint = useMemo(() => {
     if (flashResult.size === 0)
       return 'Выполните загрузку прошивки, и эта кнопка позволит посмотреть её результаты.';
-    return `Открыть вкладки с результатами загрузки прошивок (${flashResult.size} шт.)`;
+    return (
+      <p>
+        <b>Журнал загрузки</b>
+        <br />
+        Открыть вкладки с результатами загрузки прошивок (${flashResult.size} шт.)
+      </p>
+    );
   }, [flashResult]);
-  const downloadBinHint =
-    'Выгрузить файлы прошивки из выбранных плат. Доступно не для всех устройств.';
+  const downloadBinHint = (
+    <p>
+      <b>Скачать прошивку</b>
+      <br />
+      Выгрузить файлы прошивки из выбранных плат. Доступно не для всех устройств.
+    </p>
+  );
+  const factoryBinHint = (
+    <p>
+      <b>Загрузить «заводскую» прошивку</b>
+      <br />
+      Загрузить в выбранные платы прошивку, поставляемую с новой платой. Обычно это демонстрационная
+      прошивка. Доступно не для всех устройств.
+    </p>
+  );
 
   const handleOperation = (op: OperationType) => {
     for (const item of flashTableData) {
@@ -388,13 +442,7 @@ export const FlasherTab: React.FC = () => {
     }
   };
 
-  const handleSendBin = async (doVerify?: boolean) => {
-    if (doVerify !== undefined && managerMSSetting) {
-      setManagerMSSetting({
-        ...managerMSSetting,
-        verification: doVerify,
-      });
-    }
+  const handleSendBin = async (doVerify?: boolean, uploadFactory?: boolean) => {
     for (const item of flashTableData) {
       if (!item.isSelected) continue;
       let notFound = false;
@@ -409,7 +457,7 @@ export const FlasherTab: React.FC = () => {
             break;
           }
           devName = dev.displayName();
-          if (managerMSSetting?.verification) {
+          if (doVerify) {
             ManagerMS.addLog(
               `${devName}: верификация прошивки для данного устройства не поддерживается.`
             );
@@ -453,17 +501,51 @@ export const FlasherTab: React.FC = () => {
         );
         continue;
       }
-      if (!item.source) {
-        ManagerMS.addLog(
-          `${devName}: прошивка пропущена, так как для этой платы не указана прошивка.`
-        );
+      const getSource = async () => {
+        if (uploadFactory) {
+          const getTypeId = () => {
+            if (item.targetType === FirmwareTargetType.dev && dev) {
+              return ManagerMS.getDevicePlatform(dev);
+            } else if (item.targetType === FirmwareTargetType.tjc_ms && address) {
+              return address.type;
+            } else {
+              return null;
+            }
+          };
+          const typeId = getTypeId();
+          if (!typeId) {
+            ManagerMS.addLog(
+              `${devName}: Не удалось определить тип устройства для загрузки заводской прошивки. Пропускаю его.`
+            );
+            return null;
+          }
+          const [valid, path] = await window.api.fileHandlers.getDefaultFirmwarePath(
+            typeId,
+            dev?.isArduinoDevice() ? 'hex' : 'bin'
+          );
+          if (!valid) {
+            ManagerMS.addLog(
+              `${devName}: Загрузка заводской прошивки не поддерживается для данного устройства.`
+            );
+            return null;
+          }
+          return path;
+        }
+        if (!item.source) {
+          ManagerMS.addLog(`${devName}: Для этого устройства не указана прошивка. Пропускаю его.`);
+          return null;
+        }
+        return item.source;
+      };
+      const source = await getSource();
+      if (!source) {
         continue;
       }
-      if (item.isFile) {
-        const [binData, errorMessage] = await window.api.fileHandlers.readFile(item.source);
+      if (item.isFile || uploadFactory) {
+        const [binData, errorMessage] = await window.api.fileHandlers.readFile(source);
         if (errorMessage !== null) {
           ManagerMS.addLog(
-            `Ошибка! Не удалось извлечь данные из файла ${item.source}. Текст ошибки: ${errorMessage}`
+            `${devName}: Ошибка! Не удалось извлечь данные из файла ${source}. Текст ошибки: ${errorMessage}`
           );
           continue;
         }
@@ -472,7 +554,7 @@ export const FlasherTab: React.FC = () => {
             addressInfo: address,
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             device: dev!, // проверка осуществляется ранее в этой функции
-            verification: managerMSSetting ? managerMSSetting.verification : false,
+            verification: doVerify ?? false,
             binaries: new Blob([binData]),
             isFile: true,
           });
@@ -483,7 +565,7 @@ export const FlasherTab: React.FC = () => {
           ManagerMS.addLog(noBinary);
           continue;
         }
-        const smData = compilerData.state_machines[item.source];
+        const smData = compilerData.state_machines[source];
         if (!smData || !smData.binary || smData.binary.length === 0) {
           ManagerMS.addLog(noBinary);
           continue;
@@ -492,7 +574,7 @@ export const FlasherTab: React.FC = () => {
           addressInfo: address,
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           device: dev!, // проверка осуществляется ранее в этой функции
-          verification: managerMSSetting ? managerMSSetting.verification : false,
+          verification: doVerify ?? false,
           binaries: smData.binary,
           isFile: false,
         });
@@ -514,19 +596,25 @@ export const FlasherTab: React.FC = () => {
   /**
    * Обновление адресной книги после редактирования
    */
-  const addressEntryEditSubmitHandle = (data: AddressData) => {
+  const addressEntryEditSubmitHandle = (data: AddressEntryForm) => {
     if (addressBookSetting === null) return;
     // TODO: найти более оптимальный вариант
     const index = addressBookSetting.findIndex((entry) => {
       return entry.address === data.address;
     });
     if (index === -1) return;
-    onEdit(data, index);
+    const addressData = addressBookSetting[index];
+    onEdit({ ...addressData, name: data.name, address: data.address, type: data.type }, index);
   };
 
-  const addressEntryAddSubmitHandle = (data: AddressData) => {
+  const addressEntryAddSubmitHandle = (data: AddressEntryForm) => {
     addressEntryAddForm.reset();
-    onAdd(data);
+    onAdd({
+      address: data.address,
+      name: data.name,
+      type: data.type,
+      meta: undefined,
+    });
   };
 
   /**
@@ -534,7 +622,11 @@ export const FlasherTab: React.FC = () => {
    * @param data данные, которые нужно отредактированть
    */
   const addressEnrtyEdit = (data: AddressData) => {
-    addressEntryEditForm.reset(data);
+    addressEntryEditForm.reset({
+      ...data,
+      addressEditBlock: true,
+      typeEditBlock: data.type !== '' && data.type !== undefined,
+    });
     openAddressEnrtyEdit();
   };
 
@@ -582,16 +674,6 @@ export const FlasherTab: React.FC = () => {
         ManagerMS.addLog(`${dev.displayName()}: устройство уже было добавлено ранее в таблицу.`);
       }
     }
-  };
-
-  // добавление вкладки с serial monitor
-  // пока клиент может мониторить только один порт
-  const handleAddSerialMonitorTab = () => {
-    openTab(modelController, {
-      type: 'serialMonitor',
-      name: monitorTabName,
-      isOpen: isMonitorOpen,
-    });
   };
 
   const needAvrdude = useMemo(() => {
@@ -646,7 +728,7 @@ export const FlasherTab: React.FC = () => {
   const operationButtons = () => {
     return (
       <div className="m-1 flex items-center gap-0 overflow-x-auto">
-        <WithHint hint={'Убрать отмеченные платы из таблицы.'}>
+        <WithHint hint={removeHint}>
           {(hintProps) => (
             <button {...hintProps} className="btn-error mr-2 p-2 py-1" onClick={handleRemoveDevs}>
               <DeleteIcon className="h-8 w-8" />
@@ -726,6 +808,18 @@ export const FlasherTab: React.FC = () => {
                   disabled={binaryFolder !== null || commonOperationDisabled}
                 >
                   <DownloadBinIcon className="h-8 w-8" />
+                </button>
+              )}
+            </WithHint>
+            <WithHint hint={factoryBinHint}>
+              {(hintProps) => (
+                <button
+                  {...hintProps}
+                  className="btn-primary mr-2 whitespace-nowrap p-2 py-1"
+                  onClick={() => handleSendBin(false, true)}
+                  disabled={commonOperationDisabled}
+                >
+                  <FactoryBinIcon className="h-8 w-8" />
                 </button>
               )}
             </WithHint>
@@ -933,18 +1027,12 @@ export const FlasherTab: React.FC = () => {
         >
           Адресная книга
         </button>
-        <button
-          className="btn-primary mr-2 whitespace-nowrap p-1.5"
-          onClick={handleAddSerialMonitorTab}
-        >
-          Монитор порта
-        </button>
       </div>
       <div className="m-2">
         <p className="mb-1 mt-1 text-lg font-semibold">Устройства на прошивку</p>
         <FlasherTable addressEnrtyEdit={addressEnrtyEdit} getEntryById={getEntryById} />
       </div>
-      <div className="m-1 flex min-h-14">
+      <div className="m-1 flex min-h-16">
         <div
           className={twMerge(
             selectedDevicesCount == 0 ? 'opacity-50' : '',
@@ -1027,22 +1115,22 @@ export const FlasherTab: React.FC = () => {
         openAddressEnrtyAdd={openAddressEnrtyAdd}
       />
       <AddressEntryEditModal
+        title="Редактирование записи"
         addressBookSetting={addressBookSetting}
         form={addressEntryEditForm}
         isOpen={isAddressEnrtyEditOpen}
         onClose={closeAddressEnrtyEdit}
         onSubmit={addressEntryEditSubmitHandle}
         submitLabel="Сохранить"
-        allowAddressEdit={false}
       />
       <AddressEntryEditModal
+        title="Добавление записи"
         addressBookSetting={addressBookSetting}
         form={addressEntryAddForm}
         isOpen={isAddressEnrtyAddOpen}
         onClose={closeAddressEnrtyAdd}
         onSubmit={addressEntryAddSubmitHandle}
         submitLabel="Добавить"
-        allowAddressEdit={true}
       />
       <MsGetAddressModal
         isOpen={isMsGetAddressOpen}

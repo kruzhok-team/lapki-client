@@ -5,6 +5,7 @@ export enum SidebarIndex {
   Explorer,
   Compiler,
   Flasher, // исключение: является полноценной, а не боковой вкладкой
+  SerialMonitor, // исключение: является полноценной, а не боковой вкладкой
   History,
   Documentation, // исключение: открывается с правого бока
   Settings,

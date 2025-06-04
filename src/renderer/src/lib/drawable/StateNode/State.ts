@@ -120,8 +120,7 @@ export class State extends Shape {
 
     ctx.roundRect(x, y, width, height, [6 / this.scale, 6 / this.scale, 0, 0]);
     ctx.fill();
-
-    drawText(ctx, this.data.name || 'Без названия', {
+    drawText(ctx, this.data.name ?? 'Без названия', {
       x: x + paddingX,
       y: y + paddingY,
       textAlign: 'left',
@@ -139,14 +138,14 @@ export class State extends Shape {
   private drawOutline(ctx: CanvasRenderingContext2D) {
     const { x, y, width, height, childrenHeight } = this.drawBounds;
 
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 3 / this.scale;
     ctx.strokeStyle = style.bodyBg;
     ctx.beginPath();
     ctx.roundRect(x, y, width, childrenHeight !== 0 ? childrenHeight : height, 6 / this.scale);
     ctx.stroke();
     ctx.closePath();
 
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 2 / this.scale;
     ctx.strokeStyle = this.data.color ?? getColor('default-state-outline');
 
     ctx.beginPath();
@@ -159,15 +158,15 @@ export class State extends Shape {
   private drawSelection(ctx: CanvasRenderingContext2D) {
     const { x, y, width, height, childrenHeight } = this.drawBounds;
 
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 3 / this.scale;
     ctx.strokeStyle = getColor('primaryActive');
 
     ctx.beginPath();
     ctx.roundRect(
-      x - 2,
-      y - 2,
-      width + 4,
-      (childrenHeight !== 0 ? childrenHeight : height) + 4,
+      x - 2 / this.scale,
+      y - 2 / this.scale,
+      width + 4 / this.scale,
+      (childrenHeight !== 0 ? childrenHeight : height) + 4 / this.scale,
       6 / this.scale
     );
     ctx.stroke();

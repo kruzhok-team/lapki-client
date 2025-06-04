@@ -47,10 +47,12 @@ export const defaultSettings = {
     type: 'local' as ModuleType,
   },
   compiler: {
-    host: defaultCompilerHost,
-    port: defaultCompilerPort,
+    localHost: 'localhost',
     localPort: 0,
-    type: 'remote' as ModuleType,
+    remoteHost: defaultCompilerHost,
+    remotePort: defaultCompilerPort,
+    // FIXME (L140-beep): реализация локального компилятора на Linux и macOS
+    type: (process.platform === 'win32' ? 'local' : 'remote') as ModuleType,
   },
   flasher: {
     host: 'localhost',
@@ -88,11 +90,6 @@ export const defaultSettings = {
    * Параметры менеджера МС-ТЮК
    */
   managerMS: {
-    /**
-     * Параметр, отправляемый загрузчику при запросе прошивки.
-     * Если true, то загрузчик потратит дополнительное время на проверку прошивки.
-     */
-    verification: false,
     /**
      * Если true, то будет автоматическая прокрутка окна с логами
      */

@@ -61,22 +61,29 @@ export const StateMachinesHierarchy: React.FC<StateMachinesHierarchyProps> = ({
         onCollapseAll={onCollapseAll}
         search={search}
         onChangeSearch={handleChangeSearch}
+        disabled={headControllerId === ''}
       />
       <div
         className={
           'overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb'
         }
       >
-        {stateMachinesIds.map((smId) => (
-          <Hierarchy
-            key={smId}
-            expand={expand}
-            collapse={collapse}
-            search={search}
-            controller={controller}
-            smId={smId}
-          />
-        ))}
+        {headControllerId === '' ? (
+          <p className="text-text-inactive">
+            <i>Нет активной диаграммы</i>
+          </p>
+        ) : (
+          stateMachinesIds.map((smId) => (
+            <Hierarchy
+              key={smId}
+              expand={expand}
+              collapse={collapse}
+              search={search}
+              controller={controller}
+              smId={smId}
+            />
+          ))
+        )}
       </div>
     </div>
   );

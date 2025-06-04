@@ -53,9 +53,18 @@ export const systemComponent: ComponentProto = {
   description: 'Встроенные платформонезависимые события и методы',
   singletone: true,
   img: 'system',
+  name: 'Общие',
   signals: {
-    onEnter: { img: 'onEnter', description: 'Выполнять при переходе в это состояние' },
-    onExit: { img: 'onExit', description: 'Выполнять при переходе из этого состояния' },
+    onEnter: {
+      img: 'onEnter',
+      alias: 'Вход',
+      description: 'Выполнять при переходе в это состояние',
+    },
+    onExit: {
+      img: 'onExit',
+      alias: 'Выход',
+      description: 'Выполнять при переходе из этого состояния',
+    },
   },
   variables: {}, // TODO: userVar
   methods: {}, // TODO: userCode
@@ -223,6 +232,15 @@ export class PlatformManager {
     };
     // console.log(['getComponentIcon', name, isName, query, icons.get(query)!.src]);
     return this.picto.getMarkedIcon(iconQuery, className);
+  }
+
+  getRawComponentIcon(name: string, className?: string): React.ReactNode {
+    return this.picto.getMarkedIcon(
+      {
+        icon: this.getComponentIcon(name),
+      },
+      className
+    );
   }
 
   getEventIcon(component: string, method: string) {

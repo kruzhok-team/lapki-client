@@ -665,12 +665,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.unwatch(specificCanvas);
     delete this.controllers[specificCanvas.id];
 
-    if (Object.values(this.controllers).length === 1) {
-      this.changeHeadControllerId('');
-    } else {
-      this.changeHeadControllerId(Object.values(this.controllers)[1].id);
-    }
-
     if (canUndo) {
       this.history.do({
         type: 'deleteStateMachine',
@@ -2145,7 +2139,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     return [componentMap, duplicatedComponents];
   }
 
-  duplicateStateMachine(smId: string) {
+  duplicateStateMachine(smId: string): [string, string | undefined, string] {
     const stateMachine = this.model.data.elements.stateMachines[smId];
 
     if (!stateMachine) throw new Error('Duplicated state machine does not exist!');
@@ -2167,14 +2161,16 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       const oldComponentId = componentMap[newComponentId];
       this.model.renameComponentInEvents(newStateMachine, oldComponentId, newComponentId);
     }
+
+    const newName =
+      newStateMachine.name !== undefined
+        ? this.validator.getStateMachineName(newStateMachine.name)
+        : undefined;
     const canvasId: string = this.createStateMachine(
       newSmId,
       {
         ...newStateMachine,
-        name:
-          newStateMachine.name !== undefined
-            ? this.validator.getStateMachineName(newStateMachine.name)
-            : undefined,
+        name: newName,
         components: duplicatedComponents,
         position: {
           x: newStateMachine.position.x + PASTE_POSITION_OFFSET_STEP,
@@ -2184,7 +2180,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       true
     );
 
-    return [newSmId, canvasId];
+    return [newSmId, newName, canvasId];
   }
 
   selectState = (args: SelectDrawable) => {

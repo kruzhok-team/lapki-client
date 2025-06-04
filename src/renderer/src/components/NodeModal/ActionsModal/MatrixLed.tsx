@@ -41,7 +41,12 @@ export const MatrixLed: React.FC<MatrixLedProps> = ({
   const handleClick = () => {
     if (!isClickable) return;
 
-    if (isHalf) return onChange(rowIndex, colIndex, currentBrushValue);
+    if (isHalf) {
+      if (currentBrushValue === value) {
+        return onChange(rowIndex, colIndex, range.min);
+      }
+      return onChange(rowIndex, colIndex, currentBrushValue);
+    }
 
     if (value !== range.max) {
       return onChange(rowIndex, colIndex, range.max);

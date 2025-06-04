@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
-import { Device } from '@renderer/components/Modules/Device';
-import { Checkbox, Select, SelectOption } from '@renderer/components/UI';
+import { ReactComponent as SelectFileIcon } from '@renderer/assets/icons/upload-file.svg';
+import { ManagerMS } from '@renderer/components/Modules/ManagerMS';
+import { Checkbox, Select, SelectOption, WithHint } from '@renderer/components/UI';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { useFlasher } from '@renderer/store/useFlasher';
 import { StateMachine } from '@renderer/types/diagram';
@@ -46,6 +47,90 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
 
   const [checkedAll, setCheckedAll] = useState<boolean>(true);
   const [fileBaseName, setFileBaseName] = useState<Map<number | string, string>>(new Map());
+  const [stateMachineOptions, setStateMachineOptions] = useState<Map<string, SelectOption[]>>(
+    new Map()
+  );
+  const [allAddressOptions, setAllAddressOptions] = useState<SelectOption[]>([]);
+
+  useEffect(() => {
+    const newStateMachineOptions: typeof stateMachineOptions = new Map();
+    const newAllAddressOptions: typeof allAddressOptions = [];
+    // составление словаря, где ключ - это платформа, а значение - это список доступных на данный момент машин состояний на этой платформе
+    // также здесь составляется список всех доступных платформ для выпадающего списка на случай, если тип платы неизвестен
+    [...Object.entries(stateMachinesId)].forEach(([smId, sm]) => {
+      if (!smId) return;
+      let key: string = '';
+      if (sm.platform.startsWith('tjc')) {
+        if (isStrictVersionCheck(sm.platform)) {
+          key = sm.platform;
+        } else {
+          key = platformWithoutVersion(sm.platform);
+        }
+      } else {
+        key = sm.platform;
+      }
+      const value = newStateMachineOptions.get(key) ?? [];
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      newStateMachineOptions.set(key, [...value, stateMachineOption(sm, smId)!]);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      newAllAddressOptions.push(stateMachineOption(sm, smId)!);
+    });
+
+    const noPlatformOptions = newStateMachineOptions.get('');
+    if (noPlatformOptions !== undefined) {
+      for (const key of newStateMachineOptions.keys()) {
+        if (key === '') continue;
+        const options = newStateMachineOptions.get(key);
+        if (options !== undefined) {
+          newStateMachineOptions.set(key, options.concat(noPlatformOptions));
+        }
+      }
+    }
+
+    setStateMachineOptions(newStateMachineOptions);
+    setAllAddressOptions(newAllAddressOptions);
+  }, [stateMachinesId]);
+
+  useEffect(() => {
+    setTableData(
+      tableData.map((item) => {
+        if (item.source) return item;
+        return {
+          ...item,
+          source: defaultSm(getTypeID(item)),
+        };
+      })
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stateMachineOptions, allAddressOptions, tableData.length]);
+
+  const getTypeID = (item: FlashTableItem) => {
+    if (item.targetType === FirmwareTargetType.dev) {
+      const dev = devices.get(item.targetId as string);
+      if (!dev) return null;
+      return ManagerMS.getDevicePlatform(dev) ?? null;
+    } else if (item.targetType === FirmwareTargetType.tjc_ms) {
+      const addressData = getEntryById(item.targetId as number);
+      if (!addressData) {
+        return null;
+      }
+      const typeId = addressData.type ?? null;
+      if (typeId && !isStrictVersionCheck(typeId)) {
+        return platformWithoutVersion(typeId);
+      }
+      return typeId;
+    }
+    return null;
+  };
+
+  const defaultSm = (typeId: string | null) => {
+    const options = typeId ? stateMachineOptions.get(typeId) : allAddressOptions;
+    if (!options) return undefined;
+    if (options.length === 1) {
+      return options[0].value;
+    }
+    return undefined;
+  };
 
   const stateMachineOption = (sm: StateMachine | null | undefined, smId: string) => {
     if (!sm) return null;
@@ -72,41 +157,6 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
     });
   };
 
-  const stateMachineOptions = new Map<string, SelectOption[]>();
-  const allAddressOptions: SelectOption[] = [];
-
-  // составление словаря, где ключ - это платформа, а значение - это список доступных на данный момент машин состояний на этой платформе
-  // также здесь составляется список всех доступных платформ для выпадающего списка на случай, если тип платы неизвестен
-  [...Object.entries(stateMachinesId)].forEach(([smId, sm]) => {
-    if (!smId) return;
-    let key: string = '';
-    if (sm.platform.startsWith('tjc')) {
-      if (isStrictVersionCheck(sm.platform)) {
-        key = sm.platform;
-      } else {
-        key = platformWithoutVersion(sm.platform);
-      }
-    } else {
-      key = sm.platform;
-    }
-    const value = stateMachineOptions.get(key) ?? [];
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    stateMachineOptions.set(key, [...value, stateMachineOption(sm, smId)!]);
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    allAddressOptions.push(stateMachineOption(sm, smId)!);
-  });
-
-  const noPlatformOptions = stateMachineOptions.get('');
-  if (noPlatformOptions !== undefined) {
-    for (const key of stateMachineOptions.keys()) {
-      if (key === '') continue;
-      const options = stateMachineOptions.get(key);
-      if (options !== undefined) {
-        stateMachineOptions.set(key, options.concat(noPlatformOptions));
-      }
-    }
-  }
-
   const handleSelectFile = async (tableItem: FlashTableItem) => {
     const [canceled, filePath, basename] = await window.api.fileHandlers.selectFile(
       'прошивки',
@@ -132,26 +182,25 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
     });
   };
 
-  const removeSource = (tableItem: FlashTableItem) => {
+  const handleRemoveFileSource = (tableItem: FlashTableItem) => {
+    setFileBaseName((oldMap) => {
+      const newMap = new Map(oldMap);
+      newMap.delete(tableItem.targetId);
+      return newMap;
+    });
+
     setTableData(
       tableData.map((item) => {
-        if (item.targetId === tableItem.targetId) {
+        if (item.targetType === tableItem.targetType && item.targetId === tableItem.targetId) {
           return {
             ...item,
-            source: undefined,
+            source: defaultSm(getTypeID(tableItem)),
             isFile: false,
           };
         }
         return item;
       })
     );
-    if (tableItem.isFile) {
-      setFileBaseName((oldMap) => {
-        const newMap = new Map(oldMap);
-        newMap.delete(tableItem.targetId);
-        return newMap;
-      });
-    }
   };
 
   const onCheckedChangeHandle = (tableItem: FlashTableItem) => {
@@ -199,22 +248,6 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
     );
   };
 
-  const getDevicePlatform = (device: Device) => {
-    // TODO: подумать, можно ли найти более надёжный способ сверки платформ на клиенте и сервере
-    // названия платформ на загрузчике можно посмотреть здесь: https://github.com/kruzhok-team/lapki-flasher/blob/main/src/device_list.JSON
-    const name = device.name.toLocaleLowerCase();
-    switch (name) {
-      case 'arduino micro':
-      case 'arduino micro (bootloader)':
-        return 'ArduinoMicro';
-      case 'arduino uno':
-        return 'ArduinoUno';
-      case 'кибермишка':
-        return 'blg-mb-1-a7';
-    }
-    return undefined;
-  };
-
   const cellRender = (content: string | JSX.Element, mergeClassName: string, colspan?: number) => {
     return (
       <td
@@ -249,6 +282,7 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
     );
   };
 
+  // (Roundabout1) TODO: добавить поля для рендера в FlashTableItem (displayName, displayType и т.д.)
   const rowRender = (tableItem: FlashTableItem) => {
     const checked = tableItem.isSelected;
     // Реализовать рендер для arduino
@@ -275,10 +309,25 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
         return;
       }
       displayName = dev.displayName();
-      typeId = getDevicePlatform(dev);
+      typeId = ManagerMS.getDevicePlatform(dev);
     } else {
       throw Error(`Плата не поддерживается: ${tableItem}`);
     }
+    const devInfoDisplay = (displayInfo: string, column: string) => {
+      return cellRender(
+        <label
+          onDoubleClick={() => {
+            if (addressData) {
+              addressEnrtyEdit(addressData);
+            }
+          }}
+          className={addressData ? 'cursor-pointer' : ''}
+        >
+          {displayInfo}
+        </label>,
+        column
+      );
+    };
     return (
       <tr key={tableItem.targetId}>
         <td>
@@ -288,20 +337,9 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
             onCheckedChange={() => onCheckedChangeHandle(tableItem)}
           />
         </td>
-        {cellRender(
-          <label
-            onClick={() => {
-              if (addressData) {
-                addressEnrtyEdit(addressData);
-              }
-            }}
-          >
-            {displayName}
-          </label>,
-          nameColumn
-        )}
-        {cellRender(<label>{displayType}</label>, typeColumn)}
-        {cellRender(<label>{displayAddress}</label>, addressColumn)}
+        {devInfoDisplay(displayName, nameColumn)}
+        {devInfoDisplay(displayType, typeColumn)}
+        {devInfoDisplay(displayAddress, addressColumn)}
         {/* (Roundabout1) TODO: центрировать текст опций в выпадающем списке и текстовом поле */}
         <td>
           {tableItem.isFile ? (
@@ -332,19 +370,31 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
           )}
         </td>
         <td>
-          <button
-            type="button"
-            className={twMerge(
-              'rounded border border-border-primary',
-              selectFileSubColumn,
-              cellHeight
-            )}
-            onClick={() =>
-              tableItem.source ? removeSource(tableItem) : handleSelectFile(tableItem)
+          <WithHint
+            hint={
+              tableItem.isFile
+                ? 'Убрать файл из таблицы.'
+                : 'Выбрать файл с прошивкой для загрузки в плату.'
             }
+            placement="left"
           >
-            {tableItem.source ? '✖' : '…'}
-          </button>
+            {(hintProps) => (
+              <button
+                {...hintProps}
+                type="button"
+                className={twMerge(
+                  'rounded border border-border-primary',
+                  selectFileSubColumn,
+                  cellHeight
+                )}
+                onClick={() =>
+                  tableItem.isFile ? handleRemoveFileSource(tableItem) : handleSelectFile(tableItem)
+                }
+              >
+                {tableItem.isFile ? '✖' : <SelectFileIcon className="opacity-70" />}
+              </button>
+            )}
+          </WithHint>
         </td>
       </tr>
     );

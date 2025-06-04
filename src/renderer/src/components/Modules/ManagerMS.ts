@@ -266,4 +266,20 @@ export class ManagerMS {
       this.flashingAddressLog(`ошибка выгрузки прошивки: ${error}`);
     }
   }
+
+  static getDevicePlatform = (device: Device) => {
+    // TODO: подумать, можно ли найти более надёжный способ сверки платформ на клиенте и сервере
+    // названия платформ на загрузчике можно посмотреть здесь: https://github.com/kruzhok-team/lapki-flasher/blob/main/src/device_list.JSON
+    const name = device.name.toLocaleLowerCase();
+    switch (name) {
+      case 'arduino micro':
+      case 'arduino micro (bootloader)':
+        return 'ArduinoMicro';
+      case 'arduino uno':
+        return 'ArduinoUno';
+      case 'кибермишка':
+        return 'blg-mb-1-a7';
+    }
+    return undefined;
+  };
 }

@@ -28,9 +28,10 @@ export const AttributeConstSwitch: React.FC<AttributeConstSwitch> = ({
     }
     return null;
   };
-  // const color = getColor('bg-secondary');
-  const color = '#F1F1F1';
-  // console.log(color);
+  // Методы onColor и offColor чувствительны к пробелам (getColor возвращает hex число с ведущим пробелом)
+  const switchBgColor = getColor('bg-primary').trim();
+  // Здесь не важно, если ведущий пробел или нет
+  const switchIconsColor = getColor('primary');
   return (
     <div {...props}>
       <WithHint hint={getHint()}>
@@ -45,17 +46,22 @@ export const AttributeConstSwitch: React.FC<AttributeConstSwitch> = ({
               checked={isAttribute}
               disabled={isDisabled}
               checkedIcon={
-                <ConstIcon className="absolute left-0.5 top-[10%] size-[23px] opacity-40" />
+                <ConstIcon
+                  className="absolute left-0.5 top-[10%] size-[23px] opacity-40"
+                  color={switchIconsColor}
+                />
               }
-              checkedHandleIcon={<AttributeIcon />}
+              checkedHandleIcon={<AttributeIcon color={switchIconsColor} />}
               uncheckedIcon={
-                <AttributeIcon className=" absolute right-0.5 top-[10%] size-[23px] opacity-40" />
+                <AttributeIcon
+                  className=" absolute right-0.5 top-[10%] size-[23px] opacity-40"
+                  color={switchIconsColor}
+                />
               }
-              uncheckedHandleIcon={<ConstIcon />}
-              onColor={color}
-              offColor={color}
+              uncheckedHandleIcon={<ConstIcon color={switchIconsColor} />}
+              onColor={switchBgColor}
+              offColor={switchBgColor}
               handleDiameter={24}
-              //borderRadius={21}
             />
             {/* <RSwitch.Root
               className={twMerge(

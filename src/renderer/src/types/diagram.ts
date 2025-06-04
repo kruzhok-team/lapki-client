@@ -26,13 +26,14 @@ export type Event = {
   component: string;
   method: string;
   args?: ArgList;
+  // selection?: boolean; Или лучше выделение хранить здесь?
 };
 
 export type EventData = {
   trigger: Event | string;
   do: Action[] | string;
   condition?: Condition | string;
-  selection?: boolean; // Или лучше в Event?
+  selection?: boolean;
 };
 
 interface BaseState {

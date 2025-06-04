@@ -596,7 +596,7 @@ export class EditorModel {
 
     if (!event) return false;
 
-    if (!actionIdx) {
+    if (actionIdx === null || actionIdx === undefined) {
       event.selection = selection;
       return true;
     }

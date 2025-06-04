@@ -1,5 +1,3 @@
-import React from 'react';
-
 import Switch from 'react-switch';
 import { twMerge } from 'tailwind-merge';
 
@@ -38,10 +36,9 @@ export const AttributeConstSwitch: React.FC<AttributeConstSwitch> = ({
         {(hintProps) => (
           <div {...hintProps}>
             <Switch
-              className={twMerge(
-                'bg-bg-secondary shadow-[0_0_0_1px] shadow-border-primary outline-none focus:shadow-[0_0_0_1px]',
-                className
-              )}
+              type="button"
+              role="switch"
+              className={twMerge('shadow-[0_0_0_1px] shadow-border-primary', className)}
               onChange={(checked) => onCheckedChange(checked)}
               checked={isAttribute}
               disabled={isDisabled}

@@ -2,6 +2,7 @@ import { useSyncExternalStore } from 'react';
 
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
+import { EventSelection } from '@renderer/lib/drawable';
 import {
   AddDragendStateSig,
   ChangeComponentPosition,
@@ -36,6 +37,7 @@ import {
   LinkTransitionParams,
   RenameComponentParams,
   SelectDrawable,
+  SelectEvent,
   UnlinkStateParams,
 } from '@renderer/lib/types';
 import {
@@ -129,7 +131,7 @@ export type CanvasControllerEvents = {
   selectComponent: SelectDrawable;
   selectChoice: SelectDrawable;
   selectTransition: SelectDrawable;
-
+  selectEvent: SelectEvent;
   changeStateSelection: ChangeSelectionParams;
   changeState: ChangeStateParams;
 

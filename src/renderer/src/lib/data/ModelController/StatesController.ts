@@ -461,7 +461,6 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   };
 
   handleStateMouseDown = (state: State, e: { event: MyMouseEvent }) => {
-    // Пустое название машины состояний - заглушка
     this.controller.selectState({ smId: state.smId, id: state.id });
     this.controller.emit('selectState', { smId: state.smId, id: state.id });
     const targetPos = state.computedPosition;
@@ -470,7 +469,14 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     // FIXME: если будет учёт нажатий на дочерний контейнер, нужно отсеять их здесь
     if (y > titleHeight) {
       // FIXME: пересчитывает координаты внутри, ещё раз
-      state.eventBox.handleClick({ x: e.event.x, y: e.event.y });
+      const idx = state.eventBox.handleClick({ x: e.event.x, y: e.event.y });
+      if (idx) {
+        this.controller.emit('selectEvent', {
+          smId: state.smId,
+          stateId: state.id,
+          eventSelection: idx,
+        });
+      }
     }
   };
 

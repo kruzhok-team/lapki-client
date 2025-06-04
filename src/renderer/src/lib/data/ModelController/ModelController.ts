@@ -8,6 +8,7 @@ import {
   PASTE_POSITION_OFFSET_STEP,
 } from '@renderer/lib/constants';
 import { History } from '@renderer/lib/data/History';
+import { EventSelection } from '@renderer/lib/drawable';
 import {
   CCreateInitialStateParams,
   CopyData,
@@ -15,6 +16,7 @@ import {
   EditComponentParams,
   LinkStateParams,
   SelectDrawable,
+  SelectEvent,
   StatesControllerDataStateType,
   UnlinkStateParams,
 } from '@renderer/lib/types/ControllerTypes';
@@ -53,6 +55,7 @@ import {
   emptyStateMachine,
   Action,
   Component,
+  EventData,
 } from '@renderer/types/diagram';
 
 import { CanvasController, CanvasControllerEvents } from './CanvasController';
@@ -222,6 +225,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     controller.on('changeComponentPosition', this.changeComponentPosition);
     controller.on('changeTransitionPositionFromController', this.changeTransitionPosition);
     controller.on('changeStateMachinePosition', this.changeStateMachinePosition);
+    controller.on('selectEvent', this.selectEvent);
   }
 
   private openChangeTransitionModal = (args: { smId: string; id: string }) => {
@@ -248,6 +252,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     controller.off('changeStateMachinePosition', this.changeStateMachinePosition);
     controller.off('changeTransitionPositionFromController', this.changeTransitionPosition);
     controller.off('changeNotePositionFromController', this.changeNotePosition);
+    controller.off('selectEvent', this.selectEvent);
     controller.unwatch();
   }
 
@@ -1787,12 +1792,61 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     return state;
   }
 
+  /**
+   * Удалить все (пока что только одно) выделенные события/действия в состоянии
+   *
+   * @returns было ли совершено удаление
+   */
+  private deleteSelectedEvent(smId: string, stateId: string, events: EventData[]) {
+    let isDeleted = false;
+    for (const eventIdx in events) {
+      const event = events[eventIdx];
+      const idx = Number(eventIdx);
+
+      if (event.selection) {
+        isDeleted =
+          isDeleted ||
+          this.deleteEvent({
+            smId,
+            stateId,
+            event: {
+              eventIdx: idx,
+              actionIdx: null,
+            },
+          });
+        continue;
+      }
+
+      if (typeof event.do === 'string') continue;
+
+      for (const actionIdx in event.do) {
+        if (event.do[actionIdx].selection) {
+          isDeleted =
+            isDeleted ||
+            this.deleteEvent({
+              smId,
+              stateId,
+              event: {
+                eventIdx: idx,
+                actionIdx: Number(actionIdx),
+              },
+            });
+        }
+      }
+    }
+
+    return isDeleted;
+  }
+
   deleteSelected = () => {
     for (const smId in this.model.data.elements.stateMachines) {
       const sm = this.model.data.elements.stateMachines[smId];
       Object.keys(sm.states).forEach((key) => {
         const state = sm.states[key];
         if (state.selection) {
+          // (L140-beep): Когда мы выделяем событие/действие, то выделяется и состояние
+          // Поэтому в приоритете удаление действия, а затем самого состояния
+          if (this.deleteSelectedEvent(smId, key, state.events)) return;
           this.deleteState({ smId, id: key });
         }
       });
@@ -1903,10 +1957,10 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   // Удаление события в состояниях
   //TODO показывать предупреждение при удалении события в состоянии(модалка)
-  deleteEvent(args: DeleteEventParams, canUndo = true) {
+  deleteEvent(args: DeleteEventParams, canUndo = true): boolean {
     const { stateId, event, smId } = args;
     const state = this.model.data.elements.stateMachines[smId].states[stateId];
-    if (!state) return;
+    if (!state) return false;
 
     const { eventIdx, actionIdx } = event;
 
@@ -1918,7 +1972,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
       const prevValue = state.events[eventIdx].do[actionIdx];
 
-      if (!this.model.deleteEventAction(smId, stateId, event)) return;
+      if (!this.model.deleteEventAction(smId, stateId, event)) return false;
       this.emit('deleteEventAction', { smId, stateId, event });
       if (canUndo) {
         this.history.do({
@@ -1929,7 +1983,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     } else {
       const prevValue = state.events[eventIdx];
 
-      if (!this.model.deleteEvent(smId, stateId, eventIdx)) return;
+      if (!this.model.deleteEvent(smId, stateId, eventIdx)) return false;
       this.emit('deleteEvent', { smId, stateId, event });
       if (canUndo) {
         this.history.do({
@@ -1938,6 +1992,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         });
       }
     }
+
+    return true;
   }
 
   copySelected = () => {
@@ -2188,6 +2244,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const state = this.model.data.elements.stateMachines[smId].states[id];
     if (!state) return;
 
+    this.removeEventsSelection(smId, id, state.events);
     this.removeSelection([id]);
 
     this.model.changeStateSelection(smId, id, true);
@@ -2235,7 +2292,38 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (!note) return;
     this.removeSelection([id]);
     this.model.changeNoteSelection(smId, id, true);
-    // this.emit('selectNote', { smId: smId, id: id });
+  };
+
+  selectEvent = (args: SelectEvent) => {
+    const { smId, stateId, eventSelection } = args;
+    if (this.model.changeEventSelection(smId, stateId, eventSelection, true)) {
+      this.removeSelection([stateId]);
+    }
+  };
+
+  removeEventsSelection = (smId: string, stateId: string, events: EventData[]) => {
+    for (const eventIdx in events) {
+      const event = events[eventIdx];
+      const idx = Number(eventIdx);
+      let eventSelection: EventSelection = {
+        eventIdx: idx,
+        actionIdx: null,
+      };
+      if (this.model.changeEventSelection(smId, stateId, eventSelection, false)) {
+        this.emit('selectEvent', { smId, stateId, eventSelection });
+      }
+      if (typeof event.do === 'string') continue;
+      for (const strActionIndex in event.do) {
+        const actionIdx = Number(strActionIndex);
+        eventSelection = {
+          eventIdx: idx,
+          actionIdx: actionIdx,
+        };
+        if (this.model.changeEventSelection(smId, stateId, eventSelection, false)) {
+          this.emit('selectEvent', { smId, stateId, eventSelection });
+        }
+      }
+    }
   };
 
   // TODO: Доделать
@@ -2276,6 +2364,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         .forEach((id) => {
           if (this.model.changeStateSelection(smId, id, false)) {
             this.emit('changeStateSelection', { smId, id, value: false });
+            const events = sm.states[id].events;
+            this.removeEventsSelection(smId, id, events);
           }
         });
 

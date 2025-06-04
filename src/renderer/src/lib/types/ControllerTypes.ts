@@ -1,4 +1,10 @@
-import { State, InitialState, FinalState, ChoiceState } from '@renderer/lib/drawable';
+import {
+  State,
+  InitialState,
+  FinalState,
+  ChoiceState,
+  EventSelection,
+} from '@renderer/lib/drawable';
 import {
   Component as ComponentData,
   State as StateData,
@@ -15,6 +21,12 @@ import { DrawableComponent } from '../drawable/ComponentNode';
 
 export interface SelectDrawable {
   id: string;
+  smId: string;
+}
+
+export interface SelectEvent {
+  eventSelection: EventSelection;
+  stateId: string;
   smId: string;
 }
 

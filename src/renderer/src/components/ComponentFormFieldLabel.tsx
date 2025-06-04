@@ -30,24 +30,24 @@ export const ComponentFormFieldLabel: React.FC<ComponentFormFieldLabelProps> = (
   return (
     <div>
       <Component className="grid grid-cols-[max-content,1fr] items-center justify-start gap-2">
-        <div className={twMerge('mt-2 flex h-full min-w-32 gap-1', labelClassName)}>
-          <span>{label}</span>
+        <div className={twMerge('flex h-full min-w-32 gap-1', labelClassName)}>
+          <span className="self-center">{label}</span>
           {hint && (
             <WithHint hint={hint}>
               {(props) => (
-                <div className="shrink-0" {...props}>
+                <div className="shrink-0 self-center" {...props}>
                   <QuestionMark className="h-5 w-5" />
                 </div>
               )}
             </WithHint>
           )}
         </div>
-        <div className={childrenDivClassname}>
+        <div className={twMerge(childrenDivClassname, 'self-center')}>
           {children || (
             <div>
               <input
                 className={twMerge(
-                  'rounded border border-border-primary bg-transparent px-2 py-1 text-text-primary outline-none focus:border-text-primary',
+                  'w-full rounded border border-border-primary bg-transparent px-2 py-1 text-text-primary outline-none focus:border-text-primary',
                   error && '!border-error text-error',
                   className
                 )}

@@ -7,7 +7,7 @@ import { defaultCompilerHost, defaultCompilerPort, defaultRemoteDocHost } from '
 
 type ModuleType = 'local' | 'remote';
 
-export type FlasherType = 'simple' | 'pro';
+export type FlasherType = 'multi-basic' | 'multi-pro';
 
 type MetaType =
   | {

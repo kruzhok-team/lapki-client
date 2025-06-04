@@ -92,12 +92,12 @@ export const FlasherTab: React.FC = () => {
   const [isDeviceMsListOpen, openDeviceMsList, closeDeviceMsList] = useModal(false);
   const [isAvrdudeGuideModalOpen, openAvrdudeGuideModal, closeAvrdudeGuideModal] = useModal(false);
 
-  const isProMode = managerMSSetting?.mode === 'pro' ? true : false;
+  const isProMode = managerMSSetting?.mode === 'multi-pro' ? true : false;
   const handleSwitchProMode = () => {
     if (!managerMSSetting) return;
     setManagerMSSetting({
       ...managerMSSetting,
-      mode: isProMode ? 'simple' : 'pro',
+      mode: isProMode ? 'multi-basic' : 'multi-pro',
     });
   };
 

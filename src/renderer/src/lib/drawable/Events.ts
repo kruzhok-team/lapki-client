@@ -22,7 +22,7 @@ export class Events {
 
   private textArray = [] as string[];
   // private textEvents = [] as string[];
-
+  // TODO (L140-beep): EventSelection[] для мультивыделения
   selection?: EventSelection;
 
   minEventRow = 3;
@@ -73,6 +73,7 @@ export class Events {
     // TODO: здесь рассчитываем eventRowLength и считаем ряды по нему
     // но в таком случае контейнер может начать «скакать»
     this.data.map((ev) => {
+      if (!ev) return;
       if (ev.condition) {
         eventRows += 1;
       }

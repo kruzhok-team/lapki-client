@@ -18,6 +18,7 @@ import {
   StateVariant,
   ChangeStateNameParams,
   CreateInitialStateControllerParams,
+  SelectEvent,
 } from '@renderer/lib/types/ControllerTypes';
 import { Point } from '@renderer/lib/types/graphics';
 import {
@@ -411,6 +412,17 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.view.isDirty = true;
   };
 
+  changeEventSelection = (args: SelectEvent) => {
+    const state = this.data.states.get(args.stateId);
+    if (!state) return;
+    if (args.value) {
+      state.eventBox.selection = args.eventSelection;
+    } else {
+      state.eventBox.selection = undefined;
+    }
+    this.view.isDirty = true;
+  };
+
   // Редактирование события в состояниях
   changeEvent = (args: ChangeEventParams) => {
     const state = this.data.states.get(args.stateId);
@@ -475,6 +487,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
           smId: state.smId,
           stateId: state.id,
           eventSelection: idx,
+          value: true,
         });
       }
     }

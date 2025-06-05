@@ -9,10 +9,10 @@ import {
 } from '@renderer/lib/constants';
 import { History } from '@renderer/lib/data/History';
 import { EventSelection } from '@renderer/lib/drawable';
+import { SelectedItem } from '@renderer/lib/types';
 import {
   CCreateInitialStateParams,
   CopyData,
-  CopyType,
   EditComponentParams,
   LinkStateParams,
   SelectDrawable,
@@ -48,7 +48,6 @@ import {
   StateMachine,
   ChoiceState,
   Transition,
-  Note,
   InitialState,
   State,
   FinalState,
@@ -102,7 +101,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   // Он нужен, потому что нам требуется наличие канваса в момент запуска приложения
   controllers: { [id: string]: CanvasController } = {};
   validator: UserInputValidator;
-  private copyData: { [id: string]: CopyData | null } = {}; // То что сейчас скопировано
+  selectedItems: SelectedItem[] = [];
+  private copyData: { [id: string]: CopyData[] } = {}; // То что сейчас скопировано
   private pastePositionOffset = 0; // Для того чтобы при вставке скопированной сущности она не перекрывала предыдущую
   private onStateMachineDelete: (controller: ModelController, nameOrsmId: string) => void;
   constructor(onStateMachineDelete: (controller: ModelController, nameOrsmId: string) => void) {
@@ -392,7 +392,14 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   }
 
   selectComponent = (args: SelectDrawable) => {
-    this.removeSelection([args.id]);
+    this.selectedItems.push({
+      type: 'component',
+      data: {
+        smId: args.smId,
+        id: args.id,
+      },
+    });
+    this.removeSelection([this.selectedItems.length - 1]);
 
     if (!this.model.changeComponentSelection(args.smId, args.id, true)) return;
 
@@ -1256,8 +1263,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       this.history.do({
         type: 'createState',
         args: { ...args, parentId: parentId, newStateId: newStateId },
+        numberOfConnectedActions,
       });
-      numberOfConnectedActions;
     }
     return newStateId;
   }
@@ -1792,115 +1799,37 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     return state;
   }
 
-  /**
-   * Удалить все (пока что только одно) выделенные события/действия в состоянии
-   *
-   * @returns было ли совершено удаление
-   */
-  private deleteSelectedEvent(smId: string, stateId: string, events: EventData[]) {
-    let isDeleted = false;
-    for (const eventIdx in events) {
-      const event = events[eventIdx];
-      const idx = Number(eventIdx);
-
-      if (event.selection) {
-        isDeleted =
-          isDeleted ||
+  deleteSelected = () => {
+    for (const selectedItem of this.selectedItems) {
+      const { smId } = selectedItem.data;
+      switch (selectedItem.type) {
+        case 'state':
+          this.deleteState({ smId, id: selectedItem.data.id });
+          break;
+        case 'choiceState':
+          this.deleteChoiceState({ smId, id: selectedItem.data.id });
+          break;
+        case 'component':
+          this.deleteComponent({ smId, id: selectedItem.data.id });
+          break;
+        case 'event':
           this.deleteEvent({
             smId,
-            stateId,
-            event: {
-              eventIdx: idx,
-              actionIdx: null,
-            },
+            stateId: selectedItem.data.stateId,
+            event: selectedItem.data.selection,
           });
-        continue;
+          break;
+        case 'note':
+          this.deleteNote({ smId: smId, id: selectedItem.data.smId });
+          break;
+        case 'transition':
+          this.deleteTransition({ smId: smId, id: selectedItem.data.id });
+          break;
+        default:
+          break;
       }
-
-      if (typeof event.do === 'string') continue;
-
-      for (const actionIdx in event.do) {
-        if (event.do[actionIdx].selection) {
-          isDeleted =
-            isDeleted ||
-            this.deleteEvent({
-              smId,
-              stateId,
-              event: {
-                eventIdx: idx,
-                actionIdx: Number(actionIdx),
-              },
-            });
-        }
-      }
-    }
-
-    return isDeleted;
-  }
-
-  deleteSelected = () => {
-    for (const smId in this.model.data.elements.stateMachines) {
-      const sm = this.model.data.elements.stateMachines[smId];
-      Object.keys(sm.states).forEach((key) => {
-        const state = sm.states[key];
-        if (state.selection) {
-          // (L140-beep): Когда мы выделяем событие/действие, то выделяется и состояние
-          // Поэтому в приоритете удаление действия, а затем самого состояния
-          if (this.deleteSelectedEvent(smId, key, state.events)) return;
-          this.deleteState({ smId, id: key });
-        }
-      });
-
-      Object.keys(sm.choiceStates).forEach((key) => {
-        const state = sm.choiceStates[key];
-        if (state.selection) {
-          this.deleteChoiceState({ smId, id: key });
-        }
-      });
-
-      Object.keys(sm.transitions).forEach((key) => {
-        const transition = sm.transitions[key];
-        if (transition.selection) {
-          this.deleteTransition({ smId: smId, id: key });
-        }
-      });
-
-      Object.keys(sm.notes).forEach((key) => {
-        const note = sm.notes[key];
-        if (note.selection) {
-          this.deleteNote({ smId: smId, id: key });
-        }
-      });
-
-      Object.keys(sm.components).forEach((key) => {
-        const component = sm.components[key];
-        if (component.selection) {
-          this.deleteComponent({ smId, id: key });
-        }
-      });
     }
   };
-
-  private isChoiceState(value): value is ChoiceState {
-    return (
-      (value as ChoiceState).position !== undefined &&
-      value['text'] === undefined &&
-      value['sourceId'] === undefined &&
-      value['events'] === undefined
-    );
-  }
-
-  private isTransition(value): value is Transition {
-    return (
-      (value as Transition).label !== undefined ||
-      (value as Transition).sourceId !== undefined ||
-      (value as Transition).targetId !== undefined
-    );
-  }
-
-  private isNote(value): value is Note {
-    return (value as Note).text !== undefined;
-  }
 
   createEvent(args: CreateEventParams) {
     const { stateId, smId, eventData, eventIdx } = args;
@@ -1997,49 +1926,87 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   }
 
   copySelected = () => {
-    const stateMachines = this.getHeadControllerStateMachines();
-    for (const smId in stateMachines) {
-      const [id, nodeToCopy] =
-        [...Object.entries(this.model.data.elements.stateMachines[smId].states)].find(
-          (value) => value[1].selection
-        ) ||
-        [...Object.entries(this.model.data.elements.stateMachines[smId].choiceStates)].find(
-          (state) => state[1].selection
-        ) ||
-        [...Object.entries(this.model.data.elements.stateMachines[smId].transitions)].find(
-          (transition) => transition[1].selection
-        ) ||
-        [...Object.entries(this.model.data.elements.stateMachines[smId].notes)].find(
-          (note) => note[1].selection
-        ) ||
-        [...Object.entries(this.model.data.elements.stateMachines[smId].components)].find(
-          (component) => component[1].selection
-        ) ||
-        [];
+    const stateMachines = Object.keys(this.getHeadControllerStateMachines());
+    if (stateMachines.length === 0) return;
+    this.pastePositionOffset = 0;
+    const smId = stateMachines[0];
+    const state = structuredClone(this.model.data.elements.stateMachines[smId]);
+    const controllerId = this.model.data.headControllerId;
+    this.copyData[controllerId] = [];
+    for (const item of this.selectedItems) {
+      // TODO (L140-beep): Вставка между МС
+      if (item.data.smId !== smId) continue;
 
-      if (!nodeToCopy || !id) continue;
-
-      const state = structuredClone(this.model.data.elements.stateMachines[smId]);
-
-      // Тип нужен чтобы отделить ноды при вставке
-      let copyType: CopyType = 'state';
-      if (nodeToCopy['parameters']) copyType = 'component';
-      else if (this.isChoiceState(nodeToCopy)) copyType = 'choiceState';
-      else if (this.isTransition(nodeToCopy)) copyType = 'transition';
-      else if (this.isNote(nodeToCopy)) copyType = 'note';
-
-      // Если скопировалась новая нода, то нужно сбросить смещение позиции вставки
-      if (id !== this.copyData[this.model.data.headControllerId]?.data.id) {
-        this.pastePositionOffset = 0;
+      switch (item.type) {
+        case 'event':
+          this.copyData[controllerId].push({
+            smId: item.data.smId,
+            type: item.type,
+            data: {
+              ...item.data.selection,
+              stateId: item.data.stateId,
+            },
+            state,
+          });
+          break;
+        case 'choiceState':
+          this.copyData[controllerId].push({
+            smId: item.data.smId,
+            type: item.type,
+            data: {
+              ...state.choiceStates[item.data.id],
+              id: item.data.id,
+            },
+            state,
+          });
+          break;
+        case 'component':
+          this.copyData[controllerId].push({
+            smId: item.data.smId,
+            type: item.type,
+            data: {
+              ...state.components[item.data.id],
+              id: item.data.id,
+            },
+            state,
+          });
+          break;
+        case 'note':
+          this.copyData[controllerId].push({
+            smId: item.data.smId,
+            type: item.type,
+            data: {
+              ...state.notes[item.data.id],
+              id: item.data.id,
+            },
+            state,
+          });
+          break;
+        case 'state':
+          this.copyData[controllerId].push({
+            smId: item.data.smId,
+            type: item.type,
+            data: {
+              ...state.states[item.data.id],
+              id: item.data.id,
+            },
+            state,
+          });
+          break;
+        case 'transition':
+          this.copyData[controllerId].push({
+            smId: item.data.smId,
+            type: item.type,
+            data: {
+              ...state.transitions[item.data.id],
+              id: item.data.id,
+            },
+            state,
+          });
+          break;
+        default:
+          break;
       }
-
-      this.copyData[this.model.data.headControllerId] = {
-        smId,
-        type: copyType,
-        data: { ...(structuredClone(nodeToCopy) as any), id: id },
-        state: state,
-      };
-      break;
     }
   };
 
@@ -2049,130 +2016,137 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (!copyData) {
       return;
     }
-    const { type, data, smId, state } = copyData;
+    for (const item of copyData) {
+      const { type, data, smId, state } = item;
 
-    if (type === 'state') {
-      this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
-      const prevCopy = structuredClone(this.copyData);
-      const newState = this.createState({
-        ...structuredClone({ ...data, id: undefined }),
-        smId,
-        linkByPoint: false,
-        id: undefined,
-        parentId: data.parentId,
-        position: {
-          x: data.position.x + this.pastePositionOffset,
-          y: data.position.y + this.pastePositionOffset,
-        },
-      });
-
-      const stateChildrens = this.getStatesByParentId(smId, data.id, state.states);
-
-      for (const [id, stateData] of stateChildrens) {
-        this.copyData[this.model.data.headControllerId] = {
-          type: 'state',
-          data: { ...stateData, id, parentId: newState },
-          smId: smId,
-          state,
-        };
-
-        this.pasteSelected();
-      }
-
-      const choiceChildrens = this.getChoicesByParentId(smId, data.id, state.finalStates);
-
-      for (const [id, stateData] of choiceChildrens) {
-        this.copyData[this.model.data.headControllerId] = {
-          type: 'choiceState',
-          data: { ...stateData, id, parentId: newState },
+      if (type === 'state') {
+        this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
+        const prevCopy = structuredClone(this.copyData);
+        const newState = this.createState({
+          ...structuredClone({ ...data, id: undefined }),
           smId,
-          state,
-        };
-        this.pasteSelected();
-      }
-
-      const finalStates = this.getFinalsByParentId(smId, data.id);
-
-      for (const [_, state] of finalStates) {
-        this.createFinalState({ ...state, smId, parentId: newState });
-      }
-
-      this.copyData = prevCopy;
-
-      return;
-    }
-
-    if (type === 'choiceState') {
-      this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
-
-      this.createChoiceState({
-        ...data,
-        smId,
-        id: undefined,
-        linkByPoint: false,
-        position: {
-          x: data.position.x + this.pastePositionOffset,
-          y: data.position.y + this.pastePositionOffset,
-        },
-      });
-
-      return;
-    }
-
-    if (type === 'note') {
-      this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
-
-      this.createNote({
-        ...data,
-        smId,
-        id: undefined,
-        position: {
-          x: data.position.x + this.pastePositionOffset,
-          y: data.position.y + this.pastePositionOffset,
-        },
-      });
-
-      return;
-    }
-
-    if (type === 'transition') {
-      this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
-
-      const getLabel = () => {
-        if (!this.copyData) return;
-
-        if (!data.label) return undefined;
-
-        return {
-          ...data.label,
+          linkByPoint: false,
+          id: undefined,
+          parentId: data.parentId,
           position: {
-            x: data.label.position.x + this.pastePositionOffset,
-            y: data.label.position.y + this.pastePositionOffset,
+            x: data.position.x + this.pastePositionOffset,
+            y: data.position.y + this.pastePositionOffset,
           },
+        });
+
+        const stateChildrens = this.getStatesByParentId(smId, data.id, state.states);
+
+        for (const [id, stateData] of stateChildrens) {
+          this.copyData[this.model.data.headControllerId] = [
+            {
+              type: 'state',
+              data: { ...stateData, id, parentId: newState },
+              smId: smId,
+              state,
+            },
+          ];
+
+          this.pasteSelected();
+        }
+
+        const choiceChildrens = this.getChoicesByParentId(smId, data.id, state.finalStates);
+
+        for (const [id, stateData] of choiceChildrens) {
+          this.copyData[this.model.data.headControllerId] = [
+            {
+              type: 'choiceState',
+              data: { ...stateData, id, parentId: newState },
+              smId,
+              state,
+            },
+          ];
+          this.pasteSelected();
+        }
+
+        const finalStates = this.getFinalsByParentId(smId, data.id);
+
+        for (const [_, state] of finalStates) {
+          this.createFinalState({ ...state, smId, parentId: newState });
+        }
+
+        this.copyData = prevCopy;
+
+        return;
+      }
+
+      if (type === 'choiceState') {
+        this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
+
+        this.createChoiceState({
+          ...data,
+          smId,
+          id: undefined,
+          linkByPoint: false,
+          position: {
+            x: data.position.x + this.pastePositionOffset,
+            y: data.position.y + this.pastePositionOffset,
+          },
+        });
+
+        return;
+      }
+
+      if (type === 'note') {
+        this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
+
+        this.createNote({
+          ...data,
+          smId,
+          id: undefined,
+          position: {
+            x: data.position.x + this.pastePositionOffset,
+            y: data.position.y + this.pastePositionOffset,
+          },
+        });
+
+        return;
+      }
+
+      if (type === 'transition') {
+        this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
+
+        const getLabel = () => {
+          if (!this.copyData) return;
+
+          if (!data.label) return undefined;
+
+          return {
+            ...data.label,
+            position: {
+              x: data.label.position.x + this.pastePositionOffset,
+              y: data.label.position.y + this.pastePositionOffset,
+            },
+          };
         };
-      };
 
-      this.createTransition({
-        ...data,
-        smId,
-        id: undefined,
-        label: getLabel(),
-      });
+        this.createTransition({
+          ...data,
+          smId,
+          id: undefined,
+          label: getLabel(),
+        });
+      }
+
+      if (type === 'component') {
+        this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
+
+        return this.createComponent({
+          ...data,
+          smId,
+          id: this.validator.getComponentName(data.id), // name должно сгенерится новое, так как это новая сушность
+          position: {
+            x: data.position.x + this.pastePositionOffset,
+            y: data.position.y + this.pastePositionOffset,
+          },
+        });
+      }
     }
 
-    if (type === 'component') {
-      this.pastePositionOffset += PASTE_POSITION_OFFSET_STEP; // Добавляем смещение позиции вставки при вставке
-
-      return this.createComponent({
-        ...data,
-        smId,
-        id: this.validator.getComponentName(data.id), // name должно сгенерится новое, так как это новая сушность
-        position: {
-          x: data.position.x + this.pastePositionOffset,
-          y: data.position.y + this.pastePositionOffset,
-        },
-      });
-    }
     return null;
   };
 
@@ -2243,9 +2217,15 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const { id, smId } = args;
     const state = this.model.data.elements.stateMachines[smId].states[id];
     if (!state) return;
-
+    this.selectedItems.push({
+      type: 'state',
+      data: {
+        smId,
+        id,
+      },
+    });
     this.removeEventsSelection(smId, id, state.events);
-    this.removeSelection([id]);
+    this.removeSelection([this.selectedItems.length - 1]);
 
     this.model.changeStateSelection(smId, id, true);
   };
@@ -2256,7 +2236,14 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const state = this.model.data.elements.stateMachines[smId].choiceStates[id];
     if (!state) return;
 
-    this.removeSelection([id]);
+    this.selectedItems.push({
+      type: 'choiceState',
+      data: {
+        smId,
+        id,
+      },
+    });
+    this.removeSelection([this.selectedItems.length - 1]);
 
     this.model.changeChoiceStateSelection(smId, id, true);
 
@@ -2278,8 +2265,14 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
     const transition = this.model.data.elements.stateMachines[smId].transitions[id];
     if (!transition) return;
-
-    this.removeSelection([id]);
+    this.selectedItems.push({
+      type: 'transition',
+      data: {
+        smId,
+        id,
+      },
+    });
+    this.removeSelection([this.selectedItems.length - 1]);
 
     this.model.changeTransitionSelection(smId, id, true);
 
@@ -2290,14 +2283,29 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const { smId, id } = args;
     const note = this.model.data.elements.stateMachines[smId].notes[id];
     if (!note) return;
-    this.removeSelection([id]);
+    this.selectedItems.push({
+      type: 'note',
+      data: {
+        smId,
+        id,
+      },
+    });
+    this.removeSelection([this.selectedItems.length - 1]);
     this.model.changeNoteSelection(smId, id, true);
   };
 
   selectEvent = (args: SelectEvent) => {
     const { smId, stateId, eventSelection } = args;
     if (this.model.changeEventSelection(smId, stateId, eventSelection, true)) {
-      this.removeSelection([stateId]);
+      this.selectedItems.push({
+        type: 'event',
+        data: {
+          smId,
+          stateId,
+          selection: eventSelection,
+        },
+      });
+      this.removeSelection([this.selectedItems.length - 1]);
     }
   };
 
@@ -2310,7 +2318,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         actionIdx: null,
       };
       if (this.model.changeEventSelection(smId, stateId, eventSelection, false)) {
-        this.emit('selectEvent', { smId, stateId, eventSelection });
+        this.emit('selectEvent', { smId, stateId, eventSelection, value: false });
       }
       if (typeof event.do === 'string') continue;
       for (const strActionIndex in event.do) {
@@ -2320,7 +2328,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
           actionIdx: actionIdx,
         };
         if (this.model.changeEventSelection(smId, stateId, eventSelection, false)) {
-          this.emit('selectEvent', { smId, stateId, eventSelection });
+          this.emit('selectEvent', { smId, stateId, eventSelection, value: false });
         }
       }
     }
@@ -2337,9 +2345,9 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   //   note.setIsSelected(true);
   // }
-
   /**
    * Снимает выделение со всех нод и переходов.
+   * @param [exclude=[]] Исключенные индексы в массиве selectedItems
    *
    * @remarks
    * Выполняется при изменении выделения.
@@ -2347,52 +2355,82 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
    * @privateRemarks
    * Возможно, надо переделать структуру, чтобы не пробегаться по списку каждый раз.
    */
-  removeSelection(exclude: string[] = []) {
-    for (const smId in this.model.data.elements.stateMachines) {
-      const sm = this.model.data.elements.stateMachines[smId];
-
-      Object.keys(sm.choiceStates)
-        .filter((value) => !exclude.includes(value))
-        .forEach((id) => {
-          if (this.model.changeChoiceStateSelection(smId, id, false)) {
-            this.emit('changeChoiceSelection', { smId, id, value: false });
+  removeSelection(exclude: number[] = []) {
+    const newSelected: SelectedItem[] = [];
+    for (const itemIdx in this.selectedItems) {
+      const item = this.selectedItems[itemIdx];
+      if (exclude.includes(Number(itemIdx))) {
+        newSelected.push(item);
+        continue;
+      }
+      switch (item.type) {
+        case 'state':
+          if (this.model.changeStateSelection(item.data.smId, item.data.id, false)) {
+            this.emit('changeStateSelection', {
+              smId: item.data.smId,
+              id: item.data.id,
+              value: false,
+            });
           }
-        });
-
-      Object.keys(sm.states)
-        .filter((value) => !exclude.includes(value))
-        .forEach((id) => {
-          if (this.model.changeStateSelection(smId, id, false)) {
-            this.emit('changeStateSelection', { smId, id, value: false });
-            const events = sm.states[id].events;
-            this.removeEventsSelection(smId, id, events);
+          break;
+        case 'event':
+          if (
+            this.model.changeEventSelection(
+              item.data.smId,
+              item.data.stateId,
+              item.data.selection,
+              false
+            )
+          ) {
+            this.emit('changeEventSelection', {
+              smId: item.data.smId,
+              stateId: item.data.stateId,
+              eventSelection: item.data.selection,
+              value: false,
+            });
           }
-        });
-
-      Object.keys(sm.transitions)
-        .filter((value) => !exclude.includes(value))
-        .forEach((id) => {
-          if (this.model.changeTransitionSelection(smId, id, false)) {
-            this.emit('changeTransitionSelection', { smId, id, value: false });
+          break;
+        case 'transition':
+          if (this.model.changeTransitionSelection(item.data.smId, item.data.id, false)) {
+            this.emit('changeTransitionSelection', {
+              smId: item.data.smId,
+              id: item.data.id,
+              value: false,
+            });
           }
-        });
-
-      Object.keys(sm.notes)
-        .filter((value) => !exclude.includes(value))
-        .forEach((id) => {
-          if (this.model.changeNoteSelection(smId, id, false)) {
-            this.emit('changeNoteSelection', { smId, id, value: false });
+          break;
+        case 'choiceState':
+          if (this.model.changeChoiceStateSelection(item.data.smId, item.data.id, false)) {
+            this.emit('changeChoiceSelection', {
+              smId: item.data.smId,
+              id: item.data.id,
+              value: false,
+            });
           }
-        });
-
-      Object.keys(sm.components)
-        .filter((value) => !exclude.includes(value))
-        .forEach((id) => {
-          if (this.model.changeComponentSelection(smId, id, false)) {
-            this.emit('changeComponentSelection', { smId, id, value: false });
+          break;
+        case 'component':
+          if (this.model.changeComponentSelection(item.data.smId, item.data.id, false)) {
+            this.emit('changeComponentSelection', {
+              smId: item.data.smId,
+              id: item.data.id,
+              value: false,
+            });
           }
-        });
+          break;
+        case 'note':
+          if (this.model.changeNoteSelection(item.data.smId, item.data.id, false)) {
+            this.emit('changeNoteSelection', {
+              smId: item.data.smId,
+              id: item.data.id,
+              value: false,
+            });
+          }
+          break;
+        default:
+          break;
+      }
     }
+    this.selectedItems = newSelected;
   }
 
   createTransitionFromController(args: { source: string; target: string }) {

@@ -195,7 +195,7 @@ export const Documentation: React.FC<DocumentationProps> = ({ width, onWidthChan
       minWidth={minWidth}
       maxWidth={maxWidth}
       onResize={handleResize}
-      className="h-screen border-l border-border-primary bg-bg-secondary"
+      className="h-full border-l border-border-primary bg-bg-secondary"
     >
       <div className="h-screen">{renderContent()}</div>
     </Resizable>

@@ -1954,7 +1954,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
             smId: item.data.smId,
             type: item.type,
             data: {
-              ...state.choiceStates[item.data.id],
+              ...structuredClone(state.choiceStates[item.data.id]),
               id: item.data.id,
             },
             state,
@@ -1965,7 +1965,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
             smId: item.data.smId,
             type: item.type,
             data: {
-              ...state.components[item.data.id],
+              ...structuredClone(state.components[item.data.id]),
               id: item.data.id,
             },
             state,
@@ -1976,7 +1976,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
             smId: item.data.smId,
             type: item.type,
             data: {
-              ...state.notes[item.data.id],
+              ...structuredClone(state.notes[item.data.id]),
               id: item.data.id,
             },
             state,
@@ -1987,7 +1987,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
             smId: item.data.smId,
             type: item.type,
             data: {
-              ...state.states[item.data.id],
+              ...structuredClone(state.states[item.data.id]),
               id: item.data.id,
             },
             state,
@@ -1998,7 +1998,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
             smId: item.data.smId,
             type: item.type,
             data: {
-              ...state.transitions[item.data.id],
+              ...structuredClone(state.transitions[item.data.id]),
               id: item.data.id,
             },
             state,

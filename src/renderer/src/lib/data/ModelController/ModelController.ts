@@ -226,6 +226,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     controller.on('changeTransitionPositionFromController', this.changeTransitionPosition);
     controller.on('changeStateMachinePosition', this.changeStateMachinePosition);
     controller.on('selectEvent', this.selectEvent);
+    controller.on('addSelection', this.addSelection);
   }
 
   private openChangeTransitionModal = (args: { smId: string; id: string }) => {
@@ -253,6 +254,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     controller.off('changeTransitionPositionFromController', this.changeTransitionPosition);
     controller.off('changeNotePositionFromController', this.changeNotePosition);
     controller.off('selectEvent', this.selectEvent);
+    controller.off('addSelection', this.addSelection);
     controller.unwatch();
   }
 
@@ -2292,6 +2294,13 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     });
     this.removeSelection([this.selectedItems.length - 1]);
     this.model.changeNoteSelection(smId, id, true);
+  };
+
+  addSelection = (args: SelectedItem) => {
+    if (args.type === 'state') {
+      this.model.changeStateSelection(args.data.smId, args.data.id, true);
+      this.selectedItems.push(args);
+    }
   };
 
   selectEvent = (args: SelectEvent) => {

@@ -36,6 +36,7 @@ import {
   LinkTransitionParams,
   RenameComponentParams,
   SelectDrawable,
+  SelectedItem,
   SelectEvent,
   UnlinkStateParams,
 } from '@renderer/lib/types';
@@ -119,6 +120,8 @@ export type CanvasControllerEvents = {
   changeEvent: ChangeEventParams;
   changeEventAction: ChangeEventParams;
   deleteEvent: DeleteEventParams;
+  addSelection: SelectedItem;
+  removeSelection: SelectedItem;
 
   changeNoteFontSize: ChangeNoteFontSizeParams;
   changeNoteTextColor: ChangeNoteTextColorParams;
@@ -797,7 +800,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     if (!state) {
       return;
     }
-    this.removeSelection();
+    // this.removeSelection();
     state.setIsSelected(true);
   }
 
@@ -961,7 +964,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
 
     this.app.controller.states.forEachState((state) => {
       state.setIsSelected(false);
-      state.eventBox.selection = undefined;
+      state.eventBox.selection = [];
     });
 
     this.app.controller.transitions.forEach((transition) => {

@@ -1194,10 +1194,10 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const state = this.model.data.elements.stateMachines[smId].states[id];
     if (!state) return;
 
+    const prevEvents = structuredClone(state.events);
     if (!this.model.changeState(args)) return;
 
     if (canUndo) {
-      const prevEvents = structuredClone(state.events);
       const prevColor = state.color;
 
       this.history.do({

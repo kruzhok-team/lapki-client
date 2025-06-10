@@ -22,8 +22,8 @@ export class Events {
 
   private textArray = [] as string[];
   // private textEvents = [] as string[];
-
-  selection?: EventSelection;
+  // TODO (L140-beep): EventSelection[] для мультивыделения
+  selection: EventSelection[] = [];
 
   minEventRow = 3;
   minWidth: number;
@@ -73,6 +73,7 @@ export class Events {
     // TODO: здесь рассчитываем eventRowLength и считаем ряды по нему
     // но в таком случае контейнер может начать «скакать»
     this.data.map((ev) => {
+      if (!ev) return;
       if (ev.condition) {
         eventRows += 1;
       }
@@ -135,13 +136,16 @@ export class Events {
     return undefined;
   }
 
-  handleClick(p: Point) {
+  handleClick(p: Point, add?: boolean) {
     const idx = this.calculatePictoIndex(p);
-    if (!idx) {
-      this.selection = undefined;
+    if (!idx && !add) {
+      this.selection = [];
       return undefined;
     }
-    this.selection = idx;
+    if (idx && add) {
+      this.selection?.push(idx);
+    }
+
     return idx;
   }
 
@@ -181,8 +185,8 @@ export class Events {
     this.data.map((events, eventIdx) => {
       const eX = baseX;
       const eY = baseY + (eventRow * yDx) / this.app.controller.scale;
-      if (typeof this.selection !== 'undefined') {
-        if (this.selection.eventIdx == eventIdx && this.selection.actionIdx == null) {
+      if (this.selection.length > 0) {
+        if (this.isSelected(eventIdx, null) !== -1) {
           this.picto.drawCursor(ctx, eX, eY);
         }
       }
@@ -217,7 +221,7 @@ export class Events {
           const aX = baseX + ((this.picto.eventWidth + 5) * ax) / this.picto.scale;
           const aY = baseY + (ay * yDx) / this.app.controller.scale;
           if (typeof this.selection !== 'undefined') {
-            if (this.selection.eventIdx == eventIdx && this.selection.actionIdx == actIdx) {
+            if (this.isSelected(eventIdx, actIdx) !== -1) {
               this.picto.drawCursor(ctx, aX, aY);
             }
           }
@@ -230,6 +234,12 @@ export class Events {
     });
 
     ctx.closePath();
+  }
+
+  isSelected(eventIdx: number, actionIdx: number | null) {
+    return this.selection.findIndex(
+      (selection) => selection.eventIdx === eventIdx && selection.actionIdx === actionIdx
+    );
   }
 
   private drawTextEvents(ctx: CanvasRenderingContext2D) {

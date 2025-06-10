@@ -45,18 +45,12 @@ export const MatrixWidget: React.FC<MatrixWidgetProps> = ({
       }
     };
 
-    const handleContextMenu = (e: MouseEvent) => {
-      e.preventDefault();
-    };
-
     window.addEventListener('mouseup', handleMouseUp);
     window.addEventListener('mousedown', handleMouseDown);
-    window.addEventListener('contextmenu', handleContextMenu);
 
     return () => {
       window.removeEventListener('mouseup', handleMouseUp);
       window.removeEventListener('mousedown', handleMouseDown);
-      window.removeEventListener('contextmenu', handleContextMenu);
     };
   }, [isClickable]);
 

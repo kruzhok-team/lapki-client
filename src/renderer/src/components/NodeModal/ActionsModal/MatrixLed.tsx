@@ -22,6 +22,8 @@ interface MatrixLedProps {
   currentBrushValue: number;
   range: Range;
   isHalf: boolean;
+  isMouseDown: boolean;
+  isRightMouseDown: boolean;
   onChange: (rowIndex: number, colIndex: number, newValue: number) => void;
 }
 
@@ -35,12 +37,47 @@ export const MatrixLed: React.FC<MatrixLedProps> = ({
   currentBrushValue,
   range,
   isHalf,
+  isMouseDown,
+  isRightMouseDown,
 }) => {
   const { isRounded, margin, ledHeight, ledWidth } = style;
 
-  const handleClick = () => {
+  const handleClick = (e: React.MouseEvent) => {
     if (!isClickable) return;
+    e.preventDefault();
+    handleValueChange();
+  };
 
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!isClickable) return;
+    e.preventDefault();
+    if (e.button === 0) {
+      if (isHalf) {
+        return onChange(rowIndex, colIndex, currentBrushValue);
+      }
+      return onChange(rowIndex, colIndex, range.max);
+    } else if (e.button === 2) {
+      return onChange(rowIndex, colIndex, range.min);
+    }
+  };
+
+  const handleMouseEnter = (e: React.MouseEvent) => {
+    if (!isClickable) return;
+    e.preventDefault();
+
+    if (isRightMouseDown) {
+      return onChange(rowIndex, colIndex, range.min);
+    }
+
+    if (isMouseDown) {
+      if (isHalf) {
+        return onChange(rowIndex, colIndex, currentBrushValue);
+      }
+      return onChange(rowIndex, colIndex, range.max);
+    }
+  };
+
+  const handleValueChange = () => {
     if (isHalf) {
       if (currentBrushValue === value) {
         return onChange(rowIndex, colIndex, range.min);
@@ -69,7 +106,10 @@ export const MatrixLed: React.FC<MatrixLedProps> = ({
         'transition-colors duration-200'
       )}
       type="button"
+      draggable={false}
       onClick={handleClick}
+      onMouseDown={handleMouseDown}
+      onMouseEnter={handleMouseEnter}
       title={`Значение: ${value}`}
     >
       <div

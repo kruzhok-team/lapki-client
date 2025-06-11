@@ -195,6 +195,8 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
       node.handleMouseUp(e);
     } else {
       this.app.controller.transitions.handleMouseUp();
+      // TODO(L140-beep): Нет подписки на сигналы changeStateSelection, changeChoiceSelection
+      this.app.controller.model.removeSelection();
       this.app.controller.removeSelection();
     }
   };

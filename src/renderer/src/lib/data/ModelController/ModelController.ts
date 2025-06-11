@@ -1274,8 +1274,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       this.history.do({
         type: 'createState',
         args: { ...args, parentId: parentId, newStateId: newStateId },
+        numberOfConnectedActions,
       });
-      numberOfConnectedActions;
     }
     return newStateId;
   }

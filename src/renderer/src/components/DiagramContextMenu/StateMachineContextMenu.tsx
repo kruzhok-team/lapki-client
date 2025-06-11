@@ -368,7 +368,7 @@ export const StateMachineContextMenu: React.FC<StateMachineContextMenuProps> = (
             <span className="ml-auto">Ctrl+C</span>
           </MenuItem>
           <MenuItem onClick={() => modelController.invertSelectedTransition()}>
-            <InvertIcon className="size-6 flex-shrink-0" /> Инвертировать
+            <InvertIcon className="size-6 flex-shrink-0" /> Перевернуть
             <span className="ml-auto">Shift+R</span>
           </MenuItem>
           <SubMenuContainer>

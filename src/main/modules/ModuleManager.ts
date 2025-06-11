@@ -202,7 +202,7 @@ export class ModuleManager {
   }
 
   static getBlgMbUploaderPath(): string {
-    return this.getModulePath('blg-mb-1/blg-mb-1-uploader');
+    return this.getModulePath('blg-mb/cyberbear-loader');
   }
 
   static getModulePath(module: string): string {

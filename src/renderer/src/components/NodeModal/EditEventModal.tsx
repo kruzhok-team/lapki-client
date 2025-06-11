@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 
 import { Modal } from '@renderer/components/UI';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
+import { systemComponent } from '@renderer/lib/data/PlatformManager';
 import { State } from '@renderer/lib/drawable';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { Event, EventData } from '@renderer/types/diagram';
@@ -64,7 +65,10 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
           (val.trigger as unknown as Event).method === selectedMethod
       );
       if (duplicated !== -1 && currentEventIndex !== duplicated) {
-        setError(`Повторение системого события ${selectedMethod}!`);
+        const signalName = selectedMethod
+          ? systemComponent.signals[selectedMethod]?.alias ?? selectedMethod
+          : selectedMethod;
+        setError(`Cистемное событие «${signalName}» уже создано! Второй раз его создать нельзя.`);
         return;
       }
     }

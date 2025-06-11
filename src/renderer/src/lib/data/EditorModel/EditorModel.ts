@@ -581,6 +581,35 @@ export class EditorModel {
     return true;
   }
 
+  changeEventSelection(
+    smId: string,
+    stateId: string,
+    eventSelection: EventSelection,
+    selection: boolean
+  ) {
+    const state = this.data.elements.stateMachines[smId].states[stateId];
+
+    if (!state) return false;
+
+    const { eventIdx, actionIdx } = eventSelection;
+    const event = state.events[eventIdx];
+
+    if (!event) return false;
+
+    if (actionIdx === null || actionIdx === undefined) {
+      event.selection = selection;
+      return true;
+    }
+
+    const action = event.do[actionIdx];
+    if (!action) return false;
+    if (typeof action === 'string') return false;
+
+    action.selection = selection;
+
+    return true;
+  }
+
   createEventAction(smId: string, stateId: string, event: EventSelection, value: Action) {
     const state = this.data.elements.stateMachines[smId].states[stateId];
     if (!state) return false;

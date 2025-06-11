@@ -21,7 +21,12 @@ export interface CurrentItem {
   path: string;
 }
 
-export const Documentation: React.FC = () => {
+export interface DocumentationProps {
+  width: number;
+  onWidthChange: (width: number) => void;
+}
+
+export const Documentation: React.FC<DocumentationProps> = ({ width, onWidthChange }) => {
   const [doc] = useSettings('doc');
   const rawUrl = doc?.type === 'local' ? doc?.localHost ?? '' : doc?.remoteHost ?? '';
   const url = rawUrl ? (rawUrl.endsWith('/') ? rawUrl : rawUrl + '/') : '';
@@ -37,8 +42,6 @@ export const Documentation: React.FC = () => {
     state.isOpen,
     state.onDocumentationToggle,
   ]);
-
-  const [width, setWidth] = useState(0);
   const [minWidth, setMinWidth] = useState(5);
   const [maxWidth, setMaxWidth] = useState('60vw');
 
@@ -51,7 +54,7 @@ export const Documentation: React.FC = () => {
       onDocumentationToggle();
     }
     //Получаем ширину блока документации
-    setWidth(parseInt(ref.style.width));
+    onWidthChange(parseInt(ref.style.width));
   };
 
   useEffect(() => {
@@ -95,6 +98,11 @@ export const Documentation: React.FC = () => {
     });
   };
 
+  const onClose = () => {
+    onWidthChange(0);
+    onDocumentationToggle();
+  };
+
   const renderContent = () => {
     if (isLoading) {
       return <div>Загрузка...</div>;
@@ -112,12 +120,12 @@ export const Documentation: React.FC = () => {
     }
 
     return (
-      <section className="flex h-full select-none flex-col px-2 pt-4">
+      <section className="flex h-screen select-none flex-col bg-bg-primary px-2 pt-4">
         <div className="relative mb-3 flex items-center justify-between border-b border-border-primary pb-1">
           <h1 className="text-2xl font-bold">Документация</h1>
           <button
             className="rounded-full p-3 outline-none transition-colors hover:bg-bg-hover active:bg-bg-active"
-            onClick={() => onDocumentationToggle()}
+            onClick={() => onClose()}
           >
             <Close width="1rem" height="1rem" />
           </button>
@@ -187,9 +195,9 @@ export const Documentation: React.FC = () => {
       minWidth={minWidth}
       maxWidth={maxWidth}
       onResize={handleResize}
-      className="border-l border-border-primary bg-bg-secondary"
+      className="h-full border-l border-border-primary bg-bg-secondary"
     >
-      <div className="h-full">{renderContent()}</div>
+      <div className="h-screen">{renderContent()}</div>
     </Resizable>
   );
 };

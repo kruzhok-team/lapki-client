@@ -11,6 +11,7 @@ export type Action = {
   component: string;
   method: string;
   args?: ArgList;
+  selection?: boolean;
 };
 
 export type Meta = { [id: string]: string };
@@ -25,12 +26,14 @@ export type Event = {
   component: string;
   method: string;
   args?: ArgList;
+  // selection?: boolean; Или лучше выделение хранить здесь?
 };
 
 export type EventData = {
   trigger: Event | string;
   do: Action[] | string;
   condition?: Condition | string;
+  selection?: boolean;
 };
 
 interface BaseState {

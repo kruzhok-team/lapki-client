@@ -9,6 +9,7 @@ import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as DeleteIcon } from '@renderer/assets/icons/delete.svg';
 import { ReactComponent as DownloadBinIcon } from '@renderer/assets/icons/download-bin.svg';
+import { ReactComponent as FactoryBinIcon } from '@renderer/assets/icons/factory-reset.svg';
 import { ReactComponent as FlashVerifyIcon } from '@renderer/assets/icons/flash-verify.svg';
 import { ReactComponent as FlashIcon } from '@renderer/assets/icons/flash.svg';
 import { ReactComponent as MetadataIcon } from '@renderer/assets/icons/metadata.svg';
@@ -91,9 +92,13 @@ export const FlasherTab: React.FC = () => {
   const [isDeviceMsListOpen, openDeviceMsList, closeDeviceMsList] = useModal(false);
   const [isAvrdudeGuideModalOpen, openAvrdudeGuideModal, closeAvrdudeGuideModal] = useModal(false);
 
-  const [isProMode, setProMode] = useState(false);
+  const isProMode = managerMSSetting?.mode === 'multi-pro' ? true : false;
   const handleSwitchProMode = () => {
-    setProMode(!isProMode);
+    if (!managerMSSetting) return;
+    setManagerMSSetting({
+      ...managerMSSetting,
+      mode: isProMode ? 'multi-basic' : 'multi-pro',
+    });
   };
 
   const [isAddressEnrtyEditOpen, openAddressEnrtyEdit, closeAddressEnrtyEdit] = useModal(false); // для редактирования существующих записей в адресной книге
@@ -184,8 +189,8 @@ export const FlasherTab: React.FC = () => {
     - bootloader REF_HW: ${meta.RefBlHw} (${metaID.type})
     - bootloader REF_FW: ${meta.RefBlFw}
     - bootloader REF_CHIP: ${meta.RefBlChip}
-    - booloader REF_PROTOCOL: ${meta.RefBlProtocol}
-    - booloader USER_CODE: ${meta.RefBlUserCode}
+    - bootloader REF_PROTOCOL: ${meta.RefBlProtocol}
+    - bootloader USER_CODE: ${meta.RefBlUserCode}
     - cybergene REF_FW: ${meta.RefCgFw}
     - cybergene REF_HW: ${meta.RefCgHw}
     - cybergene REF_PROTOCOL: ${meta.RefCgProtocol}
@@ -377,7 +382,7 @@ export const FlasherTab: React.FC = () => {
       <p>
         <b>Журнал загрузки</b>
         <br />
-        Открыть вкладки с результатами загрузки прошивок (${flashResult.size} шт.)
+        Открыть вкладки с результатами загрузки прошивок ({flashResult.size} шт.)
       </p>
     );
   }, [flashResult]);
@@ -386,6 +391,14 @@ export const FlasherTab: React.FC = () => {
       <b>Скачать прошивку</b>
       <br />
       Выгрузить файлы прошивки из выбранных плат. Доступно не для всех устройств.
+    </p>
+  );
+  const factoryBinHint = (
+    <p>
+      <b>Загрузить «заводскую» прошивку</b>
+      <br />
+      Загрузить в выбранные платы прошивку, поставляемую с новой платой. Обычно это демонстрационная
+      прошивка. Доступно не для всех устройств.
     </p>
   );
 
@@ -433,7 +446,7 @@ export const FlasherTab: React.FC = () => {
     }
   };
 
-  const handleSendBin = async (doVerify?: boolean) => {
+  const handleSendBin = async (doVerify?: boolean, uploadFactory?: boolean) => {
     for (const item of flashTableData) {
       if (!item.isSelected) continue;
       let notFound = false;
@@ -492,17 +505,51 @@ export const FlasherTab: React.FC = () => {
         );
         continue;
       }
-      if (!item.source) {
-        ManagerMS.addLog(
-          `${devName}: прошивка пропущена, так как для этой платы не указана прошивка.`
-        );
+      const getSource = async () => {
+        if (uploadFactory) {
+          const getTypeId = () => {
+            if (item.targetType === FirmwareTargetType.dev && dev) {
+              return ManagerMS.getDevicePlatform(dev);
+            } else if (item.targetType === FirmwareTargetType.tjc_ms && address) {
+              return address.type;
+            } else {
+              return null;
+            }
+          };
+          const typeId = getTypeId();
+          if (!typeId) {
+            ManagerMS.addLog(
+              `${devName}: Не удалось определить тип устройства для загрузки заводской прошивки. Пропускаю его.`
+            );
+            return null;
+          }
+          const [valid, path] = await window.api.fileHandlers.getDefaultFirmwarePath(
+            typeId,
+            dev?.isArduinoDevice() ? 'hex' : 'bin'
+          );
+          if (!valid) {
+            ManagerMS.addLog(
+              `${devName}: Загрузка заводской прошивки не поддерживается для данного устройства.`
+            );
+            return null;
+          }
+          return path;
+        }
+        if (!item.source) {
+          ManagerMS.addLog(`${devName}: Для этого устройства не указана прошивка. Пропускаю его.`);
+          return null;
+        }
+        return item.source;
+      };
+      const source = await getSource();
+      if (!source) {
         continue;
       }
-      if (item.isFile) {
-        const [binData, errorMessage] = await window.api.fileHandlers.readFile(item.source);
+      if (item.isFile || uploadFactory) {
+        const [binData, errorMessage] = await window.api.fileHandlers.readFile(source);
         if (errorMessage !== null) {
           ManagerMS.addLog(
-            `Ошибка! Не удалось извлечь данные из файла ${item.source}. Текст ошибки: ${errorMessage}`
+            `${devName}: Ошибка! Не удалось извлечь данные из файла ${source}. Текст ошибки: ${errorMessage}`
           );
           continue;
         }
@@ -522,7 +569,7 @@ export const FlasherTab: React.FC = () => {
           ManagerMS.addLog(noBinary);
           continue;
         }
-        const smData = compilerData.state_machines[item.source];
+        const smData = compilerData.state_machines[source];
         if (!smData || !smData.binary || smData.binary.length === 0) {
           ManagerMS.addLog(noBinary);
           continue;
@@ -768,6 +815,18 @@ export const FlasherTab: React.FC = () => {
                 </button>
               )}
             </WithHint>
+            <WithHint hint={factoryBinHint}>
+              {(hintProps) => (
+                <button
+                  {...hintProps}
+                  className="btn-primary mr-2 whitespace-nowrap p-2 py-1"
+                  onClick={() => handleSendBin(false, true)}
+                  disabled={commonOperationDisabled}
+                >
+                  <FactoryBinIcon className="h-8 w-8" />
+                </button>
+              )}
+            </WithHint>
           </>
         )}
         <WithHint hint={flashResultHint} showOnDisabled={true}>
@@ -977,7 +1036,7 @@ export const FlasherTab: React.FC = () => {
         <p className="mb-1 mt-1 text-lg font-semibold">Устройства на прошивку</p>
         <FlasherTable addressEnrtyEdit={addressEnrtyEdit} getEntryById={getEntryById} />
       </div>
-      <div className="m-1 flex min-h-14">
+      <div className="m-1 flex min-h-16">
         <div
           className={twMerge(
             selectedDevicesCount == 0 ? 'opacity-50' : '',

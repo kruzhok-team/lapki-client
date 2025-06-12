@@ -96,7 +96,7 @@ export class ModuleManager {
           }
           case 'lapki-compiler': {
             const port = await findFreePort({ usedPorts });
-            const compilerArgs = [`--server-port=${port}`];
+            const compilerArgs = [`--server-port=${port}`, '--killable'];
             switch (platform) {
               case 'win32':
                 modulePath = this.getCompilerPath();

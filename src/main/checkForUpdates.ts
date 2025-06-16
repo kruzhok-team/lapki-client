@@ -1,6 +1,6 @@
 import { compare } from 'compare-versions';
 
-import { autoUpdateHost } from './version';
+import { autoUpdateHost, forceUpdateLink } from './version';
 
 export const checkForUpdates = (version: string) => async () => {
   if (!autoUpdateHost) return false;
@@ -34,9 +34,10 @@ export const checkForUpdates = (version: string) => async () => {
     // console.log(`Latest release version: ${latestReleaseVersion}, current version: ${version}`);
 
     if (compare(latestReleaseVersion, version, '>')) {
+      const updateUrl = forceUpdateLink || (data.html_url as string);
       return {
         name: data.name as string,
-        url: data.html_url as string,
+        url: updateUrl,
       };
     }
 

@@ -499,14 +499,15 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
           data: { smId: state.smId, stateId: state.id, selection: idx },
         });
       } else {
-        this.controller.selectState({ smId: state.smId, id: state.id });
+        state.setIsSelected(true);
         this.controller.emit('addSelection', {
           type: 'state',
           data: { smId: state.smId, id: state.id },
         });
       }
     } else {
-      this.controller.selectState({ smId: state.smId, id: state.id });
+      this.controller.removeSelection();
+      state.setIsSelected(true);
       this.controller.emit('selectState', { smId: state.smId, id: state.id });
     }
     this.view.isDirty = true;

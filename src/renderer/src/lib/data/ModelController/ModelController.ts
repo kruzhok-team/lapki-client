@@ -2285,10 +2285,24 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   };
 
   addSelection = (args: SelectedItem) => {
-    if (args.type === 'state') {
-      this.model.changeStateSelection(args.data.smId, args.data.id, true);
-      this.selectedItems.push(args);
+    switch (args.type) {
+      case 'state': {
+        this.model.changeStateSelection(args.data.smId, args.data.id, true);
+        break;
+      }
+      case 'choiceState': {
+        this.model.changeChoiceStateSelection(args.data.smId, args.data.id, true);
+        break;
+      }
+      case 'transition': {
+        this.model.changeTransitionSelection(args.data.smId, args.data.id, true);
+        break;
+      }
+      default: {
+        return;
+      }
     }
+    this.selectedItems.push(args);
   };
 
   selectEvent = (args: SelectEvent) => {

@@ -552,8 +552,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     const state = this.data.states.get(stateId);
     if (!state) return;
 
-    this.controller.removeSelection();
-    state.setIsSelected(true);
+    this.controller.selectState({ smId: state.smId, id: state.id });
 
     const eventIdx = state.eventBox.handleClick({
       x: e.event.x,
@@ -675,9 +674,20 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     });
   };
 
-  handleChoiceStateMouseDown = (state: ChoiceState) => {
-    this.controller.selectChoice({ smId: state.smId, id: state.id });
-    this.controller.emit('selectChoice', { smId: state.smId, id: state.id });
+  handleChoiceStateMouseDown = (state: ChoiceState, e: { event: MyMouseEvent }) => {
+    if (e.event.nativeEvent.ctrlKey) {
+      state.setIsSelected(true);
+      this.controller.emit('addSelection', {
+        type: 'choiceState',
+        data: {
+          smId: state.smId,
+          id: state.id,
+        },
+      });
+    } else {
+      this.controller.selectChoice({ smId: state.smId, id: state.id });
+      this.controller.emit('selectChoice', { smId: state.smId, id: state.id });
+    }
   };
 
   handleChoiceStateDragEnd = (

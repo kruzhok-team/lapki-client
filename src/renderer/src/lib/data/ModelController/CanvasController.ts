@@ -795,6 +795,15 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     state.setIsSelected(true);
   };
 
+  selectState(args: SelectDrawable) {
+    const state = this.states.data.states.get(args.id);
+    if (!state) {
+      return;
+    }
+    this.removeSelection();
+    state.setIsSelected(true);
+  }
+
   selectComponent = (args: SelectDrawable) => {
     this.components.changeComponentSelection({ ...args, value: true });
     this.removeSelection();

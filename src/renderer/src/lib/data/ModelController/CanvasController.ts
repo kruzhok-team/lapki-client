@@ -36,6 +36,7 @@ import {
   LinkTransitionParams,
   RenameComponentParams,
   SelectDrawable,
+  SelectedItem,
   SelectEvent,
   UnlinkStateParams,
 } from '@renderer/lib/types';
@@ -119,6 +120,8 @@ export type CanvasControllerEvents = {
   changeEvent: ChangeEventParams;
   changeEventAction: ChangeEventParams;
   deleteEvent: DeleteEventParams;
+  addSelection: SelectedItem;
+  removeSelection: SelectedItem;
 
   changeNoteFontSize: ChangeNoteFontSizeParams;
   changeNoteTextColor: ChangeNoteTextColorParams;
@@ -133,7 +136,7 @@ export type CanvasControllerEvents = {
   selectEvent: SelectEvent;
   changeStateSelection: ChangeSelectionParams;
   changeState: ChangeStateParams;
-
+  changeEventSelection: SelectEvent;
   changeChoiceSelection: ChangeSelectionParams;
   changeComponentSelection: ChangeSelectionParams;
   changeNoteSelection: ChangeSelectionParams;
@@ -334,6 +337,8 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
             this.model.off('changeEventAction', this.binded['changeEventAction']);
             this.model.off('deleteEventAction', this.binded['deleteEventAction']);
             this.model.off('deleteEvent', this.binded['deleteEvent']);
+            this.model.off('changeEventSelection', this.binded['changeEventSelection']);
+            // this.model.off('changeStateSelection', this.binded['changeStateSelection']);s
             break;
           case 'initialState':
             this.model.off('createInitial', this.binded['createInitial']);
@@ -487,6 +492,10 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
         this.model.on(
           'deleteEvent',
           this.bindHelper('state', 'deleteEvent', this.states.deleteEvent)
+        );
+        this.model.on(
+          'changeEventSelection',
+          this.bindHelper('state', 'changeEventSelection', this.states.changeEventSelection)
         );
         this.initializer.initStates(smId, initData as { [id: string]: State });
         break;
@@ -955,7 +964,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
 
     this.app.controller.states.forEachState((state) => {
       state.setIsSelected(false);
-      state.eventBox.selection = undefined;
+      state.eventBox.selection = [];
     });
 
     this.app.controller.transitions.forEach((transition) => {

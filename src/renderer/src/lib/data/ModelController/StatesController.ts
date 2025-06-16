@@ -18,6 +18,7 @@ import {
   StateVariant,
   ChangeStateNameParams,
   CreateInitialStateControllerParams,
+  SelectEvent,
 } from '@renderer/lib/types/ControllerTypes';
 import { Point } from '@renderer/lib/types/graphics';
 import {
@@ -411,6 +412,26 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.view.isDirty = true;
   };
 
+  changeEventSelection = (args: SelectEvent) => {
+    const { value, stateId, eventSelection } = args;
+    const state = this.data.states.get(stateId);
+    if (!state) return;
+    const selectedIndex = state.eventBox.isSelected(
+      eventSelection.eventIdx,
+      eventSelection.actionIdx
+    );
+    if (value) {
+      if (selectedIndex === -1) {
+        state.eventBox.selection.push(eventSelection);
+      }
+    } else {
+      if (selectedIndex !== -1) {
+        state.eventBox.selection.splice(selectedIndex, 1);
+      }
+    }
+    this.view.isDirty = true;
+  };
+
   // Редактирование события в состояниях
   changeEvent = (args: ChangeEventParams) => {
     const state = this.data.states.get(args.stateId);
@@ -461,23 +482,35 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   };
 
   handleStateMouseDown = (state: State, e: { event: MyMouseEvent }) => {
-    this.controller.selectState({ smId: state.smId, id: state.id });
-    this.controller.emit('selectState', { smId: state.smId, id: state.id });
+    const add = e.event.nativeEvent.ctrlKey;
     const targetPos = state.computedPosition;
     const titleHeight = state.titleHeight;
     const y = e.event.y - targetPos.y;
+    let idx: EventSelection | undefined = undefined;
     // FIXME: если будет учёт нажатий на дочерний контейнер, нужно отсеять их здесь
     if (y > titleHeight) {
       // FIXME: пересчитывает координаты внутри, ещё раз
-      const idx = state.eventBox.handleClick({ x: e.event.x, y: e.event.y });
+      idx = state.eventBox.handleClick({ x: e.event.x, y: e.event.y }, add);
+    }
+    if (e.event.nativeEvent.ctrlKey) {
       if (idx) {
-        this.controller.emit('selectEvent', {
-          smId: state.smId,
-          stateId: state.id,
-          eventSelection: idx,
+        this.controller.emit('addSelection', {
+          type: 'event',
+          data: { smId: state.smId, stateId: state.id, selection: idx },
+        });
+      } else {
+        state.setIsSelected(true);
+        this.controller.emit('addSelection', {
+          type: 'state',
+          data: { smId: state.smId, id: state.id },
         });
       }
+    } else {
+      this.controller.removeSelection();
+      state.setIsSelected(true);
+      this.controller.emit('selectState', { smId: state.smId, id: state.id });
     }
+    this.view.isDirty = true;
   };
 
   handleStateDoubleClick = (state: State, e: { event: MyMouseEvent }) => {
@@ -518,7 +551,8 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   handleContextMenu = (stateId: string, e: { event: MyMouseEvent }) => {
     const state = this.data.states.get(stateId);
     if (!state) return;
-    this.controller.selectState({ smId: '', id: state.id });
+
+    this.controller.selectState({ smId: state.smId, id: state.id });
 
     const eventIdx = state.eventBox.handleClick({
       x: e.event.x,
@@ -640,9 +674,20 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     });
   };
 
-  handleChoiceStateMouseDown = (state: ChoiceState) => {
-    this.controller.selectChoice({ smId: state.smId, id: state.id });
-    this.controller.emit('selectChoice', { smId: state.smId, id: state.id });
+  handleChoiceStateMouseDown = (state: ChoiceState, e: { event: MyMouseEvent }) => {
+    if (e.event.nativeEvent.ctrlKey) {
+      state.setIsSelected(true);
+      this.controller.emit('addSelection', {
+        type: 'choiceState',
+        data: {
+          smId: state.smId,
+          id: state.id,
+        },
+      });
+    } else {
+      this.controller.selectChoice({ smId: state.smId, id: state.id });
+      this.controller.emit('selectChoice', { smId: state.smId, id: state.id });
+    }
   };
 
   handleChoiceStateDragEnd = (

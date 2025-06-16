@@ -8,7 +8,7 @@ import {
 import {
   Component as ComponentData,
   State as StateData,
-  ChoiceState as ChoiseData,
+  ChoiceState as ChoiceData,
   Transition as TransitionData,
   Note as NoteData,
   InitialState as InitialStateData,
@@ -28,6 +28,7 @@ export interface SelectEvent {
   eventSelection: EventSelection;
   stateId: string;
   smId: string;
+  value: boolean;
 }
 
 export const emptyControllerData = () => ({
@@ -169,12 +170,12 @@ export type ComponentType = ComponentsControllerDataComponentType extends `${inf
 
 export type CopyData = { smId: string; state: StateMachine } & (
   | { type: 'state'; data: StateData & { id: string } }
-  | { type: 'choiceState'; data: ChoiseData & { id: string } }
+  | { type: 'choiceState'; data: ChoiceData & { id: string } }
   | { type: 'transition'; data: TransitionData & { id: string } }
   | { type: 'note'; data: NoteData & { id: string } }
   | { type: 'component'; data: ComponentData & { id: string } }
+  | { type: 'event'; data: EventSelection & { stateId: string } }
 );
-export type CopyType = CopyData['type'];
 
 export type LinkTransitionParams = {
   smId: string;

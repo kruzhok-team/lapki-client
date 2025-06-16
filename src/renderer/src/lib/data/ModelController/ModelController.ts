@@ -764,21 +764,18 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   deleteInitialStateWithTransition(smId: string, initialStateId: string, canUndo = true) {
     const transitionWithId = this.getBySourceId(smId, initialStateId);
     if (!transitionWithId) return;
-
-    this.deleteInitialState({ smId, id: initialStateId }, canUndo);
-    this.deleteTransition({ smId, id: transitionWithId[0] }, false);
+    const targetId =
+      this.model.data.elements.stateMachines[smId].transitions[transitionWithId[0]].targetId;
+    this.deleteTransition({ smId, id: transitionWithId[0] }, canUndo);
+    this.deleteInitialState({ smId, id: initialStateId }, targetId, canUndo);
   }
 
-  deleteInitialState(args: DeleteDrawableParams, canUndo = true) {
+  deleteInitialState(args: DeleteDrawableParams, targetId: string, canUndo = true) {
     const { smId, id } = args;
     const sm = this.model.data.elements.stateMachines[smId];
     const state = sm.initialStates[id];
     if (!state) return;
-
-    const transitionId = Object.keys(sm.transitions).find(
-      (transitionId) => sm.transitions[transitionId].sourceId == id
-    );
-    if (!transitionId) return;
+    const position = structuredClone(state.position);
 
     if (!this.model.deleteInitialState(smId, id)) return;
 
@@ -787,7 +784,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         type: 'deleteInitialState',
         args: {
           ...args,
-          targetId: sm.transitions[transitionId].targetId,
+          position: position,
+          targetId,
         },
       });
     }
@@ -984,11 +982,11 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
       if (newState) {
         this.setInitialState(smId, newState[0]);
+        numberOfConnectedActions += 1;
       } else {
         this.deleteInitialStateWithTransition(smId, transitionFromInitialState.sourceId, canUndo);
+        numberOfConnectedActions += 2;
       }
-
-      numberOfConnectedActions += 1;
     }
 
     // Вычисляем новую координату, потому что после отсоединения родителя не сможем.
@@ -1010,7 +1008,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     );
     if (!siblingIds.length) {
       this.createInitialStateWithTransition(smId, id);
-      numberOfConnectedActions += 1;
+      numberOfConnectedActions += 2;
     }
     if (canUndo) {
       this.history.do({
@@ -1054,10 +1052,11 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (transitionFromInitialState) {
       if (siblingIds.length === 0) {
         this.deleteInitialStateWithTransition(smId, transitionFromInitialState.sourceId, canUndo);
+        numberOfConnectedActions += 2;
       } else {
         this.setInitialState(smId, siblingIds[0], canUndo);
+        numberOfConnectedActions += 1;
       }
-      numberOfConnectedActions += 1;
     }
 
     if (!this.model.linkState(smId, parentId, childId)) return;
@@ -1096,7 +1095,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         false
       );
       this.createInitialStateWithTransition(smId, childId, canUndo);
-      numberOfConnectedActions += 1;
+      numberOfConnectedActions += 2;
     }
     if (canUndo) {
       if (!prevParentId) {
@@ -1155,7 +1154,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (canUndo) {
       this.history.do({
         type: 'createInitialState',
-        args: { smId, id, targetId, position },
+        args: { smId, id, targetId, position: position ?? newPosition },
       });
     }
     this.emit('createInitial', {
@@ -1170,9 +1169,10 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     smId: string,
     targetId: string,
     canUndo = true,
+    id?: string,
     position?: Point
   ) {
-    const stateId = this.createInitialState({ smId, targetId, position }, false);
+    const stateId = this.createInitialState({ smId, targetId, position, id }, canUndo);
     if (!stateId) return;
 
     this.createTransition(
@@ -1182,20 +1182,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         targetId: targetId,
       },
       true,
-      false
+      canUndo
     );
-
-    if (canUndo) {
-      this.history.do({
-        type: 'createInitialState',
-        args: {
-          smId,
-          id: stateId,
-          targetId: targetId,
-          position: this.model.data.elements.stateMachines[smId].initialStates[stateId].position,
-        },
-      });
-    }
   }
 
   changeState(args: ChangeStateParams, canUndo = true) {
@@ -1236,7 +1224,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   };
 
   createState(args: CreateStateParams, canUndo = true) {
-    const { smId, parentId, canBeInitial = true, position } = args;
+    const { smId, parentId, canBeInitial = true, position, createInitialState = true } = args;
     let numberOfConnectedActions = 0;
     const newStateId = this.model.createState(args);
     this.emit('createState', {
@@ -1246,9 +1234,9 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     });
 
     const siblings = this.getSiblings(smId, newStateId, parentId)[0];
-    if (!siblings.length && !parentId) {
+    if (!siblings.length && !parentId && createInitialState) {
       this.createInitialStateWithTransition(smId, newStateId, false);
-      numberOfConnectedActions += 1;
+      numberOfConnectedActions += 2;
     }
 
     if (parentId) {
@@ -1398,7 +1386,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const initialStates = this.getInitialStatesByParentId(smId, id);
     initialStates.forEach((childInitial) => {
       this.deleteInitialStateWithTransition(smId, childInitial[0], canUndo);
-      numberOfConnectedActions += 1;
+      numberOfConnectedActions += 2;
     });
     const choiceStates = this.getChoicesByParentId(smId, id);
     choiceStates.forEach((childChoice) => {
@@ -1433,11 +1421,11 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
       if (newState) {
         this.setInitialState(smId, newState[0], canUndo);
+        numberOfConnectedActions += 1;
       } else {
         this.deleteInitialStateWithTransition(smId, transitionFromInitialState.sourceId, canUndo);
+        numberOfConnectedActions += 2;
       }
-
-      numberOfConnectedActions += 1;
     }
     // Удаляем зависимые переходы
     const dependetTransitions = this.getEachByStateId(smId, id);

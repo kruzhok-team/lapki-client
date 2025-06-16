@@ -551,7 +551,9 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   handleContextMenu = (stateId: string, e: { event: MyMouseEvent }) => {
     const state = this.data.states.get(stateId);
     if (!state) return;
-    this.controller.selectState({ smId: '', id: state.id });
+
+    this.controller.removeSelection();
+    state.setIsSelected(true);
 
     const eventIdx = state.eventBox.handleClick({
       x: e.event.x,

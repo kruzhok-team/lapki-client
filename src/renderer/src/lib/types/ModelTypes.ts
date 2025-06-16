@@ -56,8 +56,8 @@ export type CreateStateParams = StateData & {
   events?: EventData[];
 
   placeInCenter?: boolean;
-
   // Поля ниже нужны для коректной отмены этого действия с помощью истории
+  createInitialState?: boolean;
   linkByPoint?: boolean;
   canBeInitial?: boolean;
 };

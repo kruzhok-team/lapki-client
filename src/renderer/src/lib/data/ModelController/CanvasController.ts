@@ -487,7 +487,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
         );
         this.model.on(
           'deleteEventAction',
-          this.bindHelper('state', 'deleteEventAction', this.states.deleteEvent)
+          this.bindHelper('state', 'deleteEventAction', this.states.deleteEventAction)
         );
         this.model.on(
           'deleteEvent',

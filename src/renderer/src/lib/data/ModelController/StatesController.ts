@@ -442,15 +442,23 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.view.isDirty = true;
   };
 
+  deleteEventAction = (args: DeleteEventParams) => {
+    const state = this.data.states.get(args.stateId);
+    if (!state) return;
+
+    state.eventBox.unselectAction(args.event);
+    state.updateEventBox();
+
+    this.view.isDirty = true;
+  };
+
   // Удаление события в состояниях
   //TODO показывать предупреждение при удалении события в состоянии(модалка)
   deleteEvent = (args: DeleteEventParams) => {
     const state = this.data.states.get(args.stateId);
     if (!state) return;
-    const idx = state.eventBox.isSelected(args.event.eventIdx, args.event.actionIdx);
-    if (idx !== -1) {
-      state.eventBox.selection.splice(idx, 1);
-    }
+
+    state.eventBox.unselectEvent(args.event);
     state.updateEventBox();
 
     this.view.isDirty = true;
@@ -487,7 +495,6 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   handleStateMouseDown = (state: State, e: { event: MyMouseEvent }) => {
     const add = e.event.nativeEvent.ctrlKey;
     let idx: EventSelection | undefined = undefined;
-    debugger;
     if (e.event.nativeEvent.ctrlKey) {
       idx = state.eventBox.handleClick({ x: e.event.x, y: e.event.y }, add);
 
@@ -506,6 +513,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     } else {
       this.controller.removeSelection();
       idx = state.eventBox.handleClick({ x: e.event.x, y: e.event.y }, add);
+      console.log('at handle:', structuredClone(state.eventBox.selection));
       if (idx) {
         this.controller.emit('selectEvent', {
           smId: state.smId,

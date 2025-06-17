@@ -22,7 +22,6 @@ export class Events {
 
   private textArray = [] as string[];
   // private textEvents = [] as string[];
-  // TODO (L140-beep): EventSelection[] для мультивыделения
   selection: EventSelection[] = [];
 
   minEventRow = 3;
@@ -141,11 +140,12 @@ export class Events {
     if (!add) {
       this.selection = [];
     }
-    if (idx) {
+    if (idx && this.isSelected(idx.eventIdx, idx.actionIdx) === -1) {
       this.selection?.push(idx);
+      return idx;
     }
 
-    return idx;
+    return undefined;
   }
 
   handleDoubleClick(p: Point) {
@@ -158,6 +158,39 @@ export class Events {
     }
 
     this.drawImageEvents(ctx);
+  }
+
+  // Remove action from selection array.
+  unselectAction(selection: EventSelection) {
+    const idx = this.isSelected(selection.eventIdx, selection.actionIdx);
+    if (idx !== -1) {
+      this.selection = this.selection.splice(idx, 1);
+      return true;
+    }
+
+    return false;
+  }
+
+  // Find all actions and event indexes at array.
+  private findEvent(eventIdx: number): number[] {
+    return this.selection
+      .map((selection, idx) => {
+        if (selection.eventIdx === eventIdx) {
+          return idx;
+        }
+        return -1;
+      })
+      .filter((idx) => idx !== -1);
+  }
+
+  // Remove event and all actions related with it
+  unselectEvent(selection: EventSelection) {
+    const indexes = this.findEvent(selection.eventIdx);
+    if (indexes.length === 0) return false;
+
+    this.selection = this.selection.filter((_, idx) => !indexes.includes(idx));
+
+    return true;
   }
 
   //Прорисовка событий в блоках состояния
@@ -180,7 +213,7 @@ export class Events {
 
     let eventRow = 0;
     ctx.beginPath();
-    console.log(structuredClone(this.data));
+
     this.data.map((events, eventIdx) => {
       const eX = baseX;
       const eY = baseY + (eventRow * yDx) / this.app.controller.scale;

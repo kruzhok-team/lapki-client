@@ -9,7 +9,7 @@ import {
 } from '@renderer/lib/constants';
 import { History } from '@renderer/lib/data/History';
 import { EventSelection } from '@renderer/lib/drawable';
-import { SelectedItem } from '@renderer/lib/types';
+import { SelectedEventItem, SelectedItem } from '@renderer/lib/types';
 import {
   CCreateInitialStateParams,
   CopyData,
@@ -1790,7 +1790,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   }
 
   deleteSelected = () => {
-    debugger;
+    const events: SelectedEventItem[] = [];
     for (const selectedItem of this.selectedItems) {
       const { smId } = selectedItem.data;
       switch (selectedItem.type) {
@@ -1804,12 +1804,12 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
           this.deleteComponent({ smId, id: selectedItem.data.id });
           break;
         case 'event':
-          debugger;
-          this.deleteEvent({
-            smId,
-            stateId: selectedItem.data.stateId,
-            event: selectedItem.data.selection,
-          });
+          events.push(selectedItem);
+          // this.deleteEvent({
+          //   smId,
+          //   stateId: selectedItem.data.stateId,
+          //   event: selectedItem.data.selection,
+          // });
           break;
         case 'note':
           this.deleteNote({ smId: smId, id: selectedItem.data.smId });
@@ -1821,6 +1821,26 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
           break;
       }
     }
+    events
+      .sort((a, b) => {
+        const eventIdxComparison = a.data.selection.eventIdx - b.data.selection.eventIdx;
+        if (eventIdxComparison !== 0) {
+          return eventIdxComparison;
+        }
+
+        // Если actionIdx не null, то сравниваем его. Если null, ставим в конец
+        const aActionIdx = a.data.selection.actionIdx ?? Number.MAX_VALUE; // Если null, ставим максимально возможное значение
+        const bActionIdx = b.data.selection.actionIdx ?? Number.MAX_VALUE; // То же самое для второго элемента
+
+        return bActionIdx - aActionIdx;
+      })
+      .map((selectedItem) =>
+        this.deleteEvent({
+          smId: selectedItem.data.smId,
+          stateId: selectedItem.data.stateId,
+          event: selectedItem.data.selection,
+        })
+      );
   };
 
   createEvent(args: CreateEventParams) {
@@ -1884,7 +1904,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (!state) return false;
 
     const { eventIdx, actionIdx } = event;
-    debugger;
     if (actionIdx !== null) {
       if (!state.events[eventIdx]) return false;
       const prevValue = state.events[eventIdx].do[actionIdx];
@@ -2322,7 +2341,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   selectEvent = (args: SelectEvent) => {
     const { smId, stateId, eventSelection } = args;
-    debugger;
     if (this.model.changeEventSelection(smId, stateId, eventSelection, true)) {
       this.removeSelection();
       this.selectedItems.push({
@@ -2409,12 +2427,12 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
               false
             )
           ) {
-            this.emit('changeEventSelection', {
-              smId: item.data.smId,
-              stateId: item.data.stateId,
-              eventSelection: item.data.selection,
-              value: false,
-            });
+            // this.emit('changeEventSelection', {
+            //   smId: item.data.smId,
+            //   stateId: item.data.stateId,
+            //   eventSelection: item.data.selection,
+            //   value: false,
+            // });
           }
           break;
         case 'transition':

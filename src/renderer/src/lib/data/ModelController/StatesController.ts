@@ -447,7 +447,10 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   deleteEvent = (args: DeleteEventParams) => {
     const state = this.data.states.get(args.stateId);
     if (!state) return;
-
+    const idx = state.eventBox.isSelected(args.event.eventIdx, args.event.actionIdx);
+    if (idx !== -1) {
+      state.eventBox.selection.splice(idx, 1);
+    }
     state.updateEventBox();
 
     this.view.isDirty = true;
@@ -483,16 +486,11 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
   handleStateMouseDown = (state: State, e: { event: MyMouseEvent }) => {
     const add = e.event.nativeEvent.ctrlKey;
-    const targetPos = state.computedPosition;
-    const titleHeight = state.titleHeight;
-    const y = e.event.y - targetPos.y;
     let idx: EventSelection | undefined = undefined;
-    // FIXME: если будет учёт нажатий на дочерний контейнер, нужно отсеять их здесь
-    if (y > titleHeight) {
-      // FIXME: пересчитывает координаты внутри, ещё раз
-      idx = state.eventBox.handleClick({ x: e.event.x, y: e.event.y }, add);
-    }
+    debugger;
     if (e.event.nativeEvent.ctrlKey) {
+      idx = state.eventBox.handleClick({ x: e.event.x, y: e.event.y }, add);
+
       if (idx) {
         this.controller.emit('addSelection', {
           type: 'event',
@@ -507,8 +505,18 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
       }
     } else {
       this.controller.removeSelection();
-      state.setIsSelected(true);
-      this.controller.emit('selectState', { smId: state.smId, id: state.id });
+      idx = state.eventBox.handleClick({ x: e.event.x, y: e.event.y }, add);
+      if (idx) {
+        this.controller.emit('selectEvent', {
+          smId: state.smId,
+          stateId: state.id,
+          eventSelection: idx,
+          value: true,
+        });
+      } else {
+        state.setIsSelected(true);
+        this.controller.emit('selectState', { smId: state.smId, id: state.id });
+      }
     }
     this.view.isDirty = true;
   };

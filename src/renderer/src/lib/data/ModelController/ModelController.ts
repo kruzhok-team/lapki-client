@@ -1790,6 +1790,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   }
 
   deleteSelected = () => {
+    debugger;
     for (const selectedItem of this.selectedItems) {
       const { smId } = selectedItem.data;
       switch (selectedItem.type) {
@@ -1803,6 +1804,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
           this.deleteComponent({ smId, id: selectedItem.data.id });
           break;
         case 'event':
+          debugger;
           this.deleteEvent({
             smId,
             stateId: selectedItem.data.stateId,
@@ -1882,13 +1884,9 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (!state) return false;
 
     const { eventIdx, actionIdx } = event;
-
+    debugger;
     if (actionIdx !== null) {
-      // Проверяем если действие в событие последнее то надо удалить всё событие
-      if (state.events[eventIdx].do.length === 1) {
-        return this.deleteEvent({ stateId, smId, event: { eventIdx, actionIdx: null } });
-      }
-
+      if (!state.events[eventIdx]) return false;
       const prevValue = state.events[eventIdx].do[actionIdx];
 
       if (!this.model.deleteEventAction(smId, stateId, event)) return false;
@@ -2298,6 +2296,23 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         this.model.changeTransitionSelection(args.data.smId, args.data.id, true);
         break;
       }
+      case 'note': {
+        this.model.changeNoteSelection(args.data.smId, args.data.id, true);
+        break;
+      }
+      case 'component': {
+        this.model.changeComponentSelection(args.data.smId, args.data.id, true);
+        break;
+      }
+      case 'event': {
+        this.model.changeEventSelection(
+          args.data.smId,
+          args.data.stateId,
+          args.data.selection,
+          true
+        );
+        break;
+      }
       default: {
         return;
       }
@@ -2307,7 +2322,9 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   selectEvent = (args: SelectEvent) => {
     const { smId, stateId, eventSelection } = args;
+    debugger;
     if (this.model.changeEventSelection(smId, stateId, eventSelection, true)) {
+      this.removeSelection();
       this.selectedItems.push({
         type: 'event',
         data: {
@@ -2316,7 +2333,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
           selection: eventSelection,
         },
       });
-      this.removeSelection([this.selectedItems.length - 1]);
     }
   };
 

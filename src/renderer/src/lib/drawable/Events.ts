@@ -138,11 +138,10 @@ export class Events {
 
   handleClick(p: Point, add?: boolean) {
     const idx = this.calculatePictoIndex(p);
-    if (!idx && !add) {
+    if (!add) {
       this.selection = [];
-      return undefined;
     }
-    if (idx && add) {
+    if (idx) {
       this.selection?.push(idx);
     }
 
@@ -181,7 +180,7 @@ export class Events {
 
     let eventRow = 0;
     ctx.beginPath();
-
+    console.log(structuredClone(this.data));
     this.data.map((events, eventIdx) => {
       const eX = baseX;
       const eY = baseY + (eventRow * yDx) / this.app.controller.scale;

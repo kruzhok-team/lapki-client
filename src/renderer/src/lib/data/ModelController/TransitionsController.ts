@@ -221,9 +221,18 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     this.ghost?.setSource(node);
   };
 
-  handleConditionClick = (transition: Transition) => {
-    this.controller.selectTransition({ smId: '', id: transition.id });
-    this.controller.emit('selectTransition', { smId: transition.smId, id: transition.id });
+  handleConditionClick = (transition: Transition, e: { event: MyMouseEvent }) => {
+    if (e.event.nativeEvent.ctrlKey) {
+      transition.setIsSelected(true);
+      this.controller.emit('addSelection', {
+        type: 'transition',
+        data: transition,
+      });
+    } else {
+      this.controller.selectTransition({ smId: transition.smId, id: transition.id });
+      this.controller.emit('selectTransition', { smId: transition.smId, id: transition.id });
+    }
+    this.view.isDirty = true;
   };
 
   handleConditionDoubleClick = (transition: Transition) => {

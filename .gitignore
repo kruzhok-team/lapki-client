@@ -10,12 +10,10 @@ qt-temp.ts
 
 # lapki-compiler
 ACCESS_TOKENS.txt
-resources/modules/win32/lapki-compiler/fullgraphmlparser
-resources/modules/win32/lapki-compiler/library
-resources/modules/win32/lapki-compiler/platforms
-resources/modules/win32/arduino-cli
-resources/modules/win32/avrdude
-resources/modules/win32/gcc-arm-none-eabi
-resources/modules/win32/lapki-compiler/build/
-resources/modules/linux/lapki-compiler/build/
-resources/modules/darwin/lapki-compiler/build/
+resources/modules/*/lapki-compiler/fullgraphmlparser
+resources/modules/*/lapki-compiler/library
+resources/modules/*/lapki-compiler/platforms
+resources/modules/*/arduino-cli
+resources/modules/*/avrdude
+resources/modules/*/gcc-arm-none-eabi
+resources/modules/*/lapki-compiler/build/

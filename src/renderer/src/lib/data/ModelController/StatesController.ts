@@ -173,7 +173,6 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
   changeStatePosition = (args: ChangePosition) => {
     const { id, endPosition } = args;
-    debugger;
     const state = this.data.states.get(id);
     if (!state) return;
     state.position = endPosition;

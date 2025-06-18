@@ -164,7 +164,7 @@ export class Events {
   unselectAction(selection: EventSelection) {
     const idx = this.isSelected(selection.eventIdx, selection.actionIdx);
     if (idx !== -1) {
-      this.selection = this.selection.splice(idx, 1);
+      this.selection.splice(idx, 1);
       return true;
     }
 

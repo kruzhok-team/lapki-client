@@ -783,6 +783,7 @@ export class History {
   undo = () => {
     if (this.isUndoStackEmpty()) return;
 
+    this.stateMachine.removeSelection();
     const action = this.undoStack.pop() as Action<any>;
 
     actionFunctions[action.type](this.stateMachine, action.args).undo();
@@ -803,6 +804,7 @@ export class History {
     if (this.isRedoStackEmpty()) return;
 
     const action = this.redoStack.pop() as Action<any>;
+    this.stateMachine.removeSelection();
 
     actionFunctions[action.type](this.stateMachine, action.args).redo();
 

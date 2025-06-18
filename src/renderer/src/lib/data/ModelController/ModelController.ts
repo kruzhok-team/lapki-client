@@ -1434,6 +1434,17 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       numberOfConnectedActions += 1;
     });
     const prevState = structuredClone(state);
+    prevState.events.map((event) => {
+      event.selection = false;
+      if (typeof event.do === 'string') return event;
+
+      event.do.map((action) => {
+        action.selection = false;
+        return action;
+      });
+
+      return event;
+    });
     if (!this.model.deleteState(smId, id)) return;
 
     if (canUndo) {
@@ -1841,6 +1852,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
           event: selectedItem.data.selection,
         })
       );
+    this.selectedItems = [];
   };
 
   createEvent(args: CreateEventParams) {
@@ -1906,19 +1918,19 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const { eventIdx, actionIdx } = event;
     if (actionIdx !== null) {
       if (!state.events[eventIdx]) return false;
-      const prevValue = state.events[eventIdx].do[actionIdx];
-
+      const prevValue = state.events[eventIdx].do[actionIdx] as Action;
+      prevValue.selection = false;
       if (!this.model.deleteEventAction(smId, stateId, event)) return false;
       this.emit('deleteEventAction', { smId, stateId, event });
       if (canUndo) {
         this.history.do({
           type: 'deleteEventAction',
-          args: { smId, stateId, event, prevValue: prevValue as Action },
+          args: { smId, stateId, event, prevValue: prevValue },
         });
       }
     } else {
       const prevValue = state.events[eventIdx];
-
+      prevValue.selection = false;
       if (!this.model.deleteEvent(smId, stateId, eventIdx)) return false;
       this.emit('deleteEvent', { smId, stateId, event });
       if (canUndo) {
@@ -2224,17 +2236,18 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const { id, smId } = args;
     const state = this.model.data.elements.stateMachines[smId].states[id];
     if (!state) return;
-    this.selectedItems.push({
-      type: 'state',
-      data: {
-        smId,
-        id,
-      },
-    });
-    this.removeEventsSelection(smId, id, state.events);
-    this.removeSelection([this.selectedItems.length - 1]);
-
-    this.model.changeStateSelection(smId, id, true);
+    if (this.model.changeStateSelection(smId, id, true)) {
+      // this.removeEventsSelection(smId, id, state.events);
+      this.removeSelection();
+      this.selectedItems.push({
+        type: 'state',
+        data: {
+          smId,
+          id,
+        },
+      });
+      this.emit('selectState', args);
+    }
   };
 
   selectChoiceState = (args: SelectDrawable) => {
@@ -2243,18 +2256,17 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const state = this.model.data.elements.stateMachines[smId].choiceStates[id];
     if (!state) return;
 
-    this.selectedItems.push({
-      type: 'choiceState',
-      data: {
-        smId,
-        id,
-      },
-    });
-    this.removeSelection([this.selectedItems.length - 1]);
-
-    this.model.changeChoiceStateSelection(smId, id, true);
-
-    // this.emit('selectChoice', { smId: '', id: id });
+    if (this.model.changeChoiceStateSelection(smId, id, true)) {
+      this.removeSelection();
+      this.selectedItems.push({
+        type: 'choiceState',
+        data: {
+          smId,
+          id,
+        },
+      });
+      this.emit('selectChoice', { smId, id });
+    }
   };
 
   setTextMode(canvasController: CanvasController) {
@@ -2272,58 +2284,86 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
     const transition = this.model.data.elements.stateMachines[smId].transitions[id];
     if (!transition) return;
-    this.selectedItems.push({
-      type: 'transition',
-      data: {
-        smId,
-        id,
-      },
-    });
-    this.removeSelection([this.selectedItems.length - 1]);
-
-    this.model.changeTransitionSelection(smId, id, true);
-
-    // this.emit('selectTransition', { smId: smId, id: id });
+    if (this.model.changeTransitionSelection(smId, id, true)) {
+      this.removeSelection();
+      this.selectedItems.push({
+        type: 'transition',
+        data: {
+          smId,
+          id,
+        },
+      });
+      this.emit('selectTransition', { smId: smId, id: id });
+    }
   };
 
   selectNote = (args: SelectDrawable) => {
     const { smId, id } = args;
     const note = this.model.data.elements.stateMachines[smId].notes[id];
     if (!note) return;
-    this.selectedItems.push({
-      type: 'note',
-      data: {
-        smId,
-        id,
-      },
-    });
-    this.removeSelection([this.selectedItems.length - 1]);
-    this.model.changeNoteSelection(smId, id, true);
+    if (this.model.changeNoteSelection(smId, id, true)) {
+      this.removeSelection();
+      this.selectedItems.push({
+        type: 'note',
+        data: {
+          smId,
+          id,
+        },
+      });
+      this.emit('selectNote', { smId: smId, id: id });
+    }
+  };
+  isEventSelected = (smId: string, stateId: string, selection: EventSelection): boolean => {
+    const state = this.model.data.elements.stateMachines[smId].states[stateId];
+    if (selection.actionIdx === null) {
+      return Boolean(state.events[selection.eventIdx].selection);
+    }
+
+    const action = state.events[selection.eventIdx].do[selection.actionIdx];
+
+    if (typeof action === 'string') return false;
+    return Boolean(action.selection);
+  };
+  isSelected = (
+    smId: string,
+    id: string,
+    type: StateType | 'notes' | 'transitions' | 'components' | 'events'
+  ) => {
+    if (type === 'finalStates' || type === 'initialStates') return false;
+    return Boolean(this.model.data.elements.stateMachines[smId][type][id].selection);
   };
 
   addSelection = (args: SelectedItem) => {
+    let isSelected = false;
+    // debugger;
     switch (args.type) {
       case 'state': {
+        isSelected = this.isSelected(args.data.smId, args.data.id, 'states');
         this.model.changeStateSelection(args.data.smId, args.data.id, true);
         break;
       }
       case 'choiceState': {
+        isSelected = this.isSelected(args.data.smId, args.data.id, 'choiceStates');
         this.model.changeChoiceStateSelection(args.data.smId, args.data.id, true);
         break;
       }
       case 'transition': {
+        isSelected = this.isSelected(args.data.smId, args.data.id, 'transitions');
         this.model.changeTransitionSelection(args.data.smId, args.data.id, true);
         break;
       }
       case 'note': {
+        isSelected = this.isSelected(args.data.smId, args.data.id, 'notes');
         this.model.changeNoteSelection(args.data.smId, args.data.id, true);
         break;
       }
       case 'component': {
+        isSelected = this.isSelected(args.data.smId, args.data.id, 'components');
         this.model.changeComponentSelection(args.data.smId, args.data.id, true);
         break;
       }
       case 'event': {
+        isSelected = this.isEventSelected(args.data.smId, args.data.stateId, args.data.selection);
         this.model.changeEventSelection(
           args.data.smId,
           args.data.stateId,
@@ -2336,11 +2376,14 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         return;
       }
     }
-    this.selectedItems.push(args);
+    if (!isSelected) {
+      this.selectedItems.push(args);
+    }
   };
 
   selectEvent = (args: SelectEvent) => {
     const { smId, stateId, eventSelection } = args;
+
     if (this.model.changeEventSelection(smId, stateId, eventSelection, true)) {
       this.removeSelection();
       this.selectedItems.push({
@@ -2351,6 +2394,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
           selection: eventSelection,
         },
       });
+      this.emit('changeEventSelection', args);
     }
   };
 
@@ -2402,6 +2446,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
    */
   removeSelection(exclude: number[] = []) {
     const newSelected: SelectedItem[] = [];
+    // debugger;
     for (const itemIdx in this.selectedItems) {
       const item = this.selectedItems[itemIdx];
       if (exclude.includes(Number(itemIdx))) {
@@ -2427,12 +2472,12 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
               false
             )
           ) {
-            // this.emit('changeEventSelection', {
-            //   smId: item.data.smId,
-            //   stateId: item.data.stateId,
-            //   eventSelection: item.data.selection,
-            //   value: false,
-            // });
+            this.emit('changeEventSelection', {
+              smId: item.data.smId,
+              stateId: item.data.stateId,
+              eventSelection: item.data.selection,
+              value: false,
+            });
           }
           break;
         case 'transition':

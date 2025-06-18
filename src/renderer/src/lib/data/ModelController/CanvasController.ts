@@ -447,7 +447,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
           'deleteState',
           this.bindHelper('state', 'deleteState', this.states.deleteState)
         );
-        this.model.on('selectState', this.bindHelper('state', 'selectState', this.selectComponent));
+        this.model.on('selectState', this.bindHelper('state', 'selectState', this.selectState));
         this.model.on(
           'addDragendStateSig',
           this.bindHelper('state', 'addDragendStateSig', this.addDragendState)
@@ -547,7 +547,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
           this.bindHelper('choice', 'deleteChoice', this.states.deleteChoiceState)
         );
         this.model.on(
-          'selectState',
+          'selectChoice',
           this.bindHelper('choice', 'linkFinalState', this.selectChoice)
         );
         this.model.on(
@@ -795,14 +795,14 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     state.setIsSelected(true);
   };
 
-  selectState(args: SelectDrawable) {
+  selectState = (args: SelectDrawable) => {
     const state = this.states.data.states.get(args.id);
     if (!state) {
       return;
     }
     this.removeSelection();
     state.setIsSelected(true);
-  }
+  };
 
   selectComponent = (args: SelectDrawable) => {
     this.components.changeComponentSelection({ ...args, value: true });

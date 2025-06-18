@@ -173,6 +173,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
   changeStatePosition = (args: ChangePosition) => {
     const { id, endPosition } = args;
+    debugger;
     const state = this.data.states.get(id);
     if (!state) return;
     state.position = endPosition;
@@ -513,7 +514,6 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     } else {
       this.controller.removeSelection();
       idx = state.eventBox.handleClick({ x: e.event.x, y: e.event.y }, add);
-      console.log('at handle:', structuredClone(state.eventBox.selection));
       if (idx) {
         this.controller.emit('selectEvent', {
           smId: state.smId,

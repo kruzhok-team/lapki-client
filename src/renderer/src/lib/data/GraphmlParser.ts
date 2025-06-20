@@ -31,7 +31,13 @@ import {
   Variable,
 } from '@renderer/types/diagram';
 import { Platform, ComponentProto, MethodProto, SignalProto } from '@renderer/types/platform';
-import { getMatrixDimensions, isString, parseMatrixFromString } from '@renderer/utils';
+import {
+  getMatrixDimensions,
+  isEmptyTrigger,
+  isMatrix,
+  isString,
+  parseMatrixFromString,
+} from '@renderer/utils';
 
 import { validateElements } from './ElementsValidator';
 import { getPlatform, isPlatformAvailable } from './PlatformLoader';
@@ -393,7 +399,7 @@ function getTransitions(
       color: rawTransition.color,
       label: {
         position: rawTransition.labelPosition ?? { x: -1, y: -1 },
-        trigger: eventData[0].trigger,
+        trigger: isEmptyTrigger(eventData[0].trigger) ? undefined : eventData[0].trigger,
         do: eventData[0].do,
         condition: eventData[0].condition,
       },
@@ -426,7 +432,7 @@ function getComponents(rawComponents: { [id: string]: CGMLComponent }): {
   for (const id in rawComponents) {
     const rawComponent = rawComponents[id];
     if (rawComponent.order === undefined) {
-      throw new Error('Ошибка парсинга схемы! Отсутствует порядок компонентов!');
+      throw new Error('Ошибка парсинга документа! Отсутствует порядок компонентов!');
     }
     components[rawComponent.id] = {
       name: rawComponent.parameters['name'],
@@ -443,7 +449,7 @@ function labelParameters(args: ArgList, method: MethodProto): ArgList {
   const labeledArgs: ArgList = { ...args };
   method.parameters?.forEach((element, index) => {
     delete labeledArgs[index];
-    if (element.type && !Array.isArray(element.type) && element.type.startsWith('Matrix')) {
+    if (element.type && !Array.isArray(element.type) && isMatrix(element.type)) {
       const { width, height } = getMatrixDimensions(element.type);
       labeledArgs[element.name] = {
         value: parseMatrixFromString(args[index].value as string, width, height),
@@ -627,7 +633,7 @@ function getVisualFlag(
   }
   if (visual && !platformVisual) {
     throw new Error(
-      'В схеме флаг lapkiVisual равен true, но целевая платформа не поддерживает визуальный режим!'
+      'Флаг lapkiVisual равен true, но целевая платформа не поддерживает визуальный режим!'
     );
   }
   return visual;

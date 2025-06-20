@@ -18,17 +18,21 @@ import {
   HandleFileSelectReturn,
   HandleFileReadReturn,
   HandleFolderCreateReturn,
-  handleSaveBinaryIntoFileReturn,
+  HandleSaveBinaryIntoFileReturn,
+  HandleGetDefaultFirmwareReturn,
 } from './handlersTypes';
 
+import { basePath } from '../utils';
+
 /**
- * Асинхронный диалог открытия файла схемы.
+ * Асинхронный диалог открытия документа.
  */
 export async function handleFileOpen(platform: string, path?: string): HandleFileOpenReturn {
   return new Promise((resolve) => {
     const platforms: Map<string, Array<string>> = new Map([
       ['ide', ['json']],
       ['Cyberiada', ['graphml']],
+      ['Berloga', ['xml', 'graphml']],
     ]);
 
     let filePath = path;
@@ -109,7 +113,6 @@ export async function handleGetPlatforms(directory: string): HandleGetPlatformsR
 }
 
 export async function searchPlatforms(): SearchPlatformsReturn {
-  const basePath = path.join(__dirname, '../../resources').replace('app.asar', 'app.asar.unpacked');
   const DEFAULT_PATH = [
     path.join(basePath, 'platform'),
     path.join(app.getPath('userData'), 'platform'),
@@ -167,7 +170,7 @@ export async function handleSaveIntoFolder(
 }
 
 /**
- * Асинхронное сохранение файла схемы.
+ * Асинхронное сохранение документа.
  */
 export async function handleFileSave(fileName: string, data: string): HandleFileSaveReturn {
   return new Promise((resolve) => {
@@ -291,7 +294,7 @@ export function handleGetFileMetadata(absolute_path: string) {
 }
 
 /**
- * Проверка рна существование файла
+ * Проверка на существование файла
  * @param path путь к файлу
  * @returns существует ли файл
  */
@@ -310,6 +313,10 @@ export function handleCreateFolder(folderName: string): HandleFolderCreateReturn
       })
       .then((dir) => {
         const pathToDir = `${dir.filePaths[0]}/${folderName}`;
+        if (dir.canceled) {
+          resolve([true, '', '']);
+          return;
+        }
         if (fs.existsSync(pathToDir)) {
           resolve([false, '', `Папка ${pathToDir} уже существует.`]);
           return;
@@ -319,7 +326,7 @@ export function handleCreateFolder(folderName: string): HandleFolderCreateReturn
           resolve([false, '', `Папку ${pathToDir} не удалось создать.`]);
           return;
         }
-        resolve([true, pathToDir, '']);
+        resolve([false, pathToDir, '']);
       })
       .catch((err) => {
         resolve([false, '', err.message]);
@@ -330,7 +337,7 @@ export function handleCreateFolder(folderName: string): HandleFolderCreateReturn
 export function handleSaveBinaryIntoFile(
   filePath: string,
   binary: Uint8Array
-): handleSaveBinaryIntoFileReturn {
+): HandleSaveBinaryIntoFileReturn {
   return new Promise((resolve) => {
     fs.appendFile(filePath, binary, function (err) {
       if (err) {
@@ -339,5 +346,18 @@ export function handleSaveBinaryIntoFile(
         resolve(['']);
       }
     });
+  });
+}
+
+export function handleGetDefaultFirmwarePath(
+  typeId: string,
+  extension = 'bin' // для arduino это будет hex
+): HandleGetDefaultFirmwareReturn {
+  return new Promise((resolve) => {
+    const path = `${basePath}/firmwares/${typeId}.${extension}`;
+    if (!fs.existsSync(path)) {
+      resolve([false, path]);
+    }
+    resolve([true, path]);
   });
 }

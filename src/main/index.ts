@@ -8,8 +8,14 @@ import { join } from 'path';
 
 import { checkForUpdates } from './checkForUpdates';
 import { initFileHandlersIPC } from './file-handlers';
+import { startDocServer } from './modules/docserver';
 import { ModuleName, ModuleManager } from './modules/ModuleManager';
-import { initSettings, initSettingsHandlers, settingsChangeSend } from './settings';
+import {
+  defaultSettings,
+  initSettings,
+  initSettingsHandlers,
+  settingsChangeSend,
+} from './settings';
 import { getAllTemplates, getTemplate } from './templates';
 
 import icon from '../../resources/icon.png?asset';
@@ -67,8 +73,9 @@ function createWindow(): BrowserWindow {
   });
 
   //Получаем ответ из рендера и закрываем приложение
-  ipcMain.on('closed', (_) => {
-    ModuleManager.stopModule('lapki-flasher');
+  ipcMain.on('closed', async (_) => {
+    await ModuleManager.stopModule('lapki-compiler');
+    await ModuleManager.stopModule('lapki-flasher');
     app.exit(0);
   });
 
@@ -111,10 +118,22 @@ function createWindow(): BrowserWindow {
 }
 
 const startFlasher = async () => {
-  ModuleManager.startLocalModule('lapki-flasher');
+  await ModuleManager.startLocalModule('lapki-flasher');
 };
+const startCompiler = async () => {
+  await ModuleManager.startLocalModule('lapki-compiler');
+};
+
+const startModules = async () => {
+  // Делаем в одной функции и последовательно
+  // иначе будет найден одинаковый порт
+  await startFlasher();
+  await startCompiler();
+  await startDocServer();
+};
+
 initSettings();
-startFlasher();
+startModules();
 
 // Выполняется после инициализации Electron
 app.whenReady().then(() => {
@@ -124,10 +143,13 @@ app.whenReady().then(() => {
   initFileHandlersIPC();
 
   ipcMain.handle('Module:reboot', async (_event, module: ModuleName) => {
-    ModuleManager.stopModule(module);
+    await ModuleManager.stopModule(module);
     await ModuleManager.startLocalModule(module);
     if (module === 'lapki-flasher') {
       settingsChangeSend(mainWindow.webContents, 'flasher', settings.getSync('flasher'));
+    }
+    if (module === 'lapki-compiler') {
+      settingsChangeSend(mainWindow.webContents, 'compiler', settings.getSync('compiler'));
     }
   });
 
@@ -151,6 +173,14 @@ app.whenReady().then(() => {
     }
   });
 
+  ipcMain.handle('getRemoteDocServer', () => {
+    return defaultSettings.doc.remoteHost;
+  });
+
+  ipcMain.handle('getLocalDocServer', () => {
+    return defaultSettings.doc.localHost;
+  });
+
   // отключение перезагрузки по CmdOrCtrl + R
   // перезагрузка по Shift + CmdOrCtrl + R должна работать
   globalShortcut.register('CommandOrControl+R', () => {
@@ -165,8 +195,9 @@ app.whenReady().then(() => {
 });
 
 // Завершаем приложение, когда окна закрыты.
-app.on('window-all-closed', () => {
+app.on('window-all-closed', async () => {
   // явно останавливаем загрузчик, так как в некоторых случаях он остаётся висеть
-  ModuleManager.stopModule('lapki-flasher');
+  await ModuleManager.stopModule('lapki-flasher');
+  await ModuleManager.stopModule('lapki-compiler');
   app.quit();
 });

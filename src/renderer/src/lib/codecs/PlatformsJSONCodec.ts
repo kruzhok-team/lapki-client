@@ -208,6 +208,7 @@ const typeMap: any = {
         js: 'compilingSettings',
         typ: u(undefined, a(r('CompilingSettings'))),
       },
+      { json: 'componentDeclaration', js: 'componentDeclaration', typ: u(undefined, true) },
       { json: 'components', js: 'components', typ: m(r('ComponentProto')) },
       { json: 'defaultBuildFiles', js: 'defaultBuildFiles', typ: u(undefined, a('')) },
       { json: 'defaultIncludeFiles', js: 'defaultIncludeFiles', typ: u(undefined, a('')) },
@@ -292,8 +293,17 @@ const typeMap: any = {
       { json: 'img', js: 'img', typ: u(undefined, '') },
       { json: 'name', js: 'name', typ: '' },
       { json: 'optional', js: 'optional', typ: u(undefined, true) },
+      { json: 'range', js: 'range', typ: u(undefined, r('Range')) },
       { json: 'type', js: 'type', typ: u(undefined, u(a(u(3.14, '')), '')) },
       { json: 'valueAlias', js: 'valueAlias', typ: u(undefined, a('')) },
+    ],
+    false
+  ),
+  Range: o(
+    [
+      { json: 'max', js: 'max', typ: 3.14 },
+      { json: 'min', js: 'min', typ: 3.14 },
+      { json: 'step', js: 'step', typ: u(undefined, 3.14) },
     ],
     false
   ),

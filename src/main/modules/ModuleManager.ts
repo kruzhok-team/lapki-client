@@ -4,12 +4,13 @@ import fixPath from 'fix-path';
 
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import { existsSync } from 'fs';
-import path from 'path';
+import http from 'http';
 
-import { findFreePort } from './freePortFinder';
+import { findFreePort, getUsedPorts } from './freePortFinder';
 
 import { defaultSettings } from '../settings';
-export type ModuleName = 'lapki-flasher';
+import { basePath } from '../utils';
+export type ModuleName = 'lapki-flasher' | 'lapki-compiler';
 
 export class ModuleStatus {
   /* 
@@ -41,6 +42,7 @@ export class ModuleManager {
   static localProccesses: Map<string, ChildProcessWithoutNullStreams> = new Map();
   static moduleStatus: Map<string, ModuleStatus> = new Map();
   static async startLocalModule(module: ModuleName) {
+    const usedPorts = getUsedPorts();
     this.moduleStatus.set(module, new ModuleStatus());
     if (!this.localProccesses.has(module)) {
       const platform = process.platform;
@@ -65,7 +67,7 @@ export class ModuleManager {
       if (modulePath) {
         switch (module) {
           case 'lapki-flasher': {
-            const port = await findFreePort();
+            const port = await findFreePort({ usedPorts });
             await settings.set('flasher.localPort', port);
             defaultSettings.flasher.localPort = Number(port);
             /*
@@ -76,11 +78,12 @@ export class ModuleManager {
               '-updateList=1', // скорость автоматического обновления списка в секундах
               '-listCooldown=0', // ограничение в секундах на вызов следующего ручного обновления в секундах, в данном случае отсутствует
               `-address=localhost:${port}`, // адрес локального сервера
-              `-blgMbUploaderPath=${this.getBlgMbUploaderPath()}`, // путь к загрузчику кибермишки
+              `-blgMbUploaderPath=${this.getBlgMbUploaderPath()}`, // путь к загрузчику КиберМишки
             ];
 
             const avrdudePath = this.getAvrdudePath();
             const configPath = this.getConfPath();
+            console.log('flasher port: ', port);
             console.log('pathes', avrdudePath, configPath);
             if (existsSync(avrdudePath)) {
               flasherArgs.push(`-avrdudePath=${avrdudePath}`);
@@ -91,9 +94,29 @@ export class ModuleManager {
             chprocess = spawn(modulePath, flasherArgs);
             break;
           }
+          case 'lapki-compiler': {
+            const port = await findFreePort({ usedPorts });
+            const compilerArgs = [`--server-port=${port}`, '--killable'];
+            switch (platform) {
+              case 'win32':
+                modulePath = this.getCompilerPath();
+                await settings.set('compiler.localPort', port);
+                defaultSettings.compiler.localPort = Number(port);
+                chprocess = spawn(modulePath, compilerArgs);
+                break;
+              default:
+                await settings.set('compiler.type', 'remote');
+                console.log(
+                  `К сожалению, локальный компилятор не поддерживается на данной платформе (${platform}).`
+                );
+            }
+            break;
+          }
           default:
             chprocess = spawn(modulePath);
         }
+      }
+      if (chprocess !== undefined) {
         chprocess.on('error', function (err) {
           if (err.code === 'ENOENT') {
             ModuleManager.moduleStatus.set(
@@ -105,8 +128,6 @@ export class ModuleManager {
           }
           console.error(`${module} spawn error: ` + err);
         });
-      }
-      if (chprocess !== undefined) {
         ModuleManager.moduleStatus.set(module, new ModuleStatus(1));
         this.localProccesses.set(module, chprocess);
         chprocess.stdout.on('data', (data) => {
@@ -126,9 +147,29 @@ export class ModuleManager {
     }
   }
 
-  static stopModule(module: ModuleName) {
+  private static async sendKillRequest(port: number): Promise<void> {
+    return new Promise((resolve, _) => {
+      const req = http.get(`http://localhost:${port}/kill`, (res) => {
+        res.on('end', () => resolve());
+      });
+      req.on('error', (err) => {
+        // Ignore errors since we're shutting down anyway
+        console.log(err);
+        resolve();
+      });
+      req.end();
+    });
+  }
+
+  static async stopModule(module: ModuleName) {
     if (this.localProccesses.has(module)) {
-      this.localProccesses.get(module)!.kill();
+      if (module === 'lapki-compiler') {
+        const port = Number(await settings.get('compiler.localPort'));
+        await this.sendKillRequest(port);
+        this.localProccesses.get(module)?.kill();
+      } else {
+        this.localProccesses.get(module)!.kill();
+      }
       this.localProccesses.delete(module);
     }
   }
@@ -138,9 +179,6 @@ export class ModuleManager {
   }
 
   static getOsPath(): string {
-    const basePath = path
-      .join(__dirname, '../../resources')
-      .replace('app.asar', 'app.asar.unpacked');
     return `${basePath}/modules/${process.platform}`;
   }
 
@@ -152,7 +190,11 @@ export class ModuleManager {
   }
 
   static getAvrdudePath(): string {
-    return this.getOsExe(`${this.getOsPath()}/avrdude`);
+    return this.getModulePath('avrdude');
+  }
+
+  static getCompilerPath() {
+    return this.getModulePath('lapki-compiler/lapki-compiler');
   }
 
   static getConfPath(): string {
@@ -160,7 +202,7 @@ export class ModuleManager {
   }
 
   static getBlgMbUploaderPath(): string {
-    return this.getOsExe(`${this.getOsPath()}/blg-mb-1/blg-mb-1-uploader`);
+    return this.getModulePath('blg-mb/cyberbear-loader');
   }
 
   static getModulePath(module: string): string {

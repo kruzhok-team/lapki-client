@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 
 import { getPlatform } from '@renderer/lib/data/PlatformLoader';
 import { StateMachineData } from '@renderer/lib/types';
+import { generateSmId } from '@renderer/lib/utils';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { useTabs } from '@renderer/store/useTabs';
 import { emptyStateMachine } from '@renderer/types/diagram';
@@ -67,13 +68,12 @@ export const useStateMachines = () => {
     const sm = modelController.model.data.elements.stateMachines[idx];
 
     if (!sm) return;
-
-    const [newSmId, canvasId] = modelController.duplicateStateMachine(idx);
+    const [newSmId, newName, canvasId] = modelController.duplicateStateMachine(idx);
 
     openTab(modelController, {
       type: 'editor',
       canvasId: canvasId,
-      name: sm.name ?? newSmId,
+      name: newName ?? newSmId,
     });
     editClose();
   };
@@ -85,13 +85,7 @@ export const useStateMachines = () => {
       throw Error('unknown platform ' + platformIdx);
     }
 
-    const baseKey = platform.nameTag ?? 'Machine';
-    let n = 1;
-    let smId = baseKey + n;
-    while (isDuplicateName(smId)) {
-      n += 1;
-      smId = baseKey + n;
-    }
+    const smId = generateSmId(isDuplicateName, platform);
 
     const sm = { ...emptyStateMachine(), ...data };
     const canvasId = modelController.createStateMachine(smId, sm);

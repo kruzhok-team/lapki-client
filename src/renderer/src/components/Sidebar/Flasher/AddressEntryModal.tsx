@@ -1,33 +1,41 @@
-import { UseFormReturn } from 'react-hook-form';
+import { Controller, UseFormReturn } from 'react-hook-form';
 
+import { ComponentFormFieldLabel } from '@renderer/components/ComponentFormFieldLabel';
+import { getAvailablePlatforms } from '@renderer/lib/data/PlatformLoader';
 import { AddressData } from '@renderer/types/FlasherTypes';
 
-import { Modal } from '../../UI';
-import { TextInput } from '../../UI/TextInput';
+import { Modal, Select, SelectOption } from '../../UI';
+
+export type AddressEntryForm = {
+  name: string;
+  address: string;
+  addressEditBlock: boolean;
+  type: string;
+  typeEditBlock: boolean;
+};
 
 interface AddressEntryEditModalProps {
+  title: string;
   addressBookSetting: AddressData[] | null;
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: AddressData) => void;
+  onSubmit: (data: AddressEntryForm) => void;
   submitLabel: string;
-  form: UseFormReturn<AddressData>;
-  allowAddressEdit: boolean;
+  form: UseFormReturn<AddressEntryForm>;
 }
 
 /**
  * Модальное окно для добавления или редактирования записи в адресной книге МС-ТЮК
  */
 export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (props) => {
-  const { addressBookSetting, isOpen, onClose, onSubmit, submitLabel, form, allowAddressEdit } =
-    props;
+  const { addressBookSetting, isOpen, onClose, onSubmit, submitLabel, form, title } = props;
   const {
     handleSubmit: hookHandleSubmit,
-    register,
     formState: { errors, dirtyFields },
     setError,
     clearErrors,
     getValues,
+    control,
   } = form;
   const handleSubmit = hookHandleSubmit((submitData) => {
     if (addressBookSetting === null) return;
@@ -36,11 +44,11 @@ export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (prop
       clearErrors();
       onClose();
     };
-    if (submitData.address != '' && !dirtyFields.address && !dirtyFields.name) {
+    if (submitData.address && !dirtyFields.address && !dirtyFields.name) {
       sendSubmit();
       return;
     }
-    if (submitData.address == '') {
+    if (!submitData.address) {
       setError('address', { message: 'Необходимо указать адрес' });
       return;
     }
@@ -74,73 +82,102 @@ export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (prop
     }
     sendSubmit();
   });
-  const meta = getValues('meta');
+  const addressEditBlock = getValues('addressEditBlock');
+  const typeEditBlock = getValues('typeEditBlock');
   return (
     <Modal
-      title="Адрес устройства"
+      title={title}
       isOpen={isOpen}
       onRequestClose={onClose}
       onSubmit={handleSubmit}
       submitLabel={submitLabel}
     >
-      <div className="flex items-start gap-1">
-        <label className="flex w-full flex-col">
-          <TextInput placeholder="Название" {...register('name')} />
-          <p className="text-sm text-error">{errors.name?.message}</p>
-        </label>
-
-        <label className="flex w-full flex-col">
-          <TextInput
-            error={!!errors.address?.message}
-            maxLength={16}
-            placeholder="Адрес"
-            className="w-full max-w-full"
-            disabled={!allowAddressEdit}
-            {...register('address')}
-          />
-          <p className="text-sm text-error">{errors.address?.message}</p>
-        </label>
-
-        <label className="flex w-full flex-col">
-          <TextInput
-            placeholder="Тип"
-            className="w-full max-w-full"
-            disabled={true}
-            {...register('type')}
-          />
-        </label>
+      <div className="flex flex-col gap-2">
+        <Controller
+          control={control}
+          name="name"
+          render={({ field: { value, onChange } }) => {
+            return (
+              <ComponentFormFieldLabel
+                label="Название:"
+                placeholder="Введите название..."
+                hint="Человекочитаемое название, которое будет отображаться в интерфейсе вместо адреса."
+                value={value}
+                error={errors.name?.message}
+                onChange={onChange}
+              />
+            );
+          }}
+        />
+        <Controller
+          control={control}
+          name="address"
+          render={({ field: { value, onChange } }) => {
+            return (
+              <ComponentFormFieldLabel
+                label="Адрес:"
+                placeholder="Введите адрес..."
+                hint="Адрес платы МС-ТЮК. Это значение нельзя изменить после сохранения!"
+                value={value}
+                error={errors.address?.message}
+                onChange={onChange}
+                disabled={addressEditBlock}
+                maxLength={16}
+                className={addressEditBlock ? 'disabled:opacity-70' : ''}
+              />
+            );
+          }}
+        />
+        <Controller
+          control={control}
+          name="type"
+          render={({ field: { value, onChange } }) => {
+            const label = 'Тип:';
+            const noneOption = 'Отсутствует';
+            const hint = `Тип платы. Это значение нельзя изменить после сохранения (если не выбран вариант «${noneOption}»)!`;
+            if (typeEditBlock) {
+              return (
+                <ComponentFormFieldLabel
+                  label={label}
+                  hint={hint}
+                  value={value}
+                  disabled={true}
+                  // Альтернативы:
+                  // border-b border-l-0 border-r-0 border-t-0 pb-1
+                  // border-none
+                  className="disabled:opacity-70"
+                />
+              );
+            } else {
+              const typeOptions: SelectOption[] = [
+                {
+                  label: noneOption,
+                  value: '',
+                  hint: 'Выберите этот вариант, если подходящей платы нет в списке. Этот выбор можно будет изменить после сохранения.',
+                },
+              ];
+              typeOptions.push(
+                ...getAvailablePlatforms()
+                  .filter((v) => v.idx.startsWith('tjc'))
+                  .map((v) => {
+                    return { label: v.idx, value: v.idx, hint: v.name } as SelectOption;
+                  })
+              );
+              return (
+                <ComponentFormFieldLabel label={label} hint={hint} as="div">
+                  <Select
+                    placeholder={'Выберите тип платы'}
+                    onChange={(v) => onChange(v?.value ?? '')}
+                    options={typeOptions}
+                    value={typeOptions.find((opt) => opt.value === value)}
+                    isSearchable={false}
+                  />
+                </ComponentFormFieldLabel>
+              );
+            }
+          }}
+        />
       </div>
-      <br></br>
-      {meta && (
-        <div className="mb-2 flex flex-col gap-1">
-          <h3 className="mb-1 text-xl">Метаданные</h3>
-          <div>
-            <b>{'bootloader REF_HW'}:</b> {meta.RefBlHw}
-          </div>
-          <div>
-            <b>{'bootloader REF_FW'}:</b> {meta.RefBlFw}
-          </div>
-          <div>
-            <b>{'bootloader REF_CHIP'}:</b> {meta.RefBlChip}
-          </div>
-          <div>
-            <b>{'bootloader REF_PROTOCOL'}:</b> {meta.RefBlProtocol}
-          </div>
-          <div>
-            <b>{'bootloader USER_CODE'}:</b> {meta.RefBlUserCode}
-          </div>
-          <div>
-            <b>{'cybergene REF_FW'}:</b> {meta.RefCgFw}
-          </div>
-          <div>
-            <b>{'cybergene REF_HW'}:</b> {meta.RefCgHw}
-          </div>
-          <div>
-            <b>{'cybergene REF_PROTOCOL'}:</b> {meta.RefCgProtocol}
-          </div>
-        </div>
-      )}
-      {!meta && <p className="mb-1 text-xl opacity-60">Метаданных нет</p>}
     </Modal>
   );
 };

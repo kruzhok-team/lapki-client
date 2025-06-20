@@ -1,5 +1,8 @@
-import { useState } from 'react';
+import { useEffect } from 'react';
 
+import { twMerge } from 'tailwind-merge';
+
+import { ReactComponent as ArrowIcon } from '@renderer/assets/icons/arrow-down.svg';
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/new transition.svg';
 import { ReactComponent as StateMachineIcon } from '@renderer/assets/icons/state_machine.svg';
 import { StateMachineEditModal } from '@renderer/components/StateMachineEditModal';
@@ -13,7 +16,19 @@ import { StateMachineDeleteModal } from './StateMachineDeleteModal';
 
 import { Component } from '../Explorer/Component';
 
-export const StateMachinesList: React.FC = () => {
+interface StateMachinesListProps {
+  selectedSm: string | null;
+  setSmSelected: (newSmId: string | null) => void;
+  isCollapsed: () => boolean;
+  togglePanel: () => void;
+}
+
+export const StateMachinesList: React.FC<StateMachinesListProps> = ({
+  selectedSm,
+  setSmSelected,
+  isCollapsed,
+  togglePanel,
+}) => {
   const modelController = useModelContext();
 
   const openTab = useTabs((state) => state.openTab);
@@ -35,7 +50,7 @@ export const StateMachinesList: React.FC = () => {
   const elements = modelController.model.useData('', 'elements.stateMachinesId') as {
     [ID: string]: StateMachine;
   };
-  const [selectedSm, setSmSelected] = useState<string | null>(null);
+
   const {
     addProps,
     editProps,
@@ -51,15 +66,23 @@ export const StateMachinesList: React.FC = () => {
   const platformList = getAvailablePlatforms().map((platform) => {
     return { value: platform.idx, label: platform.name };
   });
+
   const isDisabled = !isInitialized;
 
-  return (
-    <section>
-      <div className="mx-4 mb-3 flex justify-center border-b border-border-primary py-2 text-center text-lg">
-        <div className="flex w-full justify-center">
-          <h3>Машины состояний</h3>
-        </div>
-        <div className="flex justify-end">
+  useEffect(() => {
+    if (isCollapsed()) togglePanel();
+  }, [elements]);
+
+  const header = () => {
+    return (
+      <div className="flex">
+        <button className="my-3 flex items-center" onClick={() => togglePanel()}>
+          <ArrowIcon
+            className={twMerge('rotate-0 transition-transform', isCollapsed() && '-rotate-90')}
+          />
+          <h3 className="font-semibold">Машины состояний</h3>
+        </button>
+        <div className="ml-auto flex">
           <button
             type="button"
             className={'w-5 opacity-70 disabled:opacity-40'}
@@ -70,10 +93,20 @@ export const StateMachinesList: React.FC = () => {
           </button>
         </div>
       </div>
+    );
+  };
+
+  return (
+    <section className="flex h-full flex-col">
+      {header()}
       {isInitialized ? (
-        <div className="px-4">
-          <div className="overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
-            {[...Object.entries(elements)].map(
+        <div className="overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
+          {Object.keys(elements).length === 1 ? (
+            <p className="text-text-inactive">
+              <i>Нет машин состояний</i>
+            </p>
+          ) : (
+            [...Object.entries(elements)].map(
               ([id, sm]) =>
                 id !== '' && (
                   <Component
@@ -91,11 +124,11 @@ export const StateMachinesList: React.FC = () => {
                     isDragging={id === ''}
                   />
                 )
-            )}
-          </div>
+            )
+          )}
         </div>
       ) : (
-        <div className="px-4">Недоступно до открытия схемы</div>
+        <div className="px-4">Недоступно до открытия документа</div>
       )}
 
       <StateMachineEditModal

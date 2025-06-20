@@ -6,25 +6,38 @@ import { Tab } from '@renderer/types/tabs';
 interface TabsState {
   items: Tab[];
   activeTab: string | null;
-  setActiveTab: (tabName: string) => void;
+  setActiveTab: (modelController: ModelController, tabName: string) => void;
   openTab: (modelController: ModelController, tab: Tab) => void;
   closeTab: (tabName: string, modelController: ModelController) => void;
   swapTabs: (a: string, b: string) => void;
   clearTabs: () => void;
   renameTab: (oldName: string, newName: string) => void;
+  nextTab: (modelController: ModelController) => void;
+  prevTab: (modelController: ModelController) => void;
 }
+
+const changeHeadController = (newActiveTab: Tab, modelController: ModelController) => {
+  if (newActiveTab.type === 'editor') {
+    modelController.changeHeadControllerId(newActiveTab.canvasId);
+  } else {
+    modelController.changeHeadControllerId('');
+  }
+};
 
 export const useTabs = create<TabsState>((set) => ({
   items: [],
   activeTab: 'editor',
-  setActiveTab: (activeTab) => {
-    set({ activeTab });
+  setActiveTab: (modelController, activeTab) => {
+    set(({ items }) => {
+      const tab = items.find(({ name }) => name === activeTab);
+      if (!tab) return {};
+      changeHeadController(tab, modelController);
+      return { activeTab: activeTab };
+    });
   },
   openTab: (modelController, tab) =>
     set(({ items }) => {
-      if (tab.type === 'editor') {
-        modelController.model.changeHeadControllerId(tab.canvasId);
-      }
+      changeHeadController(tab, modelController);
 
       // Если пытаемся открыть одну и ту же вкладку
       if (items.find(({ name }) => name === tab.name)) {
@@ -44,7 +57,7 @@ export const useTabs = create<TabsState>((set) => ({
       const newItems = items.filter((tab) => tab.name !== tabName);
 
       if (newItems.length === 0) {
-        modelController.model.changeHeadControllerId('');
+        modelController.changeHeadControllerId('');
         return {
           items: newItems,
           activeTab: null,
@@ -64,11 +77,7 @@ export const useTabs = create<TabsState>((set) => ({
 
       if (newActiveTabName) {
         const newActiveTab = items[items.findIndex((tab) => tab.name === newActiveTabName)];
-        if (newActiveTab.type === 'editor') {
-          modelController.model.changeHeadControllerId(newActiveTab.canvasId);
-        } else {
-          modelController.model.changeHeadControllerId('');
-        }
+        changeHeadController(newActiveTab, modelController);
       }
 
       return {
@@ -112,4 +121,58 @@ export const useTabs = create<TabsState>((set) => ({
         activeTab: newActiveTab,
       };
     }),
+  nextTab: (modelController: ModelController) => {
+    set(({ items, activeTab }) => {
+      if (!activeTab)
+        return {
+          items,
+          activeTab,
+        };
+      const newItems = [...items];
+      let index = newItems.findIndex(({ name }) => name === activeTab);
+      let newActiveTab = activeTab;
+      if (index !== -1) {
+        if (index === items.length - 1) {
+          index = 0;
+        } else {
+          index += 1;
+        }
+        const newActiveTabItem = items[index];
+        newActiveTab = items[index].name;
+        changeHeadController(newActiveTabItem, modelController);
+      }
+
+      return {
+        items: newItems,
+        activeTab: newActiveTab,
+      };
+    });
+  },
+  prevTab: (modelController: ModelController) => {
+    set(({ items, activeTab }) => {
+      if (!activeTab)
+        return {
+          items,
+          activeTab,
+        };
+      const newItems = [...items];
+      let index = newItems.findIndex(({ name }) => name === activeTab);
+      let newActiveTab = activeTab;
+      if (index !== -1) {
+        if (index === 0) {
+          index = items.length - 1;
+        } else {
+          index -= 1;
+        }
+        const newActiveTabItem = items[index];
+        newActiveTab = items[index].name;
+        changeHeadController(newActiveTabItem, modelController);
+      }
+
+      return {
+        items: newItems,
+        activeTab: newActiveTab,
+      };
+    });
+  },
 }));

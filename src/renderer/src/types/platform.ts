@@ -1,3 +1,5 @@
+import { Range } from './utils';
+
 export type ArgType = string | string[] | number[];
 
 export type ArgumentProto = {
@@ -7,6 +9,7 @@ export type ArgumentProto = {
   type?: ArgType;
   optional?: boolean;
   valueAlias?: string[];
+  range?: Range;
 };
 
 export type ParameterProto = {
@@ -86,6 +89,7 @@ export type Platform = {
   staticActionDelimeter: string;
   headerFileExtension?: string;
   defaultSetupFunctions?: string[];
+  componentDeclaration?: boolean;
   hidden?: boolean;
   components: { [name: string]: ComponentProto };
   parameters?: { [name: string]: ParameterProto };

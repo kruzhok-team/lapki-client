@@ -12,7 +12,6 @@ import {
   SerialMonitor,
 } from '@renderer/components/Modules/SerialMonitor';
 import { ClientStatus } from '@renderer/components/Modules/Websocket/ClientStatus';
-import { useModelContext } from '@renderer/store/ModelContext';
 import { useFlasher } from '@renderer/store/useFlasher';
 import { useManagerMS } from '@renderer/store/useManagerMS';
 import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
@@ -32,9 +31,6 @@ import {
 import { useSettings } from './useSettings';
 
 export const useFlasherHooks = () => {
-  const modelController = useModelContext();
-  const basename = modelController.model.useData('', 'basename');
-
   const [flasherSetting, setFlasherSetting] = useSettings('flasher');
   const [monitorSetting] = useSettings('serialmonitor');
 
@@ -51,8 +47,6 @@ export const useFlasherHooks = () => {
     connectionStatus,
     setErrorMessage,
     setHasAvrdude,
-    flashTableData,
-    setFlashTableData,
     binaryFolder,
     setBinaryFolder,
   } = useFlasher();
@@ -161,7 +155,12 @@ export const useFlasherHooks = () => {
     } else {
       if (Flasher.currentFlashingDevice.isMSDevice()) {
         const msDev = Flasher.currentFlashingDevice as MSDevice;
-        flashResultKey = `${ManagerMS.getFlashingAddress()?.name} - ${msDev.displayName()}`;
+        const getName = () => {
+          const addressInfo = ManagerMS.getFlashingAddress();
+          if (!addressInfo) return 'Неизвестная плата';
+          return addressInfo.name ? addressInfo.name : addressInfo.address;
+        };
+        flashResultKey = `${getName()} - ${msDev.displayName()}`;
         addressInfo = ManagerMS.getFlashingAddress();
         ManagerMS.flashingAddressEndLog(result);
       } else {
@@ -237,18 +236,6 @@ export const useFlasherHooks = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [connectionStatus]);
-
-  useEffect(() => {
-    setFlashTableData(
-      flashTableData.map((item) => {
-        return {
-          ...item,
-          source: undefined,
-          isFile: false,
-        };
-      })
-    );
-  }, [basename]);
 
   useEffect(() => {
     if (flasherMessage === null) return;
@@ -538,7 +525,7 @@ export const useFlasherHooks = () => {
       }
       case 'flash-open-serial-monitor':
         // если не удалось закрыть монитор порта перед прошивкой, то повторяем попытку
-        console.log('flash-open-serial-monitor');
+        // console.log('flash-open-serial-monitor');
         if (Flasher.currentFlashingDevice) {
           SerialMonitor.closeMonitor(Flasher.currentFlashingDevice.deviceID);
           Flasher.flash(Flasher.currentFlashingDevice);

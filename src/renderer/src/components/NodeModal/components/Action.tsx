@@ -6,7 +6,7 @@ import { getActionDelimeter } from '@renderer/lib/data/GraphmlBuilder';
 import { PlatformManager } from '@renderer/lib/data/PlatformManager';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { Action as ActionData, Component, Variable } from '@renderer/types/diagram';
-import { getMatrixDimensions } from '@renderer/utils';
+import { getDefaultRange, getMatrixDimensions, isMatrix } from '@renderer/utils';
 
 import { Picto } from './Picto';
 
@@ -73,7 +73,10 @@ export const Action: React.FC<ActionProps> = (props) => {
 
   return (
     <div
-      className={twMerge('flex gap-2 p-2 hover:bg-bg-hover', isSelected && 'bg-bg-active')}
+      className={twMerge(
+        'w-full min-w-max gap-2 p-2 scrollbar-w-full hover:bg-bg-hover',
+        isSelected && 'bg-bg-active'
+      )}
       onClick={onSelect}
       draggable
       onDragOver={(event) => event.preventDefault()}
@@ -81,77 +84,83 @@ export const Action: React.FC<ActionProps> = (props) => {
       onDrop={onDrop}
       onDoubleClick={handleDoubleClick}
     >
-      <Picto
-        leftIcon={platform ? platform.getFullComponentIcon(data.component) : 'unknown'}
-        rightIcon={
-          platform ? platform.getActionIconUrl(data.component, data.method, true) : 'unknown'
-        }
-      />
+      <div className="flex w-full items-center gap-2">
+        <Picto
+          leftIcon={platform ? platform.getFullComponentIcon(data.component) : 'unknown'}
+          rightIcon={
+            platform ? platform.getActionIconUrl(data.component, data.method, true) : 'unknown'
+          }
+        />
+        <div className="flex w-full flex-row flex-nowrap items-center">
+          <div>{data.componentName}.</div>
+          <div>{getMethod(data.component, data.method)}</div>
+          <div>(</div>
+          <div className="flex items-center gap-[2px]">
+            {sortedParameters.map(([id, value], index) => {
+              const protoComponent =
+                platform.data.components[platform.resolveComponentType(data.component)];
+              if (!protoComponent) {
+                return <>{serializeParameter(index, value.value)}</>;
+              }
+              const protoMethod = protoComponent.methods[data.method];
+              const protoParameters = protoMethod.parameters;
 
-      <div className="flex flex-row items-center">
-        <div>{data.componentName}.</div>
-        <div>{getMethod(data.component, data.method)}</div>
-        <div>(</div>
-        <div className="flex items-center gap-[2px]">
-          {sortedParameters.map(([id, value], index) => {
-            const protoComponent =
-              platform.data.components[platform.resolveComponentType(data.component)];
-            if (!protoComponent) {
+              if (!protoParameters) return <>{serializeParameter(index, value.value)}</>;
+
+              const parameter = protoParameters.find((param) => param.name === id);
+
+              if (!parameter || !parameter.type)
+                return <>{serializeParameter(index, value.value)}</>;
+
+              if (typeof parameter.type === 'string' && isMatrix(parameter.type)) {
+                const dimensions = getMatrixDimensions(parameter.type);
+
+                if (Array.isArray(value.value) && typeof value.value[0][0] === 'number') {
+                  return (
+                    <>
+                      {index !== 0 && ', '}
+                      <MatrixWidget
+                        key={`${smId}-${dimensions.width}-${dimensions.height}`}
+                        width={dimensions.width}
+                        height={dimensions.height}
+                        values={value.value}
+                        isClickable={false}
+                        onChange={() => undefined}
+                        style={{
+                          ledWidth: 2,
+                          ledHeight: 2,
+                          margin: 0,
+                          border: 1,
+                          isRounded: false,
+                        }}
+                        range={parameter.range ?? getDefaultRange()}
+                        isHalf={false}
+                      />
+                    </>
+                  );
+                }
+              }
+
+              if (
+                Array.isArray(parameter.type) &&
+                Array.isArray(parameter.valueAlias) &&
+                parameter.valueAlias.length === parameter.type.length
+              ) {
+                // Где находится элемент в списке выбора
+                const valueIndex = parameter.type.findIndex((option) => value.value === option);
+                if (valueIndex !== -1) {
+                  return (
+                    <>
+                      {serializeParameter(index, parameter.valueAlias[valueIndex] ?? value.value)}
+                    </>
+                  );
+                }
+              }
               return <>{serializeParameter(index, value.value)}</>;
-            }
-            const protoMethod = protoComponent.methods[data.method];
-            const protoParameters = protoMethod.parameters;
-
-            if (!protoParameters) return <>{serializeParameter(index, value.value)}</>;
-
-            const parameter = protoParameters.find((param) => param.name === id);
-
-            if (!parameter || !parameter.type) return <>{serializeParameter(index, value.value)}</>;
-
-            if (typeof parameter.type === 'string' && parameter.type.startsWith('Matrix')) {
-              const dimensions = getMatrixDimensions(parameter.type);
-
-              if (Array.isArray(value.value) && typeof value.value[0][0] === 'number') {
-                return (
-                  <>
-                    {index !== 0 && ', '}
-                    <MatrixWidget
-                      key={`${smId}-${dimensions.width}-${dimensions.height}`}
-                      width={dimensions.width}
-                      height={dimensions.height}
-                      values={value.value}
-                      isClickable={false}
-                      onChange={() => undefined}
-                      style={{
-                        ledWidth: 2,
-                        ledHeight: 2,
-                        margin: 0,
-                        border: 1,
-                        isRounded: false,
-                      }}
-                    />
-                  </>
-                );
-              }
-            }
-
-            if (
-              Array.isArray(parameter.type) &&
-              Array.isArray(parameter.valueAlias) &&
-              parameter.valueAlias.length === parameter.type.length
-            ) {
-              // Где находится элемент в списке выбора
-              const valueIndex = parameter.type.findIndex((option) => value.value === option);
-              if (valueIndex !== -1) {
-                return (
-                  <>{serializeParameter(index, parameter.valueAlias[valueIndex] ?? value.value)}</>
-                );
-              }
-            }
-            return <>{serializeParameter(index, value.value)}</>;
-          })}
+            })}
+          </div>
+          <div>)</div>
         </div>
-        <div>)</div>
       </div>
     </div>
   );

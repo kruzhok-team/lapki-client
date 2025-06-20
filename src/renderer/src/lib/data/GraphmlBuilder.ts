@@ -110,6 +110,9 @@ export function serializeEvent(
   trigger: Event,
   useName: boolean = false
 ): string {
+  if (trigger.component === '' || trigger.method === '') {
+    return '';
+  }
   if (isDefaultComponent(trigger)) {
     return convertDefaultComponent(trigger.component, trigger.method);
   }
@@ -464,6 +467,19 @@ function getPointNode(position: Point): CGMLDataNode {
     rect: undefined,
   };
 }
+// Отфильтровать пустые значения параметров.
+function filterParameters(parameters: { [id: string]: string }) {
+  const filteredParameters: { [id: string]: string } = {};
+
+  for (const paramName in parameters) {
+    const parameter = parameters[paramName];
+    if (parameter !== '') {
+      filteredParameters[paramName] = parameter;
+    }
+  }
+
+  return filteredParameters;
+}
 
 function serializeComponents(components: { [id: string]: Component }): {
   [id: string]: CGMLComponent;
@@ -477,7 +493,7 @@ function serializeComponents(components: { [id: string]: Component }): {
       id: id,
       type: component.type,
       parameters: {
-        ...component.parameters,
+        ...filterParameters(component.parameters),
       },
       order: component.order,
       unsupportedDataNodes: [getPointNode(component.position)],
@@ -500,7 +516,7 @@ export function exportCGML(elements: Elements): string {
     const sm = elements.stateMachines[smId];
     const platform = getPlatform(sm.platform);
     if (!platform) {
-      throw new Error('Внутренняя ошибка! В момент экспорта схемы платформа не инициализирована.');
+      throw new Error('Внутренняя ошибка! В момент экспорта платформа не инициализирована.');
     }
     cgmlElements.stateMachines[smId] = {
       standardVersion: '1.0',

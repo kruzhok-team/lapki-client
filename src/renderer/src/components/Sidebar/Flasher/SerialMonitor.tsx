@@ -57,7 +57,11 @@ class TextModeOptions {
   };
 }
 
-export const SerialMonitorTab: React.FC = () => {
+export interface SerialMonitorTabProps {
+  isTabOpen: boolean;
+}
+
+export const SerialMonitorTab: React.FC<SerialMonitorTabProps> = ({ isTabOpen }) => {
   const [monitorSetting, setMonitorSetting] = useSettings('serialmonitor');
 
   const {
@@ -122,27 +126,13 @@ export const SerialMonitorTab: React.FC = () => {
   }, [devices]);
 
   useEffect(() => {
-    if (!monitorSetting?.textMode) return;
-    switch (monitorSetting.textMode) {
-      case 'hex':
-        setMessages(SerialMonitor.toHex(bytesFromDevice));
-        break;
-      case 'text':
-        setMessages(SerialMonitor.toText(bytesFromDevice));
-        break;
-      default:
-        console.log('Неизвестный режим монитора порта! Перевод в режим текста...');
-        settingTextMode('text');
-        return;
-    }
-    setInputError('');
-    SerialMonitor.addLog(`Перевод в режим «${TextModeOptions[monitorSetting.textMode].label}».`);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [monitorSetting?.textMode]);
-
-  useEffect(() => {
     setInputError('');
   }, [connectionStatus]);
+
+  useEffect(() => {
+    if (isTabOpen || !device || connectionStatus !== SERIAL_MONITOR_CONNECTED) return;
+    SerialMonitor.closeMonitor(device.deviceID);
+  }, [isTabOpen]);
 
   if (!monitorSetting) {
     return null;
@@ -182,7 +172,7 @@ export const SerialMonitorTab: React.FC = () => {
           if (hasErr) {
             const errorText = `Неправильный ввод. В режиме «${
               TextModeOptions[monitorSetting.textMode].label
-            }» строка должна состоять из двузначных шестнадцатеричных чисел, разделённых пробелами. Каждое число представляет один байт.`;
+            }» строка должна состоять из двузначных шестнадцатеричных чисел. Каждое число представляет один байт.`;
             setInputError(errorText);
             SerialMonitor.addLog(errorText);
             return;
@@ -249,6 +239,21 @@ export const SerialMonitorTab: React.FC = () => {
   };
 
   const settingTextMode = (newTextMode: TextModeType) => {
+    if (newTextMode === monitorSetting.textMode) {
+      return;
+    }
+    switch (newTextMode) {
+      case 'hex':
+        setMessages(SerialMonitor.toHex(bytesFromDevice));
+        break;
+      case 'text':
+        setMessages(SerialMonitor.toText(bytesFromDevice));
+        break;
+      default:
+        SerialMonitor.addLog('Неизвестный режим монитора порта!');
+        return;
+    }
+    SerialMonitor.addLog(`Перевод в режим «${TextModeOptions[newTextMode].label}».`);
     setMonitorSetting({
       ...monitorSetting,
       textMode: newTextMode,

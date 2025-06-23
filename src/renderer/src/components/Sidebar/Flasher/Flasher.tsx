@@ -316,11 +316,11 @@ export const FlasherTab: React.FC = () => {
   const getOpName = (op: OperationType) => {
     switch (op) {
       case OperationType.ping:
-        return 'Окликнуть';
+        return 'Пинг';
       case OperationType.reset:
-        return 'Перезагрузить';
+        return 'Сброс';
       case OperationType.meta:
-        return 'Переспросить метаданные';
+        return 'Метаданные';
       default:
         throw Error('Неизвестная операция');
     }
@@ -448,7 +448,7 @@ export const FlasherTab: React.FC = () => {
             });
           } else {
             ManagerMS.addLog(
-              `${dev.displayName()}: операция "${getOpName(
+              `${dev.displayName()}: Операция "${getOpName(
                 op
               )}" не поддерживается для этого устройства.`
             );

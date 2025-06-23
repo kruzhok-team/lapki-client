@@ -186,7 +186,7 @@ export const FlasherTab: React.FC = () => {
     if (addressBookSetting === null) return;
     const meta = metaID.meta;
     const metaStr = `
-    - bootloader REF_HW: ${meta.RefBlHw} (${metaID.type})
+    - bootloader REF_HW: ${meta.RefBlHw} (${metaID.type ? metaID.type : 'Неизвестный тип'})
     - bootloader REF_FW: ${meta.RefBlFw}
     - bootloader REF_CHIP: ${meta.RefBlChip}
     - bootloader REF_PROTOCOL: ${meta.RefBlProtocol}

@@ -494,12 +494,12 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
   handleStateMouseDown = (state: State, e: { event: MyMouseEvent }) => {
     const add = e.event.nativeEvent.ctrlKey;
-    let idx: EventSelection | undefined = undefined;
     if (e.event.nativeEvent.ctrlKey) {
-      idx = state.eventBox.handleClick({ x: e.event.x, y: e.event.y }, add);
+      const pictoSelection = state.eventBox.handleClick({ x: e.event.x, y: e.event.y }, add);
 
-      if (idx) {
-        this.controller.emit('addSelection', {
+      if (pictoSelection) {
+        const [value, idx] = pictoSelection;
+        this.controller.emit(value ? 'addSelection' : 'unselect', {
           type: 'event',
           data: { smId: state.smId, stateId: state.id, selection: idx },
         });
@@ -512,9 +512,10 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
       }
     } else {
       this.controller.removeSelection();
-      idx = state.eventBox.handleClick({ x: e.event.x, y: e.event.y }, add);
-      if (idx) {
-        this.controller.emit('selectEvent', {
+      const pictoSelection = state.eventBox.handleClick({ x: e.event.x, y: e.event.y }, add);
+      if (pictoSelection) {
+        const [value, idx] = pictoSelection;
+        this.controller.emit(value ? 'selectEvent' : 'unselect', {
           smId: state.smId,
           stateId: state.id,
           eventSelection: idx,
@@ -577,13 +578,14 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     const offset = this.app.mouse.getOffset();
 
     if (eventIdx) {
+      const [_, idx] = eventIdx;
       this.emit('eventContextMenu', {
         state,
         position: {
           x: e.event.x + offset.x,
           y: e.event.y + offset.y,
         },
-        event: eventIdx,
+        event: idx,
       });
     } else {
       this.emit('stateContextMenu', {

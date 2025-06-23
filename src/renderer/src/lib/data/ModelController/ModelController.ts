@@ -1,4 +1,5 @@
 import { Point } from 'electron';
+import { isEqual } from 'lodash';
 
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { EventEmitter } from '@renderer/lib/common';
@@ -134,6 +135,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   }
 
   changeHeadControllerId(id: string) {
+    this.removeSelection();
     this.model.changeHeadControllerId(id);
     this.emit('changedHeadController', id);
   }
@@ -227,6 +229,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     controller.on('changeStateMachinePosition', this.changeStateMachinePosition);
     controller.on('selectEvent', this.selectEvent);
     controller.on('addSelection', this.addSelection);
+    controller.on('unselect', this.unselect);
   }
 
   private openChangeTransitionModal = (args: { smId: string; id: string }) => {
@@ -255,6 +258,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     controller.off('changeNotePositionFromController', this.changeNotePosition);
     controller.off('selectEvent', this.selectEvent);
     controller.off('addSelection', this.addSelection);
+    controller.off('unselect', this.unselect);
     controller.unwatch();
   }
 
@@ -2237,7 +2241,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const state = this.model.data.elements.stateMachines[smId].states[id];
     if (!state) return;
     if (this.model.changeStateSelection(smId, id, true)) {
-      // this.removeEventsSelection(smId, id, state.events);
       this.removeSelection();
       this.selectedItems.push({
         type: 'state',
@@ -2248,6 +2251,75 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       });
       this.emit('selectState', args);
     }
+  };
+
+  unselect = (args: SelectedItem) => {
+    const selectedItemIdx = this.selectedItems.findIndex((val) => isEqual(args, val));
+    const selectedItem = this.selectedItems[selectedItemIdx];
+    if (selectedItemIdx === -1) return false;
+    switch (selectedItem.type) {
+      case 'choiceState':
+        if (
+          this.model.changeChoiceStateSelection(selectedItem.data.smId, selectedItem.data.id, false)
+        ) {
+          this.emit('changeChoiceSelection', {
+            smId: selectedItem.data.smId,
+            id: selectedItem.data.id,
+            value: false,
+          });
+        }
+        break;
+      case 'state':
+        if (this.model.changeStateSelection(selectedItem.data.smId, selectedItem.data.id, false)) {
+          this.emit('changeStateSelection', {
+            smId: selectedItem.data.smId,
+            id: selectedItem.data.id,
+            value: false,
+          });
+        }
+        break;
+      case 'transition':
+        if (
+          this.model.changeTransitionSelection(selectedItem.data.smId, selectedItem.data.id, false)
+        ) {
+          this.emit('changeTransitionSelection', {
+            smId: selectedItem.data.smId,
+            id: selectedItem.data.id,
+            value: false,
+          });
+        }
+        break;
+      case 'note':
+        if (this.model.changeNoteSelection(selectedItem.data.smId, selectedItem.data.id, false)) {
+          this.emit('changeNoteSelection', {
+            smId: selectedItem.data.smId,
+            id: selectedItem.data.id,
+            value: false,
+          });
+        }
+        break;
+      case 'event':
+        if (
+          this.model.changeEventSelection(
+            selectedItem.data.smId,
+            selectedItem.data.stateId,
+            selectedItem.data.selection,
+            false
+          )
+        ) {
+          this.emit('changeEventSelection', {
+            smId: selectedItem.data.smId,
+            stateId: selectedItem.data.stateId,
+            eventSelection: selectedItem.data.selection,
+            value: false,
+          });
+        }
+        break;
+      default:
+        break;
+    }
+    this.selectedItems.splice(selectedItemIdx, 1);
+    return true;
   };
 
   selectChoiceState = (args: SelectDrawable) => {
@@ -2265,7 +2337,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
           id,
         },
       });
-      this.emit('selectChoice', { smId, id });
+      this.emit('selectChoice', args);
     }
   };
 
@@ -2281,7 +2353,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   selectTransition = (args: SelectDrawable) => {
     const { id, smId } = args;
-
     const transition = this.model.data.elements.stateMachines[smId].transitions[id];
     if (!transition) return;
     if (this.model.changeTransitionSelection(smId, id, true)) {
@@ -2293,7 +2364,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
           id,
         },
       });
-      this.emit('selectTransition', { smId: smId, id: id });
+      this.emit('selectTransition', args);
     }
   };
 
@@ -2310,9 +2381,10 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
           id,
         },
       });
-      this.emit('selectNote', { smId: smId, id: id });
+      this.emit('selectNote', args);
     }
   };
+
   isEventSelected = (smId: string, stateId: string, selection: EventSelection): boolean => {
     const state = this.model.data.elements.stateMachines[smId].states[stateId];
     if (selection.actionIdx === null) {
@@ -2335,7 +2407,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   addSelection = (args: SelectedItem) => {
     let isSelected = false;
-    // debugger;
+
     switch (args.type) {
       case 'state': {
         isSelected = this.isSelected(args.data.smId, args.data.id, 'states');
@@ -2447,6 +2519,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   removeSelection(exclude: number[] = []) {
     const newSelected: SelectedItem[] = [];
     // debugger;
+    console.trace('RemoveSelection: ');
+    console.log('before: ', structuredClone(this.selectedItems));
     for (const itemIdx in this.selectedItems) {
       const item = this.selectedItems[itemIdx];
       if (exclude.includes(Number(itemIdx))) {
@@ -2521,6 +2595,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       }
     }
     this.selectedItems = newSelected;
+    console.log('after: ', structuredClone(this.selectedItems));
   }
 
   createTransitionFromController(args: { source: string; target: string }) {

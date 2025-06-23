@@ -121,7 +121,7 @@ export type CanvasControllerEvents = {
   changeEventAction: ChangeEventParams;
   deleteEvent: DeleteEventParams;
   addSelection: SelectedItem;
-  removeSelection: SelectedItem;
+  unselect: SelectedItem;
 
   changeNoteFontSize: ChangeNoteFontSizeParams;
   changeNoteTextColor: ChangeNoteTextColorParams;
@@ -384,6 +384,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
               'createTransitionFromInitialState',
               this.binded['createTransitionFromInitialState']
             );
+            this.model.off('changeTransitionSelection', this.binded['changeTransitionSelection']);
             this.model.off('changeTransition', this.binded['changeTransition']);
             this.model.off('changeTransitionPosition', this.binded['changeTransitionPosition']);
             this.model.off('selectTransition', this.binded['selectTransition']);
@@ -631,6 +632,14 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
         this.model.on(
           'createTransition',
           this.bindHelper('transition', 'createTransition', this.transitions.createTransition)
+        );
+        this.model.on(
+          'changeTransitionSelection',
+          this.bindHelper(
+            'transition',
+            'changeTransitionSelection',
+            this.transitions.changeTransitionSelection
+          )
         );
         this.model.on(
           'deleteTransition',

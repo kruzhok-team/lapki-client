@@ -135,14 +135,20 @@ export class Events {
     return undefined;
   }
 
-  handleClick(p: Point, add?: boolean) {
+  handleClick(p: Point, add?: boolean): [boolean, EventSelection] | undefined {
     const idx = this.calculatePictoIndex(p);
     if (!add) {
       this.selection = [];
     }
-    if (idx && this.isSelected(idx.eventIdx, idx.actionIdx) === -1) {
-      this.selection?.push(idx);
-      return idx;
+    if (idx) {
+      const selected = this.isSelected(idx.eventIdx, idx.actionIdx);
+      if (selected === -1) {
+        this.selection?.push(idx);
+        return [true, idx];
+      } else {
+        this.unselectAction(idx);
+        return [false, idx];
+      }
     }
 
     return undefined;

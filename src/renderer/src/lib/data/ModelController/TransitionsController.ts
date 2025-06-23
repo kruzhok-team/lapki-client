@@ -253,7 +253,8 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     this.view.isDirty = true;
   };
 
-  handleConditionDoubleClick = (transition: Transition) => {
+  handleConditionDoubleClick = (transition: Transition, e: { event: MyMouseEvent }) => {
+    if (e.event.nativeEvent.ctrlKey) return;
     this.controller.emit('openChangeTransitionModalFromController', {
       smId: transition.smId,
       id: transition.id,

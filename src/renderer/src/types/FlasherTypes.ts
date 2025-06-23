@@ -64,9 +64,11 @@ export type FlasherType =
   | 'ms-device'
   | 'ms-reset'
   | 'ms-reset-result'
+  | 'get-meta-data'
   | 'ms-get-meta-data'
+  | 'meta-data'
   | 'ms-meta-data'
-  | 'ms-meta-data-error'
+  | 'meta-data-error'
   | 'ms-get-address-and-meta'
   | 'ms-address-and-meta'
   | 'file-write-error'
@@ -96,6 +98,7 @@ export type FlasherPayload =
   | MetaData
   | FlashBacktrackMs
   | MSAddressAndMeta
+  | MetaDataMessage
   | MSGetFirmware;
 
 export type FlasherMessage = {
@@ -313,4 +316,9 @@ export type GetFirmwareQueueItem = {
   dev: MSDevice;
   addressInfo: AddressData;
   blockSize: number;
+};
+
+export type MetaDataMessage = {
+  deviceID: string;
+  meta: string;
 };

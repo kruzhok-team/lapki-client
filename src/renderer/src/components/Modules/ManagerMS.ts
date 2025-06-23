@@ -143,10 +143,15 @@ export class ManagerMS {
       address: address,
     });
   }
-  private static getMetaData(deviceID: string, address: string) {
+  private static getMetaDataMs(deviceID: string, address: string) {
     Flasher.send('ms-get-meta-data', {
       deviceID: deviceID,
       address: address,
+    });
+  }
+  private static getMetaData(deviceID: string) {
+    Flasher.send('get-meta-data', {
+      deviceID: deviceID,
     });
   }
   static backtrack(backtrack: FlashBacktrackMs) {
@@ -223,13 +228,17 @@ export class ManagerMS {
     if (op === undefined) return;
     switch (op.type) {
       case OperationType.meta:
-        if (!op.addressInfo) {
-          throw Error('Не указан адрес платы МС-ТЮК.');
+        if (op.device.isMSDevice()) {
+          if (!op.addressInfo) {
+            throw Error('Не указан адрес платы МС-ТЮК.');
+          }
+          this.getMetaDataMs(op.device.deviceID, op.addressInfo.address);
+        } else {
+          this.getMetaData(op.device.deviceID);
         }
-        this.getMetaData(op.device.deviceID, op.addressInfo.address);
         this.addLog(
-          `${this.displayAddressInfo(
-            op.addressInfo
+          `${this.displayDeviceInfo(
+            op.addressInfo ?? op.device
           )}: Отправлен запрос на получение метаданных устройства.`
         );
         break;

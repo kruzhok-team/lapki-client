@@ -5,7 +5,7 @@ export type devType = 'arduino' | 'tjc-ms' | 'blg-mb' | 'common';
 // TODO: добавить в описания платформ
 export const SupportedOperations = new Map<devType, OperationType[]>([
   ['tjc-ms', [OperationType.ping, OperationType.reset, OperationType.meta]],
-  ['blg-mb', [OperationType.ping, OperationType.reset]],
+  ['blg-mb', [OperationType.ping, OperationType.reset, OperationType.meta]],
 ]);
 
 export class Device {

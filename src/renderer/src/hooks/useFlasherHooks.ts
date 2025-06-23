@@ -22,6 +22,7 @@ import {
   FlashResult,
   FlashUpdatePort,
   MetaDataID,
+  MetaDataMessage,
   MSAddressAndMeta,
   MSOperationReport,
   SerialRead,
@@ -665,6 +666,11 @@ export const useFlasherHooks = () => {
         }
         break;
       }
+      case 'meta-data': {
+        const metadata = flasherMessage.payload as MetaDataMessage;
+        ManagerMS.finishOperation(`Получены метаданные:\n${metadata.meta}`);
+        break;
+      }
       case 'ms-meta-data': {
         // TODO: обновление адресной книги здесь
         const meta = flasherMessage.payload as MetaDataID;
@@ -675,7 +681,7 @@ export const useFlasherHooks = () => {
         });
         break;
       }
-      case 'ms-meta-data-error': {
+      case 'meta-data-error': {
         const result = flasherMessage.payload as DeviceCommentCode;
         const comment = result.comment;
         switch (result.code) {

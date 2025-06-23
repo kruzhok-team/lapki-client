@@ -436,22 +436,23 @@ export const FlasherTab: React.FC = () => {
             device: deviceMs,
             type: op,
           });
-        } else if (item.targetType === FirmwareTargetType.dev) {
-          const dev = devices.get(item.targetId as string);
-          ManagerMS.addLog(
-            `${dev ? dev.displayName() : 'Неизвестное устройство'}: операция "${getOpName(
-              op
-            )}" не поддерживается для этого устройства.`
-          );
         } else {
           const dev = devices.get(item.targetId as string);
           if (!dev) {
             throw Error('Устройства для выполнения операции не найдено!');
           }
-          ManagerMS.addOperation({
-            device: dev,
-            type: op,
-          });
+          if (dev.isOperationSupported(op)) {
+            ManagerMS.addOperation({
+              device: dev,
+              type: op,
+            });
+          } else {
+            ManagerMS.addLog(
+              `${dev.displayName()}: операция "${getOpName(
+                op
+              )}" не поддерживается для этого устройства.`
+            );
+          }
         }
       }
     }

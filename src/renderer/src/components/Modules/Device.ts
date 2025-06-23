@@ -1,4 +1,12 @@
-type devType = 'arduino' | 'tjc-ms' | 'blg-mb' | 'common';
+import { OperationType } from '@renderer/types/FlasherTypes';
+
+export type devType = 'arduino' | 'tjc-ms' | 'blg-mb' | 'common';
+
+// TODO: добавить в описания платформ
+export const SupportedOperations = new Map<devType, OperationType[]>([
+  ['tjc-ms', [OperationType.ping, OperationType.reset, OperationType.meta]],
+  ['blg-mb', [OperationType.ping, OperationType.reset]],
+]);
 
 export class Device {
   deviceID: string;
@@ -39,6 +47,10 @@ export class Device {
 
   getSerialPort(): string | null {
     return null;
+  }
+
+  isOperationSupported(op: OperationType): boolean {
+    return SupportedOperations.get(this.type)?.includes(op) ?? false;
   }
 }
 

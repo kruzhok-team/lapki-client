@@ -141,18 +141,31 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
     const note = this.items.get(args.id);
     if (!note) return;
     note.setIsSelected(args.value);
+
+    this.view.isDirty = true;
   };
 
   handleMouseUpOnNote = (note: Note) => {
     this.emit('mouseUpOnNote', note);
   };
 
-  handleMouseDown = (note: Note) => {
-    this.controller.selectNote({ smId: '', id: note.id });
-    this.controller.emit('selectNote', { smId: note.smId, id: note.id });
+  handleMouseDown = (note: Note, e: { event: MyMouseEvent }) => {
+    if (e.event.nativeEvent.ctrlKey) {
+      const prevSelection = note.isSelected;
+      note.setIsSelected(!prevSelection);
+      this.controller.emit(prevSelection ? 'unselect' : 'addSelection', {
+        type: 'note',
+        data: { smId: note.smId, id: note.id },
+      });
+    } else {
+      this.controller.selectNote({ smId: note.smId, id: note.id });
+      this.controller.emit('selectNote', { smId: note.smId, id: note.id });
+    }
+    this.view.isDirty = true;
   };
 
-  handleDoubleClick = (note: Note) => {
+  handleDoubleClick = (note: Note, e: { event: MyMouseEvent }) => {
+    if (e.event.nativeEvent.ctrlKey) return;
     this.emit('change', note);
   };
 

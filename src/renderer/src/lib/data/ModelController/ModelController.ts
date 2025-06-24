@@ -1827,7 +1827,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
           // });
           break;
         case 'note':
-          this.deleteNote({ smId: smId, id: selectedItem.data.smId });
+          this.deleteNote({ smId: smId, id: selectedItem.data.id });
           break;
         case 'transition':
           this.deleteTransition({ smId: smId, id: selectedItem.data.id });

@@ -1820,11 +1820,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
           break;
         case 'event':
           events.push(selectedItem);
-          // this.deleteEvent({
-          //   smId,
-          //   stateId: selectedItem.data.stateId,
-          //   event: selectedItem.data.selection,
-          // });
           break;
         case 'note':
           this.deleteNote({ smId: smId, id: selectedItem.data.id });
@@ -2094,7 +2089,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
         this.copyData = prevCopy;
 
-        return;
+        continue;
       }
 
       if (type === 'choiceState') {
@@ -2111,7 +2106,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
           },
         });
 
-        return;
+        continue;
       }
 
       if (type === 'note') {
@@ -2127,7 +2122,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
           },
         });
 
-        return;
+        continue;
       }
 
       if (type === 'transition') {

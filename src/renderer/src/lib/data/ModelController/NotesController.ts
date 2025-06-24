@@ -172,7 +172,7 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
   handleContextMenu = (noteId: string, e: { event: MyMouseEvent }) => {
     const item = this.items.get(noteId);
     if (!item) return;
-    this.controller.selectNote({ smId: '', id: noteId });
+    this.controller.selectNote({ smId: item.smId, id: noteId });
 
     this.emit('contextMenu', {
       note: item,

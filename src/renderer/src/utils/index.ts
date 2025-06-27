@@ -1,13 +1,34 @@
 export * from './MatrixActions';
 import { Point } from '@renderer/lib/types/graphics';
-import { Component, StateMachine } from '@renderer/types/diagram';
+import { Component, Event, StateMachine } from '@renderer/types/diagram';
 import { ArgType } from '@renderer/types/platform';
 import { Range } from '@renderer/types/utils';
+
+export const isEmptyTrigger = (trigger: Event | string) => {
+  if (typeof trigger === 'string') return false;
+
+  return trigger.method === '' && trigger.component === '';
+};
 
 export const DEFAULT_RANGE_STEP = 1;
 
 export function isBerlogaRobot(value: any): boolean {
   return ['Autoborder', 'Stapler', 'Smoker', 'Generator'].includes(value);
+}
+
+export function getUserOS() {
+  const platform = navigator.userAgent;
+  let osName: string | null = null;
+
+  if (platform.includes('Win')) {
+    osName = 'Windows';
+  } else if (platform.includes('Mac')) {
+    osName = 'MacOS';
+  } else if (platform.includes('X11') || platform.includes('Linux')) {
+    osName = 'Linux';
+  }
+
+  return osName;
 }
 
 function newConvention(value: string) {

@@ -13,13 +13,20 @@ import { Navigation } from './components/Navigation';
 import { Show } from './components/Show';
 import { Tree } from './components/Tree';
 
+import Reference from '../ReferenceModal/Reference';
+
 export interface CurrentItem {
   isHtml: boolean;
   url: string;
   path: string;
 }
 
-export const Documentation: React.FC = () => {
+export interface DocumentationProps {
+  width: number;
+  onWidthChange: (width: number) => void;
+}
+
+export const Documentation: React.FC<DocumentationProps> = ({ width, onWidthChange }) => {
   const [doc] = useSettings('doc');
   const rawUrl = doc?.type === 'local' ? doc?.localHost ?? '' : doc?.remoteHost ?? '';
   const url = rawUrl ? (rawUrl.endsWith('/') ? rawUrl : rawUrl + '/') : '';
@@ -35,8 +42,6 @@ export const Documentation: React.FC = () => {
     state.isOpen,
     state.onDocumentationToggle,
   ]);
-
-  const [width, setWidth] = useState(0);
   const [minWidth, setMinWidth] = useState(5);
   const [maxWidth, setMaxWidth] = useState('60vw');
 
@@ -49,7 +54,7 @@ export const Documentation: React.FC = () => {
       onDocumentationToggle();
     }
     //Получаем ширину блока документации
-    setWidth(parseInt(ref.style.width));
+    onWidthChange(parseInt(ref.style.width));
   };
 
   useEffect(() => {
@@ -93,6 +98,11 @@ export const Documentation: React.FC = () => {
     });
   };
 
+  const onClose = () => {
+    onWidthChange(0);
+    onDocumentationToggle();
+  };
+
   const renderContent = () => {
     if (isLoading) {
       return <div>Загрузка...</div>;
@@ -110,17 +120,26 @@ export const Documentation: React.FC = () => {
     }
 
     return (
-      <section className="flex h-full select-none flex-col px-2 pt-4">
+      <section className="flex h-screen select-none flex-col bg-bg-primary px-2 pt-4">
         <div className="relative mb-3 flex items-center justify-between border-b border-border-primary pb-1">
           <h1 className="text-2xl font-bold">Документация</h1>
           <button
             className="rounded-full p-3 outline-none transition-colors hover:bg-bg-hover active:bg-bg-active"
-            onClick={() => onDocumentationToggle()}
+            onClick={() => onClose()}
           >
             <Close width="1rem" height="1rem" />
           </button>
         </div>
-        <div className="grid grid-cols-2 gap-1 pb-2">
+        <div className="grid grid-cols-3 gap-1 pb-2">
+          <button
+            className={twMerge(
+              'rounded border border-primary p-2',
+              activeTab === -1 && 'bg-primary text-text-secondary'
+            )}
+            onClick={() => setActiveTab(-1)}
+          >
+            Компоненты
+          </button>
           <button
             className={twMerge(
               'rounded border border-primary p-2',
@@ -142,6 +161,8 @@ export const Documentation: React.FC = () => {
           </button>
         </div>
         <div className="h-full overflow-y-hidden">
+          <div className={twMerge('h-full', activeTab !== -1 && 'hidden')}>{<Reference />}</div>
+
           <div className={twMerge('h-full', activeTab !== 0 && 'hidden')}>
             {<Tree root={data.body} borderWidth={0} onItemClick={onItemClick} />}
           </div>
@@ -174,9 +195,9 @@ export const Documentation: React.FC = () => {
       minWidth={minWidth}
       maxWidth={maxWidth}
       onResize={handleResize}
-      className="border-l border-border-primary bg-bg-secondary"
+      className="h-full border-l border-border-primary bg-bg-secondary"
     >
-      <div className="h-full">{renderContent()}</div>
+      <div className="h-screen">{renderContent()}</div>
     </Resizable>
   );
 };

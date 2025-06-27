@@ -11,6 +11,7 @@ import { ReactComponent as CopyIcon } from '@renderer/assets/icons/copy.svg';
 import { ReactComponent as DeleteIcon } from '@renderer/assets/icons/delete.svg';
 import { ReactComponent as EditIcon } from '@renderer/assets/icons/edit.svg';
 import { ReactComponent as FinalStateIcon } from '@renderer/assets/icons/final_state.svg';
+import { ReactComponent as InvertIcon } from '@renderer/assets/icons/invert.svg';
 import { ReactComponent as NoteIcon } from '@renderer/assets/icons/note.svg';
 import { ReactComponent as PasteIcon } from '@renderer/assets/icons/paste.svg';
 import { ReactComponent as StateIcon } from '@renderer/assets/icons/state_add.svg';
@@ -366,10 +367,13 @@ export const StateMachineContextMenu: React.FC<StateMachineContextMenuProps> = (
             <CopyIcon className="size-6 flex-shrink-0" /> Копировать
             <span className="ml-auto">Ctrl+C</span>
           </MenuItem>
-
+          <MenuItem onClick={() => modelController.invertSelectedTransition()}>
+            <InvertIcon className="size-6 flex-shrink-0" /> Перевернуть
+            <span className="ml-auto">Shift+R</span>
+          </MenuItem>
           <SubMenuContainer>
             <MenuItem closeable={false}>
-              <EditIcon className="size-6 flex-shrink-0" /> Выбрать исход(source)
+              <EditIcon className="size-6 flex-shrink-0" /> Выбрать исход
               <span className="ml-auto">{'>'}</span>
             </MenuItem>
 
@@ -397,7 +401,7 @@ export const StateMachineContextMenu: React.FC<StateMachineContextMenuProps> = (
 
           <SubMenuContainer>
             <MenuItem closeable={false}>
-              <EditIcon className="size-6 flex-shrink-0" /> Выбрать цель(target)
+              <EditIcon className="size-6 flex-shrink-0" /> Выбрать цель
               <span className="ml-auto">{'>'}</span>
             </MenuItem>
 

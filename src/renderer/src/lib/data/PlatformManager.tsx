@@ -53,9 +53,18 @@ export const systemComponent: ComponentProto = {
   description: 'Встроенные платформонезависимые события и методы',
   singletone: true,
   img: 'system',
+  name: 'Общие',
   signals: {
-    onEnter: { img: 'onEnter', description: 'Выполнять при переходе в это состояние' },
-    onExit: { img: 'onExit', description: 'Выполнять при переходе из этого состояния' },
+    onEnter: {
+      img: 'onEnter',
+      alias: 'Вход',
+      description: 'Выполнять при переходе в это состояние',
+    },
+    onExit: {
+      img: 'onExit',
+      alias: 'Выход',
+      description: 'Выполнять при переходе из этого состояния',
+    },
   },
   variables: {}, // TODO: userVar
   methods: {}, // TODO: userCode

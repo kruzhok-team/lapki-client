@@ -31,7 +31,13 @@ import {
   Variable,
 } from '@renderer/types/diagram';
 import { Platform, ComponentProto, MethodProto, SignalProto } from '@renderer/types/platform';
-import { getMatrixDimensions, isMatrix, isString, parseMatrixFromString } from '@renderer/utils';
+import {
+  getMatrixDimensions,
+  isEmptyTrigger,
+  isMatrix,
+  isString,
+  parseMatrixFromString,
+} from '@renderer/utils';
 
 import { validateElements } from './ElementsValidator';
 import { getPlatform, isPlatformAvailable } from './PlatformLoader';
@@ -393,7 +399,7 @@ function getTransitions(
       color: rawTransition.color,
       label: {
         position: rawTransition.labelPosition ?? { x: -1, y: -1 },
-        trigger: eventData[0].trigger,
+        trigger: isEmptyTrigger(eventData[0].trigger) ? undefined : eventData[0].trigger,
         do: eventData[0].do,
         condition: eventData[0].condition,
       },

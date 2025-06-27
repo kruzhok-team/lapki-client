@@ -9,6 +9,7 @@ import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as DeleteIcon } from '@renderer/assets/icons/delete.svg';
 import { ReactComponent as DownloadBinIcon } from '@renderer/assets/icons/download-bin.svg';
+import { ReactComponent as FactoryBinIcon } from '@renderer/assets/icons/factory-reset.svg';
 import { ReactComponent as FlashVerifyIcon } from '@renderer/assets/icons/flash-verify.svg';
 import { ReactComponent as FlashIcon } from '@renderer/assets/icons/flash.svg';
 import { ReactComponent as MetadataIcon } from '@renderer/assets/icons/metadata.svg';
@@ -91,9 +92,13 @@ export const FlasherTab: React.FC = () => {
   const [isDeviceMsListOpen, openDeviceMsList, closeDeviceMsList] = useModal(false);
   const [isAvrdudeGuideModalOpen, openAvrdudeGuideModal, closeAvrdudeGuideModal] = useModal(false);
 
-  const [isProMode, setProMode] = useState(false);
+  const isProMode = managerMSSetting?.mode === 'multi-pro' ? true : false;
   const handleSwitchProMode = () => {
-    setProMode(!isProMode);
+    if (!managerMSSetting) return;
+    setManagerMSSetting({
+      ...managerMSSetting,
+      mode: isProMode ? 'multi-basic' : 'multi-pro',
+    });
   };
 
   const [isAddressEnrtyEditOpen, openAddressEnrtyEdit, closeAddressEnrtyEdit] = useModal(false); // для редактирования существующих записей в адресной книге
@@ -181,21 +186,25 @@ export const FlasherTab: React.FC = () => {
     if (addressBookSetting === null) return;
     const meta = metaID.meta;
     const metaStr = `
-    - bootloader REF_HW: ${meta.RefBlHw} (${metaID.type})
+    - bootloader REF_HW: ${meta.RefBlHw} (${metaID.type ? metaID.type : 'Неизвестный тип'})
     - bootloader REF_FW: ${meta.RefBlFw}
     - bootloader REF_CHIP: ${meta.RefBlChip}
-    - booloader REF_PROTOCOL: ${meta.RefBlProtocol}
-    - booloader USER_CODE: ${meta.RefBlUserCode}
+    - bootloader REF_PROTOCOL: ${meta.RefBlProtocol}
+    - bootloader USER_CODE: ${meta.RefBlUserCode}
     - cybergene REF_FW: ${meta.RefCgFw}
     - cybergene REF_HW: ${meta.RefCgHw}
     - cybergene REF_PROTOCOL: ${meta.RefCgProtocol}
         `;
     const op = ManagerMS.finishOperation(`Получены метаданные: ${metaStr}`);
     if (op === undefined) {
-      return;
+      throw Error('undefined операция');
+    }
+    if (op.addressInfo === undefined) {
+      throw Error('undefined адрес');
     }
     const index = addressBookSetting.findIndex((v) => {
-      return v.address === op.addressInfo.address;
+      // мы делаем проверку на undefined ранее
+      return v.address === op.addressInfo?.address;
     });
     if (index === -1) {
       return;
@@ -307,11 +316,11 @@ export const FlasherTab: React.FC = () => {
   const getOpName = (op: OperationType) => {
     switch (op) {
       case OperationType.ping:
-        return 'Окликнуть';
+        return 'Пинг';
       case OperationType.reset:
-        return 'Перезагрузить';
+        return 'Сброс';
       case OperationType.meta:
-        return 'Переспросить метаданные';
+        return 'Метаданные';
       default:
         throw Error('Неизвестная операция');
     }
@@ -320,26 +329,82 @@ export const FlasherTab: React.FC = () => {
   const getOpHint = (op: OperationType) => {
     switch (op) {
       case OperationType.ping:
-        return 'Окликнуть плату, чтобы проверить связь с ней.';
+        return (
+          <p>
+            <b>Пинг</b>
+            <br />
+            Окликнуть плату, чтобы проверить связь с ней.
+          </p>
+        );
       case OperationType.reset:
-        return 'Перезагрузить плату.';
+        return (
+          <p>
+            <b>Сброс</b>
+            <br />
+            Перезагрузить плату.
+          </p>
+        );
       case OperationType.meta:
-        return 'Переспросить метаданные платы, если они не были получены ранее.';
+        return (
+          <p>
+            <b>Метаданные</b>
+            <br />
+            Переспросить метаданные платы, если они не были получены ранее.
+          </p>
+        );
       default:
         throw Error('Неизвестная операция');
     }
   };
 
-  const flashHint = 'Загрузить прошивку в выбранные платы.';
-  const flashVerifyHint =
-    'Загрузить прошивку с проверкой целостности. Увеличивает общее время загрузки, доступно не для всех устройств.';
+  const removeHint = (
+    <p>
+      <b>Удалить</b>
+      <br />
+      Убрать отмеченные платы из таблицы.
+    </p>
+  );
+  const flashHint = (
+    <p>
+      <b>Прошить</b>
+      <br />
+      Загрузить прошивку в выбранные платы.
+    </p>
+  );
+  const flashVerifyHint = (
+    <p>
+      <b>Прошить с проверкой</b>
+      <br />
+      Загрузить прошивку с проверкой целостности. Увеличивает общее время загрузки, доступно не для
+      всех устройств.
+    </p>
+  );
   const flashResultHint = useMemo(() => {
     if (flashResult.size === 0)
       return 'Выполните загрузку прошивки, и эта кнопка позволит посмотреть её результаты.';
-    return `Открыть вкладки с результатами загрузки прошивок (${flashResult.size} шт.)`;
+    return (
+      <p>
+        <b>Журнал загрузки</b>
+        <br />
+        Открыть вкладки с результатами загрузки прошивок ({flashResult.size} шт.)
+      </p>
+    );
   }, [flashResult]);
-  const downloadBinHint =
-    'Выгрузить файлы прошивки из выбранных плат. Доступно не для всех устройств.';
+  const downloadBinHint = (
+    <p>
+      <b>Скачать прошивку</b>
+      <br />
+      Выгрузить файлы прошивки из выбранных плат. Доступно не для всех устройств.
+    </p>
+  );
+  const factoryBinHint = (
+    <p>
+      <b>Загрузить «заводскую» прошивку</b>
+      <br />
+      Загрузить в выбранные платы прошивку, поставляемую с новой платой. Обычно это демонстрационная
+      прошивка. Доступно не для всех устройств.
+    </p>
+  );
 
   const handleOperation = (op: OperationType) => {
     for (const item of flashTableData) {
@@ -368,24 +433,32 @@ export const FlasherTab: React.FC = () => {
           }
           ManagerMS.addOperation({
             addressInfo: addr,
-            deviceId: deviceMs.deviceID,
+            device: deviceMs,
             type: op,
           });
-        } else if (item.targetType === FirmwareTargetType.dev) {
-          const dev = devices.get(item.targetId as string);
-          ManagerMS.addLog(
-            `${dev ? dev.displayName() : 'Неизвестное устройство'}: операция "${getOpName(
-              op
-            )}" не поддерживается для этого устройства.`
-          );
         } else {
-          throw Error('Неизвестный тип устройства');
+          const dev = devices.get(item.targetId as string);
+          if (!dev) {
+            throw Error('Устройства для выполнения операции не найдено!');
+          }
+          if (dev.isOperationSupported(op)) {
+            ManagerMS.addOperation({
+              device: dev,
+              type: op,
+            });
+          } else {
+            ManagerMS.addLog(
+              `${dev.displayName()}: Операция "${getOpName(
+                op
+              )}" не поддерживается для этого устройства.`
+            );
+          }
         }
       }
     }
   };
 
-  const handleSendBin = async (doVerify?: boolean) => {
+  const handleSendBin = async (doVerify?: boolean, uploadFactory?: boolean) => {
     for (const item of flashTableData) {
       if (!item.isSelected) continue;
       let notFound = false;
@@ -444,17 +517,51 @@ export const FlasherTab: React.FC = () => {
         );
         continue;
       }
-      if (!item.source) {
-        ManagerMS.addLog(
-          `${devName}: прошивка пропущена, так как для этой платы не указана прошивка.`
-        );
+      const getSource = async () => {
+        if (uploadFactory) {
+          const getTypeId = () => {
+            if (item.targetType === FirmwareTargetType.dev && dev) {
+              return ManagerMS.getDevicePlatform(dev);
+            } else if (item.targetType === FirmwareTargetType.tjc_ms && address) {
+              return address.type;
+            } else {
+              return null;
+            }
+          };
+          const typeId = getTypeId();
+          if (!typeId) {
+            ManagerMS.addLog(
+              `${devName}: Не удалось определить тип устройства для загрузки заводской прошивки. Пропускаю его.`
+            );
+            return null;
+          }
+          const [valid, path] = await window.api.fileHandlers.getDefaultFirmwarePath(
+            typeId,
+            dev?.isArduinoDevice() ? 'hex' : 'bin'
+          );
+          if (!valid) {
+            ManagerMS.addLog(
+              `${devName}: Загрузка заводской прошивки не поддерживается для данного устройства.`
+            );
+            return null;
+          }
+          return path;
+        }
+        if (!item.source) {
+          ManagerMS.addLog(`${devName}: Для этого устройства не указана прошивка. Пропускаю его.`);
+          return null;
+        }
+        return item.source;
+      };
+      const source = await getSource();
+      if (!source) {
         continue;
       }
-      if (item.isFile) {
-        const [binData, errorMessage] = await window.api.fileHandlers.readFile(item.source);
+      if (item.isFile || uploadFactory) {
+        const [binData, errorMessage] = await window.api.fileHandlers.readFile(source);
         if (errorMessage !== null) {
           ManagerMS.addLog(
-            `Ошибка! Не удалось извлечь данные из файла ${item.source}. Текст ошибки: ${errorMessage}`
+            `${devName}: Ошибка! Не удалось извлечь данные из файла ${source}. Текст ошибки: ${errorMessage}`
           );
           continue;
         }
@@ -474,7 +581,7 @@ export const FlasherTab: React.FC = () => {
           ManagerMS.addLog(noBinary);
           continue;
         }
-        const smData = compilerData.state_machines[item.source];
+        const smData = compilerData.state_machines[source];
         if (!smData || !smData.binary || smData.binary.length === 0) {
           ManagerMS.addLog(noBinary);
           continue;
@@ -637,7 +744,7 @@ export const FlasherTab: React.FC = () => {
   const operationButtons = () => {
     return (
       <div className="m-1 flex items-center gap-0 overflow-x-auto">
-        <WithHint hint={'Убрать отмеченные платы из таблицы.'}>
+        <WithHint hint={removeHint}>
           {(hintProps) => (
             <button {...hintProps} className="btn-error mr-2 p-2 py-1" onClick={handleRemoveDevs}>
               <DeleteIcon className="h-8 w-8" />
@@ -717,6 +824,18 @@ export const FlasherTab: React.FC = () => {
                   disabled={binaryFolder !== null || commonOperationDisabled}
                 >
                   <DownloadBinIcon className="h-8 w-8" />
+                </button>
+              )}
+            </WithHint>
+            <WithHint hint={factoryBinHint}>
+              {(hintProps) => (
+                <button
+                  {...hintProps}
+                  className="btn-primary mr-2 whitespace-nowrap p-2 py-1"
+                  onClick={() => handleSendBin(false, true)}
+                  disabled={commonOperationDisabled}
+                >
+                  <FactoryBinIcon className="h-8 w-8" />
                 </button>
               )}
             </WithHint>
@@ -929,7 +1048,7 @@ export const FlasherTab: React.FC = () => {
         <p className="mb-1 mt-1 text-lg font-semibold">Устройства на прошивку</p>
         <FlasherTable addressEnrtyEdit={addressEnrtyEdit} getEntryById={getEntryById} />
       </div>
-      <div className="m-1 flex min-h-14">
+      <div className="m-1 flex min-h-16">
         <div
           className={twMerge(
             selectedDevicesCount == 0 ? 'opacity-50' : '',

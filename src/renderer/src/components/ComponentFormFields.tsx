@@ -83,7 +83,7 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
   }, [protoParameters, protoInitializationParameters, setErrors]);
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2.5">
       <h3 className="mb-1 text-xl">Параметры</h3>
 
       {showMainData && (

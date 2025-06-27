@@ -7,6 +7,8 @@ import { defaultCompilerHost, defaultCompilerPort, defaultRemoteDocHost } from '
 
 type ModuleType = 'local' | 'remote';
 
+export type FlasherType = 'multi-basic' | 'multi-pro';
+
 type MetaType =
   | {
       RefBlHw: string; // Описывает физическое окружение контроллера (плату)
@@ -45,10 +47,12 @@ export const defaultSettings = {
     type: 'local' as ModuleType,
   },
   compiler: {
-    host: defaultCompilerHost,
-    port: defaultCompilerPort,
+    localHost: 'localhost',
     localPort: 0,
-    type: 'remote' as ModuleType,
+    remoteHost: defaultCompilerHost,
+    remotePort: defaultCompilerPort,
+    // FIXME (L140-beep): реализация локального компилятора на Linux и macOS
+    type: (process.platform === 'win32' ? 'local' : 'remote') as ModuleType,
   },
   flasher: {
     host: 'localhost',
@@ -94,6 +98,7 @@ export const defaultSettings = {
      * Если true, то будет показываться инструкция по получению адреса
      */
     hideGetAddressModal: false,
+    mode: 'simple' as FlasherType,
   },
   autoSave: {
     /**

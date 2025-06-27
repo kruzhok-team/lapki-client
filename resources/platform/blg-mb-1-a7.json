@@ -181,7 +181,7 @@
       "importFiles": ["SpeakerNote.hpp"],
       "methods": {
         "setupNote": {
-          "img": "arduino/start.svg",
+          "img": "blg-mb/setupEvent.svg",
           "parameters": [
             {
               "name": "Нота",
@@ -556,8 +556,8 @@
       },
       "constructorParameters": {
         "cooldown": {
-          "name": "Интервал срабатывания",
-          "description": "Определяет, как часто микрофон сможет реагировать на новый громкий звук после предыдущего. Чем больше значение, тем дольше он «отдыхает» (по умолчанию 0)",
+          "name": "Интервал\nсрабатывания",
+          "description": "Определяет, как часто микрофон сможет реагировать на новый громкий звук после предыдущего в миллисекундах. Чем больше значение, тем дольше он «отдыхает» (по умолчанию 200)",
           "optional": true,
           "type": "unsigned long"
         }
@@ -568,7 +568,7 @@
           "img": "blg-mb/setCooldown.svg",
           "parameters": [
             {
-              "name": "Интервал срабатывания",
+              "name": "Интервал\nсрабатывания",
               "type": "uint16_t",
               "description": "Интервал срабатывания (в миллисекундах)",
               "optional": false
@@ -681,8 +681,7 @@
             },
             {
               "name": "Операция",
-              "type": ["mask_and", "mask_or", "mask_xor"],
-              "valueAlias": ["AND", "OR", "XOR"],
+              "type": ["AND", "OR", "XOR"],
               "description": "Битовая функция, используемая для установки значения."
             }
           ]
@@ -699,8 +698,7 @@
             },
             {
               "name": "Операция",
-              "type": ["mask_and", "mask_or", "mask_xor"],
-              "valueAlias": ["AND", "OR", "XOR"],
+              "type": ["AND", "OR", "XOR"],
               "description": "Битовая маска для установки значения пикселя."
             }
           ]

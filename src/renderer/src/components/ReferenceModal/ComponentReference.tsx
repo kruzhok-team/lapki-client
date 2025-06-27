@@ -8,7 +8,7 @@ import { PlatformManager } from '@renderer/lib/data/PlatformManager';
 import { icons, Picto } from '@renderer/lib/drawable';
 import { ComponentProto } from '@renderer/types/platform';
 
-import ComponentInfo from './ComponentInfo';
+import { ComponentInfo } from './ComponentInfo';
 
 import { ScrollableList } from '../ScrollableList';
 

@@ -16,19 +16,19 @@
   "components": {
     "LED": {
       "name": "Светодиод",
-      "description": "Компонент для отладки машины состояний",
-      "img": "bearloga/ability_activate.svg",
+      "description": "Модуль позволяет взаимодействовать с лампочкой на корпусе, которую можно использовать в качестве индикатора..",
+      "img": "bearloga/led.svg",
       "signals": {},
       "variables": {
         "Brightness": {
           "alias": "Яркость",
           "img": "bearloga/brightness.svg",
-          "description": "Количество юнитов противника на игровом поле"
+          "description": "Текущая яркость светодиода от 0 до 1."
         },
         "IsOn": {
-          "alias": "Включён",
-          "img": "bearloga/is_on.svg",
-          "description": "Количество юнитов противника на игровом поле"
+          "alias": "Включён.",
+          "img": "bearloga/brightness.svg",
+          "description": "1 если светодиод включен, 0 если светодиод выключен."
         }
       },
       "methods": {
@@ -39,16 +39,22 @@
             {
               "name": "Цвет",
               "type": ["red", "green", "blue"],
-              "valueAlias": ["красный", "зеленый"]
+              "valueAlias": ["красный", "зеленый", "голубой"]
             }
           ],
-          "description": "Включить свитодиод с выбранным цветом."
+          "description": "Включает светодиод, либо меняет его цвет."
         },
         "TurnOff": {
-          "alias": "Включить",
+          "alias": "Выключает светодиод",
           "img": "bearloga/turn_off.svg",
           "parameters": [],
-          "description": "Выключить светодиод."
+          "description": "Выключает светодиод."
+        },
+        "setBrightness": {
+          "alias": "ЗадатьЯркость",
+          "img": "bearloga/turn_off.svg",
+          "parameters": [],
+          "description": "Устанавливает яркость светодиода (от 0 до 1)."
         }
       },
       "singletone": true
@@ -438,31 +444,31 @@
       "img": "bearloga/component_timer.svg",
       "signals": {
         "Elapsed": {
-          "alias": "Истёк",
+          "alias": "ТаймерВыполнен",
           "img": "bearloga/done.svg",
           "description": "Запускает отсчёт таймера на T секунд, по истечении которых возникнет событие."
         },
         "Tick": {
           "alias": "Тик",
           "img": "bearloga/tick.svg",
-          "description": "Запускает отсчёт таймера на T секунд, по истечении которых возникнет событие."
+          "description": "Сигнализирует каждый тик (наименьшей единицы времени в программе)."
         },
         "Tick1S": {
           "alias": "Тик1Секунда",
           "img": "bearloga/tick_1s.svg",
-          "description": "Запускает отсчёт таймера на T секунд, по истечении которых возникнет событие."
+          "description": "Сигнализирует каждую секунду."
         }
       },
       "variables": {
         "Value": {
-          "alias": "Значение",
+          "alias": "ТекущееЗначениеТаймера",
           "img": "bearloga/timer_current.svg",
           "description": "Показывает текущее значение таймера в секундах."
         }
       },
       "methods": {
         "Start": {
-          "alias": "Пуск",
+          "alias": "ТаймерЗапуск",
           "img": "bearloga/timer_start.svg",
           "description": "Запускает отсчёт таймера на T секунд, по истечении которых возникнет событие.",
           "parameters": [
@@ -473,12 +479,12 @@
           ]
         },
         "Stop": {
-          "alias": "Стоп",
+          "alias": "ТаймерСтоп",
           "img": "bearloga/stop.svg",
           "description": "Останавливает действие таймера."
         },
         "Reset": {
-          "alias": "Сброс",
+          "alias": "ТаймерСброс",
           "img": "bearloga/timer_reset.svg",
           "description": "Сбрасывает значение таймера и при этому продолжает его работу."
         }

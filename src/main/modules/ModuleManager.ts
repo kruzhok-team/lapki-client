@@ -96,7 +96,7 @@ export class ModuleManager {
           }
           case 'lapki-compiler': {
             const port = await findFreePort({ usedPorts });
-            const compilerArgs = [`--server-port=${port}`];
+            const compilerArgs = [`--server-port=${port}`, '--killable'];
             switch (platform) {
               case 'win32':
                 modulePath = this.getCompilerPath();
@@ -202,7 +202,7 @@ export class ModuleManager {
   }
 
   static getBlgMbUploaderPath(): string {
-    return this.getModulePath('blg-mb-1/blg-mb-1-uploader');
+    return this.getModulePath('blg-mb/cyberbear-loader');
   }
 
   static getModulePath(module: string): string {

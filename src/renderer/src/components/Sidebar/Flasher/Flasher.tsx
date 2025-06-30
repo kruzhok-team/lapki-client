@@ -186,7 +186,7 @@ export const FlasherTab: React.FC = () => {
     if (addressBookSetting === null) return;
     const meta = metaID.meta;
     const metaStr = `
-    - bootloader REF_HW: ${meta.RefBlHw} (${metaID.type})
+    - bootloader REF_HW: ${meta.RefBlHw} (${metaID.type ? metaID.type : 'Неизвестный тип'})
     - bootloader REF_FW: ${meta.RefBlFw}
     - bootloader REF_CHIP: ${meta.RefBlChip}
     - bootloader REF_PROTOCOL: ${meta.RefBlProtocol}
@@ -197,10 +197,14 @@ export const FlasherTab: React.FC = () => {
         `;
     const op = ManagerMS.finishOperation(`Получены метаданные: ${metaStr}`);
     if (op === undefined) {
-      return;
+      throw Error('undefined операция');
+    }
+    if (op.addressInfo === undefined) {
+      throw Error('undefined адрес');
     }
     const index = addressBookSetting.findIndex((v) => {
-      return v.address === op.addressInfo.address;
+      // мы делаем проверку на undefined ранее
+      return v.address === op.addressInfo?.address;
     });
     if (index === -1) {
       return;
@@ -312,11 +316,11 @@ export const FlasherTab: React.FC = () => {
   const getOpName = (op: OperationType) => {
     switch (op) {
       case OperationType.ping:
-        return 'Окликнуть';
+        return 'Пинг';
       case OperationType.reset:
-        return 'Перезагрузить';
+        return 'Сброс';
       case OperationType.meta:
-        return 'Переспросить метаданные';
+        return 'Метаданные';
       default:
         throw Error('Неизвестная операция');
     }
@@ -429,18 +433,26 @@ export const FlasherTab: React.FC = () => {
           }
           ManagerMS.addOperation({
             addressInfo: addr,
-            deviceId: deviceMs.deviceID,
+            device: deviceMs,
             type: op,
           });
-        } else if (item.targetType === FirmwareTargetType.dev) {
-          const dev = devices.get(item.targetId as string);
-          ManagerMS.addLog(
-            `${dev ? dev.displayName() : 'Неизвестное устройство'}: операция "${getOpName(
-              op
-            )}" не поддерживается для этого устройства.`
-          );
         } else {
-          throw Error('Неизвестный тип устройства');
+          const dev = devices.get(item.targetId as string);
+          if (!dev) {
+            throw Error('Устройства для выполнения операции не найдено!');
+          }
+          if (dev.isOperationSupported(op)) {
+            ManagerMS.addOperation({
+              device: dev,
+              type: op,
+            });
+          } else {
+            ManagerMS.addLog(
+              `${dev.displayName()}: Операция "${getOpName(
+                op
+              )}" не поддерживается для этого устройства.`
+            );
+          }
         }
       }
     }

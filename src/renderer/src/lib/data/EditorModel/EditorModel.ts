@@ -701,7 +701,7 @@ export class EditorModel {
   }
 
   changeTransition(args: ChangeTransitionParams) {
-    const { id, smId, label, ...other } = args;
+    const { id, smId, label, targetId, sourceId, ...other } = args;
 
     const transition = this.data.elements.stateMachines[smId].transitions[id] as TransitionData;
     if (!transition) return false;
@@ -714,9 +714,53 @@ export class EditorModel {
       return { ...(transition.label ?? {}), ...label };
     };
 
-    this.data.elements.stateMachines[smId].transitions[id] = { ...other, label: getNewLabel() };
+    // Validation checks
+    const sm = this.data.elements.stateMachines[smId];
 
-    this.triggerDataUpdate('elements.transitions');
+    if (sm.initialStates[targetId]) {
+      console.log('Cannot transition to initial state');
+      return false;
+    }
+
+    const isChoiceState = sm.choiceStates[sourceId] !== undefined;
+    const isInitialState = sm.initialStates[sourceId] !== undefined;
+    const isEmptyTransition =
+      !label?.trigger ||
+      (typeof label.trigger === 'object' &&
+        label.trigger.component === '' &&
+        label.trigger.component === '');
+
+    if (isEmptyTransition && !isChoiceState && !isInitialState) {
+      console.log('Cannot have empty transition except from choice states and initial states');
+      return false;
+    }
+
+    if (!isEmptyTransition && isChoiceState) {
+      console.log('Cannot have transition with trigger from choice states');
+      return false;
+    }
+
+    const isTargetNote = sm.notes[targetId] !== undefined;
+    const isSourceNote = sm.notes[sourceId] !== undefined;
+
+    if (isTargetNote && !isSourceNote) {
+      console.log('Cannot transition to note unless source is also a note');
+      return false;
+    }
+
+    const isFinalState = sm.finalStates[sourceId] !== undefined;
+
+    if (isFinalState) {
+      console.log('Cannot transition from final state');
+      return false;
+    }
+
+    this.data.elements.stateMachines[smId].transitions[id] = {
+      ...other,
+      sourceId,
+      targetId,
+      label: getNewLabel(),
+    };
 
     return true;
   }

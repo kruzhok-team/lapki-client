@@ -436,6 +436,24 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     }
   }
 
+  invertSelectedTransition = () => {
+    const stateMachines = this.getHeadControllerStateMachines();
+    for (const smId in stateMachines) {
+      const selected = [
+        ...Object.entries(this.model.data.elements.stateMachines[smId].transitions),
+      ].find((transition) => transition[1].selection);
+      if (!selected) return;
+      const [id, data] = selected;
+      this.changeTransition({
+        ...data,
+        sourceId: data.targetId,
+        targetId: data.sourceId,
+        smId,
+        id,
+      });
+    }
+  };
+
   changeTransition(args: ChangeTransitionParams, canUndo = true) {
     const transition = this.model.data.elements.stateMachines[args.smId].transitions[args.id];
     if (!transition) return;

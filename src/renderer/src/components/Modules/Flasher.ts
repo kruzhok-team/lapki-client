@@ -230,6 +230,18 @@ export class Flasher extends ClientWS {
     }
   }
 
+  static ping(deviceID: string) {
+    this.send('ping', {
+      deviceID: deviceID,
+    });
+  }
+
+  static reset(deviceID: string) {
+    this.send('reset', {
+      deviceID: deviceID,
+    });
+  }
+
   static send(type: FlasherType, payload: FlasherPayload) {
     const request = {
       type: type,

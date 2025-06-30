@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import { Range } from '@renderer/types/utils';
 import { DEFAULT_RANGE_STEP } from '@renderer/utils';
@@ -26,6 +26,34 @@ export const MatrixWidget: React.FC<MatrixWidgetProps> = ({
   range,
 }) => {
   const [brushValue, setBrushValue] = useState(range.max);
+  const [isMouseDown, setIsMouseDown] = useState(false);
+  const [isRightMouseDown, setIsRightMouseDown] = useState(false);
+
+  useEffect(() => {
+    const handleMouseUp = () => {
+      setIsMouseDown(false);
+      setIsRightMouseDown(false);
+    };
+
+    const handleMouseDown = (e: MouseEvent) => {
+      if (!isClickable) return;
+
+      if (e.button === 0) {
+        setIsMouseDown(true);
+      } else if (e.button === 2) {
+        setIsRightMouseDown(true);
+      }
+    };
+
+    window.addEventListener('mouseup', handleMouseUp);
+    window.addEventListener('mousedown', handleMouseDown);
+
+    return () => {
+      window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('mousedown', handleMouseDown);
+    };
+  }, [isClickable]);
+
   return (
     <div className="flex flex-col gap-2">
       <div className="flex shrink-0 flex-col">
@@ -46,6 +74,8 @@ export const MatrixWidget: React.FC<MatrixWidgetProps> = ({
                       currentBrushValue: brushValue,
                       range,
                       isHalf,
+                      isMouseDown,
+                      isRightMouseDown,
                     }}
                   />
                 );

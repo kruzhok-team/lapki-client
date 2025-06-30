@@ -1257,7 +1257,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (canUndo) {
       this.history.do({
         type: 'createState',
-        args: { ...args, parentId: parentId, newStateId: newStateId },
+        args: { ...structuredClone(args), parentId: parentId, newStateId: newStateId },
         numberOfConnectedActions,
       });
     }
@@ -1859,8 +1859,17 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const { stateId, smId, eventData, eventIdx } = args;
     const state = this.model.data.elements.stateMachines[smId].states[stateId];
     if (!state) return;
-
+    const prevEvents = structuredClone(state.events);
     if (!this.model.createEvent(smId, stateId, eventData, eventIdx)) return;
+    this.history.do({
+      type: 'changeState',
+      args: {
+        args: { color: state.color, events: structuredClone(state.events), smId, id: stateId },
+        prevEvents,
+        prevColor: state.color,
+      },
+      numberOfConnectedActions: 0,
+    });
 
     this.emit('createEvent', args);
   }

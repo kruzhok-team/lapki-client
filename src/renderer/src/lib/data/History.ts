@@ -116,6 +116,12 @@ export type PossibleActions = {
     event: EventSelection;
     prevValue: EventAction;
   };
+  // createEventAction: {
+  //   smId: string;
+  //   stateId: string;
+  //   event: EventSelection;
+  //   value: EventAction;
+  // };
 
   createComponent: { args: CreateComponentParams };
   deleteComponent: { args: DeleteDrawableParams; prevComponent: Component };
@@ -459,12 +465,17 @@ export const actionFunctions: ActionFunctions = {
   }),
   deleteEvent: (sM, { stateId, smId, eventIdx, prevValue }) => ({
     redo: sM.deleteEvent.bind(sM, { smId, stateId, event: { eventIdx, actionIdx: null } }, false),
-    undo: sM.createEvent.bind(sM, { smId, stateId, eventData: prevValue, eventIdx }),
+    undo: sM.createEvent.bind(sM, { smId, stateId, eventData: prevValue, eventIdx }, false),
   }),
   deleteEventAction: (sM, { smId, stateId, event, prevValue }) => ({
     redo: sM.deleteEvent.bind(sM, { smId, stateId, event }, false),
-    undo: sM.createEventAction.bind(sM, { smId, stateId, event, value: prevValue }),
+    undo: sM.createEventAction.bind(sM, { smId, stateId, event, value: prevValue }, false),
   }),
+
+  // EventAction: (sM, { smId, stateId, event, prevValue }) => ({
+  //   redo: sM.deleteEvent.bind(sM, { smId, stateId, event }, false),
+  //   undo: sM.createEventAction.bind(sM, { smId, stateId, event, value: prevValue }),
+  // }),
 
   createComponent: (sM, { args }) => ({
     redo: sM.createComponent.bind(sM, args, false),

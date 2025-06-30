@@ -1855,31 +1855,46 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.selectedItems = [];
   };
 
-  createEvent(args: CreateEventParams) {
+  createEvent(args: CreateEventParams, canUndo = true) {
     const { stateId, smId, eventData, eventIdx } = args;
     const state = this.model.data.elements.stateMachines[smId].states[stateId];
     if (!state) return;
     const prevEvents = structuredClone(state.events);
     if (!this.model.createEvent(smId, stateId, eventData, eventIdx)) return;
-    this.history.do({
-      type: 'changeState',
-      args: {
-        args: { color: state.color, events: structuredClone(state.events), smId, id: stateId },
-        prevEvents,
-        prevColor: state.color,
-      },
-      numberOfConnectedActions: 0,
-    });
+    if (canUndo) {
+      this.history.do({
+        type: 'changeState',
+        args: {
+          args: { color: state.color, events: structuredClone(state.events), smId, id: stateId },
+          prevEvents,
+          prevColor: state.color,
+        },
+        numberOfConnectedActions: 0,
+      });
+    }
 
     this.emit('createEvent', args);
   }
 
-  createEventAction(args: CreateEventActionParams) {
+  createEventAction(args: CreateEventActionParams, canUndo = true) {
     const { stateId, value, event, smId } = args;
     const state = this.model.data.elements.stateMachines[smId].states[stateId];
     if (!state) return;
-
+    const prevEvents = structuredClone(state.events);
     if (!this.model.createEventAction(smId, stateId, event, value)) return;
+
+    if (canUndo) {
+      this.history.do({
+        type: 'changeState',
+        args: {
+          args: { color: state.color, events: structuredClone(state.events), smId, id: stateId },
+          prevEvents,
+          prevColor: state.color,
+        },
+        numberOfConnectedActions: 0,
+      });
+    }
+
     this.emit('createEventAction', args);
   }
 
@@ -2080,19 +2095,19 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         });
         if (existingIdx !== -1) {
           // Объединить действия
-          const existing = state.events[existingIdx];
+          const events = structuredClone(state.events);
+          const existing = events[existingIdx];
           if (Array.isArray(existing.do) && Array.isArray(eventToPaste.do)) {
             // Обновляем trigger и condition только если trigger — объект
             if (typeof eventToPaste.trigger === 'object') {
-              this.changeEvent({
+              existing.do = [...existing.do, ...eventToPaste.do];
+              this.changeState({
                 smId,
-                stateId,
-                event: { eventIdx: existingIdx, actionIdx: null },
-                newValue: { ...eventToPaste.trigger },
+                id: stateId,
+                events: events,
+                color: state.color,
               });
             }
-            // Обновляем do явно
-            state.events[existingIdx].do = [...existing.do, ...eventToPaste.do];
           }
         } else {
           // Вставить новое событие
@@ -2604,7 +2619,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   addSelection = (args: SelectedItem) => {
     let isSelected = false;
-
+    console.trace('add selection');
+    console.log('add selection, before: ', structuredClone(this.selectedItems));
     switch (args.type) {
       case 'state': {
         isSelected = this.isSelected(args.data.smId, args.data.id, 'states');
@@ -2648,6 +2664,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (!isSelected) {
       this.selectedItems.push(args);
     }
+    console.log('add selection, after: ', structuredClone(this.selectedItems));
   };
 
   selectEvent = (args: SelectEvent) => {

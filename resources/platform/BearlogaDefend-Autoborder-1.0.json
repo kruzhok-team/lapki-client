@@ -45,7 +45,7 @@
           "description": "Включает светодиод, либо меняет его цвет."
         },
         "TurnOff": {
-          "alias": "Выключает светодиод",
+          "alias": "Выключить",
           "img": "bearloga/turn_off.svg",
           "parameters": [],
           "description": "Выключает светодиод."

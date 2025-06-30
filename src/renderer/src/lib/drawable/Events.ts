@@ -140,7 +140,7 @@ export class Events {
     if (!add) {
       this.selection = [];
     }
-    if (idx) {
+    if (idx !== undefined) {
       const selected = this.isSelected(idx.eventIdx, idx.actionIdx);
       if (selected === -1) {
         this.selection?.push(idx);

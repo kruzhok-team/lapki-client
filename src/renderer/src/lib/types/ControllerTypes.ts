@@ -7,10 +7,6 @@ import {
 } from '@renderer/lib/drawable';
 import {
   Component as ComponentData,
-  State as StateData,
-  ChoiceState as ChoiceData,
-  Transition as TransitionData,
-  Note as NoteData,
   InitialState as InitialStateData,
   StateMachine,
 } from '@renderer/types/diagram';

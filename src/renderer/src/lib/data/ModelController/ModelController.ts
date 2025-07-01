@@ -10,7 +10,7 @@ import {
 } from '@renderer/lib/constants';
 import { History } from '@renderer/lib/data/History';
 import { EventSelection } from '@renderer/lib/drawable';
-import { SelectedEventItem, SelectedItem, CopyData } from '@renderer/lib/types';
+import { SelectedEventItem, SelectedItem, CopyData, CopyEventData } from '@renderer/lib/types';
 import {
   CCreateInitialStateParams,
   EditComponentParams,
@@ -2090,7 +2090,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       const state = this.model.data.elements.stateMachines[smId].states[stateId];
       if (!state) return;
       for (const item of copyData) {
-        const { data, state: copyState } = item;
+        const { data, state: copyState } = item as CopyEventData;
         const eventIdx = data.eventIdx;
         const srcState = copyState.states[data.stateId];
         if (!srcState || !srcState.events[eventIdx] || data.actionIdx !== null) continue;

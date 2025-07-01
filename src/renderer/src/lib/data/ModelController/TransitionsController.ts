@@ -9,7 +9,7 @@ import {
   State,
   Transition,
 } from '@renderer/lib/drawable';
-import { ChangeSelectionParams, Layer, SelectDrawable } from '@renderer/lib/types';
+import { ChangeSelectionParams, Layer } from '@renderer/lib/types';
 import { Point } from '@renderer/lib/types/graphics';
 import {
   ChangePosition,

@@ -10,7 +10,13 @@ import {
 } from '@renderer/lib/constants';
 import { History } from '@renderer/lib/data/History';
 import { EventSelection } from '@renderer/lib/drawable';
-import { SelectedEventItem, SelectedItem, CopyData, CopyEventData } from '@renderer/lib/types';
+import {
+  SelectedEventItem,
+  SelectedItem,
+  CopyData,
+  CopyEventData,
+  CopyStateData,
+} from '@renderer/lib/types';
 import {
   CCreateInitialStateParams,
   EditComponentParams,
@@ -2215,9 +2221,9 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
     // 5. Вставка переходов: если оба конца скопированы — вставить между новыми id
     if (copyData.some((item) => item.type === 'transition')) {
-      const copiedStateIds = copyData
-        .filter((item) => item.type === 'state')
-        .map((item) => item.data.id);
+      const copiedStateIds = (
+        copyData.filter((item) => item.type === 'state') as CopyStateData[]
+      ).map((item) => item.data.id);
       // Сначала вставляем все состояния и сохраняем соответствие id
       for (const item of copyData) {
         if (item.type === 'state') {

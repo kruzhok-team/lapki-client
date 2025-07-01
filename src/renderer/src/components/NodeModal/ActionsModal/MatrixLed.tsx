@@ -107,7 +107,7 @@ export const MatrixLed: React.FC<MatrixLedProps> = ({
       )}
       type="button"
       draggable={false}
-      onContextMenu={e => e.preventDefault()}
+      onContextMenu={(e) => e.preventDefault()}
       onClick={handleClick}
       onMouseDown={handleMouseDown}
       onMouseEnter={handleMouseEnter}

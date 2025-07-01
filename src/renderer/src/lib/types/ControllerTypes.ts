@@ -168,15 +168,6 @@ export type ComponentVariant =
     : never;
 export type ComponentType = ComponentsControllerDataComponentType extends `${infer T}s` ? T : never;
 
-export type CopyData = { smId: string; state: StateMachine } & (
-  | { type: 'state'; data: StateData & { id: string } }
-  | { type: 'choiceState'; data: ChoiceData & { id: string } }
-  | { type: 'transition'; data: TransitionData & { id: string } }
-  | { type: 'note'; data: NoteData & { id: string } }
-  | { type: 'component'; data: ComponentData & { id: string } }
-  | { type: 'event'; data: EventSelection & { stateId: string } }
-);
-
 export type LinkTransitionParams = {
   smId: string;
   stateId: string;

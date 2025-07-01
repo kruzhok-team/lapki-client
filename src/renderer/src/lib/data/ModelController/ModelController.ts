@@ -10,10 +10,9 @@ import {
 } from '@renderer/lib/constants';
 import { History } from '@renderer/lib/data/History';
 import { EventSelection } from '@renderer/lib/drawable';
-import { SelectedEventItem, SelectedItem } from '@renderer/lib/types';
+import { SelectedEventItem, SelectedItem, CopyData } from '@renderer/lib/types';
 import {
   CCreateInitialStateParams,
-  CopyData,
   EditComponentParams,
   LinkStateParams,
   SelectDrawable,
@@ -56,7 +55,6 @@ import {
   Action,
   Component,
   EventData,
-  Event,
 } from '@renderer/types/diagram';
 
 import { CanvasController, CanvasControllerEvents } from './CanvasController';

@@ -256,7 +256,7 @@
         },
         "RivalType": {
           "alias": "ВидПротивника",
-          "img": "bearloga/type.svg",
+          "img": "bearloga/enemy_type.svg",
           "description": "Код вида дрона противника 1, 2, 3, 4 — муравей, оса, бомбардир, жук."
         },
         "RivalRole": {

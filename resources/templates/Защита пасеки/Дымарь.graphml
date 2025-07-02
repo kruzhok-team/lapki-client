@@ -18,7 +18,7 @@
     <node id="coreMeta">
       <data key="dNote">formal</data>
       <data key="dName">CGML_META</data>
-      <data key="dData">platform/ BearlogaDefend-Autoborder
+      <data key="dData">platform/ BearlogaDefend-Smoker
 
 standardVersion/ 1.0
 
@@ -29,43 +29,6 @@ lapkiVisual/ true
 </data>
     </node>
     <node id="n0">
-      <data key="dName">Бой</data>
-      <data key="dData">entry/
-
-exit/
-
-</data>
-      <data key="dGeometry">
-        <rect x="-786" y="-492" width="517" height="770"></rect>
-      </data>
-      <graph id="n0">
-        <node id="n0::n1">
-          <data key="dName">Сближение</data>
-          <data key="dData">entry/
-Navigation.MoveToTarget()
-
-exit/
-
-</data>
-          <data key="dGeometry">
-            <rect x="49.29999999999994" y="168.4499999999999" width="413" height="208"></rect>
-          </data>
-        </node>
-        <node id="n0::n2">
-          <data key="dName">Атака</data>
-          <data key="dData">entry/
-Weapon.Activate()
-
-exit/
-
-</data>
-          <data key="dGeometry">
-            <rect x="56.599999999999994" y="443.95000000000016" width="413" height="208"></rect>
-          </data>
-        </node>
-      </graph>
-    </node>
-    <node id="n3">
       <data key="dName">Скан</data>
       <data key="dData">entry/
 Scaner.FindRivalByDistance(min)
@@ -75,60 +38,98 @@ Scaner.Stop()
 
 </data>
       <data key="dGeometry">
-        <rect x="-1573" y="-738" width="413" height="288"></rect>
+        <rect x="-751" y="42" width="413" height="288"></rect>
       </data>
     </node>
-    <node id="ucqaehdydqejwjkobkax">
+    <node id="n1">
+      <data key="dName">Бой</data>
+      <data key="dData">entry/
+
+exit/
+
+</data>
+      <data key="dGeometry">
+        <rect x="-34" y="246" width="519" height="830"></rect>
+      </data>
+      <graph id="n1">
+        <node id="n1::n2">
+          <data key="dName">Сближение</data>
+          <data key="dData">entry/
+Navigation.MoveToTarget()
+
+exit/
+Navigation.Stop()
+
+</data>
+          <data key="dGeometry">
+            <rect x="62" y="169" width="413" height="288"></rect>
+          </data>
+        </node>
+        <node id="n1::n3">
+          <data key="dName">Атака</data>
+          <data key="dData">entry/
+MassWeapon.Activate()
+
+exit/
+
+</data>
+          <data key="dGeometry">
+            <rect x="66" y="472" width="413" height="208"></rect>
+          </data>
+        </node>
+      </graph>
+    </node>
+    <node id="aixcxljxoczsfvsinzuq">
       <data key="dVertex">initial</data>
       <data key="dGeometry">
-        <point x="-1673" y="-838"></point>
+        <point x="-851" y="-58"></point>
       </data>
     </node>
-    <edge id="xahmjixxndyajicaidfv" source="n0" target="n3">
-      <data key="dData">TargetAnalyser.Lost/
-
-</data>
-      <data key="dColor">#EBC3D9</data>
-      <data key="dLabelGeometry">
-        <point x="-1178" y="-515"></point>
-      </data>
-    </edge>
-    <edge id="ibjwlpwztesdkheqymbe" source="n0" target="n3">
-      <data key="dData">TargetAnalyser.Destroyed/
-
-</data>
-      <data key="dColor">#4387C4</data>
-      <data key="dLabelGeometry">
-        <point x="-766.55" y="-694.7"></point>
-      </data>
-    </edge>
-    <edge id="jxzqcesbtbzpcqqlfsbl" source="n3" target="n0::n1">
+    <edge id="zawbqjiekdxmthgidvyh" source="n0" target="n1::n2">
       <data key="dData">Scaner.TargetAcquired/
 
 </data>
-      <data key="dColor">#5acfde</data>
+      <data key="dColor">#EF59B8</data>
       <data key="dLabelGeometry">
-        <point x="-1307.8499999999995" y="-184.30000000000032"></point>
+        <point x="-369" y="199"></point>
       </data>
     </edge>
-    <edge id="xuxnxwkdnkhwtehpqcak" source="n0::n1" target="n0::n2">
-      <data key="dData">Weapon.TargetEnteredRange/
+    <edge id="qhtlqalmgumwmivnzjhj" source="n1" target="n0">
+      <data key="dData">TargetAnalyser.Lost/
 
 </data>
-      <data key="dColor">#39BC32</data>
+      <data key="dColor">#4E942E</data>
       <data key="dLabelGeometry">
-        <point x="-732.0500000000001" y="-147.59999999999994"></point>
+        <point x="-163" y="69"></point>
       </data>
     </edge>
-    <edge id="qzwxffcdvmfzpncpvsae" source="n0::n2" target="n0::n1">
-      <data key="dData">Weapon.TargetLeftRange/
+    <edge id="zgveyytwyfmsfkpjlkdu" source="n1" target="n0">
+      <data key="dData">TargetAnalyser.Destroyed/
 
 </data>
-      <data key="dColor">#94DBBD</data>
+      <data key="dColor">#B09546</data>
       <data key="dLabelGeometry">
-        <point x="-471.0500000000002" y="-148.75000000000006"></point>
+        <point x="-500" y="443"></point>
       </data>
     </edge>
-    <edge id="uwbqqjnbyjovjbsfuhxq" source="ucqaehdydqejwjkobkax" target="n3"></edge>
+    <edge id="wklogclhnimeuxaypuen" source="n1::n2" target="n1::n3">
+      <data key="dData">MassWeapon.TargetEnteredRange/
+
+</data>
+      <data key="dColor">#043CD9</data>
+      <data key="dLabelGeometry">
+        <point x="38" y="614"></point>
+      </data>
+    </edge>
+    <edge id="edtgubimgntwbipbqtyl" source="n1::n3" target="n1::n2">
+      <data key="dData">MassWeapon.TargetLeftRange/
+
+</data>
+      <data key="dColor">#412AD8</data>
+      <data key="dLabelGeometry">
+        <point x="313" y="614"></point>
+      </data>
+    </edge>
+    <edge id="utxpzkhxadcevlemcmtt" source="aixcxljxoczsfvsinzuq" target="n0"></edge>
   </graph>
 </graphml>

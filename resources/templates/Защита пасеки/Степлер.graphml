@@ -18,7 +18,7 @@
     <node id="coreMeta">
       <data key="dNote">formal</data>
       <data key="dName">CGML_META</data>
-      <data key="dData">platform/ BearlogaDefend-Autoborder
+      <data key="dData">platform/ BearlogaDefend-Stapler
 
 standardVersion/ 1.0
 
@@ -36,7 +36,7 @@ exit/
 
 </data>
       <data key="dGeometry">
-        <rect x="-786" y="-492" width="517" height="770"></rect>
+        <rect x="-174" y="89" width="690" height="931"></rect>
       </data>
       <graph id="n0">
         <node id="n0::n1">
@@ -48,19 +48,20 @@ exit/
 
 </data>
           <data key="dGeometry">
-            <rect x="49.29999999999994" y="168.4499999999999" width="413" height="208"></rect>
+            <rect x="95.16000000000001" y="204.83000000000004" width="413" height="208"></rect>
           </data>
         </node>
         <node id="n0::n2">
           <data key="dName">Атака</data>
           <data key="dData">entry/
 Weapon.Activate()
+Navigation.Stop()
 
 exit/
 
 </data>
           <data key="dGeometry">
-            <rect x="56.599999999999994" y="443.95000000000016" width="413" height="208"></rect>
+            <rect x="67.78" y="544.1000000000003" width="590" height="208"></rect>
           </data>
         </node>
       </graph>
@@ -75,60 +76,69 @@ Scaner.Stop()
 
 </data>
       <data key="dGeometry">
-        <rect x="-1573" y="-738" width="413" height="288"></rect>
+        <rect x="-1012" y="-250" width="413" height="288"></rect>
       </data>
     </node>
-    <node id="ucqaehdydqejwjkobkax">
+    <node id="uatheliidyykfpfpllph">
       <data key="dVertex">initial</data>
       <data key="dGeometry">
-        <point x="-1673" y="-838"></point>
+        <point x="-1112" y="-350"></point>
       </data>
     </node>
-    <edge id="xahmjixxndyajicaidfv" source="n0" target="n3">
+    <edge id="ofomvvwijhmsykqxonot" source="n0" target="n3">
       <data key="dData">TargetAnalyser.Lost/
 
 </data>
-      <data key="dColor">#EBC3D9</data>
+      <data key="dColor">#A3EC14</data>
       <data key="dLabelGeometry">
-        <point x="-1178" y="-515"></point>
+        <point x="-103" y="-251"></point>
       </data>
     </edge>
-    <edge id="ibjwlpwztesdkheqymbe" source="n0" target="n3">
+    <edge id="ipiyttzwnkuhuhlodvfj" source="n0" target="n3">
       <data key="dData">TargetAnalyser.Destroyed/
 
 </data>
-      <data key="dColor">#4387C4</data>
+      <data key="dColor">#081277</data>
       <data key="dLabelGeometry">
-        <point x="-766.55" y="-694.7"></point>
+        <point x="-308.4700000000001" y="-194.79999999999993"></point>
       </data>
     </edge>
-    <edge id="jxzqcesbtbzpcqqlfsbl" source="n3" target="n0::n1">
+    <edge id="sfdqczcixsbemqhdkyiy" source="n3" target="n0::n2">
+      <data key="dData">Scaner.TargetAcquired[Weapon.TargetInRange == 1]/
+
+</data>
+      <data key="dColor">#A7ADE3</data>
+      <data key="dLabelGeometry">
+        <point x="-903.8899999999999" y="361.37000000000006"></point>
+      </data>
+    </edge>
+    <edge id="mcstwtqllpkxgcaxbyod" source="n3" target="n0::n1">
       <data key="dData">Scaner.TargetAcquired/
 
 </data>
-      <data key="dColor">#5acfde</data>
+      <data key="dColor">#484897</data>
       <data key="dLabelGeometry">
-        <point x="-1307.8499999999995" y="-184.30000000000032"></point>
+        <point x="-509.2200000000005" y="271.17"></point>
       </data>
     </edge>
-    <edge id="xuxnxwkdnkhwtehpqcak" source="n0::n1" target="n0::n2">
+    <edge id="fjsqpivkwidixhpywgzm" source="n0::n1" target="n0::n2">
       <data key="dData">Weapon.TargetEnteredRange/
 
 </data>
-      <data key="dColor">#39BC32</data>
+      <data key="dColor">#6C195E</data>
       <data key="dLabelGeometry">
-        <point x="-732.0500000000001" y="-147.59999999999994"></point>
+        <point x="-67.08000000000001" y="500.35"></point>
       </data>
     </edge>
-    <edge id="qzwxffcdvmfzpncpvsae" source="n0::n2" target="n0::n1">
+    <edge id="mslysceuialajvmbxwat" source="n0::n2" target="n0::n1">
       <data key="dData">Weapon.TargetLeftRange/
 
 </data>
-      <data key="dColor">#94DBBD</data>
+      <data key="dColor">#C709EA</data>
       <data key="dLabelGeometry">
-        <point x="-471.0500000000002" y="-148.75000000000006"></point>
+        <point x="193.47" y="481.79999999999984"></point>
       </data>
     </edge>
-    <edge id="uwbqqjnbyjovjbsfuhxq" source="ucqaehdydqejwjkobkax" target="n3"></edge>
+    <edge id="ijcvtvnwnqhiiksftvps" source="uatheliidyykfpfpllph" target="n3"></edge>
   </graph>
 </graphml>

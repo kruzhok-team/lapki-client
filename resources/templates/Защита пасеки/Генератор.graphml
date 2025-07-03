@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns">
+  <data key="gFormat">Cyberiada-GraphML-1.0</data>
+  <key attr.name="name" attr.type="string" for="node" id="dName"></key>
+  <key attr.name="data" attr.type="string" for="node" id="dData"></key>
+  <key attr.name="data" attr.type="string" for="edge" id="dData"></key>
+  <key attr.name="initial" attr.type="string" for="node" id="dInitial"></key>
+  <key for="edge" id="dGeometry"></key>
+  <key for="node" id="dGeometry"></key>
+  <key for="edge" id="dColor"></key>
+  <key for="node" id="dNote"></key>
+  <key for="node" id="dColor"></key>
+  <graph id="G">
+    <data key="dStateMachine"></data>
+    <data key="dGeometry">
+      <rect x="0" y="0" width="450" height="100"></rect>
+    </data>
+    <node id="coreMeta">
+      <data key="dNote">formal</data>
+      <data key="dName">CGML_META</data>
+      <data key="dData">platform/ BearlogaDefend-Generator
+
+standardVersion/ 1.0
+
+platformVersion/ 1.0
+
+lapkiVisual/ true
+
+</data>
+    </node>
+    <node id="n0">
+      <data key="dName">Скан</data>
+      <data key="dData">entry/
+Scaner.FindAllyByDps(max)
+
+exit/
+Scaner.Stop()
+
+</data>
+      <data key="dGeometry">
+        <rect x="-763" y="-534" width="413" height="288"></rect>
+      </data>
+    </node>
+    <node id="n1">
+      <data key="dName">Помощь</data>
+      <data key="dData">entry/
+Navigation.MoveToTarget()
+Charger.Activate()
+
+exit/
+Charger.Stop()
+
+</data>
+      <data key="dGeometry">
+        <rect x="-819" y="-145" width="590" height="288"></rect>
+      </data>
+    </node>
+    <node id="mswgbcyelqyffwfwasgk">
+      <data key="dVertex">initial</data>
+      <data key="dGeometry">
+        <point x="-863" y="-634"></point>
+      </data>
+    </node>
+    <edge id="xvluqmhseqkkyeaxkcyj" source="n0" target="n1">
+      <data key="dData">Scaner.TargetAcquired/
+
+</data>
+      <data key="dColor">#E14EF7</data>
+      <data key="dLabelGeometry">
+        <point x="-796" y="-296"></point>
+      </data>
+    </edge>
+    <edge id="vcgcszmklkoewwekoipi" source="n1" target="n0">
+      <data key="dData">Charger.TargetLeftZone/
+
+</data>
+      <data key="dColor">#89F026</data>
+      <data key="dLabelGeometry">
+        <point x="-442" y="-301"></point>
+      </data>
+    </edge>
+    <edge id="twqibasoeijydkzdqlfx" source="n1" target="n0">
+      <data key="dData">TargetAnalyser.Destroyed/
+
+</data>
+      <data key="dColor">#11A454</data>
+      <data key="dLabelGeometry">
+        <point x="-623" y="-301"></point>
+      </data>
+    </edge>
+    <edge id="bxfdlbipnbvesljeotsn" source="mswgbcyelqyffwfwasgk" target="n0"></edge>
+  </graph>
+</graphml>

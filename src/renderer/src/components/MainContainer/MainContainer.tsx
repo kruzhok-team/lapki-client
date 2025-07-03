@@ -173,7 +173,7 @@ export const MainContainer: React.FC = () => {
         </div>
         <div
           className={twMerge(
-            'absolute h-full top-0',
+            'absolute top-0 h-full',
             !!isMounted && 'top-[44.19px] h-[calc(100vh-44.19px)]'
           )}
           style={{ right: `${docWidth}px` }}

@@ -1,6 +1,12 @@
 import { EventSelection } from '../drawable';
 
-export type SelectedItemType = 'state' | 'transition' | 'event' | 'note' | 'component' | 'choice';
+export type SelectedItemType =
+  | 'state'
+  | 'transition'
+  | 'event'
+  | 'note'
+  | 'component'
+  | 'choiceState';
 // | 'final';
 
 export interface BaseSelectionData {

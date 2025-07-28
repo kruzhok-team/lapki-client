@@ -2641,8 +2641,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   addSelection = (args: SelectedItem) => {
     let isSelected = false;
-    console.trace('add selection');
-    console.log('add selection, before: ', structuredClone(this.selectedItems));
     switch (args.type) {
       case 'state': {
         isSelected = this.isSelected(args.data.smId, args.data.id, 'states');
@@ -2686,7 +2684,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if (!isSelected) {
       this.selectedItems.push(args);
     }
-    console.log('add selection, after: ', structuredClone(this.selectedItems));
   };
 
   selectEvent = (args: SelectEvent) => {
@@ -2754,9 +2751,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
    */
   removeSelection(exclude: number[] = []) {
     const newSelected: SelectedItem[] = [];
-    // debugger;
-    console.trace('RemoveSelection: ');
-    console.log('before: ', structuredClone(this.selectedItems));
     for (const itemIdx in this.selectedItems) {
       const item = this.selectedItems[itemIdx];
       if (exclude.includes(Number(itemIdx))) {
@@ -2831,7 +2825,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       }
     }
     this.selectedItems = newSelected;
-    console.log('after: ', structuredClone(this.selectedItems));
   }
 
   createTransitionFromController(args: { source: string; target: string }) {

@@ -280,7 +280,6 @@ export const useFlasherHooks = () => {
       }
       case 'blg-mb-device': {
         const device = new BlgMbDevice(flasherMessage.payload as BlgMbDevice);
-        console.log(device);
         addDevice(device);
         break;
       }

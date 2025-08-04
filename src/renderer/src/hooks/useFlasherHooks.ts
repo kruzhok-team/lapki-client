@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 
 import { Buffer } from 'buffer';
 
-import { ArduinoDevice, Device, MSDevice } from '@renderer/components/Modules/Device';
+import { ArduinoDevice, BlgMbDevice, Device, MSDevice } from '@renderer/components/Modules/Device';
 import { Flasher } from '@renderer/components/Modules/Flasher';
 import { ManagerMS } from '@renderer/components/Modules/ManagerMS';
 import {
@@ -279,7 +279,8 @@ export const useFlasherHooks = () => {
         break;
       }
       case 'blg-mb-device': {
-        const device = new Device(flasherMessage.payload as Device, 'blg-mb');
+        const device = new BlgMbDevice(flasherMessage.payload as BlgMbDevice);
+        console.log(device);
         addDevice(device);
         break;
       }

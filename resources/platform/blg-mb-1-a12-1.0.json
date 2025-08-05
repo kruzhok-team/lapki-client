@@ -171,13 +171,7 @@
       },
       "constructorParameters": {},
       "variables": {},
-      "buildFiles": [
-        "Notes.hpp",
-        "SpeakerSound.hpp",
-        "Sounds.hpp",
-        "SpeakerNote.hpp",
-        "CommonNote.hpp"
-      ],
+      "buildFiles": ["SpeakerSound.hpp", "Sounds.hpp", "SpeakerNote.hpp"],
       "importFiles": ["SpeakerNote.hpp"],
       "methods": {
         "setupNote": {
@@ -639,13 +633,13 @@
           ]
         },
         "setPattern": {
-          "alias": "Рисунок",
+          "alias": "Рисовать",
           "img": "tjc-ms/draw.svg",
           "description": "Изобразить рисунок на матрице.",
           "parameters": [
             {
               "name": "Рисунок",
-              "type": "Matrix5x7",
+              "type": "HalfMatrix5x7",
               "description": "Рисунок, который будет изображен на матрице."
             }
           ]
@@ -770,11 +764,11 @@
       "variables": {},
       "methods": {
         "setFrame": {
-          "img": "blg-mb/draw.svg",
+          "img": "tjc-ms/draw.svg",
           "parameters": [
             {
               "name": "Рисунок",
-              "type": "Matrix5x7",
+              "type": "HalfMatrix5x7",
               "description": "Рисунок, который будет изображен на матрице."
             },
             {
@@ -809,7 +803,7 @@
       "variables": {},
       "methods": {
         "draw": {
-          "img": "blg-mb/draw.svg",
+          "img": "tjc-ms/draw.svg",
           "parameters": [
             {
               "name": "Рисунок",

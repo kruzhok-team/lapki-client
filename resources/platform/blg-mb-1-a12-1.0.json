@@ -163,7 +163,7 @@
       "img": "blg-mb/beeperNote.svg",
       "signals": {
         "isNoteEnd": {
-          "img": "common/signalIsCalled.svg",
+          "img": "blg-mb/isSoundEnd.svg",
           "description": "Проигрывание звука только что завершилось.",
           "checkMethod": "isNoteEnd",
           "alias": "Звук сыгран"
@@ -259,7 +259,7 @@
       "img": "blg-mb/beeperSound.svg",
       "signals": {
         "isSoundEnd": {
-          "img": "common/signalIsCalled.svg",
+          "img": "blg-mb/isSoundEnd.svg",
           "description": "Проигрывание звука только что завершилось.",
           "checkMethod": "isSoundEnd",
           "alias": "Звук сыгран"

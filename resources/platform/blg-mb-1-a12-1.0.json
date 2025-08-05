@@ -158,8 +158,8 @@
     },
 
     "SpeakerNote": {
-      "name": "Пищалка-ноты",
-      "description": "Этот компонент управляет динамиком, и с его помощью воспроизводит некоторые ноты.",
+      "name": "Пищалка",
+      "description": "Этот компонент управляет динамиком, и с его помощью воспроизводит звуки с заданной частотой.",
       "img": "blg-mb/beeperNote.svg",
       "signals": {
         "isNoteEnd": {
@@ -181,7 +181,7 @@
       "importFiles": ["SpeakerNote.hpp"],
       "methods": {
         "setupNote": {
-          "img": "arduino/start.svg",
+          "img": "blg-mb/setupEvent.svg",
           "parameters": [
             {
               "name": "Нота",
@@ -219,7 +219,7 @@
           "description": "Настройка ноты"
         },
         "setupFrequency": {
-          "img": "arduino/start.svg",
+          "img": "blg-mb/setupFrequency.svg",
           "parameters": [
             {
               "name": "Частота",
@@ -247,10 +247,10 @@
           "img": "arduino/start.svg",
           "parameters": [],
           "alias": "Запустить звук",
-          "description": "Запустить таймер. После запуска раз в заданный интервал будет вызываться событие [таймаут]"
+          "description": "Запустить настроенный звук"
         },
         "stop": {
-          "img": "arduino/timer-stop.svg",
+          "img": "blg-mb/stop.svg",
           "parameters": [],
           "alias": "Остановить звук",
           "description": "Остановить воспроизведение звука"
@@ -262,10 +262,10 @@
     "SpeakerSound": {
       "name": "Пищалка-звуки",
       "description": "Этот компонент с помощью динамика воспроизводит встроенные звуки.",
-      "img": "blg-mb/bearIsOnBelly.svg",
+      "img": "blg-mb/beeperSound.svg",
       "signals": {
         "isSoundEnd": {
-          "img": "blg-mb/bearIsOnLeftSide.svg",
+          "img": "common/signalIsCalled.svg",
           "description": "Проигрывание звука только что завершилось.",
           "checkMethod": "isSoundEnd",
           "alias": "Звук сыгран"
@@ -276,8 +276,8 @@
       "buildFiles": ["Sounds.hpp", "SpeakerSound.hpp", "CommonSound.hpp"],
       "importFiles": ["SpeakerSound.hpp"],
       "methods": {
-        "play": {
-          "img": "blg-mb/bearIsUpsideDown.svg",
+        "setupSound": {
+          "img": "blg-mb/setupEvent.svg",
           "parameters": [
             {
               "name": "Звук",
@@ -309,11 +309,16 @@
               "optional": false
             }
           ],
+          "description": "Выбрать один из звуков и задать его продолжительность.",
+          "alias": "Выбрать звук"
+        },
+        "play": {
+          "img": "arduino/start.svg",
           "description": "Запускает воспроизведение выбраного звука.",
           "alias": "Запустить звук"
         },
         "stop": {
-          "img": "arduino/timer-stop.svg",
+          "img": "blg-mb/stop.svg",
           "parameters": [],
           "alias": "Остановить звук",
           "description": "Остановить воспроизведение звука"
@@ -325,10 +330,10 @@
     "PhotoDiode": {
       "name": "Нос",
       "description": "Нос мишки — это инфракрасный фотодиод. Он позволяет мишке реагировать на освещение, но только на инфракрасное, невидимое глазу, Его много в солнечном свете, но почти не бывает в искусственном. Мишка любит солнце!",
-      "img": "blg-mb/bearIsOnBelly.svg",
+      "img": "blg-mb/nose.svg",
       "signals": {
         "isThresholdValue": {
-          "img": "blg-mb/asdasd.svg",
+          "img": "blg-mb/threshold.svg",
           "description": "Настроить значение яркости, при превышении которого будет запущено событие",
           "checkMethod": "isThresholdValue",
           "parameters": [],
@@ -338,7 +343,7 @@
       "constructorParameters": {},
       "methods": {
         "setupEvent": {
-          "img": "blg-mb/bearIsOnBack.svg",
+          "img": "blg-mb/setupEvent.svg",
           "parameters": [
             {
               "name": "Порог",
@@ -351,12 +356,12 @@
           "description": "Продвинутая настройка события. Позволяет подавлять многократный запуск событий при «дрожании» яркости вокруг порогового значения."
         },
         "off": {
-          "img": "blg-mb/bearIsOnBack.svg",
+          "img": "arduino/switch-off.svg",
           "alias": "Отключить",
           "description": "Отключить ИК-фотодиод, чтобы он перестал вызывать сигналы."
         },
         "on": {
-          "img": "blg-mb/bearIsOnBack.svg",
+          "img": "arduino/switch-on.svg",
           "alias": "Включить",
           "description": "Включить ИК-фотодиод, чтобы он начал вызывать сигналы."
         }
@@ -369,7 +374,7 @@
           "alias": "Яркость"
         },
         "threshold": {
-          "img": "common/value.svg",
+          "img": "blg-mb/thresholdValue.svg",
           "type": "uint16_t",
           "description": "Пороговое значение для события. От 0 до 4095.",
           "alias": "Порог"
@@ -465,8 +470,8 @@
           "description": "Установить выбранные цвета для глаз.",
           "alias": "Выбрать из палитры"
         },
-        "setColorRight": {
-          "img": "blg-mb/setColor.svg",
+        "setColor": {
+          "img": "blg-mb/EyeRGBK.svg",
           "parameters": [
             {
               "name": "(Правый) Красный",
@@ -590,12 +595,12 @@
           "alias": "Настроить порог громкости"
         },
         "off": {
-          "img": "blg-mb/bearIsOnBack.svg",
+          "img": "arduino/switch-off.svg",
           "alias": "Отключить",
           "description": "Отключить микрофон, чтобы он перестал вызывать сигналы."
         },
         "on": {
-          "img": "blg-mb/bearIsOnBack.svg",
+          "img": "arduino/switch-on.svg",
           "alias": "Включить",
           "description": "Включить микрофон."
         }
@@ -645,27 +650,21 @@
             }
           ]
         },
-        "fill": {
-          "alias": "Зажечь всё",
-          "img": "tjc-ms/fill.svg",
-          "description": "Установить уровень яркости на все светодиоды.",
-          "parameters": [
-            {
-              "name": "Уровень",
-              "type": "uint8_t",
-              "description": "Уровень яркости, который будет установлен на каждый светодиод."
-            }
-          ]
-        },
         "changePatternBright": {
-          "alias": "Изменить яркость",
+          "alias": "Яркость матрицы",
           "img": "tjc-ms/fill.svg",
-          "description": "Изменить уровень яркость включенных светодиодов.",
+          "description": "Изменить яркость светодиодов на матрице.",
           "parameters": [
             {
-              "name": "Уровень",
+              "name": "Режим",
+              "type": ["OFF_LEDS", "ON_LEDS", "ALL_LEDS"],
+              "valueAlias": ["Выключенные", "Включенные", "Все"],
+              "description": "Яркость каких светодиодов будет изменена"
+            },
+            {
+              "name": "Яркость",
               "type": "uint8_t",
-              "description": "Уровень яркости, который будет установлен на каждый включенный светодиод."
+              "description": "Уровень яркости, который будет установлен."
             }
           ]
         },
@@ -692,7 +691,7 @@
     "MatrixMask": {
       "name": "Матрица-маска",
       "description": "Компонент для взаимодействия со светодиодной матрицей с маской.",
-      "img": "tjc-ms/matrix-mask.svg",
+      "img": "blg-mb/matrixMask.svg",
       "signals": {},
       "methods": {
         "maskPixel": {

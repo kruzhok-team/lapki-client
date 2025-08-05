@@ -612,7 +612,7 @@
       "methods": {
         "setPixel": {
           "alias": "Яркость светодиода",
-          "img": "tjc-ms/cellSet.svg",
+          "img": "blg-mb/cellSet.svg",
           "description": "Включить или выключить светодиод.",
           "parameters": [
             {

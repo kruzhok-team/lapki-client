@@ -8,7 +8,7 @@ import { Flasher } from '@renderer/components/Modules/Flasher';
 import { Modal } from '@renderer/components/UI';
 import { useFlasher } from '@renderer/store/useFlasher';
 
-import { ArduinoDevice, Device, MSDevice } from '../../Modules/Device';
+import { ArduinoDevice, BlgMbDevice, Device, MSDevice } from '../../Modules/Device';
 import { ClientStatus } from '../../Modules/Websocket/ClientStatus';
 
 interface DeviceListProps {
@@ -71,6 +71,14 @@ export const DeviceList: React.FC<DeviceListProps> = ({
           <p>Порт: {ArduinoDevice.portName}</p>
           <p>Контроллер: {ArduinoDevice.controller}</p>
           <p>Программатор: {ArduinoDevice.programmer}</p>
+        </div>
+      );
+    } else if (device.isBlgMbDevice()) {
+      const BlgMbDevice = device as BlgMbDevice;
+      return (
+        <div>
+          <p> {BlgMbDevice.name}</p>
+          <p>Версия: {BlgMbDevice.version}</p>
         </div>
       );
     } else {

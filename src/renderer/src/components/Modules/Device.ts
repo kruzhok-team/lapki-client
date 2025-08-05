@@ -93,3 +93,13 @@ export class MSDevice extends Device {
     return this.portNames[3];
   }
 }
+
+export class BlgMbDevice extends Device {
+  serialID: string;
+  version: string;
+  constructor(device: BlgMbDevice) {
+    super(device, 'blg-mb');
+    this.serialID = device.serialID;
+    this.version = device.version;
+  }
+}

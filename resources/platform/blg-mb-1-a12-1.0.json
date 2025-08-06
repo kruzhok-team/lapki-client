@@ -157,7 +157,7 @@
       "variables": {}
     },
 
-    "SpeakerNote": {
+    "Speaker": {
       "name": "Пищалка",
       "description": "Этот компонент управляет динамиком, и с его помощью воспроизводит звуки с заданной частотой.",
       "img": "blg-mb/beeperNote.svg",
@@ -171,8 +171,8 @@
       },
       "constructorParameters": {},
       "variables": {},
-      "buildFiles": ["SpeakerSound.hpp", "Sounds.hpp", "SpeakerNote.hpp"],
-      "importFiles": ["SpeakerNote.hpp"],
+      "buildFiles": ["SpeakerSound.hpp", "Sounds.hpp", "Speaker.hpp"],
+      "importFiles": ["Speaker.hpp"],
       "methods": {
         "setupNote": {
           "img": "blg-mb/setupEvent.svg",
@@ -192,6 +192,20 @@
                 "Note_a",
                 "Note_b",
                 "Note_h"
+              ],
+              "valueAlias": [
+                "До",
+                "До#",
+                "Ре",
+                "Ре#",
+                "Ми",
+                "Фа",
+                "Фа#",
+                "Соль",
+                "Соль#",
+                "Ля",
+                "Ля#",
+                "Си"
               ],
               "description": "Проигрываемая нота.",
               "optional": false
@@ -218,7 +232,7 @@
             {
               "name": "Частота",
               "type": "uint16_t",
-              "description": "Частота звука.",
+              "description": "Частота звука (Гц). От 0 до 24000.",
               "optional": false
             },
             {
@@ -234,8 +248,8 @@
               "optional": false
             }
           ],
-          "alias": "Выбрать частоту",
-          "description": "Настройка звука."
+          "alias": "Настроить частоту",
+          "description": "Тонкая настройка звука."
         },
         "play": {
           "img": "arduino/start.svg",
@@ -328,7 +342,7 @@
       "signals": {
         "isThresholdValue": {
           "img": "blg-mb/threshold.svg",
-          "description": "Настроить значение яркости, при превышении которого будет запущено событие",
+          "description": "Был достигнут порог яркости",
           "checkMethod": "isThresholdValue",
           "parameters": [],
           "alias": "Пороговое значение"
@@ -342,16 +356,16 @@
             {
               "name": "Порог",
               "type": "uint16_t",
-              "description": "Пороговое значение для события. От 0 до 4095.",
+              "description": "Пороговый уровень яркости, при котором будет вызвано событие. От 0 до 4095.",
               "optional": false
             }
           ],
-          "alias": "Настроить событие",
-          "description": "Продвинутая настройка события. Позволяет подавлять многократный запуск событий при «дрожании» яркости вокруг порогового значения."
+          "alias": "Настроить яркость",
+          "description": "Настроить уровень яркости, при котором будет вызвано событие «Порог»."
         },
         "off": {
           "img": "arduino/switch-off.svg",
-          "alias": "Отключить",
+          "alias": "Выключить",
           "description": "Отключить ИК-фотодиод, чтобы он перестал вызывать сигналы."
         },
         "on": {
@@ -563,12 +577,12 @@
       "variables": {},
       "methods": {
         "setCooldown": {
-          "img": "blg-mb/volumeThreshold.svg",
+          "img": "blg-mb/setCooldown.svg",
           "parameters": [
             {
               "name": "Интервал срабатывания",
               "type": "uint16_t",
-              "description": "Интервал срабатывания (в миллисекундах)",
+              "description": "Интервал срабатывания (мс)",
               "optional": false
             }
           ],
@@ -590,7 +604,7 @@
         },
         "off": {
           "img": "arduino/switch-off.svg",
-          "alias": "Отключить",
+          "alias": "Выключить",
           "description": "Отключить микрофон, чтобы он перестал вызывать сигналы."
         },
         "on": {
@@ -613,7 +627,7 @@
         "setPixel": {
           "alias": "Яркость светодиода",
           "img": "blg-mb/cellSet.svg",
-          "description": "Включить или выключить светодиод.",
+          "description": "Настроить яркость светодиода.",
           "parameters": [
             {
               "name": "Строка",
@@ -628,7 +642,7 @@
             {
               "name": "Яркость",
               "type": "uint8_t",
-              "description": "Яркость светодиода."
+              "description": "Яркость светодиода. От 0 до 100."
             }
           ]
         },
@@ -647,7 +661,7 @@
         "changePatternBright": {
           "alias": "Яркость матрицы",
           "img": "tjc-ms/fill.svg",
-          "description": "Изменить яркость светодиодов на матрице.",
+          "description": "Изменить яркость группы светодиодов на матрице.",
           "parameters": [
             {
               "name": "Режим",
@@ -658,7 +672,7 @@
             {
               "name": "Яркость",
               "type": "uint8_t",
-              "description": "Уровень яркости, который будет установлен."
+              "description": "Уровень яркости, который будет установлен на светодиоды. От 0 до 100"
             }
           ]
         },
@@ -753,7 +767,7 @@
       "img": "blg-mb/matrixAnimation.svg",
       "signals": {
         "AnimationFinished": {
-          "img": "arduino/timer-start.svg",
+          "img": "blg-mb/isSoundEnd.svg",
           "description": "Переход к финальной картинке завершён",
           "checkMethod": "AnimationFinished",
           "parameters": [],
@@ -778,7 +792,7 @@
             }
           ],
           "description": "Установить рисунок, к которой нужно перейти.",
-          "alias": "Установить"
+          "alias": "Установить рисунок"
         }
       },
       "buildFiles": [
@@ -813,7 +827,7 @@
             }
           ],
           "description": "Изобразить рисунок на матрице.",
-          "alias": "Установить"
+          "alias": "Установить рисунок"
         }
       },
       "buildFiles": [
@@ -844,6 +858,7 @@
           "parameters": [
             {
               "name": "Затравка",
+              "description": "Число, лежащее в основе генератора чисел и определяющее все последующие генерации.",
               "type": "unsigned long"
             }
           ],

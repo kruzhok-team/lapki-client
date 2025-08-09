@@ -22,8 +22,7 @@ export class Events {
 
   private textArray = [] as string[];
   // private textEvents = [] as string[];
-
-  selection?: EventSelection;
+  selection: EventSelection[] = [];
 
   minEventRow = 3;
   minWidth: number;
@@ -73,6 +72,7 @@ export class Events {
     // TODO: здесь рассчитываем eventRowLength и считаем ряды по нему
     // но в таком случае контейнер может начать «скакать»
     this.data.map((ev) => {
+      if (!ev) return;
       if (ev.condition) {
         eventRows += 1;
       }
@@ -135,14 +135,23 @@ export class Events {
     return undefined;
   }
 
-  handleClick(p: Point) {
+  handleClick(p: Point, add?: boolean): [boolean, EventSelection] | undefined {
     const idx = this.calculatePictoIndex(p);
-    if (!idx) {
-      this.selection = undefined;
-      return undefined;
+    if (!add) {
+      this.selection = [];
     }
-    this.selection = idx;
-    return idx;
+    if (idx !== undefined) {
+      const selected = this.isSelected(idx.eventIdx, idx.actionIdx);
+      if (selected === -1) {
+        this.selection?.push(idx);
+        return [true, idx];
+      } else {
+        this.unselectAction(idx);
+        return [false, idx];
+      }
+    }
+
+    return undefined;
   }
 
   handleDoubleClick(p: Point) {
@@ -155,6 +164,39 @@ export class Events {
     }
 
     this.drawImageEvents(ctx);
+  }
+
+  // Remove action from selection array.
+  unselectAction(selection: EventSelection) {
+    const idx = this.isSelected(selection.eventIdx, selection.actionIdx);
+    if (idx !== -1) {
+      this.selection.splice(idx, 1);
+      return true;
+    }
+
+    return false;
+  }
+
+  // Find all actions and event indexes at array.
+  private findEvent(eventIdx: number): number[] {
+    return this.selection
+      .map((selection, idx) => {
+        if (selection.eventIdx === eventIdx) {
+          return idx;
+        }
+        return -1;
+      })
+      .filter((idx) => idx !== -1);
+  }
+
+  // Remove event and all actions related with it
+  unselectEvent(selection: EventSelection) {
+    const indexes = this.findEvent(selection.eventIdx);
+    if (indexes.length === 0) return false;
+
+    this.selection = this.selection.filter((_, idx) => !indexes.includes(idx));
+
+    return true;
   }
 
   //Прорисовка событий в блоках состояния
@@ -181,8 +223,8 @@ export class Events {
     this.data.map((events, eventIdx) => {
       const eX = baseX;
       const eY = baseY + (eventRow * yDx) / this.app.controller.scale;
-      if (typeof this.selection !== 'undefined') {
-        if (this.selection.eventIdx == eventIdx && this.selection.actionIdx == null) {
+      if (this.selection.length > 0) {
+        if (this.isSelected(eventIdx, null) !== -1) {
           this.picto.drawCursor(ctx, eX, eY);
         }
       }
@@ -217,7 +259,7 @@ export class Events {
           const aX = baseX + ((this.picto.eventWidth + 5) * ax) / this.picto.scale;
           const aY = baseY + (ay * yDx) / this.app.controller.scale;
           if (typeof this.selection !== 'undefined') {
-            if (this.selection.eventIdx == eventIdx && this.selection.actionIdx == actIdx) {
+            if (this.isSelected(eventIdx, actIdx) !== -1) {
               this.picto.drawCursor(ctx, aX, aY);
             }
           }
@@ -230,6 +272,12 @@ export class Events {
     });
 
     ctx.closePath();
+  }
+
+  isSelected(eventIdx: number, actionIdx: number | null) {
+    return this.selection.findIndex(
+      (selection) => selection.eventIdx === eventIdx && selection.actionIdx === actionIdx
+    );
   }
 
   private drawTextEvents(ctx: CanvasRenderingContext2D) {

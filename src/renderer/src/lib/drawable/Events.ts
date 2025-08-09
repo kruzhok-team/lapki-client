@@ -73,7 +73,7 @@ export class Events {
     // TODO: здесь рассчитываем eventRowLength и считаем ряды по нему
     // но в таком случае контейнер может начать «скакать»
     this.data.map((ev) => {
-      if (ev.condition) {
+      if (ev.condition && Array.isArray(ev.do) && ev.do.length > 0) {
         eventRows += 1;
       }
       eventRows += Math.max(1, Math.ceil(ev.do.length / this.minEventRow));
@@ -210,7 +210,7 @@ export class Events {
         );
       }
 
-      if (typeof events.do !== 'string') {
+      if (typeof events.do !== 'string' && events.do.length > 0) {
         events.do.forEach((act, actIdx) => {
           const ax = 1 + (actIdx % eventRowLength);
           const ay = eventRow + Math.floor(actIdx / eventRowLength) + (events.condition ? 1 : 0);
@@ -226,7 +226,8 @@ export class Events {
       }
 
       eventRow +=
-        Math.max(1, Math.ceil(events.do.length / eventRowLength)) + (events.condition ? 1 : 0);
+        Math.max(1, Math.ceil(events.do.length / eventRowLength)) +
+        (events.condition && Array.isArray(events.do) && events.do.length > 0 ? 1 : 0);
     });
 
     ctx.closePath();

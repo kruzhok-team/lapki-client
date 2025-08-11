@@ -8,7 +8,7 @@ import { Rectangle } from '@renderer/lib/types/graphics';
 import theme, { getColor } from '@renderer/theme';
 import { getDefaultRange, normalizeRangeValue } from '@renderer/utils';
 
-import { DrawFunctionParameters } from '../data/PlatformManager';
+import { DrawFunction, DrawFunctionParameters } from '../data/PlatformManager';
 import { drawImageFit, preloadImagesMap } from '../utils';
 import { drawText, getTextWidth } from '../utils/text';
 
@@ -113,6 +113,8 @@ export type PictoProps = {
   bgColor?: string;
   fgColor?: string;
   opacity?: number;
+  drawParamWindow?: boolean;
+  paramWindowRound?: number | number[];
   /*
    Изменение размеров самой пиктограммы до учета масштаба канваса (просто чтобы поменьше пиктограмму нарисовать можно было)
   */
@@ -255,7 +257,7 @@ export class Picto {
     bgColor?: string,
     fgColor?: string,
     opacity?: number,
-    round?: number,
+    round?: number | number[],
     lineWidth?: number,
     isScaled = false
   ) {
@@ -285,9 +287,10 @@ export class Picto {
     fgColor?: string,
     opacity?: number,
     eventWidth: number = this.eventWidth,
-    eventHeight: number = this.eventHeight
+    eventHeight: number = this.eventHeight,
+    round?: number | number[]
   ) {
-    this.drawRect(ctx, x, y, eventWidth, eventHeight, bgColor, fgColor, opacity);
+    this.drawRect(ctx, x, y, eventWidth, eventHeight, bgColor, fgColor, opacity, round);
   }
 
   drawCursor(
@@ -368,17 +371,10 @@ export class Picto {
     x: number,
     y: number,
     ps: PictoProps,
-    parameters?: DrawFunctionParameters,
-    drawCustomParameter?: (
-      ctx: CanvasRenderingContext2D,
-      x: number,
-      y: number,
-      parameters: DrawFunctionParameters,
-      bgColor: string,
-      fgColor: string
-    ) => void
+    parameters: DrawFunction[]
   ) {
     const scalePictoSize = ps.scalePictoSize ?? 1;
+    const parameterHeight = 14 / this.scale;
     const eventWidth = this.eventWidth / scalePictoSize;
     const eventHeight: number = this.eventHeight / scalePictoSize;
     const iconSize: number = this.iconSize / scalePictoSize;
@@ -393,7 +389,17 @@ export class Picto {
     const opacity = ps.opacity ?? 1.0;
 
     // Рамка
-    this.drawBorder(ctx, x, y, bgColor, fgColor, opacity, eventWidth, eventHeight);
+    this.drawBorder(
+      ctx,
+      x,
+      y,
+      bgColor,
+      fgColor,
+      opacity,
+      eventWidth,
+      eventHeight,
+      ps.paramWindowRound
+    );
 
     if (!rightIcon) return;
     if (!leftIcon) {
@@ -439,41 +445,82 @@ export class Picto {
         height: iconSize,
       });
     }
-    if (parameters) {
-      if (drawCustomParameter) {
-        drawCustomParameter(ctx, x, y, parameters, bgColor, fgColor);
-        return;
-      }
+    const parameterWindowX = x;
+    const parameterWindowY = y + eventHeight / this.scale;
+    if (ps.drawParamWindow) {
+      this.drawParametersWindow(
+        ctx,
+        parameterWindowX,
+        parameterWindowY,
+        parameterHeight,
+        eventWidth / this.scale
+      );
+    }
+    for (const drawFunction of parameters) {
+      // if (drawCustomParameter) {
+      //   drawCustomParameter(ctx, x, y, parameters, bgColor, fgColor);
+      //   return;
+      // }
 
-      if (typeof parameters.values === 'string') {
-        this.drawParameter(ctx, x, y, parameters.values, bgColor, fgColor);
+      if (typeof drawFunction.parameters.values === 'string') {
+        this.drawParameter(
+          ctx,
+          parameterWindowX,
+          parameterWindowY,
+          parameterHeight,
+          drawFunction.parameters.values,
+          bgColor,
+          fgColor
+        );
       }
     }
+  }
+
+  drawParametersWindow(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    height: number,
+    width: number,
+    fgColor?: string
+  ) {
+    const bgColor: string = '#5f5f5f';
+    ctx.save();
+    ctx.beginPath();
+
+    ctx.lineWidth = 0.5;
+    ctx.fillStyle = bgColor;
+    ctx.strokeStyle = fgColor ?? '#fff';
+    ctx.roundRect(x, y, width, height, [0, 0, 6 / this.scale, 6 / this.scale]);
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
   }
 
   drawParameter(
     ctx: CanvasRenderingContext2D,
     x: number,
     y: number,
+    height: number,
     parameter: string,
     bgColor: string,
     fgColor: string
   ) {
     const baseFontSize = 12;
-    const cy = (this.eventHeight - baseFontSize) / this.scale;
-    const cx = (this.eventWidth - 5) / this.scale;
+    const cy = height - baseFontSize / this.scale;
+    const cx = 6 / this.scale;
     const fontSize = baseFontSize / this.scale;
     ctx.save();
     ctx.font = `${fontSize}px/0 monospace`;
     ctx.fillStyle = fgColor;
     ctx.strokeStyle = bgColor;
     ctx.textBaseline = 'hanging';
-    ctx.textAlign = 'end';
+    ctx.textAlign = 'start';
     ctx.lineWidth = 0.5 / this.scale;
 
     ctx.strokeText(parameter, x + cx, y + cy);
     ctx.fillText(parameter, x + cx, y + cy);
-
+    // TODO: убрать save/restore.
     ctx.restore();
   }
 

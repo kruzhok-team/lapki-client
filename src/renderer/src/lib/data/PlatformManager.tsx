@@ -12,6 +12,18 @@ export type DrawFunctionParameters = {
   range?: Range;
 };
 
+export type DrawFunction = {
+  parameters: DrawFunctionParameters;
+  drawCustomParameter?: (
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    parameters: DrawFunctionParameters,
+    bgColor: string,
+    fgColor: string
+  ) => void;
+};
+
 export type DrawFunctionType = (
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -351,11 +363,15 @@ export class PlatformManager {
         leftIcon,
         rightIcon,
       },
-      {
-        values: parameter,
-        range,
-      },
-      drawFunction
+      [
+        {
+          parameters: {
+            values: parameter,
+            range,
+          },
+          drawCustomParameter: drawFunction,
+        },
+      ]
     );
   }
 
@@ -365,6 +381,7 @@ export class PlatformManager {
     const bgColor = '#5f5f5f';
     const fgColor = '#fff';
     const opacity = alpha ?? 1.0;
+    const paramWindowRound = [6 / this.picto.scale, 6 / this.picto.scale, 0, 0];
     let argQuery: string = '';
     const compoData = this.resolveComponent(ac.component);
     const component = compoData.component;
@@ -383,45 +400,55 @@ export class PlatformManager {
       }
     }
 
-    let parameter: any | undefined = undefined;
-    let drawFunction: DrawFunctionType | undefined = undefined;
-    let range: Range | undefined = undefined;
+    const drawParameterFunctions: DrawFunction[] = [];
     if (argQuery && ac.args && parameterList) {
-      const paramValue = ac.args[argQuery];
-      if (paramValue === undefined || typeof paramValue.value === 'undefined') {
-        if (parameterList[0].optional) {
-          parameter = '';
-        } else {
-          parameter = '?!';
-        }
-      } else if (typeof paramValue.value === 'string') {
-        if (Array.isArray(parameterList[0].type) && parameterList[0].valueAlias !== undefined) {
-          const valueIndex = parameterList[0].type.findIndex(
-            (option) => paramValue.value === option
-          );
-          if (valueIndex !== -1) {
-            parameter = parameterList[0].valueAlias[valueIndex];
+      for (const param of parameterList) {
+        let drawFunction: DrawFunctionType | undefined = undefined;
+        let parameter: any | undefined = undefined;
+        let range: Range | undefined = undefined;
+        const paramValue = ac.args[argQuery];
+        if (paramValue === undefined || typeof paramValue.value === 'undefined') {
+          if (param.optional) {
+            parameter = '';
           } else {
             parameter = '?!';
           }
+        } else if (typeof paramValue.value === 'string') {
+          if (Array.isArray(param.type) && param.valueAlias !== undefined) {
+            const valueIndex = param.type.findIndex((option) => paramValue.value === option);
+            if (valueIndex !== -1) {
+              parameter = param.valueAlias[valueIndex];
+            } else {
+              parameter = '?!';
+            }
+          } else {
+            parameter =
+              paramValue.value.length > 15
+                ? paramValue.value.slice(0, 12) + '...'
+                : paramValue.value;
+          }
+        } else if (typeof parameterList[0].type === 'string' && isMatrix(parameterList[0].type)) {
+          parameter = paramValue.value;
+          range = parameterList[0].range ?? getDefaultRange();
+          drawFunction = this.picto.drawMatrix;
+        } else if (isVariable(paramValue.value)) {
+          drawFunction = this.drawParameterPicto;
+          parameter = paramValue.value;
         } else {
-          parameter =
-            paramValue.value.length > 15 ? paramValue.value.slice(0, 12) + '...' : paramValue.value;
+          // FIXME
+          console.log(['PlatformManager.drawAction', 'Variable!', ac]);
+          parameter = '???';
         }
-      } else if (typeof parameterList[0].type === 'string' && isMatrix(parameterList[0].type)) {
-        parameter = paramValue.value;
-        range = parameterList[0].range ?? getDefaultRange();
-        drawFunction = this.picto.drawMatrix;
-      } else if (isVariable(paramValue.value)) {
-        drawFunction = this.drawParameterPicto;
-        parameter = paramValue.value;
-      } else {
-        // FIXME
-        console.log(['PlatformManager.drawAction', 'Variable!', ac]);
-        parameter = '???';
+        drawParameterFunctions.push({
+          parameters: {
+            values: parameter,
+            range,
+          },
+          drawCustomParameter: drawFunction,
+        });
       }
     }
-
+    debugger;
     this.picto.drawPicto(
       ctx,
       x,
@@ -432,12 +459,10 @@ export class PlatformManager {
         leftIcon,
         rightIcon,
         opacity,
+        drawParamWindow: true,
+        paramWindowRound,
       },
-      {
-        values: parameter,
-        range,
-      },
-      drawFunction
+      drawParameterFunctions
     );
   }
 
@@ -447,7 +472,7 @@ export class PlatformManager {
     y: number,
     parameters: DrawFunctionParameters
   ) => {
-    const { values } = parameters;
+    const { values } = parameters[0];
     const compoData = this.resolveComponent(values.component);
     const component = compoData.component;
     const leftIcon = {
@@ -456,12 +481,22 @@ export class PlatformManager {
     };
     const rightIcon = this.getVariableIcon(component, values.method);
 
-    this.picto.drawPicto(ctx, x + 50 / this.picto.scale, y + 20 / this.picto.scale, {
-      leftIcon,
-      rightIcon,
-      opacity: 0.7,
-      scalePictoSize: 2,
-    });
+    this.picto.drawPicto(
+      ctx,
+      x + 50 / this.picto.scale,
+      y + 20 / this.picto.scale,
+      {
+        leftIcon,
+        rightIcon,
+        opacity: 0.7,
+        scalePictoSize: 2,
+      },
+      [
+        {
+          parameters,
+        },
+      ]
+    );
   };
 
   measureFullCondition(ac: Condition): number {
@@ -544,13 +579,19 @@ export class PlatformManager {
         }
       }
 
-      this.picto.drawPicto(ctx, x, y, {
-        bgColor,
-        fgColor,
-        leftIcon,
-        rightIcon,
-        opacity,
-      });
+      this.picto.drawPicto(
+        ctx,
+        x,
+        y,
+        {
+          bgColor,
+          fgColor,
+          leftIcon,
+          rightIcon,
+          opacity,
+        },
+        []
+      );
       return;
     }
     // бинарные операторы (сравнения)

@@ -77,12 +77,22 @@ export class Events {
 
   calculatePictoIndex(p: Point): EventSelection | undefined {
     let eventIdx = -1;
+    this.calculatePictosPosition();
     for (const row of this.pictos) {
       let actIdx = -1;
       for (const picto of row) {
         if (picto.type === 'event') {
           eventIdx += 1;
-          if (isPointInRectangle(picto, p)) {
+          if (
+            isPointInRectangle(
+              {
+                ...picto,
+                width: picto.width / this.picto.scale,
+                height: picto.height / this.picto.scale,
+              },
+              p
+            )
+          ) {
             return {
               eventIdx,
               actionIdx: null,
@@ -92,7 +102,16 @@ export class Events {
         }
         if (picto.type === 'action') {
           actIdx += 1;
-          if (isPointInRectangle(picto, p)) {
+          if (
+            isPointInRectangle(
+              {
+                ...picto,
+                width: picto.width / this.picto.scale,
+                height: picto.height / this.picto.scale,
+              },
+              p
+            )
+          ) {
             return {
               eventIdx,
               actionIdx: actIdx,
@@ -175,8 +194,8 @@ export class Events {
           type: 'condition',
           x: eX + (this.picto.eventWidth + 5) / this.picto.scale,
           y: eY,
-          width: this.picto.eventWidth / this.picto.scale,
-          height: this.picto.pictoHeight / this.picto.scale,
+          width: this.picto.eventWidth * this.picto.scale,
+          height: this.picto.pictoHeight * this.picto.scale,
         });
       }
       let currentActionY = eventRow + (events.condition ? 1 : 0);
@@ -198,8 +217,8 @@ export class Events {
               type: 'action',
               x: currentActionCoordX,
               y: aY,
-              width: pictoDimensions.width,
-              height: pictoDimensions.height,
+              width: pictoDimensions.width * this.picto.scale,
+              height: pictoDimensions.height * this.picto.scale,
             });
             currentActionCoordX +=
               pictoDimensions.width +
@@ -218,8 +237,8 @@ export class Events {
               type: 'action',
               x: currentActionCoordX,
               y: aY,
-              width: pictoDimensions.width,
-              height: pictoDimensions.height,
+              width: pictoDimensions.width * this.picto.scale,
+              height: pictoDimensions.height * this.picto.scale,
             });
             currentActionCoordX +=
               pictoDimensions.width +
@@ -266,7 +285,7 @@ export class Events {
     }
     this.data.map((events, eventIdx) => {
       const eX = baseX;
-      const eY = baseY + (eventRow * yDx) / this.app.controller.scale;
+      const eY = baseY + (eventRow * yDx) / this.picto.scale;
       if (typeof this.selection !== 'undefined') {
         if (this.selection.eventIdx == eventIdx && this.selection.actionIdx == null) {
           this.picto.drawCursor(ctx, eX, eY);
@@ -317,15 +336,12 @@ export class Events {
                   ctx,
                   currentActionCoordX,
                   aY,
-                  pictoDimensions.width + (this.picto.PARAMETERS_OFFSET_X * 2) / this.picto.scale,
+                  pictoDimensions.width * this.picto.scale,
                   this.picto.eventHeight
                 );
               }
             }
-            currentActionCoordX +=
-              pictoDimensions.width +
-              5 / this.picto.scale +
-              (this.picto.PARAMETERS_OFFSET_X * 2) / this.picto.scale;
+            currentActionCoordX += pictoDimensions.width + 5 / this.picto.scale;
           } else {
             currentActionCoordX = baseX + (this.picto.eventWidth + 5) / this.picto.scale;
             currentActionY += 1;
@@ -341,15 +357,12 @@ export class Events {
                   ctx,
                   currentActionCoordX,
                   aY,
-                  pictoDimensions.width + (this.picto.PARAMETERS_OFFSET_X * 2) / this.picto.scale,
+                  pictoDimensions.width,
                   this.picto.eventHeight
                 );
               }
             }
-            currentActionCoordX +=
-              pictoDimensions.width +
-              5 / this.picto.scale +
-              (this.picto.PARAMETERS_OFFSET_X * 2) / this.picto.scale;
+            currentActionCoordX += pictoDimensions.width + 5 / this.picto.scale;
           }
         });
       }

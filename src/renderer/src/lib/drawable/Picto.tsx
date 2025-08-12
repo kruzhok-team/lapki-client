@@ -383,16 +383,15 @@ export class Picto {
   ): Dimensions {
     const scalePictoSize = ps.scalePictoSize ?? 1;
     const offsetParametersX = 5;
-    const parameterHeight = 14 / this.scale;
+    const parameterHeight = 18 / this.scale;
     const parametersDimensions = this.calculateParametersDimensions(parameters);
     parametersDimensions.width += (offsetParametersX * 2) / this.scale;
-    const eventWidth = this.eventWidth / scalePictoSize;
-    // Math.max(
-    // parametersDimensions.width
-    // );
+    const eventWidth = Math.max(
+      this.eventWidth / scalePictoSize,
+      parametersDimensions.width * this.scale
+    );
     const eventHeight: number = this.eventHeight / scalePictoSize;
     const iconSize: number = this.iconSize / scalePictoSize;
-    const iconHOffset: number = this.iconHOffset / scalePictoSize;
     const iconVOffset: number = this.iconVOffset / scalePictoSize;
     const separatorVOffset: number = this.separatorVOffset / scalePictoSize;
     const labelFontSize = 13 / scalePictoSize;
@@ -435,7 +434,7 @@ export class Picto {
         ctx,
         leftIcon,
         {
-          x: x + iconHOffset / this.scale,
+          x: x + (eventWidth / 4 - iconSize / 2) / this.scale,
           y: y + iconVOffset / this.scale,
           width: iconSize,
           height: iconSize,
@@ -453,7 +452,7 @@ export class Picto {
       ctx.stroke();
 
       this.drawImage(ctx, rightIcon, {
-        x: x + (eventWidth - iconSize - iconHOffset) / this.scale,
+        x: x + ((eventWidth / 4) * 3 - iconSize / 2) / this.scale,
         y: y + iconVOffset / this.scale,
         width: iconSize,
         height: iconSize,
@@ -602,16 +601,16 @@ export class Picto {
     offsetX = 6
   ): number {
     const baseFontSize = 12;
-    const cy = height - baseFontSize / this.scale;
-    const cx = offsetX / this.scale;
     const fontSize = baseFontSize / this.scale;
+    const cy = height / 2;
+    const cx = offsetX / this.scale;
     ctx.save();
     ctx.font = `${fontSize}${this.TEXT_FONT}`;
     const textWidth = getTextWidth(parameter, ctx.font);
 
     ctx.fillStyle = fgColor;
     ctx.strokeStyle = bgColor;
-    ctx.textBaseline = 'hanging';
+    ctx.textBaseline = 'middle';
     ctx.textAlign = 'start';
     ctx.lineWidth = 0.5 / this.scale;
     ctx.strokeText(parameter, x + cx, y + cy);

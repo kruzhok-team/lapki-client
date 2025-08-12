@@ -503,10 +503,21 @@ export class Picto {
             parametersDrawStart + parametersWidth,
             parameterWindowY,
             parameterHeight,
-            ', ',
+            ',',
             bgColor,
             fgColor,
             0
+          );
+          parametersWidth += this.drawParameter(
+            ctx,
+            parametersDrawStart + parametersWidth,
+            parameterWindowY,
+            parameterHeight,
+            ' ',
+            bgColor,
+            fgColor,
+            0,
+            8
           );
         }
       }
@@ -601,9 +612,9 @@ export class Picto {
     parameter: string,
     bgColor: string,
     fgColor: string,
-    offsetX = 6
+    offsetX = 6,
+    baseFontSize = 12
   ): number {
-    const baseFontSize = 12;
     const fontSize = baseFontSize / this.scale;
     const cy = height / 2;
     const cx = offsetX / this.scale;

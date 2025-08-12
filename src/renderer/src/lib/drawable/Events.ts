@@ -39,7 +39,6 @@ export class Events {
       height: this.minHeight,
     };
     this.calculatePictosPosition();
-    console.log(this.currentEventRows);
     this.update();
   }
 
@@ -77,54 +76,30 @@ export class Events {
   }
 
   calculatePictoIndex(p: Point): EventSelection | undefined {
-    const { x, y, width } = this.parent.drawBounds;
-    const titleHeight = this.parent.titleHeight / this.app.controller.scale;
-
-    const eventRowLength = Math.max(3, Math.floor((width - 30) / (this.picto.eventWidth + 5)) - 1);
-
-    const px = 15 / this.app.controller.scale;
-    const py = 10 / this.app.controller.scale;
-    const baseX = x + px;
-    const baseY = y + titleHeight + py;
-    const yDx = this.picto.eventHeight + 10;
-
-    const pW = this.picto.eventWidth / this.picto.scale;
-    const pH = this.picto.eventHeight / this.picto.scale;
-
-    let eventRow = 0;
-
-    for (let eventIdx = 0; eventIdx < this.data.length; eventIdx++) {
-      // TODO: нажатие в пустое поле в этой области воспринимать
-      //       как {eventIdx, actionIdx: -1},
-      //       тогда на двойной клик будет добавить действие.
-      const event = this.data[eventIdx];
-      const triggerRect = {
-        x: baseX,
-        y: baseY + (eventRow * yDx) / this.app.controller.scale,
-        width: pW,
-        height: pH,
-      };
-      if (isPointInRectangle(triggerRect, p)) {
-        return { eventIdx, actionIdx: null };
-      }
-
-      eventRow += event.condition ? 1 : 0;
-
-      for (let actionIdx = 0; actionIdx < event.do.length; actionIdx++) {
-        // const element = events[eventIdx];
-        const ax = 1 + (actionIdx % eventRowLength);
-        const ay = eventRow + Math.floor(actionIdx / eventRowLength);
-        const actRect = {
-          x: baseX + (5 + (this.picto.eventWidth + 5) * ax) / this.picto.scale,
-          y: baseY + (ay * yDx) / this.app.controller.scale,
-          width: pW,
-          height: pH,
-        };
-        if (isPointInRectangle(actRect, p)) {
-          return { eventIdx, actionIdx };
+    let eventIdx = -1;
+    for (const row of this.pictos) {
+      let actIdx = -1;
+      for (const picto of row) {
+        if (picto.type === 'event') {
+          eventIdx += 1;
+          if (isPointInRectangle(picto, p)) {
+            return {
+              eventIdx,
+              actionIdx: null,
+            };
+          }
+          continue;
+        }
+        if (picto.type === 'action') {
+          actIdx += 1;
+          if (isPointInRectangle(picto, p)) {
+            return {
+              eventIdx,
+              actionIdx: actIdx,
+            };
+          }
         }
       }
-      eventRow += Math.max(1, Math.ceil(event.do.length / eventRowLength));
     }
 
     return undefined;
@@ -205,7 +180,7 @@ export class Events {
         });
       }
       let currentActionY = eventRow + (events.condition ? 1 : 0);
-      this.pictos[currentActionY] = [];
+      this.pictos[currentActionY] = this.pictos[currentActionY] || [];
       if (typeof events.do !== 'string') {
         // переменная оффсет вместо 5
         let currentActionCoordX = baseX + (this.picto.eventWidth + 5) / this.picto.scale;
@@ -338,7 +313,13 @@ export class Events {
             // TODO: сделать что-то с дублированием
             if (typeof this.selection !== 'undefined') {
               if (this.selection.eventIdx == eventIdx && this.selection.actionIdx == actIdx) {
-                this.picto.drawCursor(ctx, currentActionCoordX, aY);
+                this.picto.drawCursor(
+                  ctx,
+                  currentActionCoordX,
+                  aY,
+                  pictoDimensions.width + (this.picto.PARAMETERS_OFFSET_X * 2) / this.picto.scale,
+                  this.picto.eventHeight
+                );
               }
             }
             currentActionCoordX +=
@@ -356,7 +337,13 @@ export class Events {
             platform.drawAction(ctx, act, currentActionCoordX, aY);
             if (typeof this.selection !== 'undefined') {
               if (this.selection.eventIdx == eventIdx && this.selection.actionIdx == actIdx) {
-                this.picto.drawCursor(ctx, currentActionCoordX, aY);
+                this.picto.drawCursor(
+                  ctx,
+                  currentActionCoordX,
+                  aY,
+                  pictoDimensions.width + (this.picto.PARAMETERS_OFFSET_X * 2) / this.picto.scale,
+                  this.picto.eventHeight
+                );
               }
             }
             currentActionCoordX +=
@@ -369,6 +356,7 @@ export class Events {
 
       eventRow += Math.max(1, currentActionY - eventRow + 1);
     });
+    this.calculatePictosPosition();
     this.currentEventRows = eventRow;
   }
 

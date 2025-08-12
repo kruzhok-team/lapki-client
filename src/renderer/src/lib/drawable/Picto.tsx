@@ -4,7 +4,7 @@ import InitialIcon from '@renderer/assets/icons/initial state.svg';
 import EdgeHandle from '@renderer/assets/icons/new transition.svg';
 import Pen from '@renderer/assets/icons/pen.svg';
 import UnknownIcon from '@renderer/assets/icons/unknown-alt.svg';
-import { Rectangle } from '@renderer/lib/types/graphics';
+import { Rectangle, Dimensions } from '@renderer/lib/types/graphics';
 import theme, { getColor } from '@renderer/theme';
 import { getDefaultRange, normalizeRangeValue } from '@renderer/utils';
 
@@ -260,7 +260,7 @@ export class Picto {
     round?: number | number[],
     lineWidth?: number,
     isScaled = false
-  ) {
+  ): Dimensions {
     const computedWidth = isScaled ? width : width / this.scale;
     const computedHeight = isScaled ? height : height / this.scale;
     ctx.save();
@@ -273,6 +273,11 @@ export class Picto {
     ctx.fill();
     ctx.stroke();
     ctx.restore();
+
+    return {
+      width: computedWidth,
+      height: computedHeight,
+    };
   }
 
   getBasePicto(iconId: BasePictoKey): string {
@@ -289,8 +294,8 @@ export class Picto {
     eventWidth: number = this.eventWidth,
     eventHeight: number = this.eventHeight,
     round?: number | number[]
-  ) {
-    this.drawRect(ctx, x, y, eventWidth, eventHeight, bgColor, fgColor, opacity, round);
+  ): Dimensions {
+    return this.drawRect(ctx, x, y, eventWidth, eventHeight, bgColor, fgColor, opacity, round);
   }
 
   drawCursor(
@@ -372,7 +377,7 @@ export class Picto {
     y: number,
     ps: PictoProps,
     parameters: DrawFunction[]
-  ) {
+  ): Dimensions {
     const scalePictoSize = ps.scalePictoSize ?? 1;
     const parameterHeight = 14 / this.scale;
     const eventWidth = this.eventWidth / scalePictoSize;
@@ -389,7 +394,7 @@ export class Picto {
     const opacity = ps.opacity ?? 1.0;
 
     // Рамка
-    this.drawBorder(
+    const basePictoDimensions = this.drawBorder(
       ctx,
       x,
       y,
@@ -401,7 +406,7 @@ export class Picto {
       ps.paramWindowRound
     );
 
-    if (!rightIcon) return;
+    if (!rightIcon) return basePictoDimensions;
     if (!leftIcon) {
       // single icon mode
       this.drawImage(
@@ -456,16 +461,22 @@ export class Picto {
         eventWidth / this.scale
       );
     }
-    for (const drawFunction of parameters) {
-      // if (drawCustomParameter) {
-      //   drawCustomParameter(ctx, x, y, parameters, bgColor, fgColor);
-      //   return;
-      // }
-
-      if (typeof drawFunction.parameters.values === 'string') {
-        this.drawParameter(
+    let parametersWidth = 0;
+    for (const idx in parameters) {
+      const drawFunction = parameters[idx];
+      if (drawFunction.drawCustomParameter) {
+        parametersWidth += drawFunction.drawCustomParameter(
           ctx,
-          parameterWindowX,
+          parameterWindowX + parametersWidth,
+          parameterWindowY,
+          drawFunction.parameters,
+          bgColor,
+          fgColor
+        ).width;
+      } else if (typeof drawFunction.parameters.values === 'string') {
+        parametersWidth += this.drawParameter(
+          ctx,
+          parameterWindowX + parametersWidth,
           parameterWindowY,
           parameterHeight,
           drawFunction.parameters.values,
@@ -473,7 +484,21 @@ export class Picto {
           fgColor
         );
       }
+      if (Number(idx) !== parameters.length - 1) {
+        parametersWidth += this.drawParameter(
+          ctx,
+          parameterWindowX + parametersWidth,
+          parameterWindowY,
+          parameterHeight,
+          ', ',
+          bgColor,
+          fgColor
+        );
+      }
     }
+
+    return basePictoDimensions;
+    // вернуть с учетом ширины параметров
   }
 
   drawParametersWindow(
@@ -497,6 +522,7 @@ export class Picto {
     ctx.restore();
   }
 
+  // Возвращает ширину параметра с УЧЕТОМ скейла
   drawParameter(
     ctx: CanvasRenderingContext2D,
     x: number,
@@ -505,23 +531,26 @@ export class Picto {
     parameter: string,
     bgColor: string,
     fgColor: string
-  ) {
+  ): number {
     const baseFontSize = 12;
     const cy = height - baseFontSize / this.scale;
     const cx = 6 / this.scale;
     const fontSize = baseFontSize / this.scale;
     ctx.save();
     ctx.font = `${fontSize}px/0 monospace`;
+    const textWidth = getTextWidth(parameter, ctx.font);
+
     ctx.fillStyle = fgColor;
     ctx.strokeStyle = bgColor;
     ctx.textBaseline = 'hanging';
     ctx.textAlign = 'start';
     ctx.lineWidth = 0.5 / this.scale;
-
     ctx.strokeText(parameter, x + cx, y + cy);
     ctx.fillText(parameter, x + cx, y + cy);
     // TODO: убрать save/restore.
     ctx.restore();
+
+    return textWidth;
   }
 
   drawMatrix = (
@@ -529,14 +558,15 @@ export class Picto {
     x: number,
     y: number,
     parameters: DrawFunctionParameters
-  ) => {
-    const { values, range = getDefaultRange() } = parameters;
+  ): Dimensions => {
+    const { range = getDefaultRange() } = parameters;
+    const values: number[][] = parameters.values;
     const width = 5;
     const height = 5;
     const scaledWidth = width / this.scale;
     const scaledHeight = height / this.scale;
-    const computedY = y + this.eventHeight / 2.2 / this.scale;
-    const computedX = x + this.eventWidth / 1.3 / this.scale;
+    const computedY = y - this.eventHeight / 2.2 / this.scale;
+    const computedX = x + 5 / this.scale;
     const inactiveColor = getColor('matrix-inactive');
     const activeColor = getColor('matrix-active');
     let px = 0;
@@ -572,5 +602,10 @@ export class Picto {
       py += scaledHeight;
       px = 0;
     });
+
+    return {
+      width: scaledWidth * values[0].length,
+      height: scaledHeight * values.length, // может сломаться при загрузке пустой матрциы
+    };
   };
 }

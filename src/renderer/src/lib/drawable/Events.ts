@@ -78,7 +78,8 @@ export class Events {
       }
       eventRows += Math.max(1, Math.ceil(ev.do.length / this.minEventRow));
     });
-    this.dimensions.height = this.picto.eventHeight * eventRows + (eventRows - 1) * 10 + 10 * 2;
+    // ТУТ ПОМЕНЯЛ 10 НА 40
+    this.dimensions.height = this.picto.eventHeight * eventRows + (eventRows - 1) * 10 + 40 * 2;
   }
 
   calculatePictoIndex(p: Point): EventSelection | undefined {
@@ -173,7 +174,8 @@ export class Events {
     const py = 10 / this.app.controller.scale;
     const baseX = x + px;
     const baseY = y + titleHeight + py;
-    const yDx = this.picto.eventHeight + 10;
+    // ТУТ ПОМЕНЯЛ 10 НА 30
+    const yDx = this.picto.eventHeight + 30;
 
     let eventRow = 0;
     ctx.beginPath();

@@ -626,7 +626,7 @@
       "methods": {
         "setPixel": {
           "alias": "Яркость светодиода",
-          "img": "blg-mb/cellSet.svg",
+          "img": "blg-mb/setPixel.svg",
           "description": "Настроить яркость светодиода.",
           "parameters": [
             {
@@ -660,7 +660,7 @@
         },
         "changePatternBright": {
           "alias": "Яркость матрицы",
-          "img": "tjc-ms/fill.svg",
+          "img": "blg-mb/changePatternBright.svg",
           "description": "Изменить яркость группы светодиодов на матрице.",
           "parameters": [
             {
@@ -704,7 +704,7 @@
       "methods": {
         "maskPixel": {
           "alias": "Маска для светодиода",
-          "img": "tjc-ms/maskCell.svg",
+          "img": "blg-mb/maskPixel.svg",
           "description": "Включить или выключить светодиод, используя битовую маску.",
           "parameters": [
             {
@@ -875,11 +875,13 @@
           "parameters": [
             {
               "name": "Начало",
-              "type": "signed long long"
+              "type": "signed long long",
+              "description": "Начало диапазона [начало; конец). Начало в диапазон входит."
             },
             {
               "name": "Конец",
-              "type": "signed long long"
+              "type": "signed long long",
+              "description": "Конец диапазона [начало; конец). Конец в диапазон не входит."
             }
           ],
           "description": "Сгенерировать случайное число в заданном диапазоне [начало; конец). Конец в диапазон не входит."
@@ -1009,7 +1011,7 @@
       },
       "variables": {
         "value": {
-          "alias": "значение",
+          "alias": "Значение",
           "img": "common/value.svg",
           "description": "Текущее значение счетчика.",
           "type": "int"

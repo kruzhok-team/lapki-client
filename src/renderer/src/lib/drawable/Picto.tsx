@@ -238,7 +238,6 @@ export class Picto {
     );
   }
 
-  eventWidth = 100;
   pictoHeight = 40;
   eventMargin = 5;
   iconSize = 30;
@@ -248,6 +247,7 @@ export class Picto {
   pxPerChar = 15;
   textPadding = 5;
   PARAMETERS_OFFSET_X = 5;
+  eventWidth = 100;
   PARAMETERS_WINDOW_HEIGHT = 18;
   eventHeight = this.pictoHeight + this.PARAMETERS_WINDOW_HEIGHT;
   MATRIX_LED_WIDTH = 5;
@@ -392,6 +392,7 @@ export class Picto {
       this.eventWidth / scalePictoSize,
       parametersDimensions.width * this.scale
     );
+    console.log(parameters, eventWidth, this.eventWidth);
     const eventHeight: number = this.pictoHeight / scalePictoSize;
     const iconSize: number = this.iconSize / scalePictoSize;
     const iconVOffset: number = this.iconVOffset / scalePictoSize;

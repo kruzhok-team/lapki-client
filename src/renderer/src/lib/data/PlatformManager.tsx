@@ -423,7 +423,10 @@ export class PlatformManager {
     }
     const dimensions = this.picto.calculateParametersDimensions(drawParameterFunctions);
     return {
-      width: Math.max(this.picto.eventWidth / this.picto.scale, dimensions.width),
+      width: Math.max(
+        this.picto.eventWidth / this.picto.scale,
+        dimensions.width + (this.picto.PARAMETERS_OFFSET_X * 2) / this.picto.scale
+      ),
       height: this.picto.eventHeight,
     };
   }
@@ -521,7 +524,7 @@ export class PlatformManager {
     y: number,
     parameters: DrawFunctionParameters
   ): Dimensions => {
-    const { values } = parameters[0];
+    const { values } = parameters;
     const compoData = this.resolveComponent(values.component);
     const component = compoData.component;
     const leftIcon = {
@@ -532,19 +535,15 @@ export class PlatformManager {
 
     const dimensions = this.picto.drawPicto(
       ctx,
-      x + 50 / this.picto.scale,
-      y + 20 / this.picto.scale,
+      x,
+      y,
       {
         leftIcon,
         rightIcon,
         opacity: 0.7,
         scalePictoSize: 2,
       },
-      [
-        {
-          parameters,
-        },
-      ]
+      []
     );
 
     return dimensions;

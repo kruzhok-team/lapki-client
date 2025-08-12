@@ -188,12 +188,12 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       Если инициализировать сначала переходы, то будет ошибка,
       так как инстансы source и target еще не существуют
     */
+    controller.subscribe(smId, 'component', sm.components);
     controller.subscribe(smId, 'choice', sm.choiceStates);
     controller.subscribe(smId, 'final', sm.finalStates);
     controller.subscribe(smId, 'state', sm.states);
     controller.subscribe(smId, 'note', sm.notes);
     controller.subscribe(smId, 'initialState', sm.initialStates);
-    controller.subscribe(smId, 'component', sm.components);
     controller.subscribe(smId, 'transition', sm.transitions);
     controller.watch();
 

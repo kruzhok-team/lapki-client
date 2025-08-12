@@ -395,52 +395,26 @@
 
     "Eyes": {
       "name": "Глаза",
-      "description": "Этот компонент устанавливает цвета глаз.",
+      "description": "Этот компонент устанавливает цвет глаз.",
       "img": "blg-mb/eyesPalette.svg",
       "signals": {},
-      "constructorParameters": {},
+      "constructorParameters": {
+        "pin": {
+          "name": "Какой",
+          "type": ["1", "2"],
+          "valueAlias": [
+            "Правый", "Левый"
+          ],
+          "description": "Расположение глаза"
+        }
+      },
       "variables": {},
       "methods": {
         "setColorPalette": {
           "img": "blg-mb/setColorPalette.svg",
           "parameters": [
             {
-              "name": "Левый глаз",
-              "type": [
-                "&ColorRed",
-                "&ColorReddish",
-                "&ColorOrange",
-                "&ColorGreen",
-                "&ColorLime",
-                "&ColorBlue",
-                "&ColorCyan",
-                "&ColorPink",
-                "&ColorPurple",
-                "&ColorYellow",
-                "&ColorWhite",
-                "&ColorBlack",
-                "&ColorPerfectWhite"
-              ],
-              "valueAlias": [
-                "Красный",
-                "Красноватый",
-                "Оранжевый",
-                "Зеленый",
-                "Лаймовый",
-                "Голубой",
-                "Циановый",
-                "Розовый",
-                "Фиолетовый",
-                "Желтый",
-                "Белый",
-                "Черный",
-                "Белоснежный"
-              ],
-              "description": "Цвет светодиода.",
-              "optional": false
-            },
-            {
-              "name": "Правый глаз",
+              "name": "Цвет",
               "type": [
                 "&ColorRed",
                 "&ColorReddish",
@@ -475,77 +449,44 @@
               "optional": false
             }
           ],
-          "description": "Установить выбранные цвета для глаз.",
+          "description": "Установить выбранный цвет.",
           "alias": "Выбрать из палитры"
         },
         "setColor": {
           "img": "blg-mb/EyeRGBK.svg",
           "parameters": [
             {
-              "name": "(Правый) Красный",
+              "name": "Красный",
               "type": "uint8_t",
               "description": "Продолжительность красного (R) свечения. От 0 до 255.",
               "optional": false
             },
             {
-              "name": "(Правый) Зелёный",
+              "name": "Зелёный",
               "type": "uint8_t",
               "description": "Продолжительность зелёного (G) свечения. От 0 до 255.",
               "optional": false
             },
             {
-              "name": "(Правый) Синий",
+              "name": "Синий",
               "type": "uint8_t",
               "description": "Продолжительность синего (B) свечения. От 0 до 255.",
               "optional": false
             },
             {
-              "name": "(Правый) Чёрный",
-              "type": "uint8_t",
-              "description": "Длительность выключения всех трёх светодиодов. Регулирует яркость. От 0 до 255.",
-              "optional": false
-            },
-            {
-              "name": "(Левый) Красный",
-              "type": "uint8_t",
-              "description": "Продолжительность красного (R) свечения. От 0 до 255.",
-              "optional": false
-            },
-            {
-              "name": "(Левый) Зелёный",
-              "type": "uint8_t",
-              "description": "Продолжительность зелёного (G) свечения. От 0 до 255.",
-              "optional": false
-            },
-            {
-              "name": "(Левый) Синий",
-              "type": "uint8_t",
-              "description": "Продолжительность синего (B) свечения. От 0 до 255.",
-              "optional": false
-            },
-            {
-              "name": "(Левый) Чёрный",
+              "name": "Чёрный",
               "type": "uint8_t",
               "description": "Длительность выключения всех трёх светодиодов. Регулирует яркость. От 0 до 255.",
               "optional": false
             }
           ],
-          "description": "Установить цвет глаз в формате RGBK.",
+          "description": "Установить цвет в формате RGBK.",
           "alias": "Задать цвет из RGBK"
         },
         "off": {
           "img": "arduino/switch-off.svg",
-          "description": "Выключить левый глаз, правый или оба.",
-          "alias": "Выключить",
-          "parameters": [
-            {
-              "name": "Режим",
-              "type": ["OFF_LEFT", "OFF_RIGHT", "OFF_BOTH"],
-              "valueAlias": ["Левый", "Правый", "Оба"],
-              "description": "Какой глаз выключить.",
-              "optional": false
-            }
-          ]
+          "description": "Установить черный цвет глаза.",
+          "alias": "Выключить"
         }
       },
       "buildFiles": [

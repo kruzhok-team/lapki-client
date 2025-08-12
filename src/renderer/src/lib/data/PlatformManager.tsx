@@ -5,6 +5,7 @@ import { Range } from '@renderer/types/utils';
 import { getDefaultRange, isMatrix } from '@renderer/utils';
 
 import { stateStyle } from '../styles';
+import { Dimensions } from '../types';
 import { isVariable } from '../utils';
 
 export type DrawFunctionParameters = {
@@ -21,7 +22,7 @@ export type DrawFunction = {
     parameters: DrawFunctionParameters,
     bgColor: string,
     fgColor: string
-  ) => void;
+  ) => Dimensions; // Ширина параметра с учетом скейла
 };
 
 export type DrawFunctionType = (
@@ -29,7 +30,7 @@ export type DrawFunctionType = (
   x: number,
   y: number,
   parameters: DrawFunctionParameters
-) => void;
+) => Dimensions;
 
 export type VisualCompoData = {
   component: string;
@@ -382,7 +383,6 @@ export class PlatformManager {
     const fgColor = '#fff';
     const opacity = alpha ?? 1.0;
     const paramWindowRound = [6 / this.picto.scale, 6 / this.picto.scale, 0, 0];
-    let argQuery: string = '';
     const compoData = this.resolveComponent(ac.component);
     const component = compoData.component;
     const parameterList = this.data.components[component]?.methods[ac.method]?.parameters;
@@ -394,19 +394,16 @@ export class PlatformManager {
         icon: this.getComponentIcon(component),
       };
       rightIcon = this.getActionIcon(component, ac.method);
-
-      if (parameterList && parameterList.length > 0) {
-        argQuery = parameterList[0].name ?? '';
-      }
     }
 
     const drawParameterFunctions: DrawFunction[] = [];
-    if (argQuery && ac.args && parameterList) {
+    if (ac.args && parameterList) {
       for (const param of parameterList) {
+        if (!param.name) continue;
         let drawFunction: DrawFunctionType | undefined = undefined;
         let parameter: any | undefined = undefined;
         let range: Range | undefined = undefined;
-        const paramValue = ac.args[argQuery];
+        const paramValue = ac.args[param.name];
         if (paramValue === undefined || typeof paramValue.value === 'undefined') {
           if (param.optional) {
             parameter = '';
@@ -422,14 +419,11 @@ export class PlatformManager {
               parameter = '?!';
             }
           } else {
-            parameter =
-              paramValue.value.length > 15
-                ? paramValue.value.slice(0, 12) + '...'
-                : paramValue.value;
+            parameter = paramValue.value;
           }
-        } else if (typeof parameterList[0].type === 'string' && isMatrix(parameterList[0].type)) {
+        } else if (typeof param.type === 'string' && isMatrix(param.type)) {
           parameter = paramValue.value;
-          range = parameterList[0].range ?? getDefaultRange();
+          range = param.range ?? getDefaultRange();
           drawFunction = this.picto.drawMatrix;
         } else if (isVariable(paramValue.value)) {
           drawFunction = this.drawParameterPicto;
@@ -448,7 +442,6 @@ export class PlatformManager {
         });
       }
     }
-    debugger;
     this.picto.drawPicto(
       ctx,
       x,
@@ -471,7 +464,7 @@ export class PlatformManager {
     x: number,
     y: number,
     parameters: DrawFunctionParameters
-  ) => {
+  ): Dimensions => {
     const { values } = parameters[0];
     const compoData = this.resolveComponent(values.component);
     const component = compoData.component;
@@ -481,7 +474,7 @@ export class PlatformManager {
     };
     const rightIcon = this.getVariableIcon(component, values.method);
 
-    this.picto.drawPicto(
+    const dimensions = this.picto.drawPicto(
       ctx,
       x + 50 / this.picto.scale,
       y + 20 / this.picto.scale,
@@ -497,6 +490,8 @@ export class PlatformManager {
         },
       ]
     );
+
+    return dimensions;
   };
 
   measureFullCondition(ac: Condition): number {

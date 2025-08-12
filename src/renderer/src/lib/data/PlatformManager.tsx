@@ -23,6 +23,7 @@ export type DrawFunction = {
     bgColor: string,
     fgColor: string
   ) => Dimensions; // Ширина параметра с учетом скейла
+  calculateParameterDimensions?: () => Dimensions;
 };
 
 export type DrawFunctionType = (
@@ -401,6 +402,7 @@ export class PlatformManager {
       for (const param of parameterList) {
         if (!param.name) continue;
         let drawFunction: DrawFunctionType | undefined = undefined;
+        let calculateParameterDimensions: (() => Dimensions) | undefined = undefined;
         let parameter: any | undefined = undefined;
         let range: Range | undefined = undefined;
         const paramValue = ac.args[param.name];
@@ -425,8 +427,10 @@ export class PlatformManager {
           parameter = paramValue.value;
           range = param.range ?? getDefaultRange();
           drawFunction = this.picto.drawMatrix;
+          calculateParameterDimensions = this.picto.calculateMatrixSize.bind(this, parameter);
         } else if (isVariable(paramValue.value)) {
           drawFunction = this.drawParameterPicto;
+          calculateParameterDimensions = this.picto.calculateBasePictoDimensions.bind(this, 2);
           parameter = paramValue.value;
         } else {
           // FIXME
@@ -439,6 +443,7 @@ export class PlatformManager {
             range,
           },
           drawCustomParameter: drawFunction,
+          calculateParameterDimensions,
         });
       }
     }

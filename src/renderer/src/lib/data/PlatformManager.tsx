@@ -377,6 +377,57 @@ export class PlatformManager {
     );
   }
 
+  calculateActionSize(ac: Action): Dimensions {
+    const compoData = this.resolveComponent(ac.component);
+    const component = compoData.component;
+    const parameterList = this.data.components[component]?.methods[ac.method]?.parameters;
+
+    const drawParameterFunctions: DrawFunction[] = [];
+    if (ac.args && parameterList) {
+      for (const param of parameterList) {
+        if (!param.name) continue;
+        let calculateParameterDimensions: (() => Dimensions) | undefined = undefined;
+        let parameter: any | undefined = undefined;
+        const paramValue = ac.args[param.name];
+        if (paramValue === undefined || typeof paramValue.value === 'undefined') {
+          if (param.optional) {
+            parameter = '';
+          } else {
+            parameter = '?!';
+          }
+        } else if (typeof paramValue.value === 'string') {
+          if (Array.isArray(param.type) && param.valueAlias !== undefined) {
+            const valueIndex = param.type.findIndex((option) => paramValue.value === option);
+            if (valueIndex !== -1) {
+              parameter = param.valueAlias[valueIndex];
+            } else {
+              parameter = '?!';
+            }
+          } else {
+            parameter = paramValue.value;
+          }
+        } else if (typeof param.type === 'string' && isMatrix(param.type)) {
+          parameter = paramValue.value;
+          calculateParameterDimensions = this.picto.calculateMatrixSize.bind(this, parameter);
+        } else if (isVariable(paramValue.value)) {
+          calculateParameterDimensions = this.picto.calculateBasePictoDimensions.bind(this, 2);
+          parameter = paramValue.value;
+        }
+        drawParameterFunctions.push({
+          parameters: {
+            values: parameter,
+          },
+          calculateParameterDimensions,
+        });
+      }
+    }
+    const dimensions = this.picto.calculateParametersDimensions(drawParameterFunctions);
+    return {
+      width: Math.max(this.picto.eventWidth / this.picto.scale, dimensions.width),
+      height: this.picto.eventHeight,
+    };
+  }
+
   drawAction(ctx: CanvasRenderingContext2D, ac: Action, x: number, y: number, alpha?: number) {
     let leftIcon: string | MarkedIconData | undefined = undefined;
     let rightIcon = 'unknown';

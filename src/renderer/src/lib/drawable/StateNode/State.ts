@@ -57,6 +57,13 @@ export class State extends Shape {
     };
   }
 
+  updateDimensions() {
+    this.dimensions = {
+      width: this.dimensions.width,
+      height: Math.max(stateStyle.height, this.eventBox.dimensions.height + this.titleHeight),
+    };
+  }
+
   draw(ctx: CanvasRenderingContext2D) {
     this.drawBody(ctx);
     this.drawTitle(ctx);

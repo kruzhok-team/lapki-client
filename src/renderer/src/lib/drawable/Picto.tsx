@@ -239,7 +239,7 @@ export class Picto {
   }
 
   eventWidth = 100;
-  eventHeight = 40;
+  pictoHeight = 40;
   eventMargin = 5;
   iconSize = 30;
   separatorVOffset = 4;
@@ -247,6 +247,9 @@ export class Picto {
   iconHOffset = 10;
   pxPerChar = 15;
   textPadding = 5;
+  PARAMETERS_OFFSET_X = 5;
+  PARAMETERS_WINDOW_HEIGHT = 18;
+  eventHeight = this.pictoHeight + this.PARAMETERS_WINDOW_HEIGHT;
   MATRIX_LED_WIDTH = 5;
   MATRIX_LED_HEIGHT = 5;
   TEXT_FONT = 'px/0 monospace';
@@ -306,7 +309,7 @@ export class Picto {
     x: number,
     y: number,
     eventWidth: number = this.eventWidth,
-    eventHeight: number = this.eventHeight
+    eventHeight: number = this.pictoHeight
   ) {
     // FIXME: рисовать лучше под иконкой, рисует фон, даже если не просишь
     ctx.save();
@@ -326,12 +329,12 @@ export class Picto {
     const opacity = ps.opacity ?? 1.0;
 
     // Рамка
-    this.drawRect(ctx, x, y, this.eventHeight, this.eventHeight, bgColor, fgColor, opacity);
+    this.drawRect(ctx, x, y, this.pictoHeight, this.pictoHeight, bgColor, fgColor, opacity);
 
     if (!rightIcon) return;
 
     this.drawImage(ctx, rightIcon, {
-      x: x + (this.eventHeight - this.iconSize) / 2 / this.scale,
+      x: x + (this.pictoHeight - this.iconSize) / 2 / this.scale,
       y: y + this.iconVOffset / this.scale,
       width: this.iconSize,
       height: this.iconSize,
@@ -347,10 +350,10 @@ export class Picto {
 
     const baseFontSize = 24;
     const w = this.textPadding * 2 + text.length * this.pxPerChar;
-    const cy = (this.eventHeight - baseFontSize) / this.scale;
+    const cy = (this.pictoHeight - baseFontSize) / this.scale;
 
     // Рамка
-    this.drawRect(ctx, x, y, w, this.eventHeight, bgColor, fgColor, opacity);
+    this.drawRect(ctx, x, y, w, this.pictoHeight, bgColor, fgColor, opacity);
 
     const fontSize = baseFontSize / this.scale;
     ctx.save();
@@ -382,15 +385,14 @@ export class Picto {
     parameters: DrawFunction[]
   ): Dimensions {
     const scalePictoSize = ps.scalePictoSize ?? 1;
-    const offsetParametersX = 5;
     const parameterHeight = 18 / this.scale;
     const parametersDimensions = this.calculateParametersDimensions(parameters);
-    parametersDimensions.width += (offsetParametersX * 2) / this.scale;
+    parametersDimensions.width += (this.PARAMETERS_OFFSET_X * 2) / this.scale;
     const eventWidth = Math.max(
       this.eventWidth / scalePictoSize,
       parametersDimensions.width * this.scale
     );
-    const eventHeight: number = this.eventHeight / scalePictoSize;
+    const eventHeight: number = this.pictoHeight / scalePictoSize;
     const iconSize: number = this.iconSize / scalePictoSize;
     const iconVOffset: number = this.iconVOffset / scalePictoSize;
     const separatorVOffset: number = this.separatorVOffset / scalePictoSize;
@@ -460,7 +462,7 @@ export class Picto {
     }
 
     const parameterWindowX = x;
-    const parametersDrawStart = x + offsetParametersX / this.scale;
+    const parametersDrawStart = x + this.PARAMETERS_OFFSET_X / this.scale;
     const parameterWindowY = y + eventHeight / this.scale;
     let parametersWidth = 0;
     if (ps.drawParamWindow) {
@@ -541,7 +543,7 @@ export class Picto {
 
   calculateBasePictoDimensions = (scalePictoSize: number): Dimensions => {
     const eventWidth = this.eventWidth / scalePictoSize;
-    const eventHeight: number = this.eventHeight / scalePictoSize;
+    const eventHeight: number = this.pictoHeight / scalePictoSize;
 
     return {
       width: eventWidth,
@@ -633,7 +635,7 @@ export class Picto {
     const height = this.MATRIX_LED_HEIGHT;
     const scaledWidth = width / this.scale;
     const scaledHeight = height / this.scale;
-    const computedY = y - this.eventHeight / 2.2 / this.scale;
+    const computedY = y - this.pictoHeight / 2.2 / this.scale;
     const computedX = x + 5 / this.scale;
     const inactiveColor = getColor('matrix-inactive');
     const activeColor = getColor('matrix-active');

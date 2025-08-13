@@ -562,7 +562,7 @@
     "Matrix": {
       "name": "Матрица светодиодов",
       "description": "Компонент для взаимодействия со светодиодной матрицей.",
-      "img": "tjc-ms/matrix.svg",
+      "img": "blg-mb/matrix.svg",
       "signals": {},
       "methods": {
         "setPixel": {
@@ -589,7 +589,7 @@
         },
         "setPattern": {
           "alias": "Рисовать",
-          "img": "tjc-ms/draw.svg",
+          "img": "blg-mb/draw.svg",
           "description": "Изобразить рисунок на матрице.",
           "parameters": [
             {
@@ -619,7 +619,7 @@
         },
         "clear": {
           "alias": "Очистить",
-          "img": "tjc-ms/matrixEmpty.svg",
+          "img": "blg-mb/clear.svg",
           "description": "Выключить все светодиоды.",
           "parameters": []
         }
@@ -719,7 +719,7 @@
       "variables": {},
       "methods": {
         "setFrame": {
-          "img": "tjc-ms/draw.svg",
+          "img": "blg-mb/draw.svg",
           "parameters": [
             {
               "name": "Рисунок",
@@ -752,13 +752,13 @@
     "MatrixPicture": {
       "name": "Матрица-картинка",
       "description": "Устанавливает на матрицу статическое изображение.",
-      "img": "blg-mb/matrixHalftone.svg",
+      "img": "blg-mb/matrixPicture.svg",
       "signals": {},
       "constructorParameters": {},
       "variables": {},
       "methods": {
         "draw": {
-          "img": "tjc-ms/draw.svg",
+          "img": "blg-mb/draw.svg",
           "parameters": [
             {
               "name": "Рисунок",

@@ -23,11 +23,22 @@ let imagesLoaded = false;
 export const icons: Map<string, HTMLImageElement> = new Map();
 // TODO? export const iconsPaths: Map<string, string> = new Map();
 
-export const imgBaseDir = './img/';
+let imgBaseDir = './img/';
 
 export function resolveImg(p: string): string {
   // FIXME: только относительные пути в папке img
   return imgBaseDir + p;
+}
+
+async function ensureImgBaseDir(): Promise<void> {
+  try {
+    const url = await window.electron.ipcRenderer.invoke('getResourcesAssetBaseUrl');
+    if (typeof url === 'string' && url.length > 0) {
+      imgBaseDir = url;
+    }
+  } catch (_e) {
+    // fallback remains './img/' for dev
+  }
 }
 
 type BasePictoKey =
@@ -101,10 +112,21 @@ export function preloadPicto(callback: () => void) {
     callback();
     return;
   }
-  preloadImagesMap(icons, basePicto).then(() => {
-    imagesLoaded = true;
-    callback();
-  });
+  ensureImgBaseDir()
+    .catch(() => void 0)
+    .finally(() => {
+      // Переписываем относительные пути './img/...' на абсолютный URL к ресурсам
+      Object.keys(basePicto).forEach((key) => {
+        const val = basePicto[key as keyof typeof basePicto] as unknown as string;
+        if (typeof val === 'string' && val.startsWith('./img/')) {
+          (basePicto as Record<string, string>)[key] = val.replace('./img/', imgBaseDir);
+        }
+      });
+      preloadImagesMap(icons, basePicto).then(() => {
+        imagesLoaded = true;
+        callback();
+      });
+    });
 }
 
 export type PictoProps = {
@@ -392,7 +414,7 @@ export class Picto {
       this.eventWidth / scalePictoSize,
       parametersDimensions.width * this.scale
     );
-    console.log(parameters, eventWidth, this.eventWidth);
+    // console.log(parameters, eventWidth, this.eventWidth);
     const eventHeight: number = this.pictoHeight / scalePictoSize;
     const iconSize: number = this.iconSize / scalePictoSize;
     const iconVOffset: number = this.iconVOffset / scalePictoSize;

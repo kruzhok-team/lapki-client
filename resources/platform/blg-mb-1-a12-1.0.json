@@ -402,9 +402,7 @@
         "pin": {
           "name": "Какой",
           "type": ["1", "2"],
-          "valueAlias": [
-            "Правый", "Левый"
-          ],
+          "valueAlias": ["Правый", "Левый"],
           "description": "Расположение глаза"
         }
       },
@@ -521,7 +519,7 @@
           "img": "blg-mb/setCooldown.svg",
           "parameters": [
             {
-              "name": "Интервал срабатывания",
+              "name": "Установить интервал срабатывания",
               "type": "uint16_t",
               "description": "Интервал срабатывания (мс)",
               "optional": false
@@ -671,7 +669,7 @@
           ]
         },
         "maskPattern": {
-          "alias": "Маска",
+          "alias": "Маска для матрицы",
           "img": "tjc-ms/maskGrid.svg",
           "description": "Изобразить рисунок на матрице, используя битовую маску.",
           "parameters": [
@@ -758,7 +756,7 @@
       "variables": {},
       "methods": {
         "draw": {
-          "img": "blg-mb/draw.svg",
+          "img": "blg-mb/drawPicture.svg",
           "parameters": [
             {
               "name": "Рисунок",

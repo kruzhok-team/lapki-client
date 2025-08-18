@@ -180,7 +180,25 @@ export class Events {
     const yDx = this.picto.eventHeight + this.picto.PICTO_OFFSET_Y;
     this.pictos = [];
     let eventRow = 0;
-
+    let rowWidth = 0;
+    for (const event of this.data) {
+      if (typeof event.do === 'string') continue;
+      for (const action of event.do) {
+        const actionPictoWidth = platform.calculateActionSize(action).width;
+        if (
+          baseX +
+            (this.picto.eventWidth + this.picto.PARAMETERS_OFFSET_X) / this.picto.scale +
+            actionPictoWidth >
+          x + width - this.picto.PARAMETERS_OFFSET_X / this.picto.scale
+        ) {
+          rowWidth = Math.max(actionPictoWidth, rowWidth);
+        }
+      }
+      if (rowWidth > 0) {
+        this.parent.data.dimensions.width =
+          rowWidth * this.picto.scale + this.picto.PARAMETERS_OFFSET_X + this.picto.PICTO_OFFSET_X;
+      }
+    }
     this.data.map((events) => {
       const eX = baseX;
       const eY = baseY + (eventRow * yDx) / scale;

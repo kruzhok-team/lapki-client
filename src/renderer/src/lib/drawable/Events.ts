@@ -273,8 +273,10 @@ export class Events {
       for (const action of event.do) {
         const actionPictoWidth = platform.calculateActionSize(action).width;
         if (
-          baseX + (this.picto.eventWidth + 5) / this.picto.scale + actionPictoWidth >
-          x + width - 5 / this.picto.scale
+          baseX +
+            (this.picto.eventWidth + this.picto.PICTO_OFFSET) / this.picto.scale +
+            actionPictoWidth >
+          x + width - this.picto.PICTO_OFFSET / this.picto.scale
         ) {
           rowWidth = Math.max(actionPictoWidth, rowWidth);
         }
@@ -301,7 +303,7 @@ export class Events {
         platform.drawCondition(
           ctx,
           events.condition,
-          eX + (this.picto.eventWidth + 5) / this.picto.scale,
+          eX + (this.picto.eventWidth + this.picto.PICTO_OFFSET) / this.picto.scale,
           eY
         );
         ctx.closePath();
@@ -310,40 +312,53 @@ export class Events {
         platform.drawText(
           ctx,
           events.condition,
-          eX + (this.picto.eventWidth + 5) / this.picto.scale,
+          eX + (this.picto.eventWidth + this.picto.PICTO_OFFSET) / this.picto.scale,
           eY
         );
       }
 
       let currentActionY = eventRow + (events.condition ? 1 : 0);
+      const drawCursorIfSelected: (
+        event: EventSelection,
+        ...args: Parameters<typeof this.picto.drawCursor>
+      ) => ReturnType<typeof this.picto.drawCursor> = (event, ctx, x, y, width, height) => {
+        if (this.selection !== undefined) {
+          if (
+            this.selection.eventIdx == event.eventIdx &&
+            this.selection.actionIdx == event.actionIdx
+          ) {
+            this.picto.drawCursor(ctx, x, y, width, height);
+          }
+        }
+      };
       if (typeof events.do !== 'string') {
-        // переменная оффсет вместо 5
-        let currentActionCoordX = baseX + (this.picto.eventWidth + 5) / this.picto.scale;
+        let currentActionCoordX =
+          baseX + (this.picto.eventWidth + this.picto.PICTO_OFFSET) / this.picto.scale;
         events.do.forEach((act, actIdx) => {
           const pictoDimensions = platform.calculateActionSize(act);
-          // если вмещается в состояние
-          if (currentActionCoordX + pictoDimensions.width < x + width - 5 / this.picto.scale) {
+          if (
+            currentActionCoordX + pictoDimensions.width <
+            x + width - this.picto.PICTO_OFFSET / this.picto.scale
+          ) {
             const aY =
               baseY +
               (currentActionY * yDx) / this.picto.scale -
               (events.condition ? this.picto.PARAMETERS_WINDOW_HEIGHT : 0) /
                 this.app.controller.scale;
             platform.drawAction(ctx, act, currentActionCoordX, aY);
-            // TODO: сделать что-то с дублированием
-            if (typeof this.selection !== 'undefined') {
-              if (this.selection.eventIdx == eventIdx && this.selection.actionIdx == actIdx) {
-                this.picto.drawCursor(
-                  ctx,
-                  currentActionCoordX,
-                  aY,
-                  pictoDimensions.width * this.picto.scale,
-                  this.picto.eventHeight
-                );
-              }
-            }
-            currentActionCoordX += pictoDimensions.width + 5 / this.picto.scale;
+            drawCursorIfSelected(
+              { eventIdx, actionIdx: actIdx },
+              ctx,
+              currentActionCoordX,
+              aY,
+              pictoDimensions.width,
+              this.picto.eventHeight
+            );
+            currentActionCoordX +=
+              pictoDimensions.width + this.picto.PICTO_OFFSET / this.picto.scale;
           } else {
-            currentActionCoordX = baseX + (this.picto.eventWidth + 5) / this.picto.scale;
+            currentActionCoordX =
+              baseX + (this.picto.eventWidth + this.picto.PICTO_OFFSET) / this.picto.scale;
             currentActionY += 1;
             const aY =
               baseY +
@@ -351,18 +366,16 @@ export class Events {
               (events.condition ? this.picto.PARAMETERS_WINDOW_HEIGHT : 0) /
                 this.app.controller.scale;
             platform.drawAction(ctx, act, currentActionCoordX, aY);
-            if (typeof this.selection !== 'undefined') {
-              if (this.selection.eventIdx == eventIdx && this.selection.actionIdx == actIdx) {
-                this.picto.drawCursor(
-                  ctx,
-                  currentActionCoordX,
-                  aY,
-                  pictoDimensions.width,
-                  this.picto.eventHeight
-                );
-              }
-            }
-            currentActionCoordX += pictoDimensions.width + 5 / this.picto.scale;
+            drawCursorIfSelected(
+              { eventIdx, actionIdx: actIdx },
+              ctx,
+              currentActionCoordX,
+              aY,
+              pictoDimensions.width,
+              this.picto.eventHeight
+            );
+            currentActionCoordX +=
+              pictoDimensions.width + this.picto.PICTO_OFFSET / this.picto.scale;
           }
         });
       }

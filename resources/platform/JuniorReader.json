@@ -1,0 +1,141 @@
+{
+  "name": "(Junior) Считыватель",
+  "id": "junior-reader",
+  "description": "Платформа для работы с компонентами Считыватель, Импульс и Счётчик.",
+  "version": "1.0",
+  "icon": "",
+  "language": "py",
+  "visual": true,
+  "compile": false,
+  "author": "Maxim Klypin",
+  "staticComponents": false,
+  "standardVersion": "1.0",
+  "formatVersion": "1.0",
+  "mainFileExtension": "py",
+  "headerFileExtension": "py",
+  "delimeter": "",
+  "staticActionDelimeter": ".",
+  "componentDeclaration": true,
+  "defaultSetupFunctions": [],
+  "components": {
+    "Reader": {
+      "name": "Считыватель",
+      "description": "Компонент для поэтапного чтения строки.",
+      "img": "junior/reader.svg",
+      "signals": {
+        "char_accepted": {
+          "alias": "Принят символ",
+          "img": "junior/char_accepted.svg",
+          "description": "Принят очередной символ."
+        },
+        "line_finished": {
+          "alias": "Строка закончилась",
+          "img": "junior/line_finished.svg",
+          "description": "Вся строка считана."
+        }
+      },
+      "methods": {
+        "read": {
+          "alias": "Принять символ",
+          "img": "junior/read.svg",
+          "description": "Прочитать очередной символ."
+        }
+      },
+      "variables": {
+        "current_char": {
+          "alias": "Принятый символ",
+          "img": "junior/current_char.svg",
+          "type": "char",
+          "description": "Последний принятый символ."
+        }
+      },
+      "constructorParameters": {},
+      "singletone": false
+    },
+    "Impulse": {
+      "name": "Сигнал",
+      "description": "Компонент для генерации импульсов.",
+      "img": "junior/impulse.svg",
+      "signals": {},
+      "methods": {
+        "impulseA": {
+          "alias": "Импульс А",
+          "img": "junior/a.svg",
+          "description": "Сгенерировать импульс А."
+        },
+        "impulseB": {
+          "alias": "Импульс Б",
+          "img": "junior/b.svg",
+          "description": "Сгенерировать импульс Б."
+        },
+        "impulseC": {
+          "alias": "Импульс В",
+          "img": "junior/c.svg",
+          "description": "Сгенерировать импульс В."
+        }
+      },
+      "variables": {},
+      "constructorParameters": {},
+      "singletone": false
+    },
+    "Counter": {
+      "name": "Счетчик",
+      "description": "Переменная-счетчик.",
+      "img": "arduino/counter.svg",
+      "signals": {},
+      "constructorParameters": {},
+      "methods": {
+        "add": {
+          "alias": "Увеличить",
+          "img": "arduino/add.svg",
+          "description": "Добавить указанное значение к счетчику.",
+          "parameters": [
+            {
+              "name": "Значение",
+              "type": "int",
+              "description": "Значение, которое будет добавлено к счетчику."
+            }
+          ]
+        },
+        "sub": {
+          "alias": "Уменьшить",
+          "img": "arduino/sub.svg",
+          "description": "Вычесть указанное значение из счетчика.",
+          "parameters": [
+            {
+              "name": "Значение",
+              "type": "int",
+              "description": "Значение, которое будет вычтено из счетчика."
+            }
+          ]
+        },
+        "set": {
+          "alias": "Установить",
+          "img": "common/set.svg",
+          "description": "Установить значение счетчика.",
+          "parameters": [
+            {
+              "name": "Значение",
+              "type": "int",
+              "description": "Значение, которое будет установлено в счетчике."
+            }
+          ]
+        },
+        "reset": {
+          "alias": "Сброс",
+          "img": "arduino/reset.svg",
+          "description": "Обнулить значение счетчика."
+        }
+      },
+      "variables": {
+        "value": {
+          "alias": "значение",
+          "img": "common/value.svg",
+          "description": "Текущее значение счетчика.",
+          "type": "int"
+        }
+      },
+      "singletone": false
+    }
+  }
+}

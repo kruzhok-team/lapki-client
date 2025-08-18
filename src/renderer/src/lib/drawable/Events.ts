@@ -38,7 +38,6 @@ export class Events {
       width: this.minWidth,
       height: this.minHeight,
     };
-    this.calculatePictosPosition();
     this.update();
   }
 
@@ -75,7 +74,7 @@ export class Events {
 
       return;
     }
-    this.calculatePictosPosition();
+    this.calculatePictosPosition(this.picto.scale);
     this.dimensions.height =
       this.picto.eventHeight * this.currentEventRows +
       (this.currentEventRows - 1) * this.picto.PICTO_OFFSET_Y +
@@ -84,7 +83,7 @@ export class Events {
 
   calculatePictoIndex(p: Point): EventSelection | undefined {
     let eventIdx = -1;
-    this.calculatePictosPosition();
+    this.calculatePictosPosition(this.picto.scale);
     for (const row of this.pictos) {
       let actIdx = -1;
       for (const picto of row) {
@@ -94,8 +93,8 @@ export class Events {
             isPointInRectangle(
               {
                 ...picto,
-                width: picto.width / this.picto.scale,
-                height: picto.height / this.picto.scale,
+                width: picto.width,
+                height: picto.height,
               },
               p
             )
@@ -113,8 +112,8 @@ export class Events {
             isPointInRectangle(
               {
                 ...picto,
-                width: picto.width / this.picto.scale,
-                height: picto.height / this.picto.scale,
+                width: picto.width,
+                height: picto.height,
               },
               p
             )
@@ -153,39 +152,23 @@ export class Events {
     this.drawImageEvents(ctx);
   }
 
-  calculatePictosPosition() {
+  // Вычисляет позиции пиктограмм с УЧЕТОМ масштаба
+  calculatePictosPosition(scale: number) {
     const platform = this.app.controller.platform[this.parent.smId];
     if (!platform) return;
     const { x, y, width } = this.parent.drawBounds;
-    const titleHeight = this.parent.titleHeight / this.app.controller.scale;
-    const px = this.picto.PICTO_OFFSET_X / this.app.controller.scale;
-    const py = this.picto.PICTO_OFFSET_Y / this.app.controller.scale;
+    const titleHeight = this.parent.titleHeight / scale;
+    const px = this.picto.PICTO_OFFSET_X / scale;
+    const py = this.picto.PICTO_OFFSET_Y / scale;
     const baseX = x + px;
     const baseY = y + titleHeight + py;
     const yDx = this.picto.eventHeight + this.picto.PICTO_OFFSET_Y;
     this.pictos = [];
     let eventRow = 0;
-    let rowWidth = 0;
-    for (const event of this.data) {
-      if (typeof event.do === 'string') continue;
-      for (const action of event.do) {
-        const actionPictoWidth = platform.calculateActionSize(action).width;
-        if (
-          baseX +
-            (this.picto.eventWidth + this.picto.PARAMETERS_OFFSET_X) / this.picto.scale +
-            actionPictoWidth >
-          x + width - this.picto.PARAMETERS_OFFSET_X / this.picto.scale
-        ) {
-          rowWidth = Math.max(actionPictoWidth, rowWidth);
-        }
-      }
-      if (rowWidth > 0) {
-        // TODO: ресайз состояния
-      }
-    }
+
     this.data.map((events) => {
       const eX = baseX;
-      const eY = baseY + (eventRow * yDx) / this.app.controller.scale;
+      const eY = baseY + (eventRow * yDx) / scale;
       if (this.pictos[eventRow] === undefined) {
         this.pictos[eventRow] = [];
       }
@@ -193,18 +176,18 @@ export class Events {
         type: 'event',
         x: eX,
         y: eY,
-        width: this.picto.eventWidth / this.picto.scale,
-        height: this.picto.pictoHeight / this.picto.scale,
+        width: this.picto.eventWidth / scale,
+        height: this.picto.pictoHeight / scale,
       });
 
       if (events.condition && typeof events.condition !== 'string') {
         // TODO: Просчет размера условия
         this.pictos[eventRow].push({
           type: 'condition',
-          x: eX + (this.picto.eventWidth + this.picto.PARAMETERS_OFFSET_X) / this.picto.scale,
+          x: eX + (this.picto.eventWidth + this.picto.PARAMETERS_OFFSET_X) / scale,
           y: eY,
-          width: this.picto.eventWidth * this.picto.scale,
-          height: this.picto.pictoHeight * this.picto.scale,
+          width: this.picto.eventWidth / scale,
+          height: this.picto.pictoHeight / scale,
         });
       }
       let currentActionY = eventRow + (events.condition ? 1 : 0);
@@ -212,14 +195,14 @@ export class Events {
       if (typeof events.do !== 'string') {
         // переменная оффсет вместо 5
         let currentActionCoordX =
-          baseX + (this.picto.eventWidth + this.picto.PARAMETERS_OFFSET_X) / this.picto.scale;
+          baseX + (this.picto.eventWidth + this.picto.PARAMETERS_OFFSET_X) / scale;
         events.do.forEach((act) => {
           const pictoDimensions = platform.calculateActionSize(act);
           // если вмещается в состояние
           let aY = 0;
           if (
             currentActionCoordX + pictoDimensions.width <
-            x + width - this.picto.PARAMETERS_OFFSET_X / this.picto.scale
+            x + width - this.picto.PARAMETERS_OFFSET_X / scale
           ) {
             aY =
               baseY +
@@ -230,16 +213,13 @@ export class Events {
               type: 'action',
               x: currentActionCoordX,
               y: aY,
-              width: pictoDimensions.width * this.picto.scale,
-              height: pictoDimensions.height * this.picto.scale,
+              width: pictoDimensions.width,
+              height: this.picto.eventHeight / scale,
             });
-            currentActionCoordX +=
-              pictoDimensions.width +
-              this.picto.PARAMETERS_OFFSET_X / this.picto.scale +
-              (this.picto.PARAMETERS_OFFSET_X * 2) / this.picto.scale;
+            currentActionCoordX += pictoDimensions.width + this.picto.PARAMETERS_OFFSET_X / scale;
           } else {
             currentActionCoordX =
-              baseX + (this.picto.eventWidth + this.picto.PARAMETERS_OFFSET_X) / this.picto.scale;
+              baseX + (this.picto.eventWidth + this.picto.PARAMETERS_OFFSET_X) / scale;
             currentActionY += 1;
             this.pictos[currentActionY] = [];
             aY =
@@ -251,13 +231,10 @@ export class Events {
               type: 'action',
               x: currentActionCoordX,
               y: aY,
-              width: pictoDimensions.width * this.picto.scale,
-              height: pictoDimensions.height * this.picto.scale,
+              width: pictoDimensions.width,
+              height: this.picto.eventHeight / scale,
             });
-            currentActionCoordX +=
-              pictoDimensions.width +
-              this.picto.PARAMETERS_OFFSET_X / this.picto.scale +
-              (this.picto.PARAMETERS_OFFSET_X * 2) / this.picto.scale;
+            currentActionCoordX += pictoDimensions.width + this.picto.PARAMETERS_OFFSET_X / scale;
           }
         });
       }
@@ -270,7 +247,7 @@ export class Events {
   // По-хорошему отсюда должны уйти все рассчеты
   // А отрисовка должны идти по тому, что уже рассчитано в
   // calculatePictosPosition
-  //Прорисовка событий в блоках состояния
+  // Прорисовка событий в блоках состояния
   private drawImageEvents(ctx: CanvasRenderingContext2D) {
     const platform = this.app.controller.platform[this.parent.smId];
     if (!platform) return;
@@ -338,13 +315,19 @@ export class Events {
       const drawCursorIfSelected: (
         event: EventSelection,
         ...args: Parameters<typeof this.picto.drawCursor>
-      ) => ReturnType<typeof this.picto.drawCursor> = (event, ctx, x, y, width, height) => {
+      ) => ReturnType<typeof this.picto.drawCursor> = (event, ctx, x, y, scaledWidth, height) => {
         if (this.selection !== undefined) {
           if (
             this.selection.eventIdx == event.eventIdx &&
             this.selection.actionIdx == event.actionIdx
           ) {
-            this.picto.drawCursor(ctx, x, y, width, height);
+            this.picto.drawCursor(
+              ctx,
+              x,
+              y,
+              scaledWidth ? scaledWidth * this.picto.scale : undefined,
+              height
+            );
           }
         }
       };

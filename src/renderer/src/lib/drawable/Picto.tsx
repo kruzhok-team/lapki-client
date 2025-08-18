@@ -569,8 +569,8 @@ export class Picto {
   }
 
   calculateBasePictoDimensions = (scalePictoSize: number): Dimensions => {
-    const eventWidth = this.eventWidth / scalePictoSize;
-    const eventHeight: number = this.pictoHeight / scalePictoSize;
+    const eventWidth = this.eventWidth / scalePictoSize / this.scale;
+    const eventHeight: number = this.pictoHeight / scalePictoSize / this.scale;
 
     return {
       width: eventWidth,

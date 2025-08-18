@@ -60,19 +60,26 @@ export class Events {
       );
 
       //TODO(bryzZz) изменение параметров текста (общее для редактора)
-      const textData = prepareText(text, this.parent.dimensions.width - 2 * 15, {
-        fontFamily: 'Fira Sans',
-        fontSize: 16,
-        lineHeight: 1.2,
-      });
+      const textData = prepareText(
+        text,
+        this.parent.dimensions.width - 2 * this.picto.PICTO_OFFSET_X,
+        {
+          fontFamily: 'Fira Sans',
+          fontSize: 16,
+          lineHeight: 1.2,
+        }
+      );
 
-      this.dimensions.height = textData.height + 10 * 2;
+      this.dimensions.height = textData.height + this.picto.PICTO_OFFSET_Y * 2;
       this.textArray = textData.textArray;
 
       return;
     }
+    this.calculatePictosPosition();
     this.dimensions.height =
-      this.picto.eventHeight * this.currentEventRows + (this.currentEventRows - 1) * 10 + 10 * 2;
+      this.picto.eventHeight * this.currentEventRows +
+      (this.currentEventRows - 1) * this.picto.PICTO_OFFSET_Y +
+      this.picto.PICTO_OFFSET_Y * 2;
   }
 
   calculatePictoIndex(p: Point): EventSelection | undefined {
@@ -151,11 +158,11 @@ export class Events {
     if (!platform) return;
     const { x, y, width } = this.parent.drawBounds;
     const titleHeight = this.parent.titleHeight / this.app.controller.scale;
-    const px = 15 / this.app.controller.scale;
-    const py = 10 / this.app.controller.scale;
+    const px = this.picto.PICTO_OFFSET_X / this.app.controller.scale;
+    const py = this.picto.PICTO_OFFSET_Y / this.app.controller.scale;
     const baseX = x + px;
     const baseY = y + titleHeight + py;
-    const yDx = this.picto.eventHeight + 10;
+    const yDx = this.picto.eventHeight + this.picto.PICTO_OFFSET_Y;
     this.pictos = [];
     let eventRow = 0;
     let rowWidth = 0;
@@ -164,8 +171,10 @@ export class Events {
       for (const action of event.do) {
         const actionPictoWidth = platform.calculateActionSize(action).width;
         if (
-          baseX + (this.picto.eventWidth + 5) / this.picto.scale + actionPictoWidth >
-          x + width - 5 / this.picto.scale
+          baseX +
+            (this.picto.eventWidth + this.picto.PARAMETERS_OFFSET_X) / this.picto.scale +
+            actionPictoWidth >
+          x + width - this.picto.PARAMETERS_OFFSET_X / this.picto.scale
         ) {
           rowWidth = Math.max(actionPictoWidth, rowWidth);
         }
@@ -192,7 +201,7 @@ export class Events {
         // TODO: Просчет размера условия
         this.pictos[eventRow].push({
           type: 'condition',
-          x: eX + (this.picto.eventWidth + 5) / this.picto.scale,
+          x: eX + (this.picto.eventWidth + this.picto.PARAMETERS_OFFSET_X) / this.picto.scale,
           y: eY,
           width: this.picto.eventWidth * this.picto.scale,
           height: this.picto.pictoHeight * this.picto.scale,
@@ -202,12 +211,16 @@ export class Events {
       this.pictos[currentActionY] = this.pictos[currentActionY] || [];
       if (typeof events.do !== 'string') {
         // переменная оффсет вместо 5
-        let currentActionCoordX = baseX + (this.picto.eventWidth + 5) / this.picto.scale;
+        let currentActionCoordX =
+          baseX + (this.picto.eventWidth + this.picto.PARAMETERS_OFFSET_X) / this.picto.scale;
         events.do.forEach((act) => {
           const pictoDimensions = platform.calculateActionSize(act);
           // если вмещается в состояние
           let aY = 0;
-          if (currentActionCoordX + pictoDimensions.width < x + width - 5 / this.picto.scale) {
+          if (
+            currentActionCoordX + pictoDimensions.width <
+            x + width - this.picto.PARAMETERS_OFFSET_X / this.picto.scale
+          ) {
             aY =
               baseY +
               currentActionY * yDx -
@@ -222,10 +235,11 @@ export class Events {
             });
             currentActionCoordX +=
               pictoDimensions.width +
-              5 / this.picto.scale +
+              this.picto.PARAMETERS_OFFSET_X / this.picto.scale +
               (this.picto.PARAMETERS_OFFSET_X * 2) / this.picto.scale;
           } else {
-            currentActionCoordX = baseX + (this.picto.eventWidth + 5) / this.picto.scale;
+            currentActionCoordX =
+              baseX + (this.picto.eventWidth + this.picto.PARAMETERS_OFFSET_X) / this.picto.scale;
             currentActionY += 1;
             this.pictos[currentActionY] = [];
             aY =
@@ -242,7 +256,7 @@ export class Events {
             });
             currentActionCoordX +=
               pictoDimensions.width +
-              5 / this.picto.scale +
+              this.picto.PARAMETERS_OFFSET_X / this.picto.scale +
               (this.picto.PARAMETERS_OFFSET_X * 2) / this.picto.scale;
           }
         });
@@ -253,17 +267,20 @@ export class Events {
     this.currentEventRows = eventRow;
   }
 
+  // По-хорошему отсюда должны уйти все рассчеты
+  // А отрисовка должны идти по тому, что уже рассчитано в
+  // calculatePictosPosition
   //Прорисовка событий в блоках состояния
   private drawImageEvents(ctx: CanvasRenderingContext2D) {
     const platform = this.app.controller.platform[this.parent.smId];
     if (!platform) return;
     const { x, y, width } = this.parent.drawBounds;
     const titleHeight = this.parent.titleHeight / this.app.controller.scale;
-    const px = 15 / this.app.controller.scale;
-    const py = 10 / this.app.controller.scale;
+    const px = this.picto.PICTO_OFFSET_X / this.app.controller.scale;
+    const py = this.picto.PICTO_OFFSET_Y / this.app.controller.scale;
     const baseX = x + px;
     const baseY = y + titleHeight + py;
-    const yDx = this.picto.eventHeight + 10;
+    const yDx = this.picto.eventHeight + this.picto.PICTO_OFFSET_Y;
 
     let eventRow = 0;
     ctx.beginPath();
@@ -274,9 +291,9 @@ export class Events {
         const actionPictoWidth = platform.calculateActionSize(action).width;
         if (
           baseX +
-            (this.picto.eventWidth + this.picto.PICTO_OFFSET) / this.picto.scale +
+            (this.picto.eventWidth + this.picto.PARAMETERS_OFFSET_X) / this.picto.scale +
             actionPictoWidth >
-          x + width - this.picto.PICTO_OFFSET / this.picto.scale
+          x + width - this.picto.PARAMETERS_OFFSET_X / this.picto.scale
         ) {
           rowWidth = Math.max(actionPictoWidth, rowWidth);
         }
@@ -303,7 +320,7 @@ export class Events {
         platform.drawCondition(
           ctx,
           events.condition,
-          eX + (this.picto.eventWidth + this.picto.PICTO_OFFSET) / this.picto.scale,
+          eX + (this.picto.eventWidth + this.picto.PARAMETERS_OFFSET_X) / this.picto.scale,
           eY
         );
         ctx.closePath();
@@ -312,7 +329,7 @@ export class Events {
         platform.drawText(
           ctx,
           events.condition,
-          eX + (this.picto.eventWidth + this.picto.PICTO_OFFSET) / this.picto.scale,
+          eX + (this.picto.eventWidth + this.picto.PARAMETERS_OFFSET_X) / this.picto.scale,
           eY
         );
       }
@@ -333,12 +350,12 @@ export class Events {
       };
       if (typeof events.do !== 'string') {
         let currentActionCoordX =
-          baseX + (this.picto.eventWidth + this.picto.PICTO_OFFSET) / this.picto.scale;
+          baseX + (this.picto.eventWidth + this.picto.PARAMETERS_OFFSET_X) / this.picto.scale;
         events.do.forEach((act, actIdx) => {
           const pictoDimensions = platform.calculateActionSize(act);
           if (
             currentActionCoordX + pictoDimensions.width <
-            x + width - this.picto.PICTO_OFFSET / this.picto.scale
+            x + width - this.picto.PARAMETERS_OFFSET_X / this.picto.scale
           ) {
             const aY =
               baseY +
@@ -355,10 +372,10 @@ export class Events {
               this.picto.eventHeight
             );
             currentActionCoordX +=
-              pictoDimensions.width + this.picto.PICTO_OFFSET / this.picto.scale;
+              pictoDimensions.width + this.picto.PARAMETERS_OFFSET_X / this.picto.scale;
           } else {
             currentActionCoordX =
-              baseX + (this.picto.eventWidth + this.picto.PICTO_OFFSET) / this.picto.scale;
+              baseX + (this.picto.eventWidth + this.picto.PARAMETERS_OFFSET_X) / this.picto.scale;
             currentActionY += 1;
             const aY =
               baseY +
@@ -375,14 +392,13 @@ export class Events {
               this.picto.eventHeight
             );
             currentActionCoordX +=
-              pictoDimensions.width + this.picto.PICTO_OFFSET / this.picto.scale;
+              pictoDimensions.width + this.picto.PARAMETERS_OFFSET_X / this.picto.scale;
           }
         });
       }
 
       eventRow += Math.max(1, currentActionY - eventRow + 1);
     });
-    this.calculatePictosPosition();
     this.currentEventRows = eventRow;
   }
 

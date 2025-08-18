@@ -253,8 +253,8 @@ export class Picto {
   MATRIX_LED_WIDTH = 5;
   MATRIX_LED_HEIGHT = 5;
   TEXT_FONT = 'px/0 monospace';
-  PICTO_OFFSET = 5;
-
+  PICTO_OFFSET_X = 15;
+  PICTO_OFFSET_Y = 10;
   drawRect(
     ctx: CanvasRenderingContext2D,
     x: number,

@@ -84,11 +84,19 @@ export class Events {
   calculatePictoIndex(p: Point): EventSelection | undefined {
     let eventIdx = -1;
     this.calculatePictosPosition(this.picto.scale);
+    let actIdx = -1;
     for (const row of this.pictos) {
-      let actIdx = -1;
       for (const picto of row) {
         if (picto.type === 'event') {
           eventIdx += 1;
+          actIdx = -1;
+          // this.picto.drawCursor(
+          //   this.app.canvas.context,
+          //   picto.x,
+          //   picto.y,
+          //   picto.width * this.picto.scale,
+          //   picto.height * this.picto.scale
+          // );
           if (
             isPointInRectangle(
               {
@@ -108,6 +116,13 @@ export class Events {
         }
         if (picto.type === 'action') {
           actIdx += 1;
+          // this.picto.drawCursor(
+          //   this.app.canvas.context,
+          //   picto.x,
+          //   picto.y,
+          //   picto.width * this.picto.scale,
+          //   picto.height * this.picto.scale
+          // );
           if (
             isPointInRectangle(
               {
@@ -206,9 +221,8 @@ export class Events {
           ) {
             aY =
               baseY +
-              currentActionY * yDx -
-              (events.condition ? this.picto.PARAMETERS_WINDOW_HEIGHT : 0) /
-                this.app.controller.scale;
+              (currentActionY * yDx) / scale -
+              (events.condition ? this.picto.PARAMETERS_WINDOW_HEIGHT : 0) / scale;
             this.pictos[currentActionY].push({
               type: 'action',
               x: currentActionCoordX,
@@ -224,9 +238,8 @@ export class Events {
             this.pictos[currentActionY] = [];
             aY =
               baseY +
-              currentActionY * yDx -
-              (events.condition ? this.picto.PARAMETERS_WINDOW_HEIGHT : 0) /
-                this.app.controller.scale;
+              (currentActionY * yDx) / scale -
+              (events.condition ? this.picto.PARAMETERS_WINDOW_HEIGHT : 0) / scale;
             this.pictos[currentActionY].push({
               type: 'action',
               x: currentActionCoordX,
@@ -383,6 +396,7 @@ export class Events {
       eventRow += Math.max(1, currentActionY - eventRow + 1);
     });
     this.currentEventRows = eventRow;
+    // this.calculatePictoIndex({ x: -1000, y: -1000 });
   }
 
   private drawTextEvents(ctx: CanvasRenderingContext2D) {

@@ -352,9 +352,18 @@ export class Picto {
     const opacity = ps.opacity ?? 1.0;
 
     // Рамка
-    this.drawRect(ctx, x, y, this.pictoHeight, this.pictoHeight, bgColor, fgColor, opacity);
+    const dimensions = this.drawRect(
+      ctx,
+      x,
+      y,
+      this.pictoHeight,
+      this.pictoHeight,
+      bgColor,
+      fgColor,
+      opacity
+    );
 
-    if (!rightIcon) return;
+    if (!rightIcon) return dimensions;
 
     this.drawImage(ctx, rightIcon, {
       x: x + (this.pictoHeight - this.iconSize) / 2 / this.scale,
@@ -362,6 +371,8 @@ export class Picto {
       width: this.iconSize,
       height: this.iconSize,
     });
+
+    return dimensions;
   }
 
   drawText(ctx: CanvasRenderingContext2D, x: number, y: number, ps: PictoProps) {

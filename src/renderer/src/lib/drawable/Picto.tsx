@@ -505,7 +505,8 @@ export class Picto {
         parameterWindowX,
         parameterWindowY,
         parameterHeight,
-        Math.max(eventWidth / this.scale, parametersDimensions.width)
+        Math.max(eventWidth / this.scale, parametersDimensions.width),
+        opacity
       );
       for (const idx in parameters) {
         const drawFunction = parameters[idx];
@@ -636,12 +637,13 @@ export class Picto {
     y: number,
     height: number,
     width: number,
+    opacity: number = 1,
     fgColor?: string
   ) {
     const bgColor: string = '#5f5f5f';
     ctx.save();
     ctx.beginPath();
-
+    ctx.globalAlpha = opacity;
     ctx.lineWidth = 0.5;
     ctx.fillStyle = bgColor;
     ctx.strokeStyle = fgColor ?? '#fff';

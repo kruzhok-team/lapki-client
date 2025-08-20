@@ -18,65 +18,88 @@
   "componentDeclaration": true,
   "defaultSetupFunctions": [],
   "components": {
-    "Reader": {
-      "name": "Считыватель",
-      "description": "Компонент для поэтапного чтения строки.",
+    "Mover": {
+      "name": "Движение",
+      "description": "Компонент для управления движением робота Садовника.",
       "img": "junior/reader.svg",
-      "signals": {
-        "char_accepted": {
-          "alias": "Принят символ",
-          "img": "junior/char_accepted.svg",
-          "description": "Принят очередной символ."
-        },
-        "line_finished": {
-          "alias": "Строка закончилась",
-          "img": "junior/line_finished.svg",
-          "description": "Вся строка считана."
-        }
-      },
+      "signals": {},
       "methods": {
-        "read": {
-          "alias": "Принять символ",
+        "move_forward": {
+          "alias": "Вперед",
           "img": "junior/read.svg",
-          "description": "Прочитать очередной символ."
-        }
-      },
-      "variables": {
-        "current_char": {
-          "alias": "Принятый символ",
-          "img": "junior/current_char.svg",
-          "type": "char",
-          "description": "Последний принятый символ."
+          "description": "Вперед на одну клетку, учитывая текущее направление робота."
+        },
+        "move_backward": {
+          "alias": "Назад",
+          "img": "junior/read.svg",
+          "description": "Назад на одну клетку, учитывая текущее направление робота."
+        },
+        "turn_left": {
+          "alias": "Повернуть налево",
+          "img": "junior/read.svg",
+          "description": "Повернуть налево, учитывая текущее направление робота."
+        },
+        "turn_right": {
+          "alias": "Повернуть направо",
+          "img": "junior/read.svg",
+          "description": "Повернуть направо, учитывая текущее направление робота."
         }
       },
       "constructorParameters": {},
       "singletone": false
     },
-    "Impulse": {
-      "name": "Сигнал",
-      "description": "Компонент для генерации импульсов.",
-      "img": "junior/impulse.svg",
+    "Flower": {
+      "name": "Движение",
+      "description": "Компонент для управления движением робота Садовника.",
+      "img": "junior/reader.svg",
       "signals": {},
       "methods": {
-        "impulseA": {
-          "alias": "Импульс А",
-          "img": "junior/a.svg",
-          "description": "Сгенерировать импульс А."
+        "move_forward": {
+          "alias": "Вперед",
+          "img": "junior/read.svg",
+          "description": "Вперед на одну клетку, учитывая текущее направление робота."
         },
-        "impulseB": {
-          "alias": "Импульс Б",
-          "img": "junior/b.svg",
-          "description": "Сгенерировать импульс Б."
+        "move_backward": {
+          "alias": "Назад",
+          "img": "junior/read.svg",
+          "description": "Назад на одну клетку, учитывая текущее направление робота."
         },
-        "impulseC": {
-          "alias": "Импульс В",
-          "img": "junior/c.svg",
-          "description": "Сгенерировать импульс В."
+        "turn_left": {
+          "alias": "Повернуть налево",
+          "img": "junior/read.svg",
+          "description": "Повернуть налево, учитывая текущее направление робота."
+        },
+        "turn_right": {
+          "alias": "Повернуть направо",
+          "img": "junior/read.svg",
+          "description": "Повернуть направо, учитывая текущее направление робота."
         }
       },
-      "variables": {},
       "constructorParameters": {},
       "singletone": false
+    },
+    "UserSignal": {
+      "name": "Свое событие",
+      "description": "Компонент для создания произвольных, искусственных событий. Бывает полезным для упрощения диаграммы.",
+      "img": "common/userSignal.svg",
+      "signals": {
+        "isCalled": {
+          "alias": "Вызвано",
+          "img": "common/signalIsCalled.svg",
+          "description": "Вызвано искусственное событие.",
+          "checkMethod": "isCalled"
+        }
+      },
+      "constructorParameters": {},
+      "methods": {
+        "call": {
+          "alias": "Вызвать",
+          "img": "common/signalCall.svg",
+          "description": "Вызвать искусственное событие."
+        }
+      },
+      "singletone": false,
+      "variables": {}
     },
     "Counter": {
       "name": "Счетчик",

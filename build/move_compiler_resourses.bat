@@ -1,35 +1,35 @@
-@echo off
-setlocal enabledelayedexpansion
+@REM @echo off
+@REM setlocal enabledelayedexpansion
 
-REM Check if BUILD_RESOURSES_DIR is provided
-if "%~1"=="" (
-    echo Error: BUILD_RESOURSES_DIR parameter is required
-    exit /b 1
-)
+@REM REM Check if BUILD_RESOURSES_DIR is provided
+@REM if "%~1"=="" (
+@REM     echo Error: BUILD_RESOURSES_DIR parameter is required
+@REM     exit /b 1
+@REM )
 
-set "BUILD_RESOURSES_DIR=%~1\lapki-compiler\compiler"
-set "TARGET_DIR=%BUILD_RESOURSES_DIR%\..\..\..\resources\modules\win32\lapki-compiler"
+@REM set "BUILD_RESOURSES_DIR=%~1\lapki-compiler\compiler"
+@REM set "TARGET_DIR=%BUILD_RESOURSES_DIR%\..\..\..\resources\modules\win32\lapki-compiler"
 
-REM Create target directory if it doesn't exist
-if not exist %TARGET_DIR% mkdir %TARGET_DIR%
+@REM REM Create target directory if it doesn't exist
+@REM if not exist %TARGET_DIR% mkdir %TARGET_DIR%
 
-REM Move platforms directory
-if exist %BUILD_RESOURSES_DIR%\platforms (
-    xcopy /E /I /Y %BUILD_RESOURSES_DIR%\platforms %TARGET_DIR%\platforms
-    echo Moved platforms directory
-)
+@REM REM Move platforms directory
+@REM if exist %BUILD_RESOURSES_DIR%\platforms (
+@REM     xcopy /E /I /Y %BUILD_RESOURSES_DIR%\platforms %TARGET_DIR%\platforms
+@REM     echo Moved platforms directory
+@REM )
 
-REM Move library directory
-if exist %BUILD_RESOURSES_DIR%\library (
-    xcopy /E /I /Y %BUILD_RESOURSES_DIR%\library %TARGET_DIR%\library
-    echo Moved library directory
-)
+@REM REM Move library directory
+@REM if exist %BUILD_RESOURSES_DIR%\library (
+@REM     xcopy /E /I /Y %BUILD_RESOURSES_DIR%\library %TARGET_DIR%\library
+@REM     echo Moved library directory
+@REM )
 
-REM Move fullgraphmlparser\templates directory
-if exist %BUILD_RESOURSES_DIR%\fullgraphmlparser\templates (
-    xcopy /E /I /Y %BUILD_RESOURSES_DIR%\fullgraphmlparser\templates %TARGET_DIR%\fullgraphmlparser\templates
-    echo Moved fullgraphmlparser\templates directory
-)
+@REM REM Move fullgraphmlparser\templates directory
+@REM if exist %BUILD_RESOURSES_DIR%\fullgraphmlparser\templates (
+@REM     xcopy /E /I /Y %BUILD_RESOURSES_DIR%\fullgraphmlparser\templates %TARGET_DIR%\fullgraphmlparser\templates
+@REM     echo Moved fullgraphmlparser\templates directory
+@REM )
 
-echo Resource movement completed successfully
-exit /b 0
+@REM echo Resource movement completed successfully
+@REM exit /b 0

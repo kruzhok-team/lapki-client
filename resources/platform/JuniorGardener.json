@@ -49,30 +49,53 @@
       "singletone": false
     },
     "Flower": {
-      "name": "Движение",
-      "description": "Компонент для управления движением робота Садовника.",
+      "name": "Цветы",
+      "description": "Компонент для посадки цветов.",
       "img": "junior/reader.svg",
       "signals": {},
       "methods": {
-        "move_forward": {
-          "alias": "Вперед",
+        "plant": {
+          "alias": "Посадить",
           "img": "junior/read.svg",
-          "description": "Вперед на одну клетку, учитывая текущее направление робота."
+          "description": "Посадить цветок в текущую клетку. Вызывает ошибку, если посадить цветок на не пустую клетку.",
+          "parameters": [
+            {
+              "name": "Растение",
+              "type": [
+                1,
+                2,
+                3,
+                4
+              ],
+              "valueAlias": [
+                "Роза",
+                "Мята",
+                "Василек"
+              ],
+              "description": "Тип растения, которое будет посажено.",
+              "optional": false
+            }
+          ]
+        }
+      },
+      "variables": {
+        "ROSE": {
+          "alias": "Роза",
+          "img": "arduino/difference.svg",
+          "type": "unsigned long",
+          "description": "Растение, рекомендуется использовать в условиях."
         },
-        "move_backward": {
-          "alias": "Назад",
-          "img": "junior/read.svg",
-          "description": "Назад на одну клетку, учитывая текущее направление робота."
+        "MINT": {
+          "alias": "Мята",
+          "img": "arduino/difference.svg",
+          "type": "unsigned long",
+          "description": "Растение, рекомендуется использовать в условиях."
         },
-        "turn_left": {
-          "alias": "Повернуть налево",
-          "img": "junior/read.svg",
-          "description": "Повернуть налево, учитывая текущее направление робота."
-        },
-        "turn_right": {
-          "alias": "Повернуть направо",
-          "img": "junior/read.svg",
-          "description": "Повернуть направо, учитывая текущее направление робота."
+        "VASILEK": {
+          "alias": "Мята",
+          "img": "arduino/difference.svg",
+          "type": "unsigned long",
+          "description": "Растение, рекомендуется использовать в условиях."
         }
       },
       "constructorParameters": {},

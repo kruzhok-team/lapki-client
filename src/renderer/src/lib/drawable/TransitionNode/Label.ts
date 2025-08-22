@@ -112,9 +112,15 @@ export class Label implements Drawable {
       platform[this.parent.smId].drawEvent(ctx, trigger, x + p, y + p);
       ctx.closePath();
     } else {
-      this.app.view.picto.drawPicto(ctx, x + p, y + p, {
-        rightIcon: 'condition',
-      });
+      this.app.view.picto.drawPicto(
+        ctx,
+        x + p,
+        y + p,
+        {
+          rightIcon: 'condition',
+        },
+        []
+      );
     }
 
     //Здесь начинается прорисовка действий и условий для связей

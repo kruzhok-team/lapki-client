@@ -196,7 +196,10 @@ export class Events {
       }
       if (rowWidth > 0) {
         this.parent.data.dimensions.width =
-          rowWidth * this.picto.scale + this.picto.PARAMETERS_OFFSET_X + this.picto.PICTO_OFFSET_X;
+          rowWidth * this.picto.scale +
+          this.picto.PARAMETERS_OFFSET_X +
+          this.picto.PICTO_OFFSET_X * 2 +
+          this.picto.eventWidth;
       }
     }
     this.data.map((events) => {

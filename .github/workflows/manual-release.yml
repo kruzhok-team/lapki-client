@@ -11,22 +11,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
       - name: Init submodules
-        run: git submodule update --init --checkout --recursive
-      - name: Download avrdude
-        run: |
-          wget https://github.com/avrdudes/avrdude/releases/download/v8.0/avrdude-v8.0-windows-x86.zip -O resources/modules/win32/avrdude.zip
-          unzip resources/modules/win32/avrdude.zip -d resources/modules/win32
-          rm -f resources/modules/win32/avrdude.zip
-      - name: Download Arduino CLI
-        run: |
-          wget https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_Windows_64bit.zip -O resources/modules/win32/arduino-cli.zip
-          unzip resources/modules/win32/arduino-cli.zip -d resources/modules/win32/arduino-cli/
-          rm -f resources/modules/win32/arduino-cli.zip
-      - name: Download gcc-arm-none-eabi
-        run: |
-          wget https://seafile.polyus-nt.ru/f/83d0be836d1c491fa3b3/?dl=1 -O build/gcc-arm-none-eabi.zip
-          unzip build/gcc-arm-none-eabi.zip -d build/gcc-arm-none-eabi
-          rm -f build/gcc-arm-none-eabi.zip
+        run: git submodule update --init --checkout
+      # - name: Download avrdude
+      #   run: |
+      #     wget https://github.com/avrdudes/avrdude/releases/download/v8.0/avrdude-v8.0-windows-x86.zip -O resources/modules/win32/avrdude.zip
+      #     unzip resources/modules/win32/avrdude.zip -d resources/modules/win32
+      #     rm -f resources/modules/win32/avrdude.zip
+      # - name: Download Arduino CLI
+      #   run: |
+      #     wget https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_Windows_64bit.zip -O resources/modules/win32/arduino-cli.zip
+      #     unzip resources/modules/win32/arduino-cli.zip -d resources/modules/win32/arduino-cli/
+      #     rm -f resources/modules/win32/arduino-cli.zip
+      # - name: Download gcc-arm-none-eabi
+      #   run: |
+      #     wget https://seafile.polyus-nt.ru/f/83d0be836d1c491fa3b3/?dl=1 -O build/gcc-arm-none-eabi.zip
+      #     unzip build/gcc-arm-none-eabi.zip -d build/gcc-arm-none-eabi
+      #     rm -f build/gcc-arm-none-eabi.zip
       - name: Run the build process with Docker
         uses: addnab/docker-run-action@v3
         with:

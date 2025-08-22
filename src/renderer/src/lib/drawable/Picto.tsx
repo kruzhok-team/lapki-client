@@ -23,11 +23,22 @@ let imagesLoaded = false;
 export const icons: Map<string, HTMLImageElement> = new Map();
 // TODO? export const iconsPaths: Map<string, string> = new Map();
 
-export const imgBaseDir = './img/';
+let imgBaseDir = './img/';
 
 export function resolveImg(p: string): string {
   // FIXME: только относительные пути в папке img
   return imgBaseDir + p;
+}
+
+async function ensureImgBaseDir(): Promise<void> {
+  try {
+    const url = await window.electron.ipcRenderer.invoke('getResourcesAssetBaseUrl');
+    if (typeof url === 'string' && url.length > 0) {
+      imgBaseDir = url;
+    }
+  } catch (_e) {
+    // fallback remains './img/' for dev
+  }
 }
 
 type BasePictoKey =
@@ -101,10 +112,21 @@ export function preloadPicto(callback: () => void) {
     callback();
     return;
   }
-  preloadImagesMap(icons, basePicto).then(() => {
-    imagesLoaded = true;
-    callback();
-  });
+  ensureImgBaseDir()
+    .catch(() => void 0)
+    .finally(() => {
+      // Переписываем относительные пути './img/...' на абсолютный URL к ресурсам
+      Object.keys(basePicto).forEach((key) => {
+        const val = basePicto[key as keyof typeof basePicto] as unknown as string;
+        if (typeof val === 'string' && val.startsWith('./img/')) {
+          (basePicto as Record<string, string>)[key] = val.replace('./img/', imgBaseDir);
+        }
+      });
+      preloadImagesMap(icons, basePicto).then(() => {
+        imagesLoaded = true;
+        callback();
+      });
+    });
 }
 
 export type PictoProps = {
@@ -330,9 +352,18 @@ export class Picto {
     const opacity = ps.opacity ?? 1.0;
 
     // Рамка
-    this.drawRect(ctx, x, y, this.pictoHeight, this.pictoHeight, bgColor, fgColor, opacity);
+    const dimensions = this.drawRect(
+      ctx,
+      x,
+      y,
+      this.pictoHeight,
+      this.pictoHeight,
+      bgColor,
+      fgColor,
+      opacity
+    );
 
-    if (!rightIcon) return;
+    if (!rightIcon) return dimensions;
 
     this.drawImage(ctx, rightIcon, {
       x: x + (this.pictoHeight - this.iconSize) / 2 / this.scale,
@@ -340,6 +371,8 @@ export class Picto {
       width: this.iconSize,
       height: this.iconSize,
     });
+
+    return dimensions;
   }
 
   drawText(ctx: CanvasRenderingContext2D, x: number, y: number, ps: PictoProps) {
@@ -472,7 +505,8 @@ export class Picto {
         parameterWindowX,
         parameterWindowY,
         parameterHeight,
-        Math.max(eventWidth / this.scale, parametersDimensions.width)
+        Math.max(eventWidth / this.scale, parametersDimensions.width),
+        opacity
       );
       for (const idx in parameters) {
         const drawFunction = parameters[idx];
@@ -603,12 +637,13 @@ export class Picto {
     y: number,
     height: number,
     width: number,
+    opacity: number = 1,
     fgColor?: string
   ) {
     const bgColor: string = '#5f5f5f';
     ctx.save();
     ctx.beginPath();
-
+    ctx.globalAlpha = opacity;
     ctx.lineWidth = 0.5;
     ctx.fillStyle = bgColor;
     ctx.strokeStyle = fgColor ?? '#fff';

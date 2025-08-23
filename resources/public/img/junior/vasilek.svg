@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg"
+     viewBox="0 0 90.74 122.88">
+  <style>
+    .petal { fill:#4f99f7 ; }   /* розовые лепестки */
+    .bluepetal { fill:#4fc3f7; } /* синие лепестки */
+    .center{ fill:#ffd93b; }   /* серединка */
+    .stem  { fill:#43a047; }   /* стебель */
+    .leaf  { fill:#4caf50; }   /* листья */
+  </style>
+
+  <!-- стебель -->
+  <rect class="stem" x="34.8" y="46" width="6.4" height="56" rx="3.2"/>
+
+  <!-- листья -->
+  <ellipse class="leaf" cx="26" cy="78" rx="11" ry="6.5" transform="rotate(-28 26 78)"/>
+  <ellipse class="leaf" cx="52" cy="86" rx="12" ry="7"  transform="rotate(22 52 86)"/>
+
+  <!-- синие лепестки -->
+  <ellipse class="bluepetal" cx="37.48" cy="22" rx="9" ry="14"/>
+  <ellipse class="bluepetal" cx="37.48" cy="53" rx="9" ry="14"/>
+  <ellipse class="bluepetal" cx="22" cy="37.48" rx="14" ry="9"/>
+  <ellipse class="bluepetal" cx="53" cy="37.48" rx="14" ry="9"/>
+
+  <!-- розовые лепестки (диагональные) -->
+  <ellipse class="petal" cx="25" cy="25" rx="10" ry="7" transform="rotate(-45 25 25)"/>
+  <ellipse class="petal" cx="50" cy="25" rx="10" ry="7" transform="rotate(45 50 25)"/>
+  <ellipse class="petal" cx="25" cy="50" rx="10" ry="7" transform="rotate(45 25 50)"/>
+  <ellipse class="petal" cx="50" cy="50" rx="10" ry="7" transform="rotate(-45 50 50)"/>
+
+  <!-- серединка -->
+  <circle class="center" cx="37.48" cy="37.48" r="8.48"/>
+</svg>

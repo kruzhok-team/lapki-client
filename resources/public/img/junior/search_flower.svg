@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="224px" height="204px" viewBox="0 0 224 204">
+  <!-- Лупа -->
+  <g>
+    <!-- Внешний круг (ободок) -->
+    <circle cx="90" cy="90" r="70" fill="none" stroke="#fefffe" stroke-width="12"/>
+    <!-- Ручка -->
+    <line x1="145" y1="145" x2="200" y2="200" stroke="#fefffe" stroke-width="12" stroke-linecap="round"/>
+  </g>
+
+  <!-- Растение (большой росток внутри линзы) -->
+  <g>
+    <!-- Стебель -->
+    <path d="M90 110 C 88 130, 88 150, 90 170" stroke="#2e7d32" stroke-width="5" fill="none"/>
+    <!-- Большой лист вправо -->
+    <ellipse cx="110" cy="120" rx="25" ry="12" fill="#43a047" transform="rotate(-20 110 120)"/>
+    <!-- Большой лист влево -->
+    <ellipse cx="70" cy="120" rx="25" ry="12" fill="#43a047" transform="rotate(20 70 120)"/>
+  </g>
+</svg>

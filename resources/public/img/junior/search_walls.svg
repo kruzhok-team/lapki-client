@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="224px" height="204px" viewBox="0 0 224 204">
+  <!-- Лупа -->
+  <g>
+    <!-- Внешний круг (ободок линзы) -->
+    <circle cx="90" cy="90" r="70" fill="none" stroke="#fefffe" stroke-width="12"/>
+    <!-- Ручка -->
+    <line x1="145" y1="145" x2="200" y2="200" stroke="#fefffe" stroke-width="12" stroke-linecap="round"/>
+  </g>
+
+  <!-- Кирпичики (внутри линзы) -->
+  <g fill="#b71c1c">
+    <!-- Первый ряд -->
+    <rect x="55" y="65" width="25" height="12"/>
+    <rect x="85" y="65" width="25" height="12"/>
+    <!-- Второй ряд со смещением -->
+    <rect x="70" y="80" width="25" height="12"/>
+    <rect x="100" y="80" width="25" height="12"/>
+    <!-- Третий ряд -->
+    <rect x="55" y="95" width="25" height="12"/>
+    <rect x="85" y="95" width="25" height="12"/>
+  </g>
+</svg>

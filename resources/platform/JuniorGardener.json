@@ -148,7 +148,7 @@
       },
       "variables": {
         "value": {
-          "alias": "значение",
+          "alias": "Значение",
           "img": "common/value.svg",
           "description": "Текущее значение счетчика.",
           "type": "int"
@@ -214,29 +214,19 @@
       "description": "Компонент для получения информации о стенах и посаженных цветах.",
       "img": "junior/sensor.svg",
       "signals": {
-        "wall_right": {
-          "alias": "Справа стена",
-          "img": "junior/wall_right.svg",
-          "description": "Справа стена."
+        "got_walls": {
+          "alias": "Есть стены",
+          "img": "junior/got_walls.svg",
+          "description": "Сканер обнаружил стены рядом с садовником."
         },
-        "wall_left": {
-          "alias": "Слева стена",
-          "img": "junior/wall_left.svg",
-          "description": "Слева стена."
+        "no_walls": {
+          "alias": "Нет стен",
+          "img": "junior/no_walls.svg",
+          "description": "Сканер не обнаружил стен вокруг садовника."
         },
-        "wall_back": {
-          "alias": "Сзади стена",
-          "img": "junior/wall_backward.svg",
-          "description": "Сзади стена."
-        },
-        "wall_straight": {
-          "alias": "Спереди стена",
-          "img": "junior/wall_forward.svg",
-          "description": "Спереди стена."
-        },
-        "isDataRecieved": {
-          "alias": "Получены данные",
-          "img": "junior/char_accepted.svg",
+        "flowers_scanned": {
+          "alias": "Цветы осмотрены",
+          "img": "junior/flowers_scanned.svg",
           "description": "Получены данные о засаженных цветах на текущей клетке."
         }
       },
@@ -255,6 +245,36 @@
         }
       },
       "variables": {
+        "wall_right": {
+          "alias": "Справа стена",
+          "img": "junior/wall_right.svg",
+          "type": "unsigned long",
+          "description": "Не ноль, если справа от садовника обнаружена стена."
+        },
+        "wall_left": {
+          "alias": "Слева стена",
+          "img": "junior/wall_left.svg",
+          "type": "unsigned long",
+          "description": "Не ноль, если cлева от садовника обнаружена стена."
+        },
+        "wall_back": {
+          "alias": "Сзади стена",
+          "img": "junior/wall_backward.svg",
+          "type": "unsigned long",
+          "description": "Не ноль, если cзади от садовника обнаружена стена."
+        },
+        "wall_straight": {
+          "alias": "Спереди стена",
+          "img": "junior/wall_forward.svg",
+          "type": "unsigned long",
+          "description": "Не ноль, если cпереди от садовника обнаружена стена."
+        },
+        "flower": {
+          "alias": "Растение",
+          "img": "junior/flower.svg",
+          "type": "unsigned long",
+          "description": "Что находится на поле под садовником"
+        },
         "empty": {
           "alias": "Пусто",
           "img": "junior/empty.svg",

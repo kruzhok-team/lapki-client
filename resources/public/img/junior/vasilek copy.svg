@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   version="1.1"
+   viewBox="0 0 90.000002 90.000002"
+   id="svg10"
+   sodipodi:docname="vasilek.svg"
+   width="90"
+   height="90"
+   inkscape:version="1.3 (0e150ed6c4, 2023-07-21)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs10" />
+  <sodipodi:namedview
+     id="namedview10"
+     pagecolor="#505050"
+     bordercolor="#eeeeee"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#505050"
+     inkscape:zoom="4.8461915"
+     inkscape:cx="-8.8729469"
+     inkscape:cy="59.118588"
+     inkscape:window-width="2560"
+     inkscape:window-height="1387"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="g10" />
+  <style
+     id="style1">&#10;    .petal { fill:#4f99f7 ; }   /* розовые лепестки */&#10;    .bluepetal { fill:#4fc3f7; } /* синие лепестки */&#10;    .center{ fill:#ffd93b; }   /* серединка */&#10;    .stem  { fill:#43a047; }   /* стебель */&#10;    .leaf  { fill:#4caf50; }   /* листья */&#10;  </style>
+  <!-- стебель -->
+  <!-- листья -->
+  <!-- синие лепестки -->
+  <!-- розовые лепестки (диагональные) -->
+  <!-- серединка -->
+  <g
+     id="g10"
+     transform="matrix(1.3064364,0,0,1.3064364,-8.5753183,-6.5485117)">
+    <rect
+       class="stem"
+       x="37.276173"
+       y="44.555565"
+       width="6.4000001"
+       height="27.317684"
+       rx="3.2"
+       id="rect1"
+       style="stroke-width:0.698438" />
+    <ellipse
+       class="leaf"
+       cx="-4.9736805"
+       cy="69.570396"
+       rx="11"
+       ry="6.5"
+       transform="rotate(-28)"
+       id="ellipse1" />
+    <ellipse
+       class="leaf"
+       cx="74.068085"
+       cy="37.902596"
+       rx="12"
+       ry="7"
+       transform="rotate(22)"
+       id="ellipse2" />
+    <ellipse
+       class="bluepetal"
+       cx="39.956173"
+       cy="20.555567"
+       rx="9"
+       ry="14"
+       id="ellipse3" />
+    <ellipse
+       class="bluepetal"
+       cx="39.956173"
+       cy="51.555565"
+       rx="9"
+       ry="14"
+       id="ellipse4" />
+    <ellipse
+       class="bluepetal"
+       cx="24.476171"
+       cy="36.035564"
+       rx="14"
+       ry="9"
+       id="ellipse5" />
+    <ellipse
+       class="bluepetal"
+       cx="55.476173"
+       cy="36.035564"
+       rx="14"
+       ry="9"
+       id="ellipse6" />
+    <ellipse
+       class="petal"
+       cx="2.5353656"
+       cy="37.585384"
+       rx="10"
+       ry="7"
+       transform="rotate(-45)"
+       id="ellipse7" />
+    <ellipse
+       class="petal"
+       cx="54.631268"
+       cy="-19.581249"
+       rx="10"
+       ry="7"
+       transform="rotate(45)"
+       id="ellipse8" />
+    <ellipse
+       class="petal"
+       cx="53.762558"
+       cy="13.641807"
+       rx="10"
+       ry="7"
+       transform="rotate(45)"
+       id="ellipse9" />
+    <ellipse
+       class="petal"
+       cx="3.4040737"
+       cy="70.808441"
+       rx="10"
+       ry="7"
+       transform="rotate(-45)"
+       id="ellipse10" />
+    <circle
+       class="center"
+       cx="39.956173"
+       cy="36.035564"
+       r="8.4799995"
+       id="circle10" />
+  </g>
+</svg>

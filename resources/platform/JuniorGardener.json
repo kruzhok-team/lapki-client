@@ -21,42 +21,43 @@
     "Mover": {
       "name": "Движение",
       "description": "Компонент для управления движением робота Садовника.",
-      "img": "junior/reader.svg",
+      "img": "junior/movement.svg",
       "signals": {},
       "methods": {
         "move_forward": {
           "alias": "Вперед",
-          "img": "junior/read.svg",
+          "img": "junior/coord_up.svg",
           "description": "Вперед на одну клетку, учитывая текущее направление робота."
         },
         "move_backward": {
           "alias": "Назад",
-          "img": "junior/read.svg",
+          "img": "junior/coord_down.svg",
           "description": "Назад на одну клетку, учитывая текущее направление робота."
         },
         "turn_left": {
           "alias": "Повернуть налево",
-          "img": "junior/read.svg",
+          "img": "junior/coord_left.svg",
           "description": "Повернуть налево, учитывая текущее направление робота."
         },
         "turn_right": {
           "alias": "Повернуть направо",
-          "img": "junior/read.svg",
+          "img": "junior/coord_right.svg",
           "description": "Повернуть направо, учитывая текущее направление робота."
         }
       },
+      "variables": {},
       "constructorParameters": {},
       "singletone": false
     },
     "Flower": {
       "name": "Цветы",
       "description": "Компонент для посадки цветов.",
-      "img": "junior/reader.svg",
+      "img": "junior/fern-color-icon.svg",
       "signals": {},
       "methods": {
         "plant": {
           "alias": "Посадить",
-          "img": "junior/read.svg",
+          "img": "junior/go-green-icon.svg",
           "description": "Посадить цветок в текущую клетку. Вызывает ошибку, если посадить цветок на не пустую клетку.",
           "parameters": [
             {
@@ -69,8 +70,7 @@
           ]
         }
       },
-      "variables": {
-      },
+      "variables": {},
       "constructorParameters": {},
       "singletone": false
     },
@@ -140,7 +140,7 @@
             }
           ]
         },
-        "reset": {
+        "clear": {
           "alias": "Сброс",
           "img": "arduino/reset.svg",
           "description": "Обнулить значение счетчика."
@@ -157,51 +157,51 @@
       "singletone": false
     },
     "Compass": {
-      "name": "Цветы",
+      "name": "Компас",
       "description": "Компонент для определения местоположения робота.",
-      "img": "junior/reader.svg",
+      "img": "junior/compass-icon.svg",
       "signals": {},
       "methods": {},
       "variables": {
         "x": {
           "alias": "X",
-          "img": "arduino/difference.svg",
+          "img": "junior/x.svg",
           "type": "unsigned long",
           "description": "Положение робота по координате X."
         },
         "y": {
           "alias": "Y",
-          "img": "arduino/difference.svg",
+          "img": "junior/y.svg",
           "type": "unsigned long",
           "description": "Положение робота по координате Y."
         },
         "orientation": {
           "alias": "Ориентация",
-          "img": "arduino/difference.svg",
+          "img": "junior/cross-arrows-icon.svg",
           "type": "unsigned long",
           "description": "Сторона, в которую смотрит робот."
         },
         "west": {
           "alias": "Запад",
-          "img": "arduino/difference.svg",
+          "img": "junior/w.svg",
           "type": "unsigned long",
           "description": "Направление. Рекомендуется использовать в условиях."
         },
         "north": {
           "alias": "Север",
-          "img": "arduino/difference.svg",
+          "img": "junior/n.svg",
           "type": "unsigned long",
           "description": "Направление. Рекомендуется использовать в условиях."
         },
         "south": {
           "alias": "Юг",
-          "img": "arduino/difference.svg",
+          "img": "junior/s.svg",
           "type": "unsigned long",
           "description": "Направление. Рекомендуется использовать в условиях."
         },
         "east": {
           "alias": "Восток",
-          "img": "arduino/difference.svg",
+          "img": "junior/e.svg",
           "type": "unsigned long",
           "description": "Направление. Рекомендуется использовать в условиях."
         }
@@ -212,44 +212,44 @@
     "Sensor": {
       "name": "Сенсор",
       "description": "Компонент для получения информации о стенах и посаженных цветах.",
-      "img": "junior/reader.svg",
+      "img": "junior/sensor.svg",
       "signals": {
         "wall_right": {
           "alias": "Справа стена",
-          "img": "common/signalIsCalled.svg",
+          "img": "junior/wall_right.svg",
           "description": "Справа стена."
         },
         "wall_left": {
           "alias": "Слева стена",
-          "img": "common/signalIsCalled.svg",
+          "img": "junior/wall_left.svg",
           "description": "Слева стена."
         },
         "wall_back": {
           "alias": "Сзади стена",
-          "img": "common/signalIsCalled.svg",
+          "img": "junior/wall_backward.svg",
           "description": "Сзади стена."
         },
         "wall_straight": {
           "alias": "Спереди стена",
-          "img": "common/signalIsCalled.svg",
+          "img": "junior/wall_forward.svg",
           "description": "Спереди стена."
         },
         "isDataRecieved": {
           "alias": "Получены данные",
-          "img": "common/signalIsCalled.svg",
+          "img": "junior/char_accepted.svg",
           "description": "Получены данные о засаженных цветах на текущей клетке."
         }
       },
       "methods": {
         "search_walls": {
           "alias": "Осмотреть стены",
-          "img": "common/set.svg",
+          "img": "junior/search_walls.svg",
           "description": "Определить наличие стен вокруг.",
           "parameters": []
         },
         "search_flowers": {
           "alias": "Осмотреть цветы",
-          "img": "common/set.svg",
+          "img": "junior/search_flower.svg",
           "description": "Определить какой тип растения посажен на текущей клетке.",
           "parameters": []
         }
@@ -257,25 +257,25 @@
       "variables": {
         "empty": {
           "alias": "Пусто",
-          "img": "arduino/difference.svg",
+          "img": "junior/empty.svg",
           "type": "unsigned long",
           "description": "Отсутствие растения на почве. Рекомендуется использовать в условиях"
         },
         "rose": {
           "alias": "Роза",
-          "img": "arduino/difference.svg",
+          "img": "junior/rose-flower-icon.svg",
           "type": "unsigned long",
           "description": "Растение, рекомендуется использовать в условиях."
         },
         "mint": {
           "alias": "Мята",
-          "img": "arduino/difference.svg",
+          "img": "junior/leaf-green-icon.svg",
           "type": "unsigned long",
           "description": "Растение, рекомендуется использовать в условиях."
         },
         "vasilek": {
           "alias": "Василек",
-          "img": "arduino/difference.svg",
+          "img": "junior/vasilek.svg",
           "type": "unsigned long",
           "description": "Растение, рекомендуется использовать в условиях."
         }

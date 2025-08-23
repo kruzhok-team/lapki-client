@@ -121,7 +121,7 @@
             }
           ]
         },
-        "reset": {
+        "clear": {
           "alias": "Сброс",
           "img": "arduino/reset.svg",
           "description": "Обнулить значение счетчика."

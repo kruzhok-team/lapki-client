@@ -2,7 +2,7 @@
 export let appVersion = null;
 export const releaseName = 'EgyptianMau';
 
-export const appName = 'Cyberiada IDE';
+export const appName = 'Lapki IDE';
 export const seriousMode = true;
 export const noTextMode = true;
 export const noSchemeScreen = true;

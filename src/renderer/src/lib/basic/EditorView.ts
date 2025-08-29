@@ -48,6 +48,7 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
     this.app.keyboard.on('ctrlc', this.app.controller.model.copySelected);
     this.app.keyboard.on('ctrlv', this.app.controller.model.pasteSelected);
     this.app.keyboard.on('ctrld', this.app.controller.model.duplicateSelected);
+    this.app.keyboard.on('shiftr', this.app.controller.model.invertSelectedTransition);
     this.app.mouse.on('mouseout', this.handleMouseUp);
     this.app.mouse.on('mousedown', this.handleMouseDown);
     this.app.mouse.on('mouseup', this.handleMouseUp);
@@ -65,6 +66,7 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
     this.app.keyboard.off('ctrlc', this.app.controller.model.copySelected);
     this.app.keyboard.off('ctrlv', this.app.controller.model.pasteSelected);
     this.app.keyboard.off('ctrld', this.app.controller.model.duplicateSelected);
+    this.app.keyboard.off('shiftr', this.app.controller.model.invertSelectedTransition);
 
     this.app.mouse.off('mouseout', this.handleMouseUp);
     this.app.mouse.off('mousedown', this.handleMouseDown);

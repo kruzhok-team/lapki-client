@@ -160,8 +160,13 @@ export class Compiler extends ClientWS {
         break;
       case 'import':
         compilerElements = JSON.parse(msg.data as string);
-        elements = actualizeElements(compilerElements.source[0].fileContent);
-        this.setImportData(elements);
+        try {
+          elements = actualizeElements(compilerElements.source[0].fileContent);
+          this.setImportData(elements);
+        } catch (error) {
+          console.error(error);
+          toast.error('Ошибка импорта, возможно старая версия схемы!');
+        }
         break;
       case 'export':
         exportRequest = JSON.parse(msg.data as string) as SourceFile;

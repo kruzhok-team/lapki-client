@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as SelectFileIcon } from '@renderer/assets/icons/upload-file.svg';
+import { BlgMbDevice } from '@renderer/components/Modules/Device';
 import { ManagerMS } from '@renderer/components/Modules/ManagerMS';
 import { Checkbox, Select, SelectOption, WithHint } from '@renderer/components/UI';
 import { useModelContext } from '@renderer/store/ModelContext';
@@ -310,6 +311,10 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
       }
       displayName = dev.displayName();
       typeId = ManagerMS.getDevicePlatform(dev);
+      if (dev.isBlgMbDevice()) {
+        const BlgMbDev = dev as BlgMbDevice;
+        displayType = BlgMbDev.version;
+      }
     } else {
       throw Error(`Плата не поддерживается: ${tableItem}`);
     }

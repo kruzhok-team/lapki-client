@@ -464,7 +464,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.controller.selectState({ smId: state.smId, id: state.id });
     this.controller.emit('selectState', { smId: state.smId, id: state.id });
     const targetPos = state.computedPosition;
-    const titleHeight = state.titleHeight;
+    const titleHeight = state.titleHeight / this.controller.scale;
     const y = e.event.y - targetPos.y;
     // FIXME: если будет учёт нажатий на дочерний контейнер, нужно отсеять их здесь
     if (y > titleHeight) {

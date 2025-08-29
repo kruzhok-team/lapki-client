@@ -18,7 +18,12 @@ export type FlashUpdatePort = {
   portName: string;
 };
 
+// TODO: поделить на исходящие и принимающие сообщения
 export type FlasherType =
+  | 'reset'
+  | 'reset-result'
+  | 'ping'
+  | 'pong'
   | 'get-list'
   | 'device'
   | 'blg-mb-device'
@@ -59,9 +64,11 @@ export type FlasherType =
   | 'ms-device'
   | 'ms-reset'
   | 'ms-reset-result'
+  | 'get-meta-data'
   | 'ms-get-meta-data'
+  | 'meta-data'
   | 'ms-meta-data'
-  | 'ms-meta-data-error'
+  | 'meta-data-error'
   | 'ms-get-address-and-meta'
   | 'ms-address-and-meta'
   | 'file-write-error'
@@ -91,7 +98,9 @@ export type FlasherPayload =
   | MetaData
   | FlashBacktrackMs
   | MSAddressAndMeta
+  | MetaDataMessage
   | MSGetFirmware;
+
 export type FlasherMessage = {
   type: FlasherType;
   payload: FlasherPayload;
@@ -269,8 +278,8 @@ export enum OperationType {
 
 export type OperationInfo = {
   type: OperationType;
-  addressInfo: AddressData;
-  deviceId: string;
+  addressInfo?: AddressData; // только для МС-ТЮК
+  device: Device;
 };
 
 export type MSAddressAndMeta = {
@@ -307,4 +316,9 @@ export type GetFirmwareQueueItem = {
   dev: MSDevice;
   addressInfo: AddressData;
   blockSize: number;
+};
+
+export type MetaDataMessage = {
+  deviceID: string;
+  meta: string;
 };

@@ -9,7 +9,9 @@ import { Select, TabPanel, Tabs, TextField } from '@renderer/components/UI';
 import { useModelContext } from '@renderer/store/ModelContext';
 
 import { useCondition } from '../hooks';
+
 import '../style.css';
+import { Switch } from '@renderer/components/UI/Switch';
 
 const operand = [
   {
@@ -52,9 +54,9 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
     tabValue,
     onTabChange,
 
-    isParamOneInput1,
+    isParamOneInput1: isAttribute1,
     handleParamOneInput1,
-    isParamOneInput2,
+    isParamOneInput2: isAttribute2,
     handleParamOneInput2,
 
     componentOptionsParam1,
@@ -142,7 +144,7 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
         </label>
         {visual && (
           <div className={twMerge('flex flex-row', !show && 'hidden')}>
-            <AttributeConstSwitch
+            <Switch
               hint="Если не выполняются другие условия для данного триггера"
               checked={isElse}
               onCheckedChange={handleElseChange}
@@ -167,18 +169,13 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
             <div className="flex items-start">
               <div className="mr-2 mt-[6px]">
                 <AttributeConstSwitch
-                  checked={isParamOneInput1}
-                  onCheckedChange={() => handleParamOneInput1(!isParamOneInput1)}
-                  hint={
-                    isParamOneInput1
-                      ? 'Переключиться на константу'
-                      : 'Переключиться на атрибут компонента'
-                  }
+                  isAttribute={isAttribute1}
+                  onCheckedChange={() => handleParamOneInput1(!isAttribute1)}
                   isDisabled={isElse}
                   className={twMerge(isElse && 'cursor-default opacity-50')}
                 />
               </div>
-              {isParamOneInput1 ? (
+              {isAttribute1 ? (
                 <div className="flex gap-2">
                   <Select
                     containerClassName={twMerge('w-[290px]', isElse && 'opacity-50')}
@@ -236,18 +233,13 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
             <div className="flex items-start">
               <div className="mr-2 mt-[6px]">
                 <AttributeConstSwitch
-                  checked={isParamOneInput2}
-                  onCheckedChange={() => handleParamOneInput2(!isParamOneInput2)}
-                  hint={
-                    isParamOneInput2
-                      ? 'Переключиться на константу'
-                      : 'Переключиться на атрибут компонента'
-                  }
+                  isAttribute={isAttribute2}
+                  onCheckedChange={() => handleParamOneInput2(!isAttribute2)}
                   isDisabled={isElse}
                   className={twMerge(isElse && 'cursor-default opacity-50')}
                 />
               </div>
-              {isParamOneInput2 ? (
+              {isAttribute2 ? (
                 <div className="flex gap-2">
                   <Select
                     containerClassName={twMerge('w-[290px]', isElse && 'opacity-50')}

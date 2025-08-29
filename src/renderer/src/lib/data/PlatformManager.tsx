@@ -572,7 +572,7 @@ export class PlatformManager {
         for (const x of ac.value) {
           w += this.measureCondition(x);
         }
-        return w + this.picto.eventHeight + this.picto.eventMargin * (ac.value.length - 1);
+        return w + this.picto.eventWidth + this.picto.eventMargin * (ac.value.length - 1);
       }
       console.log(['PlatformManager.measureCondition', 'non-array operator', ac]);
       return this.picto.eventHeight;
@@ -627,21 +627,21 @@ export class PlatformManager {
           };
           rightIcon = this.getVariableIcon(component, vr.method);
         }
+        this.picto.drawPicto(
+          ctx,
+          x,
+          y,
+          {
+            bgColor,
+            fgColor,
+            leftIcon,
+            rightIcon,
+            opacity,
+          },
+          []
+        );
       }
 
-      this.picto.drawPicto(
-        ctx,
-        x,
-        y,
-        {
-          bgColor,
-          fgColor,
-          leftIcon,
-          rightIcon,
-          opacity,
-        },
-        []
-      );
       return;
     }
     // бинарные операторы (сравнения)
@@ -654,16 +654,18 @@ export class PlatformManager {
       }
 
       const mr = this.picto.eventMargin;
-      const icoW = (this.picto.eventHeight + this.picto.eventMargin) / this.picto.scale;
+      // const icoW = (this.picto.eventHeight + this.picto.eventMargin) / this.picto.scale;
       const leftW = (this.measureCondition(ac.value[0]) + mr) / this.picto.scale;
 
       this.drawCondition(ctx, ac.value[0], x, y, opacity);
-      this.picto.drawMono(ctx, x + leftW, y, {
-        bgColor,
-        fgColor,
-        rightIcon: `op/${ac.type}`,
-        opacity,
-      });
+      const icoW =
+        this.picto.drawMono(ctx, x + leftW, y, {
+          bgColor,
+          fgColor,
+          rightIcon: `op/${ac.type}`,
+          opacity,
+        }).width +
+        this.picto.eventMargin / this.picto.scale;
       this.drawCondition(ctx, ac.value[1], x + leftW + icoW, y, opacity);
       return;
     }

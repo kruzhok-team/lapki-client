@@ -1,5 +1,5 @@
 appId: ru.kruzhok.lapki-ide
-productName: lapki-ide
+productName: Lapki IDE
 directories:
   buildResources: build
 files:

@@ -670,7 +670,7 @@
         },
         "maskPattern": {
           "alias": "Маска для матрицы",
-          "img": "tjc-ms/maskGrid.svg",
+          "img": "blg-mb/maskGrid.svg",
           "description": "Изобразить рисунок на матрице, используя битовую маску.",
           "parameters": [
             {

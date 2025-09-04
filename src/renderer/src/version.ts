@@ -3,12 +3,12 @@ export let appVersion = null;
 export const releaseName = 'EgyptianMau';
 
 export const appName = 'Lapki IDE';
-export const seriousMode = true;
-export const noTextMode = true;
-export const noSchemeScreen = true;
+export const seriousMode = false;
+export const noTextMode = false;
+export const noSchemeScreen = false;
 export const showDevInfo = true;
 
-export const telegramLink = 'https://t.me/PolyusNT_Insitulab';
+export const telegramLink = 'https://t.me/LapkiSupportBot';
 export const sourceLink = 'https://github.com/kruzhok-team/lapki-client';
 
 export function initAppVersion() {

@@ -79,15 +79,29 @@ export class Label implements Drawable {
     const p = 15 / this.app.controller.scale;
     const px = x + p;
     const py = y + p;
-    const yDx = this.app.view.picto.eventHeight + 10;
+    const yDx = this.app.view.picto.eventHeight + 5;
+    const conditionYDx = this.app.view.picto.pictoHeight + 5;
     const fontSize = stateStyle.titleFontSize / this.app.controller.scale;
     const opacity = this.parent.data.selection ? 1.0 : 0.7;
 
-    const eventRowLength = Math.max(
-      3,
-      Math.floor((width * this.app.controller.scale - 30) / (this.app.view.picto.eventWidth + 5)) -
-        1
-    );
+    const scale = this.app.controller.scale;
+    // Широчайшая пиктограмма или этот размер
+    // const eventRowLength = Math.max(
+    //   3,
+    //   Math.floor((width * this.app.controller.scale - 30) / (this.app.view.picto.eventWidth + 5)) -
+    //     1
+    // );
+    // Вычисление требуемой ширины содержимого строки по правилу:
+    // max(самое большое действие + отступы, стандарт — 3*eventWidth + 2*отступа)
+    const threeStdWidth = 3 * this.app.view.picto.eventWidth + 2 * eventMargin;
+    // let largestAction = 0;
+    // if (label.do && typeof label.do !== 'string') {
+    //   for (const a of label.do) {
+    //     const w = platform[this.parent.smId].calculateActionSize(a).width;
+    //     if (w > largestAction) largestAction = w;
+    //   }
+    // }
+    const rowWidth = threeStdWidth / scale;
 
     ctx.font = `${fontSize}px/${stateStyle.titleLineHeight} ${stateStyle.titleFontFamily}`;
     ctx.fillStyle = stateStyle.eventColor;
@@ -124,14 +138,13 @@ export class Label implements Drawable {
     }
 
     //Здесь начинается прорисовка действий и условий для связей
+    let aY = py;
     if (label.condition) {
       const ax = 1;
-      const ay = 0;
       const aX =
         px +
         (eventMargin + (this.app.view.picto.eventWidth + eventMargin) * ax) /
           this.app.controller.scale;
-      const aY = py + (ay * yDx) / this.app.controller.scale;
       if (label.condition === 'else') {
         platform[this.parent.smId].drawText(ctx, 'else', aX, aY, opacity);
       }
@@ -142,18 +155,25 @@ export class Label implements Drawable {
       }
       ctx.closePath();
     }
-
+    aY += conditionYDx / scale;
     if (label.do && typeof label.do !== 'string') {
       ctx.beginPath();
-      label.do?.forEach((data, actIdx) => {
-        const ax = 1 + (actIdx % eventRowLength);
-        const ay = 1 + Math.floor(actIdx / eventRowLength);
-        const aX =
-          px +
-          (eventMargin + (this.app.view.picto.eventWidth + eventMargin) * ax) /
-            this.app.controller.scale;
-        const aY = py + (ay * yDx) / this.app.controller.scale;
-        platform[this.parent.smId].drawAction(ctx, data, aX, aY, opacity);
+      // Динамическая раскладка действий по ширине контейнера с переносом строк
+      const startX =
+        px +
+        (eventMargin + (this.app.view.picto.eventWidth + eventMargin) * 1) /
+          this.app.controller.scale;
+      let currentActionCoordX = startX;
+      // const maxX = x + width - eventMargin / this.app.controller.scale;
+      label.do.forEach((data) => {
+        const pictoDimensions = platform[this.parent.smId].calculateActionSize(data);
+        const actionWidth = pictoDimensions.width;
+        if (currentActionCoordX + actionWidth > px + rowWidth) {
+          currentActionCoordX = startX;
+          aY += yDx / this.app.controller.scale;
+        }
+        platform[this.parent.smId].drawAction(ctx, data, currentActionCoordX, aY, opacity);
+        currentActionCoordX += actionWidth + eventMargin / this.app.controller.scale;
       });
       ctx.closePath();
     }

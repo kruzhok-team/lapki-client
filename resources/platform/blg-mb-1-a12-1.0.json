@@ -1,5 +1,5 @@
 {
-  "name": "Кибермишка (a12)",
+  "name": "КиберМишка (a12)",
   "id": "blg-mb-1-a12",
   "nameTag": "CyBear",
   "description": "Платформа для программирования Кибермишки blg-mb-1-a12.",
@@ -79,7 +79,7 @@
   "components": {
     "Button": {
       "name": "Кнопка",
-      "description": "Компонент для взаимодействия с физической кнопкой.",
+      "description": "Выберите любую кнопку КиберМишки, она будет создавать событие.",
       "img": "arduino/button.svg",
       "signals": {
         "isPressed": {
@@ -103,7 +103,7 @@
       },
       "constructorParameters": {
         "pin": {
-          "name": "Где",
+          "name": "Какая",
           "type": ["1", "2", "3", "4", "5", "6"],
           "valueAlias": [
             "Правая лапа",
@@ -133,7 +133,7 @@
 
     "UserSignal": {
       "name": "Свое событие",
-      "description": "Компонент для создания произвольных, искусственных событий. Бывает полезным для упрощения диаграммы.",
+      "description": "Создавайте собственные события для упрощения диаграммы состояний.",
       "img": "common/userSignal.svg",
       "signals": {
         "isCalled": {
@@ -159,7 +159,7 @@
 
     "Speaker": {
       "name": "Пищалка",
-      "description": "Этот компонент управляет динамиком, и с его помощью воспроизводит звуки с заданной частотой.",
+      "description": "Создавайте свои звуки для динамика, играя с нотами, амплитудой и частотой.",
       "img": "blg-mb/beeperNote.svg",
       "signals": {
         "isNoteEnd": {
@@ -269,7 +269,7 @@
 
     "SpeakerSound": {
       "name": "Пищалка-звуки",
-      "description": "Этот компонент с помощью динамика воспроизводит встроенные звуки.",
+      "description": "Коллекция готовых звуков. КиберМишка может пищать, рычать, бурчать и сигналить.",
       "img": "blg-mb/beeperSound.svg",
       "signals": {
         "isSoundEnd": {
@@ -337,7 +337,7 @@
 
     "PhotoDiode": {
       "name": "Нос",
-      "description": "Нос мишки — это инфракрасный фотодиод. Он позволяет мишке реагировать на освещение, но только на инфракрасное, невидимое глазу, Его много в солнечном свете, но почти не бывает в искусственном. Мишка любит солнце!",
+      "description": "Чувствует только невидимый инфракрасный свет, его много в солнечном свете.",
       "img": "blg-mb/nose.svg",
       "signals": {
         "isThresholdValue": {
@@ -395,52 +395,24 @@
 
     "Eyes": {
       "name": "Глаза",
-      "description": "Этот компонент устанавливает цвета глаз.",
+      "description": "Подберите КиберМишке понравившийся цвет глаз, управляя светодиодами.",
       "img": "blg-mb/eyesPalette.svg",
       "signals": {},
-      "constructorParameters": {},
+      "constructorParameters": {
+        "pin": {
+          "name": "Какой",
+          "type": ["1", "2"],
+          "valueAlias": ["Правый", "Левый"],
+          "description": "Расположение глаза"
+        }
+      },
       "variables": {},
       "methods": {
         "setColorPalette": {
           "img": "blg-mb/setColorPalette.svg",
           "parameters": [
             {
-              "name": "Левый глаз",
-              "type": [
-                "&ColorRed",
-                "&ColorReddish",
-                "&ColorOrange",
-                "&ColorGreen",
-                "&ColorLime",
-                "&ColorBlue",
-                "&ColorCyan",
-                "&ColorPink",
-                "&ColorPurple",
-                "&ColorYellow",
-                "&ColorWhite",
-                "&ColorBlack",
-                "&ColorPerfectWhite"
-              ],
-              "valueAlias": [
-                "Красный",
-                "Красноватый",
-                "Оранжевый",
-                "Зеленый",
-                "Лаймовый",
-                "Голубой",
-                "Циановый",
-                "Розовый",
-                "Фиолетовый",
-                "Желтый",
-                "Белый",
-                "Черный",
-                "Белоснежный"
-              ],
-              "description": "Цвет светодиода.",
-              "optional": false
-            },
-            {
-              "name": "Правый глаз",
+              "name": "Цвет",
               "type": [
                 "&ColorRed",
                 "&ColorReddish",
@@ -475,77 +447,44 @@
               "optional": false
             }
           ],
-          "description": "Установить выбранные цвета для глаз.",
+          "description": "Установить выбранный цвет.",
           "alias": "Выбрать из палитры"
         },
         "setColor": {
           "img": "blg-mb/EyeRGBK.svg",
           "parameters": [
             {
-              "name": "(Правый) Красный",
+              "name": "Красный",
               "type": "uint8_t",
               "description": "Продолжительность красного (R) свечения. От 0 до 255.",
               "optional": false
             },
             {
-              "name": "(Правый) Зелёный",
+              "name": "Зелёный",
               "type": "uint8_t",
               "description": "Продолжительность зелёного (G) свечения. От 0 до 255.",
               "optional": false
             },
             {
-              "name": "(Правый) Синий",
+              "name": "Синий",
               "type": "uint8_t",
               "description": "Продолжительность синего (B) свечения. От 0 до 255.",
               "optional": false
             },
             {
-              "name": "(Правый) Чёрный",
-              "type": "uint8_t",
-              "description": "Длительность выключения всех трёх светодиодов. Регулирует яркость. От 0 до 255.",
-              "optional": false
-            },
-            {
-              "name": "(Левый) Красный",
-              "type": "uint8_t",
-              "description": "Продолжительность красного (R) свечения. От 0 до 255.",
-              "optional": false
-            },
-            {
-              "name": "(Левый) Зелёный",
-              "type": "uint8_t",
-              "description": "Продолжительность зелёного (G) свечения. От 0 до 255.",
-              "optional": false
-            },
-            {
-              "name": "(Левый) Синий",
-              "type": "uint8_t",
-              "description": "Продолжительность синего (B) свечения. От 0 до 255.",
-              "optional": false
-            },
-            {
-              "name": "(Левый) Чёрный",
+              "name": "Чёрный",
               "type": "uint8_t",
               "description": "Длительность выключения всех трёх светодиодов. Регулирует яркость. От 0 до 255.",
               "optional": false
             }
           ],
-          "description": "Установить цвет глаз в формате RGBK.",
+          "description": "Установить цвет в формате RGBK.",
           "alias": "Задать цвет из RGBK"
         },
         "off": {
           "img": "arduino/switch-off.svg",
-          "description": "Выключить левый глаз, правый или оба.",
-          "alias": "Выключить",
-          "parameters": [
-            {
-              "name": "Режим",
-              "type": ["OFF_LEFT", "OFF_RIGHT", "OFF_BOTH"],
-              "valueAlias": ["Левый", "Правый", "Оба"],
-              "description": "Какой глаз выключить.",
-              "optional": false
-            }
-          ]
+          "description": "Установить черный цвет глаза.",
+          "alias": "Выключить"
         }
       },
       "buildFiles": [
@@ -562,7 +501,7 @@
 
     "Microphone": {
       "name": "Уши-громкость",
-      "description": "Компонент, который слушает окружающие звуки и реагирует, когда они становятся слишком громкими",
+      "description": "КиберМишка навострил уши. Прислушайтесь к звукам, настрой порог громкости.",
       "img": "blg-mb/earsVolume.svg",
       "signals": {
         "isLoudSound": {
@@ -580,7 +519,7 @@
           "img": "blg-mb/setCooldown.svg",
           "parameters": [
             {
-              "name": "Интервал срабатывания",
+              "name": "Установить интервал срабатывания",
               "type": "uint16_t",
               "description": "Интервал срабатывания (мс)",
               "optional": false
@@ -620,13 +559,13 @@
 
     "Matrix": {
       "name": "Матрица светодиодов",
-      "description": "Компонент для взаимодействия со светодиодной матрицей.",
-      "img": "tjc-ms/matrix.svg",
+      "description": "Расширенные настройки для матрицы. Рисуйте и задавайте яркость каждому светодиоду.",
+      "img": "blg-mb/matrix.svg",
       "signals": {},
       "methods": {
         "setPixel": {
           "alias": "Яркость светодиода",
-          "img": "blg-mb/cellSet.svg",
+          "img": "blg-mb/setPixel.svg",
           "description": "Настроить яркость светодиода.",
           "parameters": [
             {
@@ -648,7 +587,7 @@
         },
         "setPattern": {
           "alias": "Рисовать",
-          "img": "tjc-ms/draw.svg",
+          "img": "blg-mb/draw.svg",
           "description": "Изобразить рисунок на матрице.",
           "parameters": [
             {
@@ -660,7 +599,7 @@
         },
         "changePatternBright": {
           "alias": "Яркость матрицы",
-          "img": "tjc-ms/fill.svg",
+          "img": "blg-mb/changePatternBright.svg",
           "description": "Изменить яркость группы светодиодов на матрице.",
           "parameters": [
             {
@@ -678,7 +617,7 @@
         },
         "clear": {
           "alias": "Очистить",
-          "img": "tjc-ms/matrixEmpty.svg",
+          "img": "blg-mb/clear.svg",
           "description": "Выключить все светодиоды.",
           "parameters": []
         }
@@ -698,13 +637,13 @@
     },
     "MatrixMask": {
       "name": "Матрица-маска",
-      "description": "Компонент для взаимодействия со светодиодной матрицей с маской.",
+      "description": "Применяйте разные маски для матрицы светодиодов с использованием операций.",
       "img": "blg-mb/matrixMask.svg",
       "signals": {},
       "methods": {
         "maskPixel": {
           "alias": "Маска для светодиода",
-          "img": "tjc-ms/maskCell.svg",
+          "img": "blg-mb/maskPixel.svg",
           "description": "Включить или выключить светодиод, используя битовую маску.",
           "parameters": [
             {
@@ -730,8 +669,8 @@
           ]
         },
         "maskPattern": {
-          "alias": "Маска",
-          "img": "tjc-ms/maskGrid.svg",
+          "alias": "Маска для матрицы",
+          "img": "blg-mb/maskGrid.svg",
           "description": "Изобразить рисунок на матрице, используя битовую маску.",
           "parameters": [
             {
@@ -763,7 +702,7 @@
 
     "MatrixAnimation": {
       "name": "Матрица-анимация",
-      "description": "Компонент, который делает анимированные переходы между изображениями на матрице.",
+      "description": "Нарисуйте последовательно картинки и они будут сменяться анимированными переходами.",
       "img": "blg-mb/matrixAnimation.svg",
       "signals": {
         "AnimationFinished": {
@@ -778,7 +717,7 @@
       "variables": {},
       "methods": {
         "setFrame": {
-          "img": "tjc-ms/draw.svg",
+          "img": "blg-mb/draw.svg",
           "parameters": [
             {
               "name": "Рисунок",
@@ -810,14 +749,14 @@
 
     "MatrixPicture": {
       "name": "Матрица-картинка",
-      "description": "Устанавливает на матрицу статическое изображение.",
-      "img": "blg-mb/matrixHalftone.svg",
+      "description": "Коллекция готовых картинок. Выберите и КиберМишка сам нарисует ее на своем животе.",
+      "img": "blg-mb/matrixPicture.svg",
       "signals": {},
       "constructorParameters": {},
       "variables": {},
       "methods": {
         "draw": {
-          "img": "tjc-ms/draw.svg",
+          "img": "blg-mb/drawPicture.svg",
           "parameters": [
             {
               "name": "Рисунок",
@@ -826,8 +765,8 @@
               "description": "Рисунок, который будет изображен на матрице."
             }
           ],
-          "description": "Изобразить рисунок на матрице.",
-          "alias": "Установить рисунок"
+          "description": "Изобразить картинку на матрице.",
+          "alias": "Установить картинку"
         }
       },
       "buildFiles": [
@@ -847,7 +786,7 @@
 
     "Random": {
       "name": "Генератор случайностей",
-      "description": "Генерация псевдо-случайного числа.",
+      "description": "КиберМишка подскажет, что выпало на игральном кубике, сгенерировав случайное число.",
       "img": "common/random.svg",
       "constructorParameters": {},
       "signals": {},
@@ -875,11 +814,13 @@
           "parameters": [
             {
               "name": "Начало",
-              "type": "signed long long"
+              "type": "signed long long",
+              "description": "Начало диапазона [начало; конец). Начало в диапазон входит."
             },
             {
               "name": "Конец",
-              "type": "signed long long"
+              "type": "signed long long",
+              "description": "Конец диапазона [начало; конец). Конец в диапазон не входит."
             }
           ],
           "description": "Сгенерировать случайное число в заданном диапазоне [начало; конец). Конец в диапазон не входит."
@@ -906,7 +847,7 @@
 
     "Timer": {
       "name": "Таймер",
-      "description": "Программный таймер",
+      "description": "Запускайте разные действия с заданным интервалом, выставив время таймера.",
       "img": "arduino/timer.svg",
       "signals": {
         "timeout": {
@@ -960,7 +901,7 @@
     },
     "Counter": {
       "name": "Счетчик",
-      "description": "Переменная-счетчик.",
+      "description": "Сделайте считалку для КиберМишки, прибавляя числа к счетчику.",
       "img": "arduino/counter.svg",
       "signals": {},
       "constructorParameters": {},
@@ -1009,7 +950,7 @@
       },
       "variables": {
         "value": {
-          "alias": "значение",
+          "alias": "Значение",
           "img": "common/value.svg",
           "description": "Текущее значение счетчика.",
           "type": "int"
@@ -1021,8 +962,8 @@
     },
 
     "CalcInt": {
-      "name": "Калькулятор (целые числа)",
-      "description": "Компонент для вычислений над целым числом. Хранит число, над которым можно совершать арифметические и двоичные операции. Результат операции перезаписывает предыдущее число, и к нему можно обратиться через атрибут. Обратите внимание, число хранится в 32-разрядном знаковом формате.",
+      "name": "Калькулятор",
+      "description": "Совершайте арифметические и двоичные операции над целыми числами.",
       "img": "math/calcInt.svg",
       "signals": {
         "isOverflow": {
@@ -1201,154 +1142,6 @@
       "constructorParameters": {},
       "buildFiles": ["CalcInt.hpp", "OverflowHelpers.hpp"],
       "importFiles": ["CalcInt.hpp"],
-      "singletone": false
-    },
-
-    "CalcFloat": {
-      "name": "Калькулятор (плавающая точка)",
-      "description": "Компонент для вычислений над числом c плавающей точкой. Хранит число, над которым можно совершать арифметические операции. Результат операции перезаписывает предыдущее число, и к нему можно обратиться через атрибут. Обратите внимание, число с плавающей точкой — это приближённое представление действительных чисел в памяти вычислительных устройств.",
-      "img": "math/calcFloat.svg",
-      "signals": {
-        "isOverflow": {
-          "alias": "Переполнение значения",
-          "img": "math/overflow.svg",
-          "description": "Произошло переполнение хранимого значения калькулятора (в него попытались записать слишком большое значение).",
-          "checkMethod": "isOverflow"
-        },
-        "isZeroDivision": {
-          "alias": "Деление на ноль",
-          "img": "math/divZero.svg",
-          "description": "Произошло деление на ноль. Значению калькулятора верить нельзя, в нём может быть что-то странное.",
-          "checkMethod": "isZeroDivision"
-        }
-      },
-      "methods": {
-        "set": {
-          "alias": "Установить",
-          "img": "common/set.svg",
-          "description": "Установить значение, которое будет храниться в калькуляторе.",
-          "parameters": [
-            {
-              "name": "Значение",
-              "type": "float",
-              "description": "Новое значение для калькулятора."
-            }
-          ]
-        },
-        "add": {
-          "alias": "Прибавить",
-          "img": "math/add.svg",
-          "description": "Прибавить значение к хранимому числу калькулятора.",
-          "parameters": [
-            {
-              "name": "Слагаемое",
-              "type": "float",
-              "description": "Слагаемое для операции."
-            }
-          ]
-        },
-        "sub": {
-          "alias": "Вычесть",
-          "img": "math/sub.svg",
-          "description": "Вычесть значение из хранимого числа калькулятора.",
-          "parameters": [
-            {
-              "name": "Вычитаемое",
-              "type": "float",
-              "description": "Вычитаемое для операции."
-            }
-          ]
-        },
-        "mul": {
-          "alias": "Умножить",
-          "img": "math/mul.svg",
-          "description": "Умножить значение хранимого числа калькулятора.",
-          "parameters": [
-            {
-              "name": "Множитель",
-              "type": "float",
-              "description": "Множитель для операции."
-            }
-          ]
-        },
-        "div": {
-          "alias": "Разделить",
-          "img": "math/div.svg",
-          "description": "Деление хранимого числа калькулятора. При делении на ноль значение не изменяется и возникает сигнал.",
-          "parameters": [
-            {
-              "name": "Делитель",
-              "type": "float",
-              "description": "Делитель для операции."
-            }
-          ]
-        },
-        "mod": {
-          "alias": "Остаток от деления",
-          "img": "math/mod.svg",
-          "description": "Получить остаток от деления хранимого числа калькулятора на указанный делитель. При делении на ноль значение не изменяется и возникает сигнал.",
-          "parameters": [
-            {
-              "name": "Делитель",
-              "type": "float",
-              "description": "Делитель для операции."
-            }
-          ]
-        },
-        "neg": {
-          "alias": "Поменять знак",
-          "img": "math/neg.svg",
-          "description": "Поменять знак у хранимого числа калькулятора.",
-          "parameters": []
-        },
-        "abs": {
-          "alias": "Модуль",
-          "img": "math/abs.svg",
-          "description": "Установить абсолютное значение для хранимого числа калькулятора.",
-          "parameters": []
-        },
-        "pow": {
-          "alias": "Степень",
-          "img": "math/pow.svg",
-          "description": "Возвести хранимое число калькулятора в степень.",
-          "parameters": [
-            {
-              "name": "Степень",
-              "type": "float",
-              "description": "Значение для операции (возводимая степень)."
-            }
-          ]
-        },
-        "sqrt": {
-          "alias": "Корень",
-          "img": "math/sqrt.svg",
-          "description": "Взять квадратный корень от хранимого числа калькулятора.",
-          "parameters": []
-        },
-        "log": {
-          "alias": "Логарифм",
-          "img": "math/log.svg",
-          "description": "Логарифм от хранимого числа калькулятора с задаваемым основанием.",
-          "parameters": [
-            {
-              "name": "Основание",
-              "type": "float",
-              "description": "Значение для операции (основание логарифма)."
-            }
-          ]
-        }
-      },
-      "variables": {
-        "value": {
-          "alias": "Результат",
-          "img": "common/value.svg",
-          "type": "float",
-          "description": "Хранимое число калькулятора."
-        }
-      },
-      "constructorParameters": {},
-      "buildFiles": ["CalcFloat.hpp", "OverflowHelpers.hpp"],
-      "importFiles": ["CalcFloat.hpp"],
       "singletone": false
     }
   }

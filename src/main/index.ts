@@ -4,7 +4,8 @@ import settings from 'electron-settings';
 import { lookpath } from 'lookpath';
 
 import { existsSync } from 'fs';
-import { join } from 'path';
+import path, { join } from 'path';
+import { pathToFileURL } from 'url';
 
 import { checkForUpdates } from './checkForUpdates';
 import { initFileHandlersIPC } from './file-handlers';
@@ -17,6 +18,7 @@ import {
   settingsChangeSend,
 } from './settings';
 import { getAllTemplates, getTemplate } from './templates';
+import { basePath } from './utils';
 
 import icon from '../../resources/icon.png?asset';
 
@@ -179,6 +181,18 @@ app.whenReady().then(() => {
 
   ipcMain.handle('getLocalDocServer', () => {
     return defaultSettings.doc.localHost;
+  });
+
+  // Возвращает базовый URL до ресурсов с изображениями (resources/public/img)
+  ipcMain.handle('getResourcesAssetBaseUrl', () => {
+    try {
+      const imgDir = path.join(basePath, 'public', 'img');
+      let url = pathToFileURL(imgDir).toString();
+      if (!url.endsWith('/')) url = url + '/';
+      return url;
+    } catch (e) {
+      return '';
+    }
   });
 
   // отключение перезагрузки по CmdOrCtrl + R

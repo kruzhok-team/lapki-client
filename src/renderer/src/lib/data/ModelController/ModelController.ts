@@ -623,7 +623,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     });
 
     this.changeInitialStatePosition(
-      { smId, id, startPosition: initialState.position, endPosition: position },
+      { smId, id: transitionFromInitialState.sourceId, startPosition: initialState.position, endPosition: position },
       canUndo
     );
   }
@@ -719,7 +719,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       });
     }
 
-    this.model.changeInitialStatePosition(smId, id, endPosition);
     this.emit('changeInitialPosition', {
       smId,
       id,

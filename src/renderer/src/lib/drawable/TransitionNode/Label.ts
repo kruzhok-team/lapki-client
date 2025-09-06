@@ -131,8 +131,8 @@ export class Label implements Drawable {
     } else {
       this.app.view.picto.drawPicto(
         ctx,
-        py,
         px,
+        py,
         {
           rightIcon: 'condition',
         },

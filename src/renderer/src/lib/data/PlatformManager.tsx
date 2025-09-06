@@ -377,6 +377,9 @@ export class PlatformManager {
     );
   }
 
+  /*
+  Вычисляет размер пиктограммы действия с учетом параметров и МАСШТАБА!
+  */
   calculateActionSize(ac: Action): Dimensions {
     const compoData = this.resolveComponent(ac.component);
     const component = compoData.component;

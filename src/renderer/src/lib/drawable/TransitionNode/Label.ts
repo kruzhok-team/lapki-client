@@ -2,7 +2,7 @@ import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { serializeTransitionActions } from '@renderer/lib/data/GraphmlBuilder';
 import { getPlatform } from '@renderer/lib/data/PlatformLoader';
 import { Transition } from '@renderer/lib/drawable';
-import { stateStyle, transitionStyle } from '@renderer/lib/styles';
+import { stateStyle } from '@renderer/lib/styles';
 import { Drawable } from '@renderer/lib/types';
 import { drawText, prepareText } from '@renderer/lib/utils/text';
 import theme from '@renderer/theme';
@@ -74,12 +74,16 @@ export class Label implements Drawable {
 
     if (!label || !platform[this.parent.smId]) return;
 
+    // левый угол перехода
     const { x, y, width, height } = this.parent.drawBounds;
     const eventMargin = this.app.view.picto.eventMargin;
+    // отступ от краев перехода, откуда мы начинаем рисовать пиктограмму
     const p = 15 / this.app.controller.scale;
     const px = x + p;
     const py = y + p;
+    // смещение по вертикали между ДЕЙСТВИЯМИ
     const yDx = this.app.view.picto.eventHeight + 5;
+    // смещение по вертикали между условием и началом блока действий
     const conditionYDx = this.app.view.picto.pictoHeight + 5;
     const fontSize = stateStyle.titleFontSize / this.app.controller.scale;
     const opacity = this.parent.data.selection ? 1.0 : 0.7;
@@ -93,15 +97,15 @@ export class Label implements Drawable {
     // );
     // Вычисление требуемой ширины содержимого строки по правилу:
     // max(самое большое действие + отступы, стандарт — 3*eventWidth + 2*отступа)
-    const threeStdWidth = 3 * this.app.view.picto.eventWidth + 2 * eventMargin;
-    // let largestAction = 0;
-    // if (label.do && typeof label.do !== 'string') {
-    //   for (const a of label.do) {
-    //     const w = platform[this.parent.smId].calculateActionSize(a).width;
-    //     if (w > largestAction) largestAction = w;
-    //   }
-    // }
-    const rowWidth = threeStdWidth / scale;
+    const threeStdWidth = 3 * this.app.view.picto.eventWidth + 3 * eventMargin;
+    let largestAction = 0;
+    if (label.do && typeof label.do !== 'string') {
+      for (const a of label.do) {
+        const w = platform[this.parent.smId].calculateActionSize(a).width;
+        if (w > largestAction) largestAction = w;
+      }
+    }
+    const rowWidth = Math.max(threeStdWidth / scale, largestAction);
 
     ctx.font = `${fontSize}px/${stateStyle.titleLineHeight} ${stateStyle.titleFontFamily}`;
     ctx.fillStyle = stateStyle.eventColor;
@@ -113,8 +117,7 @@ export class Label implements Drawable {
     ctx.fill();
     ctx.closePath();
 
-    ctx.fillStyle = transitionStyle.bgColor;
-
+    // отрисовка пикограммы события
     if (
       label.trigger &&
       typeof label.trigger !== 'string' &&
@@ -123,13 +126,13 @@ export class Label implements Drawable {
     ) {
       const trigger = label.trigger;
       ctx.beginPath();
-      platform[this.parent.smId].drawEvent(ctx, trigger, x + p, y + p);
+      platform[this.parent.smId].drawEvent(ctx, trigger, px, py);
       ctx.closePath();
     } else {
       this.app.view.picto.drawPicto(
         ctx,
-        x + p,
-        y + p,
+        px,
+        py,
         {
           rightIcon: 'condition',
         },
@@ -138,7 +141,7 @@ export class Label implements Drawable {
     }
 
     //Здесь начинается прорисовка действий и условий для связей
-    let aY = py;
+    let aY = py; // текущая y, от которой отрисовываем пиктограмму, смещаем по мере отрисовки
     if (label.condition) {
       const ax = 1;
       const aX =
@@ -155,7 +158,7 @@ export class Label implements Drawable {
       }
       ctx.closePath();
     }
-    aY += conditionYDx / scale;
+    aY += conditionYDx / scale; // всегда делаем смещение, даже если не было условия
     if (label.do && typeof label.do !== 'string') {
       ctx.beginPath();
       // Динамическая раскладка действий по ширине контейнера с переносом строк
@@ -163,16 +166,17 @@ export class Label implements Drawable {
         px +
         (eventMargin + (this.app.view.picto.eventWidth + eventMargin) * 1) /
           this.app.controller.scale;
-      let currentActionCoordX = startX;
-      // const maxX = x + width - eventMargin / this.app.controller.scale;
+      let currentActionCoordX = startX; // текущая координата x для отрисовки действия с учетом отступа
       label.do.forEach((data) => {
         const pictoDimensions = platform[this.parent.smId].calculateActionSize(data);
         const actionWidth = pictoDimensions.width;
-        if (currentActionCoordX + actionWidth > px + rowWidth) {
+        if (currentActionCoordX + actionWidth < startX + rowWidth) {
+          platform[this.parent.smId].drawAction(ctx, data, currentActionCoordX, aY, opacity);
+        } else {
+          aY += yDx / this.app.controller.scale; // если не влазим в строку, делаем перенос
           currentActionCoordX = startX;
-          aY += yDx / this.app.controller.scale;
+          platform[this.parent.smId].drawAction(ctx, data, currentActionCoordX, aY, opacity);
         }
-        platform[this.parent.smId].drawAction(ctx, data, currentActionCoordX, aY, opacity);
         currentActionCoordX += actionWidth + eventMargin / this.app.controller.scale;
       });
       ctx.closePath();

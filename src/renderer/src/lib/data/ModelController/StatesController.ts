@@ -256,10 +256,11 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   };
 
   changeInitialStatePosition = (args: ChangePosition) => {
-    const { id } = args;
+    const { id, endPosition } = args;
+
     const state = this.data.initialStates.get(id);
     if (!state) return;
-
+    state.position = endPosition;
     this.view.isDirty = true;
   };
 

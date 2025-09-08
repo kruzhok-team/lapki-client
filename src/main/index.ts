@@ -1,18 +1,26 @@
-import { optimizer, is } from '@electron-toolkit/utils';
-import { app, shell, BrowserWindow, ipcMain } from 'electron';
+import { is } from '@electron-toolkit/utils';
+import { app, shell, BrowserWindow, ipcMain, globalShortcut } from 'electron';
 import settings from 'electron-settings';
 import { lookpath } from 'lookpath';
 
-import { join } from 'path';
+import { existsSync } from 'fs';
+import path, { join } from 'path';
+import { pathToFileURL } from 'url';
 
 import { checkForUpdates } from './checkForUpdates';
 import { initFileHandlersIPC } from './file-handlers';
+import { startDocServer } from './modules/docserver';
 import { ModuleName, ModuleManager } from './modules/ModuleManager';
-import { initDefaultSettings, initSettingsHandlers, settingsChangeSend } from './settings';
+import {
+  defaultSettings,
+  initSettings,
+  initSettingsHandlers,
+  settingsChangeSend,
+} from './settings';
 import { getAllTemplates, getTemplate } from './templates';
+import { basePath } from './utils';
 
 import icon from '../../resources/icon.png?asset';
-import { existsSync } from 'fs';
 
 /**
  * Создание главного окна редактора.
@@ -67,8 +75,9 @@ function createWindow(): BrowserWindow {
   });
 
   //Получаем ответ из рендера и закрываем приложение
-  ipcMain.on('closed', (_) => {
-    ModuleManager.stopModule('lapki-flasher');
+  ipcMain.on('closed', async (_) => {
+    await ModuleManager.stopModule('lapki-compiler');
+    await ModuleManager.stopModule('lapki-flasher');
     app.exit(0);
   });
 
@@ -111,10 +120,22 @@ function createWindow(): BrowserWindow {
 }
 
 const startFlasher = async () => {
-  ModuleManager.startLocalModule('lapki-flasher');
+  await ModuleManager.startLocalModule('lapki-flasher');
 };
-initDefaultSettings();
-startFlasher();
+const startCompiler = async () => {
+  await ModuleManager.startLocalModule('lapki-compiler');
+};
+
+const startModules = async () => {
+  // Делаем в одной функции и последовательно
+  // иначе будет найден одинаковый порт
+  await startFlasher();
+  await startCompiler();
+  await startDocServer();
+};
+
+initSettings();
+startModules();
 
 // Выполняется после инициализации Electron
 app.whenReady().then(() => {
@@ -124,10 +145,13 @@ app.whenReady().then(() => {
   initFileHandlersIPC();
 
   ipcMain.handle('Module:reboot', async (_event, module: ModuleName) => {
-    ModuleManager.stopModule(module);
+    await ModuleManager.stopModule(module);
     await ModuleManager.startLocalModule(module);
     if (module === 'lapki-flasher') {
       settingsChangeSend(mainWindow.webContents, 'flasher', settings.getSync('flasher'));
+    }
+    if (module === 'lapki-compiler') {
+      settingsChangeSend(mainWindow.webContents, 'compiler', settings.getSync('compiler'));
     }
   });
 
@@ -151,12 +175,30 @@ app.whenReady().then(() => {
     }
   });
 
-  // Горячие клавиши для режима разрабочика:
-  // - F12 – инструменты разработки
-  // - CmdOrCtrl + R – перезагрузить страницу
-  // См. https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
-  app.on('browser-window-created', (_, window) => {
-    optimizer.watchWindowShortcuts(window);
+  ipcMain.handle('getRemoteDocServer', () => {
+    return defaultSettings.doc.remoteHost;
+  });
+
+  ipcMain.handle('getLocalDocServer', () => {
+    return defaultSettings.doc.localHost;
+  });
+
+  // Возвращает базовый URL до ресурсов с изображениями (resources/public/img)
+  ipcMain.handle('getResourcesAssetBaseUrl', () => {
+    try {
+      const imgDir = path.join(basePath, 'public', 'img');
+      let url = pathToFileURL(imgDir).toString();
+      if (!url.endsWith('/')) url = url + '/';
+      return url;
+    } catch (e) {
+      return '';
+    }
+  });
+
+  // отключение перезагрузки по CmdOrCtrl + R
+  // перезагрузка по Shift + CmdOrCtrl + R должна работать
+  globalShortcut.register('CommandOrControl+R', () => {
+    console.log('CommandOrControl+R is pressed: Shortcut Disabled');
   });
 
   app.on('activate', function () {
@@ -167,8 +209,9 @@ app.whenReady().then(() => {
 });
 
 // Завершаем приложение, когда окна закрыты.
-app.on('window-all-closed', () => {
+app.on('window-all-closed', async () => {
   // явно останавливаем загрузчик, так как в некоторых случаях он остаётся висеть
-  ModuleManager.stopModule('lapki-flasher');
+  await ModuleManager.stopModule('lapki-flasher');
+  await ModuleManager.stopModule('lapki-compiler');
   app.quit();
 });

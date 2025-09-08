@@ -4,6 +4,7 @@ import {
   FinalState,
   ChoiceState,
   ShallowHistory,
+  EventSelection,
 } from '@renderer/lib/drawable';
 import {
   Component as ComponentData,
@@ -21,6 +22,12 @@ import { DrawableComponent } from '../drawable/ComponentNode';
 
 export interface SelectDrawable {
   id: string;
+  smId: string;
+}
+
+export interface SelectEvent {
+  eventSelection: EventSelection;
+  stateId: string;
   smId: string;
 }
 

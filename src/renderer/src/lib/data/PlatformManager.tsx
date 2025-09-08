@@ -1,9 +1,37 @@
 import { MarkedIconData, Picto, icons } from '@renderer/lib/drawable';
 import { Action, Condition, Event, Variable } from '@renderer/types/diagram';
 import { Platform, ComponentProto } from '@renderer/types/platform';
+import { Range } from '@renderer/types/utils';
+import { getDefaultRange, isMatrix } from '@renderer/utils';
 
 import { stateStyle } from '../styles';
+import { Dimensions } from '../types';
 import { isVariable } from '../utils';
+
+export type DrawFunctionParameters = {
+  values: any;
+  range?: Range;
+};
+
+export type DrawFunction = {
+  parameters: DrawFunctionParameters;
+  drawCustomParameter?: (
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    parameters: DrawFunctionParameters,
+    bgColor: string,
+    fgColor: string
+  ) => Dimensions; // Ширина параметра с учетом скейла
+  calculateParameterDimensions?: () => Dimensions;
+};
+
+export type DrawFunctionType = (
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  parameters: DrawFunctionParameters
+) => Dimensions;
 
 export type VisualCompoData = {
   component: string;
@@ -15,6 +43,7 @@ export type ListEntry = {
   name: string;
   description?: string;
   img?: string;
+  alias?: string;
 };
 
 export type ComponentEntry = {
@@ -35,13 +64,21 @@ export const operatorSet = new Set([
 ]);
 
 export const systemComponent: ComponentProto = {
-  name: 'Система',
   description: 'Встроенные платформонезависимые события и методы',
   singletone: true,
   img: 'system',
+  name: 'Общие',
   signals: {
-    onEnter: { img: 'onEnter', description: 'Выполнять при переходе в это состояние' },
-    onExit: { img: 'onExit', description: 'Выполнять при переходе из этого состояния' },
+    onEnter: {
+      img: 'onEnter',
+      alias: 'Вход',
+      description: 'Выполнять при переходе в это состояние',
+    },
+    onExit: {
+      img: 'onExit',
+      alias: 'Выход',
+      description: 'Выполнять при переходе из этого состояния',
+    },
   },
   variables: {}, // TODO: userVar
   methods: {}, // TODO: userCode
@@ -119,6 +156,11 @@ export class PlatformManager {
     return this.nameToVisual.get(name) ?? { component: name };
   }
 
+  resolveVariable(name: string, component: ComponentProto) {
+    const variable = component.variables[name];
+    return variable && variable.alias ? component.variables[name].alias : name;
+  }
+
   resolveComponentType(name: string): string {
     return this.nameToVisual.get(name)?.component ?? name;
   }
@@ -139,6 +181,7 @@ export class PlatformManager {
         name: eName,
         description: signals[eName].description,
         img: signals[eName].img,
+        alias: signals[eName].alias,
       });
     }
     return outs;
@@ -154,6 +197,7 @@ export class PlatformManager {
         name: mName,
         description: methods[mName].description,
         img: methods[mName].img,
+        alias: methods[mName].alias,
       });
     }
     return outs;
@@ -169,6 +213,7 @@ export class PlatformManager {
         name: vName,
         description: variables[vName].description,
         img: variables[vName].img,
+        alias: variables[vName].alias,
       });
     }
     return outs;
@@ -201,6 +246,15 @@ export class PlatformManager {
     };
     // console.log(['getComponentIcon', name, isName, query, icons.get(query)!.src]);
     return this.picto.getMarkedIcon(iconQuery, className);
+  }
+
+  getRawComponentIcon(name: string, className?: string): React.ReactNode {
+    return this.picto.getMarkedIcon(
+      {
+        icon: this.getComponentIcon(name),
+      },
+      className
+    );
   }
 
   getEventIcon(component: string, method: string) {
@@ -281,21 +335,18 @@ export class PlatformManager {
       }
     }
 
-    let drawFunction:
-      | ((ctx: CanvasRenderingContext2D, x: number, y: number, values: any) => void)
-      | undefined = undefined;
+    let drawFunction: DrawFunctionType | undefined = undefined;
     let parameter: any | undefined = undefined;
+    let range: Range | undefined = undefined;
     if (argQuery && ev.args && parameterList) {
       const paramValue = ev.args[argQuery];
       if (typeof paramValue === 'undefined') {
         parameter = '?!';
       } else if (typeof paramValue.value === 'string') {
         parameter = paramValue.value;
-      } else if (
-        typeof parameterList[0].type === 'string' &&
-        parameterList[0].type.startsWith('Matrix')
-      ) {
+      } else if (typeof parameterList[0].type === 'string' && isMatrix(parameterList[0].type)) {
         parameter = paramValue.value;
+        range = parameterList[0].range ?? getDefaultRange();
         drawFunction = this.picto.drawMatrix;
       } else {
         // FIXME
@@ -314,9 +365,70 @@ export class PlatformManager {
         leftIcon,
         rightIcon,
       },
-      parameter,
-      drawFunction
+      [
+        {
+          parameters: {
+            values: parameter,
+            range,
+          },
+          drawCustomParameter: drawFunction,
+        },
+      ]
     );
+  }
+
+  calculateActionSize(ac: Action): Dimensions {
+    const compoData = this.resolveComponent(ac.component);
+    const component = compoData.component;
+    const parameterList = this.data.components[component]?.methods[ac.method]?.parameters;
+
+    const drawParameterFunctions: DrawFunction[] = [];
+    if (ac.args && parameterList) {
+      for (const param of parameterList) {
+        if (!param.name) continue;
+        let calculateParameterDimensions: (() => Dimensions) | undefined = undefined;
+        let parameter: any | undefined = undefined;
+        const paramValue = ac.args[param.name];
+        if (paramValue === undefined || typeof paramValue.value === 'undefined') {
+          if (param.optional) {
+            parameter = '';
+          } else {
+            parameter = '?!';
+          }
+        } else if (typeof paramValue.value === 'string') {
+          if (Array.isArray(param.type) && param.valueAlias !== undefined) {
+            const valueIndex = param.type.findIndex((option) => paramValue.value === option);
+            if (valueIndex !== -1) {
+              parameter = param.valueAlias[valueIndex];
+            } else {
+              parameter = '?!';
+            }
+          } else {
+            parameter = paramValue.value;
+          }
+        } else if (typeof param.type === 'string' && isMatrix(param.type)) {
+          parameter = paramValue.value;
+          calculateParameterDimensions = this.picto.calculateMatrixSize.bind(this, parameter);
+        } else if (isVariable(paramValue.value)) {
+          calculateParameterDimensions = this.picto.calculateBasePictoDimensions.bind(this, 2);
+          parameter = paramValue.value;
+        }
+        drawParameterFunctions.push({
+          parameters: {
+            values: parameter,
+          },
+          calculateParameterDimensions,
+        });
+      }
+    }
+    const dimensions = this.picto.calculateParametersDimensions(drawParameterFunctions);
+    return {
+      width: Math.max(
+        this.picto.eventWidth / this.picto.scale,
+        dimensions.width + (this.picto.PARAMETERS_OFFSET_X * 2) / this.picto.scale
+      ),
+      height: this.picto.eventHeight,
+    };
   }
 
   drawAction(ctx: CanvasRenderingContext2D, ac: Action, x: number, y: number, alpha?: number) {
@@ -325,7 +437,7 @@ export class PlatformManager {
     const bgColor = '#5f5f5f';
     const fgColor = '#fff';
     const opacity = alpha ?? 1.0;
-    let argQuery: string = '';
+    const paramWindowRound = [6 / this.picto.scale, 6 / this.picto.scale, 0, 0];
     const compoData = this.resolveComponent(ac.component);
     const component = compoData.component;
     const parameterList = this.data.components[component]?.methods[ac.method]?.parameters;
@@ -337,42 +449,58 @@ export class PlatformManager {
         icon: this.getComponentIcon(component),
       };
       rightIcon = this.getActionIcon(component, ac.method);
-
-      if (parameterList && parameterList.length > 0) {
-        argQuery = parameterList[0].name ?? '';
-      }
     }
 
-    let parameter: any | undefined = undefined;
-    let drawFunction:
-      | ((ctx: CanvasRenderingContext2D, x: number, y: number, values: any) => void)
-      | undefined = undefined;
-    if (argQuery && ac.args && parameterList) {
-      const paramValue = ac.args[argQuery];
-      if (typeof paramValue === 'undefined') {
-        if (parameterList[0].optional) {
-          parameter = '';
+    const drawParameterFunctions: DrawFunction[] = [];
+    if (ac.args && parameterList) {
+      for (const param of parameterList) {
+        if (!param.name) continue;
+        let drawFunction: DrawFunctionType | undefined = undefined;
+        let calculateParameterDimensions: (() => Dimensions) | undefined = undefined;
+        let parameter: any | undefined = undefined;
+        let range: Range | undefined = undefined;
+        const paramValue = ac.args[param.name];
+        if (paramValue === undefined || typeof paramValue.value === 'undefined') {
+          if (param.optional) {
+            parameter = '';
+          } else {
+            parameter = '?!';
+          }
+        } else if (typeof paramValue.value === 'string') {
+          if (Array.isArray(param.type) && param.valueAlias !== undefined) {
+            const valueIndex = param.type.findIndex((option) => paramValue.value === option);
+            if (valueIndex !== -1) {
+              parameter = param.valueAlias[valueIndex];
+            } else {
+              parameter = '?!';
+            }
+          } else {
+            parameter = paramValue.value;
+          }
+        } else if (typeof param.type === 'string' && isMatrix(param.type)) {
+          parameter = paramValue.value;
+          range = param.range ?? getDefaultRange();
+          drawFunction = this.picto.drawMatrix;
+          calculateParameterDimensions = this.picto.calculateMatrixSize.bind(this, parameter);
+        } else if (isVariable(paramValue.value)) {
+          drawFunction = this.drawParameterPicto;
+          calculateParameterDimensions = this.picto.calculateBasePictoDimensions.bind(this, 2);
+          parameter = paramValue.value;
         } else {
-          parameter = '?!';
+          // FIXME
+          console.log(['PlatformManager.drawAction', 'Variable!', ac]);
+          parameter = '???';
         }
-      } else if (typeof paramValue.value === 'string') {
-        parameter = paramValue.value;
-      } else if (
-        typeof parameterList[0].type === 'string' &&
-        parameterList[0].type.startsWith('Matrix')
-      ) {
-        parameter = paramValue.value;
-        drawFunction = this.picto.drawMatrix;
-      } else if (isVariable(paramValue.value)) {
-        drawFunction = this.drawParameterPicto;
-        parameter = paramValue.value;
-      } else {
-        // FIXME
-        console.log(['PlatformManager.drawAction', 'Variable!', ac]);
-        parameter = '???';
+        drawParameterFunctions.push({
+          parameters: {
+            values: parameter,
+            range,
+          },
+          drawCustomParameter: drawFunction,
+          calculateParameterDimensions,
+        });
       }
     }
-
     this.picto.drawPicto(
       ctx,
       x,
@@ -383,27 +511,42 @@ export class PlatformManager {
         leftIcon,
         rightIcon,
         opacity,
+        drawParamWindow: true,
+        paramWindowRound,
       },
-      parameter,
-      drawFunction
+      drawParameterFunctions
     );
   }
 
-  drawParameterPicto = (ctx: CanvasRenderingContext2D, x: number, y: number, value: Variable) => {
-    const compoData = this.resolveComponent(value.component);
+  drawParameterPicto = (
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    parameters: DrawFunctionParameters
+  ): Dimensions => {
+    const { values } = parameters;
+    const compoData = this.resolveComponent(values.component);
     const component = compoData.component;
     const leftIcon = {
       ...compoData,
       icon: this.getComponentIcon(component),
     };
-    const rightIcon = this.getVariableIcon(component, value.method);
+    const rightIcon = this.getVariableIcon(component, values.method);
 
-    this.picto.drawPicto(ctx, x + 50 / this.picto.scale, y + 20 / this.picto.scale, {
-      leftIcon,
-      rightIcon,
-      opacity: 0.7,
-      scalePictoSize: 2,
-    });
+    const dimensions = this.picto.drawPicto(
+      ctx,
+      x,
+      y,
+      {
+        leftIcon,
+        rightIcon,
+        opacity: 0.7,
+        scalePictoSize: 2,
+      },
+      []
+    );
+
+    return dimensions;
   };
 
   measureFullCondition(ac: Condition): number {
@@ -429,7 +572,7 @@ export class PlatformManager {
         for (const x of ac.value) {
           w += this.measureCondition(x);
         }
-        return w + this.picto.eventHeight + this.picto.eventMargin * (ac.value.length - 1);
+        return w + this.picto.eventWidth + this.picto.eventMargin * (ac.value.length - 1);
       }
       console.log(['PlatformManager.measureCondition', 'non-array operator', ac]);
       return this.picto.eventHeight;
@@ -484,15 +627,21 @@ export class PlatformManager {
           };
           rightIcon = this.getVariableIcon(component, vr.method);
         }
+        this.picto.drawPicto(
+          ctx,
+          x,
+          y,
+          {
+            bgColor,
+            fgColor,
+            leftIcon,
+            rightIcon,
+            opacity,
+          },
+          []
+        );
       }
 
-      this.picto.drawPicto(ctx, x, y, {
-        bgColor,
-        fgColor,
-        leftIcon,
-        rightIcon,
-        opacity,
-      });
       return;
     }
     // бинарные операторы (сравнения)
@@ -505,16 +654,18 @@ export class PlatformManager {
       }
 
       const mr = this.picto.eventMargin;
-      const icoW = (this.picto.eventHeight + this.picto.eventMargin) / this.picto.scale;
+      // const icoW = (this.picto.eventHeight + this.picto.eventMargin) / this.picto.scale;
       const leftW = (this.measureCondition(ac.value[0]) + mr) / this.picto.scale;
 
       this.drawCondition(ctx, ac.value[0], x, y, opacity);
-      this.picto.drawMono(ctx, x + leftW, y, {
-        bgColor,
-        fgColor,
-        rightIcon: `op/${ac.type}`,
-        opacity,
-      });
+      const icoW =
+        this.picto.drawMono(ctx, x + leftW, y, {
+          bgColor,
+          fgColor,
+          rightIcon: `op/${ac.type}`,
+          opacity,
+        }).width +
+        this.picto.eventMargin / this.picto.scale;
       this.drawCondition(ctx, ac.value[1], x + leftW + icoW, y, opacity);
       return;
     }

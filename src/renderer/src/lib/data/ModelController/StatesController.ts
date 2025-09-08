@@ -195,7 +195,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   };
 
   unlinkState = (params: UnlinkStateParams) => {
-    const { id, canUndo } = params;
+    const { id } = params;
 
     const state = this.data.states.get(id);
     if (!state || !state.parent) return;
@@ -203,9 +203,6 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.view.children.add(state, Layer.States);
     state.parent = undefined;
     state.data.parentId = undefined;
-    if (canUndo) {
-      state.addOnceOff('dragend');
-    }
 
     this.view.isDirty = true;
   };
@@ -465,16 +462,22 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   };
 
   handleStateMouseDown = (state: State, e: { event: MyMouseEvent }) => {
-    // Пустое название машины состояний - заглушка
     this.controller.selectState({ smId: state.smId, id: state.id });
     this.controller.emit('selectState', { smId: state.smId, id: state.id });
     const targetPos = state.computedPosition;
-    const titleHeight = state.titleHeight;
+    const titleHeight = state.titleHeight / this.controller.scale;
     const y = e.event.y - targetPos.y;
     // FIXME: если будет учёт нажатий на дочерний контейнер, нужно отсеять их здесь
     if (y > titleHeight) {
       // FIXME: пересчитывает координаты внутри, ещё раз
-      state.eventBox.handleClick({ x: e.event.x, y: e.event.y });
+      const idx = state.eventBox.handleClick({ x: e.event.x, y: e.event.y });
+      if (idx) {
+        this.controller.emit('selectEvent', {
+          smId: state.smId,
+          stateId: state.id,
+          eventSelection: idx,
+        });
+      }
     }
   };
 

@@ -1,7 +1,8 @@
 import { readdir, readFile } from 'fs/promises';
 import path from 'path';
 
-const basePath = path.join(__dirname, '../../resources').replace('app.asar', 'app.asar.unpacked');
+import { basePath } from './utils';
+
 const templatesPath = basePath + '/templates';
 
 const removeExtension = (filename: string) => {

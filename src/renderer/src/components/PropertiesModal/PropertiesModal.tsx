@@ -8,13 +8,9 @@ import { CanvasController } from '@renderer/lib/data/ModelController/CanvasContr
 import { getPlatform } from '@renderer/lib/data/PlatformLoader';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { Meta as MetaData, StateMachine } from '@renderer/types/diagram';
+import { dateFormatTimeAndDate } from '@renderer/utils';
 
 import { Meta, MetaFormValues } from './Meta';
-
-const dateFormat = new Intl.DateTimeFormat('ru-Ru', {
-  dateStyle: 'short',
-  timeStyle: 'short',
-}).format;
 
 interface PropertiesModalProps {
   controller: CanvasController;
@@ -53,8 +49,14 @@ export const PropertiesModal: React.FC<PropertiesModalProps> = ({
       // (chekoopa): На будущее: кажется тонким местом, где может быть подвисание/вылет.
       const stat = await window.api.fileHandlers.getMetadata(basename);
       propertiesValues.push(['Путь к файлу', basename]);
-      propertiesValues.push(['Дата и время последнего изменения файла', dateFormat(stat['mtime'])]);
-      propertiesValues.push(['Дата и время создания файла', dateFormat(stat['birthtime'])]);
+      propertiesValues.push([
+        'Дата и время последнего изменения файла',
+        dateFormatTimeAndDate(stat['mtime']),
+      ]);
+      propertiesValues.push([
+        'Дата и время создания файла',
+        dateFormatTimeAndDate(stat['birthtime']),
+      ]);
       propertiesValues.push(['Размер файла', stat['size'] + ' байтов']);
     }
     metaForm.setValue(

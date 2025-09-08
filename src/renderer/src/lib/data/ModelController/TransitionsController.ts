@@ -223,7 +223,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
   };
 
   handleConditionClick = (transition: Transition) => {
-    this.controller.selectTransition({ smId: '', id: transition.id });
+    this.controller.selectTransition({ smId: transition.smId, id: transition.id });
     this.controller.emit('selectTransition', { smId: transition.smId, id: transition.id });
   };
 
@@ -258,28 +258,12 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
 
   handleMouseUpOnState = (state: State | ChoiceState | ShallowHistory) => {
     if (!this.ghost?.source) return;
-    // TODO (L140-beep): И что с этим делать?
-    if (this.ghost.source instanceof Note || this.ghost.source instanceof ShallowHistory) {
-      this.createTransition({
-        smId: this.ghost.source.smId,
-        sourceId: this.ghost?.source.id,
-        targetId: state.id,
-      });
-      this.controller.emit('createTransitionFromController', {
-        smId: state.smId,
-        sourceId: this.ghost?.source.id,
-        targetId: state.id,
-      });
-    }
-    // Переход создаётся только на другое состояние
+    this.controller.emit('createTransitionFromController', {
+      smId: state.smId,
+      sourceId: this.ghost?.source.id,
+      targetId: state.id,
+    });
     // FIXME: вызывать создание внутреннего события при перетаскивании на себя?
-    else if (state !== this.ghost?.source) {
-      this.controller.emit('createTransitionFromController', {
-        smId: state.smId,
-        sourceId: this.ghost?.source.id,
-        targetId: state.id,
-      });
-    }
     this.ghost?.clear();
 
     this.view.isDirty = true;
@@ -302,15 +286,15 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
 
   handleMouseUpOnNote = (note: Note) => {
     if (!this.ghost?.source) return;
-
     if (
       this.ghost.source instanceof Note &&
       //Запрещаем создавать связь комментарию для самого себя
-      this.ghost.source !== note
+      this.ghost.source !== note &&
+      this.ghost.target
     ) {
-      this.createTransition({
-        smId: note.smId,
-        sourceId: this.ghost?.source.id,
+      this.controller.emit('createTransitionFromController', {
+        smId: this.ghost.source.smId,
+        sourceId: this.ghost.source.id,
         targetId: note.id,
       });
     }

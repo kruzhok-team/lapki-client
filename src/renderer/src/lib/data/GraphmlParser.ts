@@ -28,7 +28,13 @@ import {
   BaseState,
 } from '@renderer/types/diagram';
 import { Platform, ComponentProto, MethodProto, SignalProto } from '@renderer/types/platform';
-import { getMatrixDimensions, isString, parseMatrixFromString } from '@renderer/utils';
+import {
+  getMatrixDimensions,
+  isEmptyTrigger,
+  isMatrix,
+  isString,
+  parseMatrixFromString,
+} from '@renderer/utils';
 
 import { validateElements } from './ElementsValidator';
 import { getPlatform, isPlatformAvailable } from './PlatformLoader';
@@ -50,30 +56,37 @@ const operatorAlias = {
   '<=': 'lessOrEqual',
 };
 
-function checkConditionTokenType(token: string): Condition {
-  if (token.includes('.')) {
-    const [component, method] = token.split('.');
-    return {
-      type: 'component',
-      value: {
-        component: component,
-        method: method,
-        args: {},
-      },
-    };
-  }
-  return {
-    type: 'value',
-    value: token,
+function checkConditionTokenType(token: string, platform: Platform): Condition {
+  const split = (delimeter: string) => {
+    if (token.includes(delimeter)) {
+      const [component, method] = token.split(delimeter);
+      return {
+        type: 'component',
+        value: {
+          component: component,
+          method: method,
+          args: {},
+        },
+      };
+    }
+    return null;
   };
+
+  return (
+    split('.') ||
+    split(platform.staticActionDelimeter) || {
+      type: 'value',
+      value: token,
+    }
+  );
 }
 
-function parseCondition(condition: string): Condition | string {
+function parseCondition(condition: string, platform: Platform): Condition | string {
   const tokens = condition.split(' ');
   if (tokens.length != 3) return condition;
-  const lval = checkConditionTokenType(tokens[0]);
+  const lval = checkConditionTokenType(tokens[0], platform);
   const operator = operatorAlias[tokens[1]];
-  const rval = checkConditionTokenType(tokens[2]);
+  const rval = checkConditionTokenType(tokens[2], platform);
   if (operator !== undefined) {
     return {
       type: operator,
@@ -110,13 +123,15 @@ function initArgList(args: (string | Variable)[]): ArgList {
       argList[index] = { value: value, order: index };
     }
   });
+
   return argList;
 }
 
 const pictoRegex: RegExp = /.+(\.|::).+\(.*\)/;
 export const variableRegex: RegExp = /(?<component>.+)(\.|::)(?<method>.+)/;
 function splitArgs(argString: string): (string | Variable)[] {
-  // split по запятой, но не внутри скобок
+  const stringSymbols = ["'", '"'];
+  // split по запятой, но не внутри скобок и кавычек
   const args: (string | Variable)[] = [];
   let currentArg = '';
   let bracketCount = 0;
@@ -131,13 +146,17 @@ function splitArgs(argString: string): (string | Variable)[] {
       args.push(currentArg);
     }
   };
+  let isString = false;
   for (const char of argString) {
     if (char === '{') {
       bracketCount++;
     } else if (char === '}') {
       bracketCount--;
     }
-    if (char === ',' && bracketCount === 0) {
+    if (bracketCount === 0 && stringSymbols.includes(char)) {
+      isString = !isString;
+    }
+    if (char === ',' && bracketCount === 0 && !isString) {
       pushCurrentArg();
       currentArg = '';
     } else {
@@ -232,12 +251,15 @@ function getVertexes(rawVertexes: { [id: string]: CGMLVertex }): { [id: string]:
   return vertexes;
 }
 
-function getStates(rawStates: { [id: string]: CGMLState }): [boolean, { [id: string]: State }] {
+function getStates(
+  rawStates: { [id: string]: CGMLState },
+  platform: Platform
+): [boolean, { [id: string]: State }] {
   const states: { [id: string]: State } = {};
   let visual = true;
   for (const rawStateId in rawStates) {
     const rawState = rawStates[rawStateId];
-    const [isVisual, events] = actionsToEventData(rawState.actions);
+    const [isVisual, events] = actionsToEventData(rawState.actions, platform);
     // FIXME: здесь нужно пробросить предупреждение о переходе в тестовый режим
     if (!isVisual) {
       visual = false;
@@ -262,7 +284,8 @@ function getStates(rawStates: { [id: string]: CGMLState }): [boolean, { [id: str
 }
 
 function actionsToEventData(
-  rawActions: Array<CGMLAction | CGMLTransitionAction>
+  rawActions: Array<CGMLAction | CGMLTransitionAction>,
+  platform: Platform
 ): [boolean, EventData[]] {
   const eventDataArr: EventData[] = [];
   let visual = true;
@@ -299,7 +322,7 @@ function actionsToEventData(
       }
     }
     if (action.trigger?.condition) {
-      const condition = parseCondition(action.trigger.condition);
+      const condition = parseCondition(action.trigger.condition, platform);
       if (typeof condition === 'string' && condition !== 'else') {
         visual = true;
       }
@@ -311,7 +334,8 @@ function actionsToEventData(
 }
 
 function getTransitions(
-  rawTransitions: Record<string, CGMLTransition>
+  rawTransitions: Record<string, CGMLTransition>,
+  platform: Platform
 ): [boolean, Record<string, Transition>] {
   const transitions: Record<string, Transition> = {};
   let visual = true;
@@ -326,7 +350,7 @@ function getTransitions(
       continue;
     }
     // В данный момент поддерживается только один триггер на переход
-    const [isVisual, eventData] = actionsToEventData(rawTransition.actions);
+    const [isVisual, eventData] = actionsToEventData(rawTransition.actions, platform);
     if (!isVisual) {
       visual = isVisual;
     }
@@ -336,7 +360,7 @@ function getTransitions(
       color: rawTransition.color,
       label: {
         position: rawTransition.labelPosition ?? { x: -1, y: -1 },
-        trigger: eventData[0].trigger,
+        trigger: isEmptyTrigger(eventData[0].trigger) ? undefined : eventData[0].trigger,
         do: eventData[0].do,
         condition: eventData[0].condition,
       },
@@ -369,7 +393,7 @@ function getComponents(rawComponents: { [id: string]: CGMLComponent }): {
   for (const id in rawComponents) {
     const rawComponent = rawComponents[id];
     if (rawComponent.order === undefined) {
-      throw new Error('Ошибка парсинга схемы! Отсутствует порядок компонентов!');
+      throw new Error('Ошибка парсинга документа! Отсутствует порядок компонентов!');
     }
     components[rawComponent.id] = {
       name: rawComponent.parameters['name'],
@@ -386,7 +410,7 @@ function labelParameters(args: ArgList, method: MethodProto): ArgList {
   const labeledArgs: ArgList = { ...args };
   method.parameters?.forEach((element, index) => {
     delete labeledArgs[index];
-    if (element.type && !Array.isArray(element.type) && element.type.startsWith('Matrix')) {
+    if (element.type && !Array.isArray(element.type) && isMatrix(element.type)) {
       const { width, height } = getMatrixDimensions(element.type);
       labeledArgs[element.name] = {
         value: parseMatrixFromString(args[index].value as string, width, height),
@@ -394,7 +418,14 @@ function labelParameters(args: ArgList, method: MethodProto): ArgList {
       };
       return;
     }
-    labeledArgs[element.name] = args[index];
+    if (!args[index]) {
+      labeledArgs[element.name] = {
+        value: undefined,
+        order: index,
+      };
+    } else {
+      labeledArgs[element.name] = args[index];
+    }
   });
   return labeledArgs;
 }
@@ -563,7 +594,7 @@ function getVisualFlag(
   }
   if (visual && !platformVisual) {
     throw new Error(
-      'В схеме флаг lapkiVisual равен true, но целевая платформа не поддерживает визуальный режим!'
+      'Флаг lapkiVisual равен true, но целевая платформа не поддерживает визуальный режим!'
     );
   }
   return visual;
@@ -596,9 +627,9 @@ export function importGraphml(
       sm.initialStates = getVertexes(rawSm.initialStates);
       sm.finalStates = getVertexes(rawSm.finals);
       sm.notes = getNotes(rawSm.notes);
-      const [stateVisual, states] = getStates(rawSm.states);
+      const [stateVisual, states] = getStates(rawSm.states, platform);
       sm.states = states;
-      const [transitionVisual, transitions] = getTransitions(rawSm.transitions);
+      const [transitionVisual, transitions] = getTransitions(rawSm.transitions, platform);
       sm.visual = getVisualFlag(rawSm.meta, platform.visual, stateVisual && transitionVisual);
       sm.transitions = transitions;
 

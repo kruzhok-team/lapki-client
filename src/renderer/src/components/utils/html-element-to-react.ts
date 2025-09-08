@@ -88,6 +88,18 @@ function getChildren(elements) {
 export const convert = function (domElement) {
   if (!domElement) return null;
   const props = { ...getProps(domElement) };
+  // if domElement is a text node, return its text content
+  if (domElement.nodeType === 3) {
+    return domElement.textContent;
+  }
+  // if domElement is a comment node, return null
+  if (domElement.nodeType === 8) {
+    return null;
+  }
+  // if domElement is a body tag, return its children
+  if (domElement.tagName === 'BODY') {
+    return getChildren(domElement.childNodes);
+  }
   return React.createElement(
     domElement.tagName.toLowerCase(),
     Object.keys(props).length === 0 ? null : props,

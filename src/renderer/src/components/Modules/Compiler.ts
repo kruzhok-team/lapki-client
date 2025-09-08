@@ -51,8 +51,8 @@ export class Compiler extends ClientWS {
   static decodeBinaries(binaries: Array<any>) {
     const decodedBinaries: Binary[] = [];
     binaries.map((binary) => {
-      console.log(base64StringToBlob(binary.fileContent!));
-      console.log(binary.filename, binary.extension);
+      // console.log(base64StringToBlob(binary.fileContent!));
+      // console.log(binary.filename, binary.extension);
       decodedBinaries.push({
         filename: binary.filename,
         extension: binary.extension,
@@ -89,7 +89,7 @@ export class Compiler extends ClientWS {
   static async compile(
     data: Elements | string | StateMachine,
     mode: 'BearlogaImport' | 'BearlogaExport' | 'CGML',
-    subPlatform?: string,
+    subPlatform?: string | null,
     bearlogaSmId?: string
   ) {
     this.setCompilerData(undefined);
@@ -160,8 +160,13 @@ export class Compiler extends ClientWS {
         break;
       case 'import':
         compilerElements = JSON.parse(msg.data as string);
-        elements = actualizeElements(compilerElements.source[0].fileContent);
-        this.setImportData(elements);
+        try {
+          elements = actualizeElements(compilerElements.source[0].fileContent);
+          this.setImportData(elements);
+        } catch (error) {
+          console.error(error);
+          toast.error('Ошибка импорта, возможно старая версия схемы!');
+        }
         break;
       case 'export':
         exportRequest = JSON.parse(msg.data as string) as SourceFile;
@@ -204,6 +209,7 @@ export class Compiler extends ClientWS {
   }
 
   static onOpenHandler(): void {
+    console.log(`Compiler: connected to ${Compiler.host}:${Compiler.port}!`);
     super.onOpenHandler();
   }
 }

@@ -114,18 +114,18 @@ export class ReconnectTimer {
     // но такая погрешность вряд ли сильно повлияет, если округлить результат до секунд
     this.timeoutEnd = new Date().getTime() + nextTimeout;
     this.timerID = setTimeout(() => {
-      console.log(
+      /* console.log(
         `inTimer: ${this.curTimeout}, attempt ${this.curReconnectAttempts + 1}/${
           this.maxReconnectAttempts
         }`
-      );
+      ); */
       if (!this.freezeReconnection) {
         this.curTimeout = Math.min(this.curTimeout + this.incTimeout, this.maxTimeout);
         this.incReconnectAttempt();
         this.timeoutSetted = false;
         reconnectFunction();
       } else {
-        console.log('the timer is frozen');
+        // console.log('the timer is frozen');
         this.timeoutSetted = false;
         this.tryToReconnect(reconnectFunction, this.freezeTimeout);
       }

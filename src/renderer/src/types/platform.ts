@@ -1,3 +1,5 @@
+import { Range } from './utils';
+
 export type ArgType = string | string[] | number[];
 
 export type ArgumentProto = {
@@ -6,6 +8,8 @@ export type ArgumentProto = {
   description?: string;
   type?: ArgType;
   optional?: boolean;
+  valueAlias?: string[];
+  range?: Range;
 };
 
 export type ParameterProto = {
@@ -14,6 +18,7 @@ export type ParameterProto = {
   description?: string;
   type?: ArgType;
   optional?: boolean;
+  valueAlias?: string[];
 };
 
 export type SignalProto = {
@@ -21,12 +26,15 @@ export type SignalProto = {
   description?: string;
   parameters?: ArgumentProto[];
   checkMethod?: string;
+  alias?: string;
 };
 
 export type VariableProto = {
   img?: string;
   type?: ArgType;
   description?: string;
+  alias?: string;
+  valueAlias?: string[];
   // TODO: parameters?: ArgumentProto[];
 };
 
@@ -34,6 +42,7 @@ export type MethodProto = {
   img?: string;
   description?: string;
   parameters?: ArgumentProto[];
+  alias?: string;
 };
 
 export type ComponentProto = {
@@ -78,6 +87,9 @@ export type Platform = {
   version: string;
   visual: boolean;
   staticActionDelimeter: string;
+  headerFileExtension?: string;
+  defaultSetupFunctions?: string[];
+  componentDeclaration?: boolean;
   hidden?: boolean;
   components: { [name: string]: ComponentProto };
   parameters?: { [name: string]: ParameterProto };

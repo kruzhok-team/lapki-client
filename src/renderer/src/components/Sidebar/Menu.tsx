@@ -7,8 +7,9 @@ import { useModal } from '@renderer/hooks/useModal';
 import { useProperties } from '@renderer/hooks/useProperties';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { useTabs } from '@renderer/store/useTabs';
-import { noTextMode } from '@renderer/version';
+import { noTextMode, noSchemeScreen } from '@renderer/version';
 
+import { OpenRecentModal } from '../OpenRecentModal';
 import { Badge, WithHint } from '../UI';
 
 interface MenuItem {
@@ -23,7 +24,7 @@ interface MenuItem {
 
 export interface MenuProps {
   onRequestNewFile: () => void;
-  onRequestOpenFile: () => void;
+  onRequestOpenFile: (path?: string) => void;
   onRequestSaveFile: () => void;
   onRequestSaveAsFile: () => void;
   onRequestImport: (setOpenData: Dispatch<[boolean, string | null, string | null, string]>) => void;
@@ -38,6 +39,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
     state.activeTab,
     state.items,
   ]);
+  const [nextTab, prevTab] = useTabs((state) => [state.nextTab, state.prevTab]);
   const activeTab = tabs.find((tab) => tab.name === activeTabName);
   const modelController = useModelContext();
   const headControllerId = modelController.model.useData('', 'headControllerId');
@@ -46,6 +48,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
   const isInitialized = modelController.model.useData('', 'isInitialized');
   const { propertiesModalProps, openPropertiesModal } = useProperties(controller);
   const [isTextModeModalOpen, openTextModeModal, closeTextModeModal] = useModal(false);
+  const [isRecentModalOpen, openRecentModal, closeRecentModal] = useModal(false);
   const visual = controller.useData('visual');
 
   const items: MenuItem[] = [
@@ -56,6 +59,10 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
     {
       text: 'Открыть...',
       onClick: () => props.onRequestOpenFile(), // Если передавать просто функцию, в параметры может попасть то что не нужно
+    },
+    {
+      text: 'Открыть недавние...',
+      onClick: () => openRecentModal(), // Если передавать просто функцию, в параметры может попасть то что не нужно
     },
     {
       text: 'Сохранить',
@@ -102,10 +109,9 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
           canvasId: schemeEditorId,
           name: 'Схемоэкран',
         });
-        modelController.model.changeHeadControllerId(schemeEditorId);
       },
       disabled: !isInitialized,
-      hidden: controller.type === 'scheme',
+      hidden: noSchemeScreen || controller.type === 'scheme',
     },
     {
       text: 'Текстовый режим (β)',
@@ -115,7 +121,10 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
         !visual ||
         !isInitialized ||
         controller.type === 'scheme' ||
-        (activeTab && activeTab.type !== 'editor'),
+        (activeTab && activeTab.type !== 'editor') ||
+        Object.values(controller.platform).find((platform) =>
+          platform.data.id.startsWith('BearlogaDefend')
+        ) !== undefined,
     },
     // {
     //   text: 'Примеры',
@@ -125,8 +134,34 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
   // TODO (L140-beep): переместить в MainContainer.tsx
   useLayoutEffect(() => {
     window.addEventListener('keyup', handleKeyUp);
-    return () => window.removeEventListener('keyup', handleKeyUp);
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keyup', handleKeyUp);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   });
+
+  const handleNextTab = (_: KeyboardEvent) => {
+    nextTab(modelController);
+  };
+
+  const handlePrevTab = (_: KeyboardEvent) => {
+    prevTab(modelController);
+  };
+
+  const handleKeyDown = async (e: KeyboardEvent) => {
+    if (e.code === 'Tab') {
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.ctrlKey && e.shiftKey) {
+        return handlePrevTab(e);
+      }
+      if (e.ctrlKey) {
+        return handleNextTab(e);
+      }
+    }
+  };
 
   const handleKeyUp = async (e: KeyboardEvent) => {
     if (e.ctrlKey) {
@@ -203,6 +238,11 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
 
       <PropertiesModal {...propertiesModalProps} />
       <TextModeModal isOpen={isTextModeModalOpen} onClose={closeTextModeModal} />
+      <OpenRecentModal
+        isOpen={isRecentModalOpen}
+        onClose={closeRecentModal}
+        onSubmit={(filePath) => props.onRequestOpenFile(filePath)}
+      />
     </section>
   );
 };

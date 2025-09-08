@@ -20,6 +20,7 @@ interface KeyboardEvents {
   ctrld: KeyboardEvent;
   ctrls: KeyboardEvent;
   ctrlshifta: KeyboardEvent;
+  shiftr: KeyboardEvent;
 }
 
 export class Keyboard extends EventEmitter<KeyboardEvents> {
@@ -76,6 +77,13 @@ export class Keyboard extends EventEmitter<KeyboardEvents> {
 
     if (e.key === 'Delete') {
       this.emit('delete', e);
+    }
+
+    if (e.shiftKey) {
+      if (e.code === 'KeyR') {
+        this.emit('shiftr', e);
+        return;
+      }
     }
 
     if (e.ctrlKey) {

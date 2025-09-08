@@ -3,11 +3,13 @@ import {
   AddressData,
   BinariesQueueItem,
   FlashBacktrackMs,
+  GetFirmwareQueueItem,
   OperationInfo,
   OperationType,
 } from '@renderer/types/FlasherTypes';
+import { dateFormatTime } from '@renderer/utils';
 
-import { Device, MSDevice } from './Device';
+import { BlgMbDevice, Device, MSDevice } from './Device';
 import { Flasher } from './Flasher';
 
 export class ManagerMS {
@@ -22,8 +24,10 @@ export class ManagerMS {
     ['PUSH_FIRMWARE', 'загрузка прошивки...'],
     ['PULL_FIRMWARE', 'загрузка записанного кода прошивки для проверки...'],
     ['VERIFY_FIRMWARE', 'проверка целостности загруженной прошивки...'],
+    ['GET_FIRMWARE', 'выгрузка прошивки...'],
   ]);
   private static flashQueue: BinariesQueueItem[] = [];
+  private static getFirmwareQueue: GetFirmwareQueueItem[] = [];
   private static flashingAddress: AddressData | undefined;
   private static lastBacktrackLogIndex: number | null;
   private static lastBacktrackStage: string = '';
@@ -68,6 +72,25 @@ export class ManagerMS {
       });
     }
   }
+  static getFirmwareAdd(getFirmwareRequest: GetFirmwareQueueItem) {
+    this.getFirmwareQueue.push(getFirmwareRequest);
+  }
+  static getFirmwareStart() {
+    const request = this.getFirmwareQueue.shift();
+    if (!request) {
+      return false;
+    }
+    this.flashingAddress = request.addressInfo;
+    ManagerMS.flashingAddressLog('Начат процесс выгрузки прошивки...');
+    const meta = request.addressInfo.meta;
+    Flasher.getFirmware(
+      request.dev,
+      request.addressInfo.address,
+      request.blockSize,
+      meta ? meta.RefBlChip : ''
+    );
+    return true;
+  }
   private static ping(deviceID: string, address: string) {
     Flasher.send('ms-ping', {
       deviceID: deviceID,
@@ -79,14 +102,20 @@ export class ManagerMS {
       deviceID: deviceID,
     });
   }
+
+  static timeStamp(log: string) {
+    const date = new Date();
+    return `${dateFormatTime(date)} ${log}`;
+  }
+
   static addLog(log: string) {
     this.logSize++;
-    this.setLog((prevMessages) => [...prevMessages, log]);
+    this.setLog((prevMessages) => [...prevMessages, this.timeStamp(log)]);
   }
   static editLog(log: string, index: number) {
     this.setLog((prevMessages) => {
       return prevMessages.map((msg, idx) => {
-        return index === idx ? log : msg;
+        return index === idx ? this.timeStamp(log) : msg;
       });
     });
   }
@@ -114,13 +143,19 @@ export class ManagerMS {
       address: address,
     });
   }
-  private static getMetaData(deviceID: string, address: string) {
+  private static getMetaDataMs(deviceID: string, address: string) {
     Flasher.send('ms-get-meta-data', {
       deviceID: deviceID,
       address: address,
     });
   }
+  private static getMetaData(deviceID: string) {
+    Flasher.send('get-meta-data', {
+      deviceID: deviceID,
+    });
+  }
   static backtrack(backtrack: FlashBacktrackMs) {
+    // TODO: адаптировать сообщения под выгрузку
     const uploadStage = this.backtrackMap.get(backtrack.UploadStage);
     const status = 'Статус загрузки';
     if (uploadStage === undefined) {
@@ -174,6 +209,7 @@ export class ManagerMS {
   static clearQueue() {
     this.flashQueue = [];
     this.operationQueue = [];
+    this.getFirmwareQueue = [];
   }
   static getFlashingAddress() {
     return this.flashingAddress;
@@ -192,21 +228,38 @@ export class ManagerMS {
     if (op === undefined) return;
     switch (op.type) {
       case OperationType.meta:
-        this.getMetaData(op.deviceId, op.addressInfo.address);
+        if (op.device.isMSDevice()) {
+          if (!op.addressInfo) {
+            throw Error('Не указан адрес платы МС-ТЮК.');
+          }
+          this.getMetaDataMs(op.device.deviceID, op.addressInfo.address);
+        } else {
+          this.getMetaData(op.device.deviceID);
+        }
         this.addLog(
-          `${this.displayAddressInfo(
-            op.addressInfo
+          `${this.displayDeviceInfo(
+            op.addressInfo ?? op.device
           )}: Отправлен запрос на получение метаданных устройства.`
         );
         break;
       case OperationType.ping:
-        this.ping(op.deviceId, op.addressInfo.address);
-        this.addLog(`${this.displayAddressInfo(op.addressInfo)}: Отправлен пинг.`);
+        if (op.addressInfo) {
+          this.ping(op.device.deviceID, op.addressInfo.address);
+        } else {
+          Flasher.ping(op.device.deviceID);
+        }
+        this.addLog(`${this.displayDeviceInfo(op.addressInfo ?? op.device)}: Отправлен пинг.`);
         break;
       case OperationType.reset:
-        this.reset(op.deviceId, op.addressInfo.address);
+        if (op.addressInfo) {
+          this.reset(op.device.deviceID, op.addressInfo.address);
+        } else {
+          Flasher.reset(op.device.deviceID);
+        }
         this.addLog(
-          `${this.displayAddressInfo(op.addressInfo)}: Отправлен запрос на перезагрузку платы.`
+          `${this.displayDeviceInfo(
+            op.addressInfo ?? op.device
+          )}: Отправлен запрос на перезагрузку платы.`
         );
         break;
     }
@@ -218,8 +271,37 @@ export class ManagerMS {
       this.addLog(`Неизвестное устройство: ${log}`);
       return undefined;
     }
-    this.addLog(`${this.displayAddressInfo(op.addressInfo)}: ${log}`);
+    this.addLog(`${this.displayDeviceInfo(op.addressInfo ?? op.device)}: ${log}`);
     this.nextOperation();
     return op;
   }
+
+  static async writeBinary(path: string, binary: Uint8Array) {
+    if (!this.flashingAddress) {
+      throw Error('No flashing address');
+    }
+    const [error] = await window.api.fileHandlers.saveBinaryIntoFile(
+      `${path}/${this.flashingAddress.address}.bin`,
+      binary
+    );
+    if (error) {
+      this.flashingAddressLog(`ошибка выгрузки прошивки: ${error}`);
+    }
+  }
+
+  static getDevicePlatform = (device: Device) => {
+    // TODO: подумать, можно ли найти более надёжный способ сверки платформ на клиенте и сервере
+    // названия платформ на загрузчике можно посмотреть здесь: https://github.com/kruzhok-team/lapki-flasher/blob/main/src/device_list.JSON
+    const name = device.name.toLocaleLowerCase();
+    switch (name) {
+      case 'arduino micro':
+      case 'arduino micro (bootloader)':
+        return 'ArduinoMicro';
+      case 'arduino uno':
+        return 'ArduinoUno';
+      case 'кибермишка':
+        return (device as BlgMbDevice).version;
+    }
+    return undefined;
+  };
 }

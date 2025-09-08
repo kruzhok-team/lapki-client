@@ -113,7 +113,7 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
     if (!condition) return '';
     if (typeof condition === 'string') return `[${condition}]`;
 
-    return `[${serializeCondition(condition, platform.data, components)}]`;
+    return `[${serializeCondition(condition, platform.data, components, true)}]`;
   };
 
   const handleEventDoubleClick = (e: React.MouseEvent) => {

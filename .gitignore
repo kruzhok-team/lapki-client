@@ -7,3 +7,13 @@ out
 pnpm-lock.yaml
 *.tsbuildinfo
 qt-temp.ts
+
+# lapki-compiler
+ACCESS_TOKENS.txt
+resources/modules/*/lapki-compiler/fullgraphmlparser
+resources/modules/*/lapki-compiler/library
+resources/modules/*/lapki-compiler/platforms
+resources/modules/*/arduino-cli
+resources/modules/*/avrdude
+resources/modules/*/gcc-arm-none-eabi
+resources/modules/*/lapki-compiler/build/

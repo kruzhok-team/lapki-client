@@ -3,6 +3,9 @@
 @tailwind utilities;
 
 @layer base {
+  *{
+    @apply outline-none;
+  }
   body {
     @apply bg-bg-primary font-Fira text-text-primary;
   }

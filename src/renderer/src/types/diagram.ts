@@ -2,7 +2,7 @@ import { Dimensions, Point } from '@renderer/lib/types';
 
 export type ArgList = {
   [key: string]: {
-    value: string | number[][] | Variable;
+    value: string | number[][] | Variable | undefined;
     order: number;
   };
 };
@@ -11,6 +11,7 @@ export type Action = {
   component: string;
   method: string;
   args?: ArgList;
+  selection?: boolean;
 };
 
 export type Meta = { [id: string]: string };
@@ -25,12 +26,14 @@ export type Event = {
   component: string;
   method: string;
   args?: ArgList;
+  // selection?: boolean; Или лучше выделение хранить здесь?
 };
 
 export type EventData = {
   trigger: Event | string;
   do: Action[] | string;
   condition?: Condition | string;
+  selection?: boolean;
 };
 
 export interface BaseState {

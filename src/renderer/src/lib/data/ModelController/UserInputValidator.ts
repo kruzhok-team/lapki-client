@@ -127,10 +127,10 @@ export class UserInputValidator {
     // проверка на то, что название не совпадает с названием класса компонентов
     const vacantComponents = controller.getVacantComponents(smId, {}) as ComponentEntry[];
     for (const component of vacantComponents) {
-      if (component.name === componentId) {
+      if (component.idx === componentId) {
         return {
           status: false,
-          error: 'Нельзя дублировать название класса компонентов',
+          error: 'Нельзя дублировать оригинальное название класса компонентов',
         };
       }
     }

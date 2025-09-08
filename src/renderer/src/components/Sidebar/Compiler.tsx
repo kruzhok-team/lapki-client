@@ -53,7 +53,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   const [smId, setSmId] = useState<string | undefined>(undefined);
   // секунд до переподключения, null - означает, что отчёт до переподключения не ведётся
   const [secondsUntilReconnect, setSecondsUntilReconnect] = useState<number | null>(null);
-  const openTab = useTabs((state) => state.openTab);
+  const [openTab, closeTab] = useTabs((state) => [state.openTab, state.closeTab]);
 
   const [selectedStateMachines, setSelectedStateMachines] = useState<{ [id: string]: boolean }>(
     getDefaultSmSelection(stateMachines, {})
@@ -118,9 +118,11 @@ export const CompilerTab: React.FC<CompilerProps> = ({
         );
       })
       .join('----------\n\n');
+    const tabName = 'compilerLog';
+    closeTab(tabName, modelController);
     openTab(modelController, {
       type: 'code',
-      name: 'compilerLog',
+      name: tabName,
       code: commands,
       language: 'txt',
     });
@@ -131,9 +133,11 @@ export const CompilerTab: React.FC<CompilerProps> = ({
     const sm = compilerData?.state_machines[smId];
     if (!sm) return;
     sm.source.forEach((element) => {
+      const tabName = `${element.filename}.${element.extension}`;
+      closeTab(tabName, modelController);
       openTab(modelController, {
         type: 'code',
-        name: `${element.filename}.${element.extension}`,
+        name: tabName,
         code: element.fileContent,
         language: languageMappers[element.extension] ?? element.extension,
       });
@@ -157,11 +161,14 @@ export const CompilerTab: React.FC<CompilerProps> = ({
 
   useEffect(() => {
     if (!compilerSetting) return;
-
-    const { host, port } = compilerSetting;
-
+    const { localHost, localPort, remoteHost, remotePort, type } = compilerSetting;
     Compiler.bindReact(setCompilerData, setCompilerStatus, setImportData, setSecondsUntilReconnect);
-    Compiler.connect(host, port);
+    const autoReconnect = type === 'remote';
+    if (type === 'local') {
+      Compiler.connect(localHost, localPort, autoReconnect);
+    } else {
+      Compiler.connect(remoteHost, remotePort, autoReconnect);
+    }
   }, [compilerSetting]);
 
   const button = [
@@ -206,6 +213,18 @@ export const CompilerTab: React.FC<CompilerProps> = ({
     setSelectedStateMachines({ ...selected });
   };
 
+  const humanizeResult = (status?: string): string => {
+    if (!status) return 'Нет данных';
+    switch (status) {
+      case 'OK':
+        return 'Готово';
+      case 'NOTOK':
+        return 'Проблема!';
+      default:
+        return status;
+    }
+  };
+
   return (
     <section>
       <h3 className="mx-4 mb-3 flex flex-row items-center border-b border-border-primary py-2 text-center text-lg">
@@ -248,19 +267,19 @@ export const CompilerTab: React.FC<CompilerProps> = ({
             </button>
           </div>
         ) : undefined}
-        <p className="my-1">
+        <p className="mb-3 mt-2 font-medium">
           Статус:{' '}
           <span
             className={twMerge('text-primary', compilerData?.result === 'NOTOK' && 'text-error')}
           >
-            {compilerData?.result ?? 'Нет данных'}
+            {humanizeResult(compilerData?.result)}
           </span>
         </p>
         {showReconnectTime()}
         <button className="btn-primary" onClick={handleAddStdoutTab} disabled={!compilerData}>
           Журнал компиляции
         </button>
-        <div className="mb-1 mt-20"> Машины состояний: </div>
+        <div className="mb-1 mt-4 font-medium"> Машины состояний: </div>
         <div className="mb-4 flex h-[200px] select-text flex-col overflow-y-auto break-words rounded bg-bg-primary scrollbar-thin">
           {compilerData?.state_machines ? (
             Object.entries(compilerData.state_machines).map(([id, sm]) => (
@@ -284,7 +303,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
               </div>
             ))
           ) : (
-            <div className="p-2">Нет скомпилированных МС...</div>
+            <div className="p-2 italic opacity-70">Нет готовых машин…</div>
           )}
         </div>
 

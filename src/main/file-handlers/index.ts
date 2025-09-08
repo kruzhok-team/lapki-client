@@ -11,6 +11,10 @@ import {
   handleGetFileMetadata,
   handleFileSelect,
   handleFileRead,
+  handleFileExists,
+  handleCreateFolder,
+  handleSaveBinaryIntoFile,
+  handleGetDefaultFirmwarePath,
 } from './handlers';
 
 /**
@@ -30,6 +34,14 @@ const handlers = {
   getMetadata: handleGetFileMetadata,
   selectFile: handleFileSelect,
   readFile: handleFileRead,
+  /**
+   * Создание папки.
+   * Возвращает три параметра: отмена создания папки, путь к папке, текст ошибки.
+   */
+  createFolder: handleCreateFolder,
+  saveBinaryIntoFile: handleSaveBinaryIntoFile,
+  existsFile: handleFileExists,
+  getDefaultFirmwarePath: handleGetDefaultFirmwarePath,
 };
 
 /**

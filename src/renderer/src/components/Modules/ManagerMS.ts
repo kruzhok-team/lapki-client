@@ -9,7 +9,7 @@ import {
 } from '@renderer/types/FlasherTypes';
 import { dateFormatTime } from '@renderer/utils';
 
-import { Device, MSDevice } from './Device';
+import { BlgMbDevice, Device, MSDevice } from './Device';
 import { Flasher } from './Flasher';
 
 export class ManagerMS {
@@ -300,7 +300,7 @@ export class ManagerMS {
       case 'arduino uno':
         return 'ArduinoUno';
       case 'кибермишка':
-        return 'blg-mb-1-a7';
+        return (device as BlgMbDevice).version;
     }
     return undefined;
   };

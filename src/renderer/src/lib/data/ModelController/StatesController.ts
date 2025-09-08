@@ -483,7 +483,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
   handleStateClick = (state: State, e: { event: MyMouseEvent }) => {
     const drawBounds = state.drawBounds;
-    const titleHeight = state.titleHeight;
+    const titleHeight = state.titleHeight / this.controller.scale;
     const y = e.event.y - drawBounds.y;
     const x = e.event.x - drawBounds.x;
 

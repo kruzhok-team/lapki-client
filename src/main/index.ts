@@ -1,7 +1,8 @@
 import { is } from '@electron-toolkit/utils';
-import { app, shell, BrowserWindow, ipcMain, globalShortcut } from 'electron';
+import { app, shell, BrowserWindow, ipcMain, globalShortcut, session } from 'electron';
 import settings from 'electron-settings';
 import { lookpath } from 'lookpath';
+import { unzip } from 'unzip-crx-3';
 
 import { existsSync } from 'fs';
 import path, { join } from 'path';
@@ -21,6 +22,45 @@ import { getAllTemplates, getTemplate } from './templates';
 import { basePath } from './utils';
 
 import icon from '../../resources/icon.png?asset';
+
+const unzip: any = require('unzip-crx-3'); // eslint-disable-line
+
+/**
+ * Устанавливает расширение для DevTools, если оно не установлено.
+ * @param {string} extensionName - Название расширения (например, 'react-dev-tools')
+ */
+async function installDevToolsExtension(extensionName: string) {
+  const extensionsDir = path.resolve(__dirname, '../../extensions');
+  const crxPath = path.join(extensionsDir, `${extensionName}.crx`);
+  const unpackedPath = path.join(extensionsDir, extensionName);
+
+  // Проверяем, распаковано ли расширение
+  if (!existsSync(unpackedPath)) {
+    try {
+      await unzip(crxPath, unpackedPath);
+      console.log(`Extension ${extensionName} распаковано.`);
+    } catch (err) {
+      console.error(`Ошибка распаковки ${extensionName}:`, err);
+      return;
+    }
+  }
+
+  // Проверяем, установлено ли расширение
+  const loadedExtensions = session.defaultSession.getAllExtensions?.() || [];
+  const alreadyLoaded = loadedExtensions.some((ext: any) => ext.path === unpackedPath);
+  if (!alreadyLoaded) {
+    try {
+      const ext = await session.defaultSession.loadExtension(unpackedPath, {
+        allowFileAccess: true,
+      });
+      console.log(`Loaded extension: ${ext.name}`);
+    } catch (err) {
+      console.error(`Ошибка установки расширения ${extensionName}:`, err);
+    }
+  } else {
+    console.log(`Extension ${extensionName} уже установлено.`);
+  }
+}
 
 /**
  * Создание главного окна редактора.
@@ -139,6 +179,9 @@ startModules();
 
 // Выполняется после инициализации Electron
 app.whenReady().then(() => {
+  console.log(process.versions.chrome);
+  installDevToolsExtension('react-dev-tools');
+
   ipcMain.handle('appVersion', app.getVersion);
 
   const mainWindow = createWindow();

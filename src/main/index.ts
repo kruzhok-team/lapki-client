@@ -179,9 +179,7 @@ startModules();
 
 // Выполняется после инициализации Electron
 app.whenReady().then(() => {
-  console.log(process.versions.chrome);
   installDevToolsExtension('react-dev-tools');
-
   ipcMain.handle('appVersion', app.getVersion);
 
   const mainWindow = createWindow();

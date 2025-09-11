@@ -18,7 +18,7 @@ import {
   settingsChangeSend,
 } from './settings';
 import { getAllTemplates, getTemplate } from './templates';
-import { basePath } from './utils';
+import { basePath, installDevToolsExtension } from './utils';
 
 import icon from '../../resources/icon.png?asset';
 
@@ -139,6 +139,9 @@ startModules();
 
 // Выполняется после инициализации Electron
 app.whenReady().then(() => {
+  if (!app.isPackaged) {
+    installDevToolsExtension('react-dev-tools');
+  }
   ipcMain.handle('appVersion', app.getVersion);
 
   const mainWindow = createWindow();

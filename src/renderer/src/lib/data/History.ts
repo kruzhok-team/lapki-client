@@ -116,6 +116,12 @@ export type PossibleActions = {
     event: EventSelection;
     prevValue: EventAction;
   };
+  // createEventAction: {
+  //   smId: string;
+  //   stateId: string;
+  //   event: EventSelection;
+  //   value: EventAction;
+  // };
 
   createComponent: { args: CreateComponentParams };
   deleteComponent: { args: DeleteDrawableParams; prevComponent: Component };
@@ -178,7 +184,13 @@ export const actionFunctions: ActionFunctions = {
   createState: (sM, args) => ({
     redo: sM.createState.bind(
       sM,
-      { ...args, id: args.newStateId, linkByPoint: false, canBeInitial: false },
+      {
+        ...args,
+        id: args.newStateId,
+        linkByPoint: false,
+        canBeInitial: false,
+        createInitialState: false,
+      },
       false
     ),
     undo: sM.deleteState.bind(sM, { smId: args.smId, id: args.newStateId }, false),
@@ -197,6 +209,7 @@ export const actionFunctions: ActionFunctions = {
         events: stateData.events,
         color: stateData.color,
         linkByPoint: false,
+        createInitialState: false,
         canBeInitial: false,
       },
       false
@@ -266,23 +279,24 @@ export const actionFunctions: ActionFunctions = {
   }),
 
   createInitialState: (sM, args) => ({
-    redo: sM.createInitialStateWithTransition.bind(
+    redo: sM.createInitialState.bind(
       sM,
-      args.smId,
-      args.targetId,
-      false,
-      args.position
+      {
+        smId: args.smId,
+        id: args.id,
+        position: args.position,
+        targetId: args.targetId,
+      },
+      false
     ),
-    undo: sM.deleteInitialStateWithTransition.bind(sM, args.smId, args.targetId, false),
+    undo: sM.deleteInitialState.bind(sM, { smId: args.smId, id: args.id }, args.targetId, false),
   }),
   deleteInitialState: (sM, args) => ({
-    redo: sM.deleteInitialStateWithTransition.bind(sM, args.smId, args.targetId, false),
-    undo: sM.createInitialStateWithTransition.bind(
+    redo: sM.deleteInitialState.bind(sM, { smId: args.smId, id: args.id }, args.targetId, false),
+    undo: sM.createInitialState.bind(
       sM,
-      args.smId,
-      args.targetId,
-      false,
-      args.position
+      { smId: args.smId, targetId: args.targetId, id: args.id, position: args.position },
+      false
     ),
   }),
   changeInitialStatePosition: (sM, { smId, id, startPosition, endPosition }) => ({
@@ -451,12 +465,17 @@ export const actionFunctions: ActionFunctions = {
   }),
   deleteEvent: (sM, { stateId, smId, eventIdx, prevValue }) => ({
     redo: sM.deleteEvent.bind(sM, { smId, stateId, event: { eventIdx, actionIdx: null } }, false),
-    undo: sM.createEvent.bind(sM, { smId, stateId, eventData: prevValue, eventIdx }),
+    undo: sM.createEvent.bind(sM, { smId, stateId, eventData: prevValue, eventIdx }, false),
   }),
   deleteEventAction: (sM, { smId, stateId, event, prevValue }) => ({
     redo: sM.deleteEvent.bind(sM, { smId, stateId, event }, false),
-    undo: sM.createEventAction.bind(sM, { smId, stateId, event, value: prevValue }),
+    undo: sM.createEventAction.bind(sM, { smId, stateId, event, value: prevValue }, false),
   }),
+
+  // EventAction: (sM, { smId, stateId, event, prevValue }) => ({
+  //   redo: sM.deleteEvent.bind(sM, { smId, stateId, event }, false),
+  //   undo: sM.createEventAction.bind(sM, { smId, stateId, event, value: prevValue }),
+  // }),
 
   createComponent: (sM, { args }) => ({
     redo: sM.createComponent.bind(sM, args, false),
@@ -775,6 +794,7 @@ export class History {
   undo = () => {
     if (this.isUndoStackEmpty()) return;
 
+    this.stateMachine.removeSelection();
     const action = this.undoStack.pop() as Action<any>;
 
     actionFunctions[action.type](this.stateMachine, action.args).undo();
@@ -795,6 +815,7 @@ export class History {
     if (this.isRedoStackEmpty()) return;
 
     const action = this.redoStack.pop() as Action<any>;
+    this.stateMachine.removeSelection();
 
     actionFunctions[action.type](this.stateMachine, action.args).redo();
 

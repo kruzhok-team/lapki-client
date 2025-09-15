@@ -641,7 +641,12 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     });
 
     this.changeInitialStatePosition(
-      { smId, id: transitionFromInitialState.sourceId, startPosition: initialState.position, endPosition: position },
+      {
+        smId,
+        id: transitionFromInitialState.sourceId,
+        startPosition: initialState.position,
+        endPosition: position,
+      },
       canUndo
     );
   }

@@ -7,7 +7,7 @@ export type SelectedItemType =
   | 'note'
   | 'component'
   | 'choiceState';
-// | 'final';
+// | 'final'; TODO (L140-beep): добавить выделение конечных состояний
 
 export interface BaseSelectionData {
   smId: string;

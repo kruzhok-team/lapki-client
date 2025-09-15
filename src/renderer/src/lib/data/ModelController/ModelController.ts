@@ -1830,7 +1830,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
     return state;
   }
-
+  // TODO (L140-beep): numberOfConnectedActions, чтобы одним кликом отменять удаление
   deleteSelected = () => {
     const events: SelectedEventItem[] = [];
     for (const selectedItem of this.selectedItems) {

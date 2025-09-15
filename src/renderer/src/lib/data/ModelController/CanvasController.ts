@@ -338,7 +338,6 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
             this.model.off('deleteEventAction', this.binded['deleteEventAction']);
             this.model.off('deleteEvent', this.binded['deleteEvent']);
             this.model.off('changeEventSelection', this.binded['changeEventSelection']);
-            // this.model.off('changeStateSelection', this.binded['changeStateSelection']);s
             break;
           case 'initialState':
             this.model.off('createInitial', this.binded['createInitial']);

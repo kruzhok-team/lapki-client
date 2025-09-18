@@ -1,0 +1,114 @@
+[
+  {
+    "ID": 0,
+    "name": "Arduino Micro",
+    "pidvid": [
+      {
+        "productID": "8037",
+        "vendorID": "2a03"
+      },
+      {
+        "productID": "8037",
+        "vendorID": "2341"
+      }
+    ],
+    "type": "arduino",
+    "typePayload": {
+      "controller": "ATmega32U4",
+      "programmer": "avr109",
+      "bootloaderID": 1
+    },
+    "flashFileExtension": "hex"
+  },
+  {
+    "ID": 1,
+    "name": "Arduino Micro (bootloader)",
+    "pidvid": [
+      {
+        "productID": "0037",
+        "vendorID": "2a03"
+      },
+      {
+        "productID": "0037",
+        "vendorID": "2341"
+      }
+    ],
+    "type": "arduino",
+    "typePayload": {
+      "controller": "ATmega32U4",
+      "programmer": "avr109",
+      "bootloaderID": -1
+    },
+    "flashFileExtension": "hex"
+  },
+  {
+    "ID": 2,
+    "name": "Arduino Uno",
+    "pidvid": [
+      {
+        "productID": "0043",
+        "vendorID": "2a03"
+      },
+      {
+        "productID": "0043",
+        "vendorID": "2341"
+      },
+      {
+        "productID": "7523",
+        "vendorID": "1a86"
+      }
+    ],
+    "type": "arduino",
+    "typePayload": {
+      "controller": "ATmega328P",
+      "programmer": "arduino",
+      "bootloaderID": -1
+    },
+    "flashFileExtension": "hex"
+  },
+  {
+    "ID": 3,
+    "name": "Arduino Mega",
+    "pidvid": [
+      {
+        "productID": "0042",
+        "vendorID": "2a03"
+      }
+    ],
+    "type": "arduino",
+    "typePayload": {
+      "controller": "ATmega2560",
+      "programmer": "wiring",
+      "bootloaderID": -1
+    },
+    "flashFileExtension": "hex"
+  },
+  {
+    "ID": 4,
+    "name": "МС-ТЮК",
+    "pidvid": [
+      {
+        "productID": "55D5",
+        "vendorID": "1A86"
+      }
+    ],
+    "type": "tjc-ms",
+    "flashFileExtension": "bin"
+  },
+  {
+    "ID": 5,
+    "name": "КиберМишка",
+    "pidvid": [
+      {
+        "productID": "AC01",
+        "vendorID": "1209"
+      },
+      {
+        "productID": "F001",
+        "vendorID": "21BB"
+      }
+    ],
+    "type": "blg-mb",
+    "flashFileExtension": "bin"
+  }
+]

@@ -102,6 +102,10 @@
       {
         "productID": "AC01",
         "vendorID": "1209"
+      },
+      {
+        "productID": "21BB",
+        "vendorID": "F001"
       }
     ],
     "type": "blg-mb",

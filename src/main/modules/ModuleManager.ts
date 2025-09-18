@@ -79,6 +79,7 @@ export class ModuleManager {
               '-listCooldown=0', // ограничение в секундах на вызов следующего ручного обновления в секундах, в данном случае отсутствует
               `-address=localhost:${port}`, // адрес локального сервера
               `-blgMbUploaderPath=${this.getBlgMbUploaderPath()}`, // путь к загрузчику КиберМишки
+              `-deviceListPath=${this.getDeviceListPath()}`,
             ];
 
             const avrdudePath = this.getAvrdudePath();
@@ -207,5 +208,9 @@ export class ModuleManager {
 
   static getModulePath(module: string): string {
     return this.getOsExe(`${this.getOsPath()}/${module}`);
+  }
+
+  static getDeviceListPath(): string {
+    return `${basePath}/flasher/device_list.JSON`;
   }
 }

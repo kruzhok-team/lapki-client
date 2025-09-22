@@ -305,6 +305,7 @@ export class EditorModel {
       name,
       parentId,
       color,
+      selection: false,
     };
 
     this.triggerDataUpdate('elements.states');
@@ -570,6 +571,7 @@ export class EditorModel {
     const state = this.data.elements.stateMachines[smId].states[stateId];
     if (!state) return false;
 
+    eventData.selection = false;
     if (eventIdx !== undefined) {
       state.events.splice(eventIdx, 0, eventData);
     } else {

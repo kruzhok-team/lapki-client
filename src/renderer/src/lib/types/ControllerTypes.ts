@@ -7,10 +7,6 @@ import {
 } from '@renderer/lib/drawable';
 import {
   Component as ComponentData,
-  State as StateData,
-  ChoiceState as ChoiseData,
-  Transition as TransitionData,
-  Note as NoteData,
   InitialState as InitialStateData,
   StateMachine,
 } from '@renderer/types/diagram';
@@ -28,6 +24,7 @@ export interface SelectEvent {
   eventSelection: EventSelection;
   stateId: string;
   smId: string;
+  value: boolean;
 }
 
 export const emptyControllerData = () => ({
@@ -166,15 +163,6 @@ export type ComponentVariant =
     ? T
     : never;
 export type ComponentType = ComponentsControllerDataComponentType extends `${infer T}s` ? T : never;
-
-export type CopyData = { smId: string; state: StateMachine } & (
-  | { type: 'state'; data: StateData & { id: string } }
-  | { type: 'choiceState'; data: ChoiseData & { id: string } }
-  | { type: 'transition'; data: TransitionData & { id: string } }
-  | { type: 'note'; data: NoteData & { id: string } }
-  | { type: 'component'; data: ComponentData & { id: string } }
-);
-export type CopyType = CopyData['type'];
 
 export type LinkTransitionParams = {
   smId: string;

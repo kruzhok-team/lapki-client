@@ -98,16 +98,16 @@
           "description": "Текущее положение Мишки."
         },
         "ACCEL_DIR_DN": {
-          "alias": "Внизу",
+          "alias": "На ушах",
           "img": "blg-mb/bearIsUpsideDown.svg",
           "type": "uint8_t",
-          "description": "Мишка перевёрнут."
+          "description": "Мишка перевёрнут, ушами вниз, нижними лапами вверх."
         },
         "ACCEL_DIR_UP": {
-          "alias": "Вверху",
+          "alias": "На ногах",
           "img": "blg-mb/bearIsStanding.svg",
           "type": "uint8_t",
-          "description": "Мишка в обычном положении."
+          "description": "Мишка расположен как обычно, ушами вверх, нижними лапами вниз."
         },
         "ACCEL_DIR_LEFT": {
           "alias": "На левом боку",

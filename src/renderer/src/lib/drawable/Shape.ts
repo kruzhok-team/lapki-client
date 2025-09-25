@@ -135,6 +135,7 @@ export abstract class Shape extends EventEmitter<ShapeEvents> implements Drawabl
       ...this.children.getLayer(Layer.ChoiceStates),
       ...this.children.getLayer(Layer.Transitions),
       ...this.children.getLayer(Layer.Components),
+      ...this.children.getLayer(Layer.ShallowHistory),
     ] as Shape[];
 
     let bottomChild = children[0] as Shape;

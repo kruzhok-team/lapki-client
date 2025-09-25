@@ -22,6 +22,7 @@ import {
   FinalState,
   InitialState,
   Note,
+  ShallowHistory,
   State,
   Transition,
 } from '@renderer/types/diagram';
@@ -79,6 +80,9 @@ export const Hierarchy: React.FC<HierarchyProps> = ({
   const components = model.useData(smId, 'elements.components') as {
     [id: string]: Component;
   };
+  const shallowHistory = model.useData(smId, 'elements.shallowHistory') as {
+    [id: string]: ShallowHistory;
+  };
   const notes = model.useData(smId, 'elements.notes') as { [id: string]: Note };
 
   const [focusedItem, setFocusedItem] = useState<TreeItemIndex>();
@@ -103,7 +107,7 @@ export const Hierarchy: React.FC<HierarchyProps> = ({
     };
     data.root.children?.push(smId);
     const linkStates = (states: {
-      [id: string]: State | ChoiceState | InitialState | FinalState;
+      [id: string]: State | ChoiceState | InitialState | FinalState | ShallowHistory;
     }) => {
       for (const [stateId, state] of Object.entries(states)) {
         if (!state.parentId) {
@@ -224,6 +228,19 @@ export const Hierarchy: React.FC<HierarchyProps> = ({
           for (const [noteId] of [...Object.entries(notes)]) {
             data[smId].children?.push(noteId);
           }
+          break;
+        case 'shallowHistory':
+          for (const stateId in shallowHistory) {
+            data[stateId] = {
+              index: stateId,
+              isFolder: false,
+              data: { title: 'Локальная история', type: 'choiceState' },
+              children: [],
+              canRename: false,
+              canMove: false,
+            };
+          }
+          linkStates(shallowHistory);
           break;
         default:
           break;

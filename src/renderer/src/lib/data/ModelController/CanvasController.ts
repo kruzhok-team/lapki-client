@@ -16,16 +16,15 @@ import {
   ChangeStateParams,
   ChangeTransitionParams,
   ControllerDataPropertyName,
-  CreateChoiceStateParams,
   CreateComponentParams,
   CreateEventActionParams,
   CreateEventParams,
-  CreateFinalStateParams,
   CreateInitialStateControllerParams,
   CreateNoteParams,
   CreateStateMachineParams,
   CreateStateParams,
   CreateTransitionParams,
+  CreateVertexParams,
   DeleteDrawableParams,
   DeleteEventParams,
   DeleteStateMachineParams,
@@ -46,6 +45,7 @@ import {
   FinalState,
   InitialState,
   Note,
+  ShallowHistory,
   State,
   StateMachine,
   Transition,
@@ -70,7 +70,8 @@ export type CanvasSubscribeAttribute =
   | 'final'
   | 'choice'
   | 'initialState'
-  | 'stateMachine';
+  | 'stateMachine'
+  | 'shallowHistory';
 
 type DiagramData =
   | { [id: string]: State }
@@ -96,10 +97,10 @@ export type CanvasControllerEvents = {
   deleteInitialState: DeleteDrawableParams;
   createTransition: CreateTransitionParams;
   changeTransition: ChangeTransitionParams;
-  createChoice: CreateChoiceStateParams;
+  createChoice: CreateVertexParams;
   createState: CreateStateParams;
   changeStatePosition: ChangePosition;
-  createFinal: CreateFinalStateParams;
+  createFinal: CreateVertexParams;
   createNote: CreateNoteParams;
   createInitial: CreateInitialStateControllerParams;
   changeInitialPosition: ChangePosition;
@@ -160,6 +161,15 @@ export type CanvasControllerEvents = {
   changeNotePositionFromController: ChangePosition;
   changeChoicePositionFromController: ChangePosition;
   changeFinalPositionFromController: ChangePosition;
+
+  createShallowHistory: CreateVertexParams;
+  deleteShallowHistory: DeleteDrawableParams;
+  changeShallowHistoryPosition: ChangePosition;
+  changeShallowHistorySelection: ChangeSelectionParams;
+  linkShallowHistory: LinkStateParams;
+  unlinkShallowHistoryParams: UnlinkStateParams;
+  changeShallowHistoryPositionFromController: ChangePosition;
+  selectShallowHistory: SelectDrawable;
 };
 
 export type CanvasData = {
@@ -389,6 +399,19 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
             this.model.off('deleteStateMachine', this.binded['deleteStateMachine']);
             this.model.off('editStateMachine', this.binded['editStateMachine']);
             break;
+          case 'shallowHistory':
+            this.model.off('createShallowHistory', this.binded['createShallowHistory']);
+            this.model.off('deleteShallowHistory', this.binded['deleteShallowHistory']);
+            this.model.off(
+              'changeShallowHistorySelection',
+              this.binded['changeShallowHistorySelection']
+            );
+            this.model.off('linkShallowHistory', this.binded['linkShallowHistory']);
+            this.model.off(
+              'changeShallowHistoryPosition',
+              this.binded['changeShallowHistoryPosition']
+            );
+            break;
           default:
             throw new Error('Unknown attribute');
         }
@@ -537,10 +560,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
           'deleteChoice',
           this.bindHelper('choice', 'deleteChoice', this.states.deleteChoiceState)
         );
-        this.model.on(
-          'selectState',
-          this.bindHelper('choice', 'linkFinalState', this.selectChoice)
-        );
+        this.model.on('selectState', this.bindHelper('choice', 'selectState', this.selectChoice));
         this.model.on(
           'linkChoiceState',
           this.bindHelper('choice', 'linkChoiceState', this.states.linkChoiceState)
@@ -679,6 +699,41 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
           this.initializer.initStateMachines({ [smId]: initData[smId] as StateMachine });
         }
         break;
+      case 'shallowHistory':
+        this.model.on(
+          'createShallowHistory',
+          this.bindHelper(
+            'shallowHistory',
+            'createShallowHistory',
+            this.states.createShallowHistory
+          )
+        );
+        this.model.on(
+          'deleteShallowHistory',
+          this.bindHelper(
+            'shallowHistory',
+            'deleteShallowHistory',
+            this.states.deleteShallowHistory
+          )
+        );
+        this.model.on(
+          'linkShallowHistory',
+          this.bindHelper(
+            'shallowHistory',
+            'changeShallowHistorySelection',
+            this.states.linkShallowHistory
+          )
+        );
+        this.model.on(
+          'changeShallowHistoryPosition',
+          this.bindHelper(
+            'shallowHistory',
+            'changeChoicePosition',
+            this.states.changeShallowHistoryPosition
+          )
+        );
+        this.initializer.initShallowHistory(smId, initData as { [id: string]: ShallowHistory });
+        break;
       default:
         throw new Error('Unknown attribute');
     }
@@ -779,6 +834,15 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
 
   selectChoice = (args: SelectDrawable) => {
     const state = this.states.data.choiceStates.get(args.id);
+    if (!state) {
+      return;
+    }
+    this.removeSelection();
+    state.setIsSelected(true);
+  };
+
+  selectShallowHistory = (args: SelectDrawable) => {
+    const state = this.states.data.shallowHistory.get(args.id);
     if (!state) {
       return;
     }
@@ -956,6 +1020,10 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     this.app.controller.states.forEachState((state) => {
       state.setIsSelected(false);
       state.eventBox.selection = undefined;
+    });
+    // debugger;
+    this.app.controller.states.data.shallowHistory.forEach((state) => {
+      state.setIsSelected(false);
     });
 
     this.app.controller.transitions.forEach((transition) => {

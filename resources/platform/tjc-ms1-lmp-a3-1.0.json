@@ -860,12 +860,12 @@
     },
 
     "UserSignal": {
-      "name": "Свой сигнал",
-      "description": "Компонент для создания произвольных, искусственных событий. Бывает полезным для упрощения диаграммы.",
+      "name": "Свое событие",
+      "description": "Создавайте собственные события для упрощения диаграммы состояний.",
       "img": "common/userSignal.svg",
       "signals": {
         "isCalled": {
-          "alias": "Вызов",
+          "alias": "Вызвано",
           "img": "common/signalIsCalled.svg",
           "description": "Вызвано искусственное событие.",
           "checkMethod": "isCalled"

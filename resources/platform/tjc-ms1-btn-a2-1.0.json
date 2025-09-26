@@ -257,16 +257,21 @@
           "alias": "Помигать",
           "img": "arduino/blink.svg",
           "parameters": [
-            {
-              "name": "Интервал",
-              "type": "unsigned int",
-              "description": "Длительность каждого мигания (мс)."
-            },
-            {
-              "name": "Миганий",
-              "type": "byte",
-              "description": "Количество миганий."
-            }
+              {
+                "name": "lightInterval",
+                "type": "unsigned int",
+                "description": "Интервал свечения (мс)"
+              },
+              {
+                "name": "pauseInterval",
+                "type": "unsigned int",
+                "description": "Интервал паузы (мс)"
+              },
+              {
+                "name": "times",
+                "type": "byte",
+                "description": "Количество миганий"
+              }
           ],
           "description": "Мигает светодиодом определенное количество раз с определенной длительностью каждого мигания."
         }

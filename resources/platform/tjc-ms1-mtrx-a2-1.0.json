@@ -69,7 +69,7 @@
       "signals": {
         "packetReceived": {
           "alias": "Получено сообщение",
-          "img": "arduino/byteReceived.svg",
+          "img": "tjc-ms/packetReceived.svg",
           "description": "Получено сообщение через простую шину от другой платы.",
           "checkMethod": "packetReceived"
         }
@@ -103,7 +103,7 @@
           "description": "Назначить новый адрес для получения сообщений."
         },
         "sendPacket": {
-          "alias": "Отправить",
+          "alias": "Отправить сообщение",
           "img": "tjc-ms/sendPacket.svg",
           "parameters": [
             {
@@ -154,7 +154,7 @@
       },
       "methods": {
         "sendByte": {
-          "alias": "Отправить",
+          "alias": "Отправить байт",
           "img": "tjc-ms/sendByte.svg",
           "parameters": [
             {
@@ -858,7 +858,7 @@
           ]
         },
         "peek": {
-          "alias": "Установить индекс",
+          "alias": "Выбрать индекс",
           "img": "common/arrayPeek.svg",
           "description": "Переместиться на элемент с заданным индексом.",
           "parameters": [
@@ -914,12 +914,12 @@
       "constructorParameters": {},
       "methods": {
         "call": {
-          "alias": "Поднять",
+          "alias": "Поднять линию",
           "img": "tjc-ms/alarmSet.svg",
           "description": "Поднять сигнальную линию. Это действие спровоцирует событие для компонента «Наблюдатель сигнальной линии» на других платах."
         },
         "release": {
-          "alias": "Отпустить",
+          "alias": "Отпустить линию",
           "img": "tjc-ms/alarmStop.svg",
           "description": "Отпустить сигнальную линию. Это действие позволяет освободить общую сигнальную линию для других устройств."
         }
@@ -982,7 +982,7 @@
       "img": "common/iterator.svg",
       "signals": {
         "onEnd": {
-          "alias": "Конец цикла",
+          "alias": "Цикл завершен",
           "img": "common/onIterationEnd.svg",
           "description": "Это событие срабатывает после того, как будет выполнена последняя итерация цикла.",
           "checkMethod": "onEnd"

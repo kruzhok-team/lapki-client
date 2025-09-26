@@ -326,7 +326,7 @@
           "alias": "Разница",
           "img": "arduino/difference.svg",
           "type": "unsigned long",
-          "description": "Оставшееся время (в миллисекундах) до окончания таймера."
+          "description": "Оставшееся время (мс) до окончания таймера."
         }
       }
     },

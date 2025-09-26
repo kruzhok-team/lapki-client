@@ -292,52 +292,6 @@
             }
           ]
         },
-        "maskRow": {
-          "alias": "Маска для строки",
-          "img": "tjc-ms/maskRow.svg",
-          "description": "Включить или выключить строку светодиодов, используя битовую маску.",
-          "parameters": [
-            {
-              "name": "Строка",
-              "type": "uint8_t",
-              "description": "Номер строки, для которой нужно применить маску."
-            },
-            {
-              "name": "Рисунок",
-              "type": "Matrix5x1",
-              "description": "Рисунок, который будет применен к строке на матрице."
-            },
-            {
-              "name": "Операция",
-              "type": ["mask_and", "mask_or", "mask_xor"],
-              "valueAlias": ["AND", "OR", "XOR"],
-              "description": "Битовая функция, используемая для установки значения."
-            }
-          ]
-        },
-        "maskCol": {
-          "alias": "Маска для столбца",
-          "img": "tjc-ms/maskCol.svg",
-          "description": "Включить или выключить столбец светодиодов, используя битовую маску.",
-          "parameters": [
-            {
-              "name": "Столбец",
-              "type": "uint8_t",
-              "description": "Номер столбца, для которого нужно применить маску."
-            },
-            {
-              "name": "Рисунок",
-              "type": "Matrix1x5",
-              "description": "Рисунок, который будет применен к столбцу на матрице."
-            },
-            {
-              "name": "Операция",
-              "type": ["mask_and", "mask_or", "mask_xor"],
-              "valueAlias": ["AND", "OR", "XOR"],
-              "description": "Битовая функция, используемая для установки значения."
-            }
-          ]
-        },
         "maskPattern": {
           "alias": "Маска для матрицы",
           "img": "tjc-ms/maskGrid.svg",

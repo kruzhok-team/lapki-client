@@ -174,12 +174,12 @@
     "Matrix": {
       "name": "Матрица светодиодов",
       "description": "Компонент для взаимодействия со светодиодной матрицей.",
-      "img": "tjc-ms/matrix.svg",
+      "img": "blg-mb/matrix.svg",
       "signals": {},
       "methods": {
         "setPixel": {
           "alias": "Отдельный светодиод",
-          "img": "tjc-ms/cellSet.svg",
+          "img": "blg-mb/setPixel.svg",
           "description": "Включить или выключить светодиод.",
           "parameters": [
             {
@@ -200,26 +200,9 @@
             }
           ]
         },
-        "offPixel": {
-          "alias": "Выключить светодиод",
-          "img": "tjc-ms/cellClear.svg",
-          "description": "Выключение указанного светодиода.",
-          "parameters": [
-            {
-              "name": "Строка",
-              "type": "uint8_t",
-              "description": "Номер строки, на которой расположен светодиод."
-            },
-            {
-              "name": "Столбец",
-              "type": "uint8_t",
-              "description": "Номер столбца, на котором расположен светодиод."
-            }
-          ]
-        },
         "setPattern": {
           "alias": "Рисунок",
-          "img": "tjc-ms/draw.svg",
+          "img": "blg-mb/draw.svg",
           "description": "Изобразить рисунок на матрице.",
           "parameters": [
             {
@@ -234,8 +217,8 @@
           ]
         },
         "fill": {
-          "alias": "Яркость",
-          "img": "tjc-ms/fill.svg",
+          "alias": "Яркость матрицы",
+          "img": "blg-mb/changePatternBright.svg",
           "description": "Установить уровень яркости на все светодиоды.",
           "parameters": [
             {
@@ -247,14 +230,14 @@
         },
         "clear": {
           "alias": "Очистить",
-          "img": "tjc-ms/matrixEmpty.svg",
+          "img": "blg-mb/clear.svg",
           "description": "Выключить все светодиоды.",
           "parameters": []
         }
       },
       "variables": {},
       "constructorParameters": {},
-      "buildFiles": ["Matrix.hpp"],
+      "buildFiles": ["Matrix.hpp", "MatrixTypes.hpp"],
       "importFiles": ["Matrix.hpp"],
       "singletone": false
     },
@@ -266,7 +249,7 @@
       "methods": {
         "maskPixel": {
           "alias": "Маска для светодиода",
-          "img": "tjc-ms/maskCell.svg",
+          "img": "blg-mb/maskPixel.svg",
           "description": "Включить или выключить светодиод, используя битовую маску.",
           "parameters": [
             {
@@ -294,7 +277,7 @@
         },
         "maskPattern": {
           "alias": "Маска для матрицы",
-          "img": "tjc-ms/maskGrid.svg",
+          "img": "blg-mb/maskGrid.svg",
           "description": "Изобразить рисунок на матрице, используя битовую маску.",
           "parameters": [
             {
@@ -313,11 +296,10 @@
       },
       "variables": {},
       "constructorParameters": {},
-      "buildFiles": ["MatrixMask.hpp", "MatrixTypes.hpp"],
+      "buildFiles": ["MatrixMask.hpp"],
       "importFiles": ["MatrixMask.hpp"],
       "singletone": false
     },
-
     "Timer": {
       "name": "Таймер",
       "description": "Запускайте разные действия с заданным интервалом, выставив время таймера.",

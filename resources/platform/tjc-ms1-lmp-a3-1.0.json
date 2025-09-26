@@ -212,17 +212,17 @@
           "img": "arduino/blink.svg",
           "parameters": [
               {
-                "name": "lightInterval",
+                "name": "Интервал свечения",
                 "type": "unsigned int",
-                "description": "Интервал свечения (мс)"
+                "description": "Сколько времени светодиод будет включен (мс)"
               },
               {
-                "name": "pauseInterval",
+                "name": "Интервал паузы",
                 "type": "unsigned int",
-                "description": "Интервал паузы (мс)"
+                "description": "Сколько времени светодиод будет выключен (мс)"
               },
               {
-                "name": "times",
+                "name": "Количество миганий",
                 "type": "byte",
                 "description": "Количество миганий"
               }

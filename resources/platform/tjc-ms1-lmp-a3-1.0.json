@@ -186,7 +186,7 @@
       "methods": {
         "on": {
           "alias": "Установить яркость",
-          "img": "arduino/switch-on.svg",
+          "img": "tjc-ms/setBright.svg",
           "parameters": [
             {
               "name": "Яркость",

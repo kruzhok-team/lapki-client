@@ -250,7 +250,20 @@
           "img": "tjc-ms/matrixEmpty.svg",
           "description": "Выключить все светодиоды.",
           "parameters": []
-        },
+        }
+      },
+      "variables": {},
+      "constructorParameters": {},
+      "buildFiles": ["Matrix.hpp"],
+      "importFiles": ["Matrix.hpp"],
+      "singletone": false
+    },
+    "MatrixMask": {
+      "name": "Матрица-маска",
+      "description": "Применяйте разные маски для матрицы светодиодов с использованием операций.",
+      "img": "blg-mb/matrixMask.svg",
+      "signals": {},
+      "methods": {
         "maskPixel": {
           "alias": "Маска для светодиода",
           "img": "tjc-ms/maskCell.svg",
@@ -326,7 +339,7 @@
           ]
         },
         "maskPattern": {
-          "alias": "Маска",
+          "alias": "Маска для матрицы",
           "img": "tjc-ms/maskGrid.svg",
           "description": "Изобразить рисунок на матрице, используя битовую маску.",
           "parameters": [
@@ -346,8 +359,8 @@
       },
       "variables": {},
       "constructorParameters": {},
-      "buildFiles": ["Matrix.hpp"],
-      "importFiles": ["Matrix.hpp"],
+      "buildFiles": ["MatrixMask.hpp", "MatrixTypes.hpp"],
+      "importFiles": ["MatrixMask.hpp"],
       "singletone": false
     },
 

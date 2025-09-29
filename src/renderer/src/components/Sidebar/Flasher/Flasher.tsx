@@ -571,7 +571,7 @@ export const FlasherTab: React.FC = () => {
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             device: dev!, // проверка осуществляется ранее в этой функции
             verification: doVerify ?? false,
-            binaries: new Blob([binData]),
+            binaries: new Blob([new Uint8Array(binData)]),
             isFile: true,
           });
         }

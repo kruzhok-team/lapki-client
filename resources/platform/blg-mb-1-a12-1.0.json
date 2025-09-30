@@ -77,6 +77,69 @@
     "Pattern.hpp"
   ],
   "components": {
+    "Accel": {
+      "name": "Акселерометр",
+      "description": "Компонент для определения положения Мишки.",
+      "img": "blg-mb/accelOrientation.svg",
+      "signals": {
+        "isOrientationChanged": {
+          "alias": "Положение изменилось",
+          "img": "blg-mb/accelOrientation.svg",
+          "description": "Это событие вызывается, когда положение Мишки меняется.",
+          "checkMethod": "isOrientationChanged"
+        }
+      },
+      "constructorParameters": {},
+      "variables": {
+        "orientation": {
+          "alias": "Ориентация",
+          "img": "blg-mb/askAccel.svg",
+          "type": "uint8_t",
+          "description": "Текущее положение Мишки."
+        },
+        "ACCEL_DIR_DN": {
+          "alias": "На ушах",
+          "img": "blg-mb/bearIsUpsideDown.svg",
+          "type": "uint8_t",
+          "description": "Мишка перевёрнут, ушами вниз, нижними лапами вверх."
+        },
+        "ACCEL_DIR_UP": {
+          "alias": "На ногах",
+          "img": "blg-mb/bearIsStanding.svg",
+          "type": "uint8_t",
+          "description": "Мишка расположен как обычно, ушами вверх, нижними лапами вниз."
+        },
+        "ACCEL_DIR_LEFT": {
+          "alias": "На левом боку",
+          "img": "blg-mb/bearIsOnLeftSide.svg",
+          "type": "uint8_t",
+          "description": "Мишка на левом боку."
+        },
+        "ACCEL_DIR_RIGHT": {
+          "alias": "На правом боку",
+          "img": "blg-mb/bearIsOnRightSide.svg",
+          "type": "uint8_t",
+          "description": "Мишка на правом боку."
+        },
+        "ACCEL_DIR_FACE": {
+          "alias": "На спине",
+          "img": "blg-mb/bearIsOnBack.svg",
+          "type": "uint8_t",
+          "description": "Мишка на спине."
+        },
+        "ACCEL_DIR_BACK": {
+          "alias": "На животе",
+          "img": "blg-mb/bearIsOnBelly.svg",
+          "type": "uint8_t",
+          "description": "Мишка на животе."
+        }
+      },
+      "importFiles": ["Accel.hpp"],
+      "buildFiles": ["Accel.hpp", "accel.c"],
+      "loopActions": [],
+      "methods": {},
+      "singletone": false
+    },
     "Button": {
       "name": "Кнопка",
       "description": "Выберите любую кнопку КиберМишки, она будет создавать событие.",

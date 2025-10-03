@@ -78,7 +78,7 @@ export class Flasher extends ClientWS {
         if (bin.fileContent instanceof Blob) {
           return bin.fileContent;
         } else {
-          return new Blob([bin.fileContent]);
+          return new Blob([new Uint8Array(bin.fileContent)]);
         }
       }
     }
@@ -110,7 +110,7 @@ export class Flasher extends ClientWS {
     if (openData[0]) {
       const buffer = openData[3] as Buffer;
       //console.log(buffer.toString());
-      Flasher.binary = new Blob([buffer]);
+      Flasher.binary = new Blob([new Uint8Array(buffer)]);
       return true;
     } else {
       //console.log('set file (false)');

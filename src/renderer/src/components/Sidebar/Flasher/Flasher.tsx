@@ -80,7 +80,6 @@ export const FlasherTab: React.FC = () => {
     setFlashTableData,
     hasAvrdude,
     errorMessage,
-    binaryFolder,
     setBinaryFolder,
   } = useFlasher();
 

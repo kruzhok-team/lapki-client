@@ -170,16 +170,6 @@ export class Flasher extends ClientWS {
     });
   }
 
-  static getFirmwareMs(dev: Device, address: string, blockSize: number, RefBlChip?: string) {
-    this.currentFlashingDevice = dev;
-    this.send('ms-get-firmware', {
-      deviceID: dev.deviceID,
-      address: address,
-      blockSize: blockSize,
-      RefBlChip: RefBlChip ?? '',
-    });
-  }
-
   static endGetFirmware() {
     this.currentFlashingDevice = undefined;
   }

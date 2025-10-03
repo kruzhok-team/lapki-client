@@ -75,8 +75,12 @@ export type FlasherType =
   | 'incorrect-file-size'
   | 'ms-get-firmware'
   | 'ms-get-firmware-approve'
-  | 'ms-get-firmware-next-block'
+  | 'get-firmware-next-block'
   | 'ms-get-firmware-finish'
+  | 'get-firmware'
+  | 'get-firmware-approve'
+  | 'get-firmware-finish'
+  | 'ready-for-binary'
   | 'binary-data';
 export type FlasherPayload =
   | null
@@ -99,6 +103,7 @@ export type FlasherPayload =
   | FlashBacktrackMs
   | MSAddressAndMeta
   | MetaDataMessage
+  | GetFirmware
   | MSGetFirmware;
 
 export type FlasherMessage = {
@@ -204,6 +209,10 @@ export type MSAddressAction = {
   address: string;
 };
 
+export type DeviceId = {
+  deviceID: string;
+};
+
 export type MSGetAddress = {
   deviceID: string;
 };
@@ -305,6 +314,11 @@ export type MSGetFirmware = {
   RefBlChip: string; // не обязательный параметр из метаданных, можно оставить пустым, если значение неизвестно.
 };
 
+export type GetFirmware = {
+  deviceID: string;
+  blockSize: number;
+};
+
 export type MSOperationReport = {
   deviceID: string;
   address: string;
@@ -315,7 +329,6 @@ export type MSOperationReport = {
 export type GetFirmwareQueueItem = {
   dev: MSDevice;
   addressInfo: AddressData;
-  blockSize: number;
 };
 
 export type MetaDataMessage = {

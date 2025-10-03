@@ -18,6 +18,7 @@ import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
 import {
   AddressData,
   DeviceCommentCode,
+  DeviceId,
   FlashBacktrackMs,
   FlashResult,
   FlashUpdatePort,
@@ -49,7 +50,6 @@ export const useFlasherHooks = () => {
     setErrorMessage,
     setHasAvrdude,
     binaryFolder,
-    setBinaryFolder,
   } = useFlasher();
 
   const {
@@ -247,7 +247,7 @@ export const useFlasherHooks = () => {
         if (binaryFolder) {
           // async функция
           ManagerMS.writeBinary(binaryFolder, flasherMessage.payload as Uint8Array);
-          Flasher.send('ms-get-firmware-next-block', null);
+          Flasher.send('get-firmware-next-block', null);
         } else {
           ManagerMS.flashingAddressLog(
             'Ошибка! Отсутствует папка для сохранения выгруженных прошивок.'
@@ -778,13 +778,32 @@ export const useFlasherHooks = () => {
         }
         break;
       }
+      case 'ready-for-binary': {
+        Flasher.send('get-firmware-next-block', null);
+        break;
+      }
       case 'ms-get-firmware-approve': {
-        Flasher.send('ms-get-firmware-next-block', null);
+        // TODO: извлекать конкретную плату через адресную книгу
+        if (!ManagerMS.getFirmwarePop()) {
+          ManagerMS.addLog(
+            'Ошибка! Не удалось найти плату МС-ТЮК из которой предполагается выгрузка прошивки!'
+          );
+        }
+        break;
+      }
+      case 'get-firmware-approve': {
+        const result = flasherMessage.payload as DeviceId;
+        Flasher.currentFlashingDevice = devices.get(result.deviceID);
+        ManagerMS.addDevLog('Начат процесс выгрузки прошивки...', Flasher.currentFlashingDevice);
         break;
       }
       case 'ms-get-firmware-finish': {
         const result = flasherMessage.payload as MSOperationReport;
         const errorPostfix = result.comment ? ` Текст ошибки ${result.comment}` : '';
+        const dev = devices.get(result.deviceID);
+        if (dev?.deviceID === Flasher.currentFlashingDevice?.deviceID) {
+          Flasher.currentFlashingDevice = undefined;
+        }
         switch (result.code) {
           case 0:
             ManagerMS.flashingAddressEndLog('Выгрузка завершена.');
@@ -805,7 +824,6 @@ export const useFlasherHooks = () => {
             );
             break;
           case 4:
-            // Этот лог оставлен на всякий случай. Клиент не должен видеть этот лог, так как кнопки для загрузки/выгрузки должны быть заблокированы в этот момент.
             ManagerMS.flashingAddressEndLog(
               'Нельзя начать выгрузку, так как в данный момент IDE занято работой с одним из подключённых устройств.'
             );
@@ -827,9 +845,59 @@ export const useFlasherHooks = () => {
             );
             break;
         }
-        Flasher.currentFlashingDevice = undefined;
-        if (!ManagerMS.getFirmwareStart()) {
-          setBinaryFolder(null);
+        break;
+      }
+      case 'get-firmware-finish': {
+        const result = flasherMessage.payload as DeviceCommentCode;
+        const errorPostfix = result.comment ? ` Текст ошибки ${result.comment}` : '';
+        const dev = devices.get(result.deviceID);
+        if (dev === Flasher.currentFlashingDevice) {
+          Flasher.currentFlashingDevice = undefined;
+        }
+        switch (result.code) {
+          case 0:
+            ManagerMS.addDevLog('Выгрузка завершена.', dev);
+            break;
+          case 1:
+            ManagerMS.addDevLog('Порт для загрузки не найден. Возможно плата не подключена.', dev);
+            break;
+          case 2:
+            ManagerMS.addDevLog(
+              'Возникла ошибка при попытке выгрузить прошивку.' + errorPostfix,
+              dev
+            );
+            break;
+          case 3:
+            ManagerMS.addDevLog(
+              'Возникла ошибка при попытке выгрузить прошивку.' + errorPostfix,
+              dev
+            );
+            break;
+          case 4:
+            ManagerMS.addDevLog(
+              'Нельзя начать выгрузку, так как в данный момент IDE занято работой с одним из подключённых устройств.',
+              dev
+            );
+            break;
+          case 5:
+            ManagerMS.addDevLog(
+              'Нельзя начать выгрузку, так как в данный момент порт устройства занят другим клиентом',
+              dev
+            );
+            break;
+          case 6:
+            ManagerMS.addDevLog(
+              `Нельзя начать выгрузку, так как указан не верный размер передаваемых блоков с бинарным файлами: ${result.comment}. Сообщите об этой ошибке разработчикам IDE.`,
+              dev
+            );
+            break;
+          case 7:
+            // это ещё не реализовано на сервере
+            ManagerMS.addDevLog(
+              `Выгрузка прекращена, так как истекло время ожидания запроса на бинарные данные от клиента. Сообщите об этой ошибке разработчикам IDE.`,
+              dev
+            );
+            break;
         }
         break;
       }

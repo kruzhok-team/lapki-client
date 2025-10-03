@@ -248,7 +248,7 @@ export const useFlasherHooks = () => {
         if (binaryFolder) {
           // async функция
           ManagerMS.writeBinary(binaryFolder, flasherMessage.payload as Uint8Array);
-          Flasher.send('ms-get-firmware-next-block', null);
+          Flasher.send('get-firmware-next-block', null);
         } else {
           ManagerMS.flashingAddressLog(
             'Ошибка! Отсутствует папка для сохранения выгруженных прошивок.'
@@ -780,8 +780,7 @@ export const useFlasherHooks = () => {
         break;
       }
       case 'ready-for-binary': {
-        // TODO: переименовать команду
-        Flasher.send('ms-get-firmware-next-block', null);
+        Flasher.send('get-firmware-next-block', null);
         break;
       }
       case 'ms-get-firmware-approve': {

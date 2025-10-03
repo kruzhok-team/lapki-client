@@ -75,7 +75,7 @@ export type FlasherType =
   | 'incorrect-file-size'
   | 'ms-get-firmware'
   | 'ms-get-firmware-approve'
-  | 'ms-get-firmware-next-block'
+  | 'get-firmware-next-block'
   | 'ms-get-firmware-finish'
   | 'get-firmware'
   | 'get-firmware-approve'

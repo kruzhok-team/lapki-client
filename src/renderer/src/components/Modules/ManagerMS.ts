@@ -75,20 +75,14 @@ export class ManagerMS {
   static getFirmwareAdd(getFirmwareRequest: GetFirmwareQueueItem) {
     this.getFirmwareQueue.push(getFirmwareRequest);
   }
-  static getFirmwareStart() {
+  static getFirmwarePop() {
     const request = this.getFirmwareQueue.shift();
     if (!request) {
       return false;
     }
+    Flasher.currentFlashingDevice = request.dev;
     this.flashingAddress = request.addressInfo;
     ManagerMS.flashingAddressLog('Начат процесс выгрузки прошивки...');
-    const meta = request.addressInfo.meta;
-    Flasher.getFirmware(
-      request.dev,
-      request.addressInfo.address,
-      request.blockSize,
-      meta ? meta.RefBlChip : ''
-    );
     return true;
   }
   private static ping(deviceID: string, address: string) {
@@ -277,15 +271,30 @@ export class ManagerMS {
   }
 
   static async writeBinary(path: string, binary: Uint8Array) {
-    if (!this.flashingAddress) {
-      throw Error('No flashing address');
+    let fileName = '';
+    if (this.flashingAddress?.address) {
+      fileName = `tjc-ms-${this.flashingAddress.address}`;
+    } else if (Flasher.currentFlashingDevice?.isBlgMbDevice()) {
+      const id = (Flasher.currentFlashingDevice as BlgMbDevice).serialID;
+      if (id) {
+        fileName = `CyberBear-${id}`;
+      } else {
+        fileName = `CyberBear-no-id-${Date.now()}`;
+      }
+    } else {
+      fileName = `Firmware-${Date.now()}`;
     }
     const [error] = await window.api.fileHandlers.saveBinaryIntoFile(
-      `${path}/${this.flashingAddress.address}.bin`,
+      `${path}/${fileName}.bin`,
       binary
     );
     if (error) {
-      this.flashingAddressLog(`ошибка выгрузки прошивки: ${error}`);
+      const errMsg = `ошибка выгрузки прошивки: ${error}`;
+      if (this.flashingAddress) {
+        this.flashingAddressLog(errMsg);
+      } else {
+        this.addDevLog(errMsg, Flasher.currentFlashingDevice);
+      }
     }
   }
 
@@ -303,5 +312,9 @@ export class ManagerMS {
         return (device as BlgMbDevice).version;
     }
     return undefined;
+  };
+
+  static addDevLog = (log: string, device: Device | undefined | null) => {
+    this.addLog(`${device?.displayName() ?? 'Неизвестное устройство'}: ${log}`);
   };
 }

@@ -170,7 +170,7 @@ export class Flasher extends ClientWS {
     });
   }
 
-  static getFirmware(dev: Device, address: string, blockSize: number, RefBlChip?: string) {
+  static getFirmwareMs(dev: Device, address: string, blockSize: number, RefBlChip?: string) {
     this.currentFlashingDevice = dev;
     this.send('ms-get-firmware', {
       deviceID: dev.deviceID,
@@ -247,6 +247,17 @@ export class Flasher extends ClientWS {
       type: type,
       payload: payload,
     } as FlasherMessage;
+    this.connection?.send(JSON.stringify(request));
+  }
+  /**
+   * Отправить массив запросов на загрузчик для их выполнения по очереди.
+   * @param payload массив с запросами для загрузчика.
+   */
+  static sendPack(payload: FlasherMessage[]) {
+    const request = {
+      type: 'requests-pack',
+      payload: payload,
+    };
     this.connection?.send(JSON.stringify(request));
   }
 }

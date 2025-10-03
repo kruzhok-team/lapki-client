@@ -31,9 +31,12 @@ import { useTabs } from '@renderer/store/useTabs';
 import {
   AddressData,
   FirmwareTargetType,
+  FlasherMessage,
   FlashTableItem,
+  GetFirmware,
   MetaData,
   MetaDataID,
+  MSGetFirmware,
   OperationType,
 } from '@renderer/types/FlasherTypes';
 
@@ -821,7 +824,7 @@ export const FlasherTab: React.FC = () => {
                   {...hintProps}
                   className="btn-primary mr-2 whitespace-nowrap p-2 py-1"
                   onClick={handleGetFirmware}
-                  disabled={binaryFolder !== null || commonOperationDisabled}
+                  disabled={commonOperationDisabled}
                 >
                   <DownloadBinIcon className="h-8 w-8" />
                 </button>
@@ -976,15 +979,18 @@ export const FlasherTab: React.FC = () => {
     if (isCanceled) {
       return;
     }
+    const uploadArray: FlasherMessage[] = [];
+    const blockSize = 1024;
     for (const item of flashTableData) {
       if (!item.isSelected) continue;
       if (item.targetType !== FirmwareTargetType.tjc_ms) {
-        const dev = devices.get(item.targetId as string);
-        ManagerMS.addLog(
-          `${
-            dev ? dev.displayName() : 'Неизвестное устройство'
-          }: операция выгрузки прошивки не поддерживается.`
-        );
+        uploadArray.push({
+          type: 'get-firmware',
+          payload: {
+            blockSize: blockSize,
+            deviceID: item.targetId as string,
+          } as GetFirmware,
+        });
         continue;
       }
       const entry = getEntryById(item.targetId as number);
@@ -999,14 +1005,23 @@ export const FlasherTab: React.FC = () => {
         );
         continue;
       }
+      uploadArray.push({
+        type: 'ms-get-firmware',
+        payload: {
+          blockSize: blockSize,
+          deviceID: deviceMs.deviceID,
+          address: entry.address,
+          RefBlChip: entry.meta ? entry.meta.RefBlChip : '',
+        } as MSGetFirmware,
+      });
       ManagerMS.getFirmwareAdd({
         addressInfo: entry,
-        blockSize: 1024,
         dev: deviceMs,
       });
     }
-    if (ManagerMS.getFirmwareStart()) {
+    if (uploadArray.length > 0) {
       setBinaryFolder(directory);
+      Flasher.sendPack(uploadArray);
     }
   };
 

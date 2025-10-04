@@ -28,6 +28,14 @@ $ git submodule update --init --recursive
 # Загрузить зависимости
 $ npm install
 
+# (необязательно, Windows)
+# Загрузить и установить зависимости (меняет PATH!)
+$ npm run dependencies:win
+
+# (Windows)
+# Скопировать файлы данных локального компилятора
+$ npm run prepare:win
+
 # Запустить dev-сервер и Electron
 $ npm run dev
 ```

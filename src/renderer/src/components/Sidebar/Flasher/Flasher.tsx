@@ -746,13 +746,6 @@ export const FlasherTab: React.FC = () => {
   const operationButtons = () => {
     return (
       <div className="m-1 flex items-center gap-0 overflow-x-auto">
-        <WithHint hint={removeHint}>
-          {(hintProps) => (
-            <button {...hintProps} className="btn-error mr-2 p-2 py-1" onClick={handleRemoveDevs}>
-              <DeleteIcon className="h-8 w-8" />
-            </button>
-          )}
-        </WithHint>
         <WithHint hint={flashHint}>
           {(hintProps) => (
             <button
@@ -762,6 +755,25 @@ export const FlasherTab: React.FC = () => {
               disabled={commonOperationDisabled}
             >
               <FlashIcon className="h-8 w-8" />
+            </button>
+          )}
+        </WithHint>
+        <WithHint hint={flashResultHint} showOnDisabled={true}>
+          {(hintProps) => (
+            <button
+              {...hintProps}
+              className="btn-primary mr-2 whitespace-nowrap p-2 py-1"
+              onClick={handleAddFlashResultTab}
+              disabled={flashResult.size === 0}
+            >
+              <ViewLogIcon className="h-8 w-8" />
+            </button>
+          )}
+        </WithHint>
+        <WithHint hint={removeHint}>
+          {(hintProps) => (
+            <button {...hintProps} className="btn-primary mr-2 p-2 py-1" onClick={handleRemoveDevs}>
+              <DeleteIcon className="h-8 w-8" />
             </button>
           )}
         </WithHint>
@@ -843,18 +855,6 @@ export const FlasherTab: React.FC = () => {
             </WithHint>
           </>
         )}
-        <WithHint hint={flashResultHint} showOnDisabled={true}>
-          {(hintProps) => (
-            <button
-              {...hintProps}
-              className="btn-primary mr-2 whitespace-nowrap p-2 py-1"
-              onClick={handleAddFlashResultTab}
-              disabled={flashResult.size === 0}
-            >
-              <ViewLogIcon className="h-8 w-8" />
-            </button>
-          )}
-        </WithHint>
       </div>
     );
   };

@@ -619,6 +619,54 @@
       "importFiles": ["Microphone.hpp"],
       "singletone": false
     },
+    "EarsBytes": {
+      "name": "Уши-байты",
+      "description": "КиберМишка настроил уши на принятие сообщений.",
+      "img": "blg-mb/byteEars.svg",
+      "signals": {
+        "isByteReceived": {
+          "alias": "Получен байт",
+          "img": "arduino/byteReceived.svg"
+        }
+      },
+      "constructorParameters": {},
+      "variables": {
+        "value": {
+          "alias": "Полученный байт",
+          "img": "tjc-ms/lastData.svg",
+          "type": "uint8_t",
+          "description": "Последний полученный байт."
+        }   
+         },
+      "methods": {},
+      "buildFiles": ["Microphone.hpp"],
+      "importFiles": ["Microphone.hpp"],
+      "singletone": false
+    },
+    "PhotoDiodeBytes": {
+      "name": "Нос-байты",
+      "description": "КиберМишка настроил нос на принятие сообщений.",
+      "img": "blg-mb/byteNose.svg",
+      "signals": {
+        "isByteReceived": {
+          "alias": "Получен байт",
+          "img": "arduino/byteReceived.svg"
+        }
+      },
+      "constructorParameters": {},
+      "variables": {
+        "value": {
+          "alias": "Полученный байт",
+          "img": "tjc-ms/lastData.svg",
+          "type": "uint8_t",
+          "description": "Последний полученный байт."
+        }   
+         },
+      "methods": {},
+      "buildFiles": ["Microphone.hpp"],
+      "importFiles": ["Microphone.hpp"],
+      "singletone": false
+    },
     "IR": {
       "name": "ИК-светодиод",
       "description": "ИК-светодиод позволяет КиберМишке посылать инфракрасные сигналы, которые не видны человеческим глазом.",

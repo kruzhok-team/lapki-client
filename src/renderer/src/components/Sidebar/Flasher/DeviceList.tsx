@@ -111,8 +111,8 @@ export const DeviceList: React.FC<DeviceListProps> = ({
               <button
                 key={key}
                 className={twMerge(
-                  'my-1 flex w-full items-center justify-center rounded border-2 border-[#557b91] p-1 hover:bg-[#557b91] hover:text-white',
-                  isActive(key) && ' bg-[#557b91] text-white'
+                  'my-1 flex w-full items-center justify-center rounded border-2 border-[#557b91] p-1 hover:border-primary',
+                  isActive(key) && ' border-primary bg-primary text-white'
                 )}
                 onClick={() => setCurrentDevice(key)}
                 type="button"

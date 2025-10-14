@@ -420,7 +420,7 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
       ) : (
         <div className="flex min-h-20 flex-col items-center justify-center">
           <label className="text-center opacity-70">
-            Добавьте устройства через кнопку «Подключить плату» или кнопку «Адреса плат МС-ТЮК»
+            Добавьте устройства через кнопку «Подключить плату» или кнопку «Адресная книга»
           </label>
         </div>
       )}

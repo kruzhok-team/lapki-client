@@ -762,7 +762,7 @@ export const FlasherTab: React.FC = () => {
           {(hintProps) => (
             <button
               {...hintProps}
-              className="btn-primary mr-2 whitespace-nowrap p-2 py-1"
+              className="btn-primary mr-2 whitespace-nowrap p-2 py-1 disabled:mt-0.5"
               onClick={handleAddFlashResultTab}
               disabled={flashResult.size === 0}
             >
@@ -1075,7 +1075,7 @@ export const FlasherTab: React.FC = () => {
         <div className="flex-1"></div>
         <button
           className={twMerge(
-            'btn-primary ml-auto mr-4 p-2 py-1',
+            'btn-primary m-2 ml-auto mr-4 p-2 py-1',
             isProMode ? '' : 'bg-bg-secondary text-border-contrast'
           )}
           style={{ marginLeft: 'auto' }}

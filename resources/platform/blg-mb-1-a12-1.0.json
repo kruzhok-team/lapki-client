@@ -403,10 +403,10 @@
       "description": "Чувствует только невидимый инфракрасный свет, его много в солнечном свете.",
       "img": "blg-mb/nose.svg",
       "signals": {
-        "greaterThresholdValue": {
+        "isThresholdValue": {
           "img": "blg-mb/greaterThresholdValue.svg",
           "description": "Был достигнут порог яркости",
-          "checkMethod": "greaterThresholdValue",
+          "checkMethod": "isThresholdValue",
           "parameters": [],
           "alias": "Выше порогового значения"
         },

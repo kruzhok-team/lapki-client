@@ -457,11 +457,18 @@
       "img": "blg-mb/nose.svg",
       "signals": {
         "isThresholdValue": {
-          "img": "blg-mb/threshold.svg",
+          "img": "blg-mb/greaterThresholdValue.svg",
           "description": "Был достигнут порог яркости",
           "checkMethod": "isThresholdValue",
           "parameters": [],
-          "alias": "Пороговое значение"
+          "alias": "Выше порогового значения"
+        },
+        "lessThresholdValue": {
+          "img": "blg-mb/lessThresholdValue.svg",
+          "description": "Опустилось ниже порога яркости (вызывается один раз, когда значение опустилось)",
+          "checkMethod": "lessThresholdValue",
+          "parameters": [],
+          "alias": "Ниже порогового значения"
         }
       },
       "constructorParameters": {},

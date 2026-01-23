@@ -77,6 +77,32 @@
     "Pattern.hpp"
   ],
   "components": {
+    "EarsBytes": {
+      "name": "Уши-байты",
+      "description": "КиберМишка настроил уши на принятие сообщений.",
+      "img": "blg-mb/byteEars.svg",
+      "signals": {
+        "isByteReceived": {
+          "description": "Был получен байт по акустическому каналу",
+          "alias": "Получен байт",
+          "img": "arduino/byteReceived.svg",
+          "checkMethod": "isByteReceived"
+        }
+      },
+      "constructorParameters": {},
+      "variables": {
+        "value": {
+          "alias": "Полученный байт",
+          "img": "tjc-ms/lastData.svg",
+          "type": "uint8_t",
+          "description": "Последний полученный байт."
+        }   
+         },
+      "methods": {},
+      "buildFiles": ["EarsBytes.cpp", "acoustic_modem.c"],
+      "importFiles": ["EarsBytes.cpp"],
+      "singletone": false
+    },
     "Accel": {
       "name": "Акселерометр",
       "description": "Компонент для определения положения Мишки.",

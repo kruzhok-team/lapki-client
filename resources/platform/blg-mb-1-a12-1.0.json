@@ -424,6 +424,33 @@
       "singletone": false
     },
 
+    "NoseBytes": {
+      "name": "Нос-байты",
+      "description": "КиберМишка настроил нос на принятие сообщений.",
+      "img": "blg-mb/byteNose.svg",
+      "signals": {
+        "isByteReceived": {
+          "alias": "Получен байт",
+          "description": "Получен байт по ИК-каналу",
+          "img": "arduino/byteReceived.svg",
+          "checkMethod": "isByteReceived"
+        }
+      },
+      "constructorParameters": {},
+      "variables": {
+        "value": {
+          "alias": "Полученный байт",
+          "img": "tjc-ms/lastData.svg",
+          "type": "uint8_t",
+          "description": "Последний полученный байт."
+        }   
+         },
+      "methods": {},
+      "buildFiles": ["NoseBytes.hpp", "modem.c", "ir_modem.c", "acoustic_modem.c"],
+      "importFiles": ["NoseBytes.hpp"],
+      "singletone": false
+    },
+
     "PhotoDiode": {
       "name": "Нос",
       "description": "Чувствует только невидимый инфракрасный свет, его много в солнечном свете.",
@@ -662,6 +689,19 @@
           "alias": "Выключить",
           "img": "arduino/switch-off.svg",
           "description": "Выключить ИК-светодиод."
+        },
+        "sendByte": {
+          "alias": "Отправить байт",
+          "img": "blg-mb/irByte.svg",
+          "description": "Отправить байт через ИК-светодиод.",
+          "parameters": [
+            {
+              "name": "Байт",
+              "type": "uint8_t",
+              "description": "Байт, который будет отправлен по ИК-каналу.",
+              "optional": false
+            }
+          ]
         }
       },
       "importFiles": ["ir.hpp"],

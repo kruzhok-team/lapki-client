@@ -29,14 +29,13 @@ import {
   ChangePosition,
   ChangeStateParams,
   ChangeTransitionParams,
-  CreateChoiceStateParams,
   CreateComponentParams,
   CreateEventActionParams,
   CreateEventParams,
-  CreateFinalStateParams,
   CreateNoteParams,
   CreateStateParams,
   CreateTransitionParams,
+  CreateVertexParams,
   DeleteDrawableParams,
   DeleteEventParams,
   StateMachineData,
@@ -55,6 +54,7 @@ import {
   emptyStateMachine,
   Action,
   Component,
+  ShallowHistory,
   EventData,
 } from '@renderer/types/diagram';
 
@@ -194,6 +194,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     controller.subscribe(smId, 'state', sm.states);
     controller.subscribe(smId, 'note', sm.notes);
     controller.subscribe(smId, 'initialState', sm.initialStates);
+    controller.subscribe(smId, 'component', sm.components);
+    controller.subscribe(smId, 'shallowHistory', sm.shallowHistory);
     controller.subscribe(smId, 'transition', sm.transitions);
     controller.watch();
 
@@ -225,6 +227,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     controller.on('changeComponentPosition', this.changeComponentPosition);
     controller.on('changeTransitionPositionFromController', this.changeTransitionPosition);
     controller.on('changeStateMachinePosition', this.changeStateMachinePosition);
+    controller.on('selectShallowHistory', this.selectShallowHistory);
+    controller.on('changeShallowHistoryPositionFromController', this.changeShallowHistoryPosition);
     controller.on('selectEvent', this.selectEvent);
   }
 
@@ -261,11 +265,20 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     sourceId: string;
     targetId: string;
   }) => {
-    if (this.model.data.elements.stateMachines[args.smId].notes[args.sourceId]) {
-      this.createTransition({ ...args });
-    } else {
-      this.emit('openCreateTransitionModal', args);
+    const sm = this.model.data.elements.stateMachines[args.smId];
+    if (sm.notes[args.sourceId]) {
+      return this.createTransition({ ...args });
     }
+
+    if (sm.shallowHistory[args.sourceId]) {
+      if (!this.getBySourceId(args.smId, args.sourceId)) {
+        this.createTransition({ ...args });
+      } else {
+        // TODO (L140-beep): тостер с информацией о неудачном создани
+      }
+      return;
+    }
+    this.emit('openCreateTransitionModal', args);
   };
 
   initPlatform() {
@@ -486,13 +499,15 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       sm.states[sourceId] ||
       sm.notes[sourceId] ||
       sm.initialStates[sourceId] ||
-      sm.choiceStates[sourceId];
+      sm.choiceStates[sourceId] ||
+      sm.shallowHistory[sourceId];
     const target =
       sm.states[targetId] ||
       sm.notes[targetId] ||
       sm.choiceStates[targetId] ||
       sm.transitions[targetId] ||
-      sm.finalStates[targetId];
+      sm.finalStates[targetId] ||
+      sm.shallowHistory[targetId];
 
     if (!source || !target) return;
 
@@ -547,8 +562,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     stateId: string | undefined,
     parentId: string | undefined | null,
     stateType: StatesControllerDataStateType = 'states'
-  ): [(State | ChoiceState | InitialState)[], string[]] {
-    const siblings: (State | ChoiceState | InitialState)[] = [];
+  ): [(State | ChoiceState | InitialState | ShallowHistory)[], string[]] {
+    const siblings: (State | ChoiceState | InitialState | ShallowHistory)[] = [];
     const siblingIds: string[] = [];
     for (const value of Object.entries(this.model.data.elements.stateMachines[smId][stateType])) {
       const [id, state] = value;
@@ -640,7 +655,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       },
       this,
       // Порядок важен!
-      ['state', 'choice', 'final', 'initialState', 'note', 'transition']
+      ['state', 'choice', 'final', 'initialState', 'shallowHistory', 'note', 'transition']
     );
     editor.setController(controller);
     this.controllers[canvasId] = controller;
@@ -710,7 +725,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const state = sm.initialStates[id];
     if (!state) return;
     const prevPosition = structuredClone(state.position);
-    if (!this.model.changeInitialStatePosition(smId, id, endPosition)) return;
+    if (!this.model.changeVertexPosition(smId, id, endPosition, 'initialStates')) return;
 
     if (canUndo) {
       this.history.do({
@@ -787,9 +802,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       (transitionId) => sm.transitions[transitionId].sourceId == id
     );
     if (!transitionId) return;
-
-    if (!this.model.deleteInitialState(smId, id)) return;
-
+    this.model.deleteVertex(smId, id, 'finalStates'); // Удаляем модель
     if (canUndo) {
       this.history.do({
         type: 'deleteInitialState',
@@ -1152,13 +1165,16 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       y: target.position.y - INITIAL_STATE_OFFSET.y,
     };
 
-    const id = this.model.createInitialState({
-      smId,
-      position: position ?? newPosition,
-      parentId: target.parentId,
-      dimensions: { width: 50, height: 50 },
-      id: prevId,
-    });
+    const id = this.model.createVertex(
+      {
+        smId,
+        position: position ?? newPosition,
+        parentId: target.parentId,
+        dimensions: { width: 50, height: 50 },
+        id: prevId,
+      },
+      'initialStates'
+    );
 
     if (canUndo) {
       this.history.do({
@@ -1484,6 +1500,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       | 'position'
       | 'compilerSettings'
     > = {
+      shallowHistory: {},
       states: {},
       initialStates: {},
       finalStates: {},
@@ -1635,7 +1652,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const parent = this.model.data.elements.stateMachines[smId].states[parentId];
     if (!state || !parent) return;
 
-    this.model.linkFinalState(smId, stateId, parentId);
+    this.model.linkVertex(smId, stateId, parentId, 'finalStates');
 
     this.emit('linkFinalState', { smId, childId: stateId, parentId });
   }
@@ -1655,7 +1672,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       numberOfConnectedActions += 1;
     });
     const prevState = structuredClone(state);
-    if (!this.model.deleteFinalState(smId, id)) return;
+    if (!this.model.deleteVertex(smId, id, 'finalStates')) return;
 
     if (canUndo) {
       this.history.do({
@@ -1674,14 +1691,14 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const parent = sm.states[parentId];
     if (!state || !parent) return;
 
-    if (!this.model.linkChoiceState(smId, stateId, parentId)) return;
+    if (!this.model.linkVertex(smId, stateId, parentId, 'choiceStates')) return;
 
     this.emit('linkChoiceState', { smId, childId: stateId, parentId });
   }
 
-  createChoiceState(params: CreateChoiceStateParams, canUndo = true) {
+  createChoiceState(params: CreateVertexParams, canUndo = true) {
     const { smId, parentId, position, linkByPoint = true } = params;
-    const id = this.model.createChoiceState(params);
+    const id = this.model.createVertex(params, 'choiceStates');
     this.emit('createChoice', { ...params, id: id });
     const state = this.model.data.elements.stateMachines[smId].choiceStates[id];
 
@@ -1729,7 +1746,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     });
 
     const prevState = structuredClone(state);
-    if (!this.model.deleteChoiceState(smId, id)) return;
+    if (!this.model.deleteVertex(smId, id, 'choiceStates')) return;
     if (canUndo) {
       this.history.do({
         type: 'deleteChoiceState',
@@ -1741,8 +1758,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   }
 
   changeFinalStatePosition = (args: ChangePosition, canUndo = true) => {
-    if (!this.model.changeFinalStatePosition(args.smId, args.id, args.endPosition)) return;
-
+    if (!this.model.changeVertexPosition(args.smId, args.id, args.endPosition, 'finalStates')) return;
     const { startPosition } = args;
     if (canUndo && startPosition !== undefined) {
       this.history.do({
@@ -1754,7 +1770,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   };
 
   changeChoiceStatePosition = (args: ChangePosition, canUndo = true) => {
-    if (!this.model.changeChoiceStatePosition(args.smId, args.id, args.endPosition)) return;
+    if (!this.model.changeVertexPosition(args.smId, args.id, args.endPosition, 'choiceStates')) return;
     this.emit('changeChoicePosition', args);
     const { startPosition } = args;
     if (canUndo && startPosition !== undefined) {
@@ -1765,7 +1781,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     }
   };
 
-  createFinalState(params: CreateFinalStateParams, canUndo = true) {
+  createFinalState(params: CreateVertexParams, canUndo = true) {
     const { smId, parentId, linkByPoint = true } = params;
     let computedParentId: string | undefined = undefined;
     // Проверка на то что в скоупе уже есть конечное состояние
@@ -1780,7 +1796,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         parent = possibleParent[1];
       }
     }
-    const id = this.model.createFinalState(params);
+    const id = this.model.createVertex(params, 'finalStates');
     const state = this.model.data.elements.stateMachines[smId].finalStates[id];
     this.emit('createFinal', { ...params, id });
 
@@ -1893,6 +1909,13 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         const component = sm.components[key];
         if (component.selection) {
           this.deleteComponent({ smId, id: key });
+        }
+      });
+
+      Object.keys(sm.shallowHistory).forEach((key) => {
+        const shallowHistory = sm.shallowHistory[key];
+        if (shallowHistory.selection) {
+          this.deleteShallowHistory({ smId, id: key });
         }
       });
     }
@@ -2275,7 +2298,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
     this.removeSelection([id]);
 
-    this.model.changeChoiceStateSelection(smId, id, true);
+    this.model.changeVertexSelection(smId, id, true, 'choiceStates');
 
     // this.emit('selectChoice', { smId: '', id: id });
   };
@@ -2371,7 +2394,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       Object.keys(sm.choiceStates)
         .filter((value) => !exclude.includes(value))
         .forEach((id) => {
-          if (this.model.changeChoiceStateSelection(smId, id, false)) {
+          if (this.model.changeVertexSelection(smId, id, false, 'choiceStates')) {
             this.emit('changeChoiceSelection', { smId, id, value: false });
           }
         });
@@ -2409,6 +2432,13 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
             this.emit('changeComponentSelection', { smId, id, value: false });
           }
         });
+
+      Object.keys(sm.shallowHistory)
+        .filter((value) => !exclude.includes(value))
+        .forEach((id) => {
+          this.model.changeVertexSelection(smId, id, false, 'shallowHistory');
+          this.emit('changeShallowHistorySelection', { smId, id, value: false });
+        });
     }
   }
 
@@ -2418,14 +2448,16 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       const sm = this.model.data.elements.stateMachines[smId];
       const sourceType = sm.states[args.source]
         ? 'states'
-        : sm.choiceStates
+        : sm.choiceStates[args.source]
         ? 'choiceStates'
-        : 'finalStates';
+        : 'shallowHistory';
 
       const targetType = sm.states[args.source]
         ? 'states'
-        : sm.choiceStates
+        : sm.choiceStates[args.source]
         ? 'choiceStates'
+        : sm.shallowHistory[args.source]
+        ? 'shallowHistory'
         : 'finalStates';
       const sourceSm = this.getSmIdByElementId(args.source, sourceType);
       const targetSm = this.getSmIdByElementId(args.target, targetType);
@@ -2438,5 +2470,120 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         targetId: args.target,
       });
     }
+  }
+
+  changeShallowHistoryPosition = (args: ChangePosition, canUndo = true) => {
+    this.model.changeVertexPosition(args.smId, args.id, args.endPosition, 'shallowHistory');
+    const { startPosition } = args;
+    if (canUndo && startPosition !== undefined) {
+      this.history.do({
+        type: 'changeShallowHistoryPosition',
+        args: { ...args, startPosition: startPosition },
+      });
+    }
+    this.emit('changeShallowHistoryPosition', args);
+  };
+
+  private linkShallowHistory(smId: string, stateId: string, parentId: string) {
+    const state = this.model.data.elements.stateMachines[smId].shallowHistory[stateId];
+    const parent = this.model.data.elements.stateMachines[smId].states[parentId];
+    if (!state || !parent) return;
+
+    this.model.linkVertex(smId, stateId, parentId, 'shallowHistory');
+
+    this.emit('linkShallowHistory', { smId, childId: stateId, parentId });
+  }
+
+  createShallowState = (args: CreateVertexParams, canUndo = true) => {
+    const { smId, parentId, linkByPoint = true } = args;
+    let { id } = args;
+    let computedParentId: string | undefined = undefined;
+    // Проверка на то что в скоупе уже есть конечное состояние
+    // Страшно, очень страшно
+    let parent = parentId ? this.model.data.elements.stateMachines[smId].states[parentId] : null;
+    if (!parent) {
+      const possibleParent = linkByPoint ? this.getPossibleParentState(smId, args.position) : null;
+      if (possibleParent && possibleParent[0]) {
+        computedParentId = possibleParent[0];
+        parent = possibleParent[1];
+      }
+    }
+
+    const siblingIds = this.getSiblings(
+      smId,
+      id,
+      computedParentId ?? parentId,
+      'shallowHistory'
+    )[1];
+
+    if (siblingIds.length > 0) return;
+
+    id = this.model.createVertex(args, 'shallowHistory');
+    const state = this.model.data.elements.stateMachines[smId].shallowHistory[id];
+    this.emit('createShallowHistory', { ...args, id });
+
+    if (parentId) {
+      this.linkShallowHistory(smId, id, parentId);
+    } else if (linkByPoint && parent && computedParentId) {
+      const parentCompoundPosition = this.compoundPosition(smId, computedParentId);
+      const newPosition = {
+        x: state.position.x - parentCompoundPosition.x,
+        y: state.position.y - parentCompoundPosition.y - parent.dimensions.height,
+      };
+
+      this.linkShallowHistory(smId, id, computedParentId);
+      this.changeShallowHistoryPosition({ smId, id, endPosition: newPosition }, false);
+    }
+
+    if (canUndo) {
+      this.history.do({
+        type: 'createShallowHistory',
+        args: { ...args, ...state, id: id },
+        numberOfConnectedActions: 0,
+      });
+    }
+
+    return state;
+  };
+
+  selectShallowHistory = (args: SelectDrawable) => {
+    const { id, smId } = args;
+
+    const state = this.model.data.elements.stateMachines[smId].shallowHistory[id];
+    if (!state) return;
+
+    this.removeSelection([id]);
+
+    this.model.changeVertexSelection(smId, id, true, 'shallowHistory');
+
+    // this.emit('selectChoice', { smId: '', id: id });
+  };
+
+  deleteShallowHistory(args: DeleteDrawableParams, canUndo = true) {
+    const { smId, id } = args;
+    const state = this.model.data.elements.stateMachines[smId].shallowHistory[id];
+    if (!state) return;
+
+    let numberOfConnectedActions = 0;
+
+    // Удаляем зависимые переходы
+    const dependetTransitionsIds = [
+      ...this.getAllByTargetId(smId, id)[1],
+      ...this.getAllBySourceId(smId, id).map((value) => value[0]),
+    ];
+    dependetTransitionsIds.forEach((transitionId) => {
+      this.deleteTransition({ smId, id: transitionId }, canUndo);
+      numberOfConnectedActions += 1;
+    });
+
+    if (canUndo) {
+      this.history.do({
+        type: 'deleteShallowHistory',
+        args: { smId, id, stateData: { ...structuredClone(state), parentId: state.parentId } },
+        numberOfConnectedActions,
+      });
+    }
+    this.model.deleteVertex(smId, id, 'shallowHistory'); // Удаляем модель
+    this.emit('deleteShallowHistory', args);
   }
 }

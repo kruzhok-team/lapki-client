@@ -8,6 +8,7 @@ import {
   GhostTransition,
   State,
   Transition,
+  ShallowHistory,
 } from '@renderer/lib/drawable';
 import { Layer } from '@renderer/lib/types';
 import { Point } from '@renderer/lib/types/graphics';
@@ -217,7 +218,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     this.controller.states.on('mouseUpOnFinalState', this.handleMouseUpOnFinalState);
   }
 
-  handleStartNewTransition = (node: State | ChoiceState | Note) => {
+  handleStartNewTransition = (node: State | ChoiceState | Note | ShallowHistory) => {
     this.ghost?.setSource(node);
   };
 
@@ -255,25 +256,14 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     this.view.isDirty = true;
   };
 
-  handleMouseUpOnState = (state: State | ChoiceState) => {
+  handleMouseUpOnState = (state: State | ChoiceState | ShallowHistory) => {
     if (!this.ghost?.source) return;
-    // TODO (L140-beep): И что с этим делать?
-    if (this.ghost.source instanceof Note) {
-      this.controller.emit('createTransitionFromController', {
-        smId: state.smId,
-        sourceId: this.ghost?.source.id,
-        targetId: state.id,
-      });
-    }
-    // Переход создаётся только на другое состояние
+    this.controller.emit('createTransitionFromController', {
+      smId: state.smId,
+      sourceId: this.ghost?.source.id,
+      targetId: state.id,
+    });
     // FIXME: вызывать создание внутреннего события при перетаскивании на себя?
-    else if (state !== this.ghost?.source) {
-      this.controller.emit('createTransitionFromController', {
-        smId: state.smId,
-        sourceId: this.ghost?.source.id,
-        targetId: state.id,
-      });
-    }
     this.ghost?.clear();
 
     this.view.isDirty = true;

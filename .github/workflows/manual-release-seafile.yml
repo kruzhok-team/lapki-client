@@ -23,6 +23,11 @@ jobs:
           wget https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_Windows_64bit.zip -O resources/modules/win32/arduino-cli.zip
           unzip resources/modules/win32/arduino-cli.zip -d resources/modules/win32/arduino-cli/
           rm -f resources/modules/win32/arduino-cli.zip
+      - name: Download Arduino CLI libraries
+        run: |
+          wget https://seafile.polyus-nt.ru/f/43553f0afcb34a1c892f/?dl=1 -O build/arduino-cli-libs.zip
+          unzip build/arduino-cli-libs.zip -d build/arduino-cli-libs
+          rm -f build/arduino-cli-libs.zip
       - name: Download gcc-arm-none-eabi
         run: |
           wget https://seafile.polyus-nt.ru/f/83d0be836d1c491fa3b3/?dl=1 -O build/gcc-arm-none-eabi.zip

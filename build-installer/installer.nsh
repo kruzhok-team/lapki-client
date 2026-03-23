@@ -38,11 +38,12 @@ Section "DriversSection" SEC02
     ExecWait 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$PLUGINSDIR\install_compiler_deps.ps1" "$INSTDIR"'
     ;ExecWait 'powershell.exe -Command "$PLUGINSDIR\move_compiler_resourses.bat ${BUILD_RESOURCES_DIR}"'
 
-    CreateDirectory "$PLUGINSDIR\arduino-cli-libs"
-    SetOutPath "$PLUGINSDIR\arduino-cli-libs"
-    File /r "${BUILD_RESOURCES_DIR}\arduino-cli-libs\packages\*.*"
-    File /oname=$PLUGINSDIR\install_arduino_cli_libs.ps1 "${BUILD_RESOURCES_DIR}\install_arduino_cli_libs.ps1"
-    ExecWait 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$PLUGINSDIR\install_arduino_cli_libs.ps1" "$PLUGINSDIR\arduino-cli-libs\packages"'
+    CreateDirectory "$PLUGINSDIR\arduino-cli-libs\packages\arduino"
+    CreateDirectory "$PLUGINSDIR\arduino-cli-libs\packages\builtin"
+    SetOutPath "$PLUGINSDIR\arduino-cli-libs\packages\arduino"
+    File /r "${BUILD_RESOURCES_DIR}\arduino-cli-libs\packages\arduino\*.*"
+    SetOutPath "$PLUGINSDIR\arduino-cli-libs\packages\builtin"
+    File /r "${BUILD_RESOURCES_DIR}\arduino-cli-libs\packages\builtin\*.*"
 SectionEnd
 
 !macro customInstall
@@ -69,4 +70,6 @@ SectionEnd
   CopyFiles /SILENT "$PLUGINSDIR\lapki-compiler\library\*.*" "$INSTDIR\resources\app.asar.unpacked\resources\modules\win32\lapki-compiler\library\"
   CopyFiles /SILENT "$PLUGINSDIR\lapki-compiler\platforms\*.*" "$INSTDIR\resources\app.asar.unpacked\resources\modules\win32\lapki-compiler\platforms\"
   CopyFiles /SILENT "$PLUGINSDIR\lapki-compiler\fullgraphmlparser\templates\*.*" "$INSTDIR\resources\app.asar.unpacked\resources\modules\win32\lapki-compiler\fullgraphmlparser\"
+  DetailPrint "Copying Arduino CLI libs..."
+  ExecWait 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$PLUGINSDIR\install_arduino_cli_libs.ps1" "$PLUGINSDIR\arduino-cli-libs\packages"'
 !macroend

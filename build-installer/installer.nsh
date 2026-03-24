@@ -1,9 +1,8 @@
 Section "DriversSection" SEC02
     SetOutPath "$PLUGINSDIR"
     ;File /oname=$PLUGINSDIR\wdi-simple64.exe "${BUILD_RESOURCES_DIR}\wdi-simple64.exe"
-    ;File /oname=$PLUGINSDIR\install.bat "${BUILD_RESOURCES_DIR}\install.bat"
-    ;File /oname=$PLUGINSDIR\install_compiler_deps.ps1 "${BUILD_RESOURCES_DIR}\install_compiler_deps.ps1"
-    File /oname=$PLUGINSDIR\install_arduino_cli_libs.ps1 "${BUILD_RESOURCES_DIR}\install_arduino_cli_libs.ps1"
+    File /oname=$PLUGINSDIR\install.bat "${BUILD_RESOURCES_DIR}\install.bat"
+    File /oname=$PLUGINSDIR\install_compiler_deps.ps1 "${BUILD_RESOURCES_DIR}\install_compiler_deps.ps1"
     ;File /oname=$PLUGINSDIR\move_compiler_resourses.bat "${BUILD_RESOURCES_DIR}\move_compiler_resourses.bat"
     ;File /oname=$PLUGINSDIR\move_arm_gcc.bat "${BUILD_RESOURCES_DIR}\move_arm_gcc.bat"
 
@@ -14,7 +13,8 @@ Section "DriversSection" SEC02
     SetOutPath "$PLUGINSDIR\gcc-arm-none-eabi"
 
     ; рекурсивно забираем всё из исходной папки
-    ;File /r "${BUILD_RESOURCES_DIR}\gcc-arm-none-eabi\*.*"
+    File /r "${BUILD_RESOURCES_DIR}\gcc-arm-none-eabi\*.*"
+
 
     CreateDirectory "$PLUGINSDIR\lapki-compiler"
     CreateDirectory "$PLUGINSDIR\lapki-compiler\library"
@@ -22,22 +22,22 @@ Section "DriversSection" SEC02
     CreateDirectory "$PLUGINSDIR\lapki-compiler\fullgraphmlparser"
     CreateDirectory "$PLUGINSDIR\lapki-compiler\fullgraphmlparser\templates"
     ; переключаемся в неё
-    ;SetOutPath "$PLUGINSDIR\lapki-compiler\library"
+    SetOutPath "$PLUGINSDIR\lapki-compiler\library"
 
     ; TODO: Попробовать засунуть все это в pre-init вызовом скрипта
     ; рекурсивно забираем всё из исходной папки
-    ;File /r "${BUILD_RESOURCES_DIR}\lapki-compiler\compiler\library\*.*"
-    ;SetOutPath "$PLUGINSDIR\lapki-compiler\platforms"
-    ;File /r "${BUILD_RESOURCES_DIR}\lapki-compiler\compiler\platforms\"
-    ;SetOutPath "$PLUGINSDIR\lapki-compiler\fullgraphmlparser\templates"
-    ;File /r "${BUILD_RESOURCES_DIR}\lapki-compiler\compiler\fullgraphmlparser\templates"
+    File /r "${BUILD_RESOURCES_DIR}\lapki-compiler\compiler\library\*.*"
+    SetOutPath "$PLUGINSDIR\lapki-compiler\platforms"
+    File /r "${BUILD_RESOURCES_DIR}\lapki-compiler\compiler\platforms\"
+    SetOutPath "$PLUGINSDIR\lapki-compiler\fullgraphmlparser\templates"
+    File /r "${BUILD_RESOURCES_DIR}\lapki-compiler\compiler\fullgraphmlparser\templates"
 
-    ;SetOutPath "$PLUGINSDIR"
+    SetOutPath "$PLUGINSDIR"
     
     ;ExecWait 'powershell.exe -Command "$PLUGINSDIR\install.bat $PLUGINSDIR"'
-    ;ExecWait 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$PLUGINSDIR\install_compiler_deps.ps1" "$INSTDIR"'
+    ExecWait 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$PLUGINSDIR\install_compiler_deps.ps1" "$INSTDIR"'
     ;ExecWait 'powershell.exe -Command "$PLUGINSDIR\move_compiler_resourses.bat ${BUILD_RESOURCES_DIR}"'
-
+    File /oname=$PLUGINSDIR\install_arduino_cli_libs.ps1 "${BUILD_RESOURCES_DIR}\install_arduino_cli_libs.ps1"
     CreateDirectory "$PLUGINSDIR\arduino-cli-libs\packages\arduino"
     CreateDirectory "$PLUGINSDIR\arduino-cli-libs\packages\builtin"
     SetOutPath "$PLUGINSDIR\arduino-cli-libs\packages\arduino"
@@ -47,29 +47,28 @@ Section "DriversSection" SEC02
 SectionEnd
 
 !macro customInstall
-  ;DetailPrint "Running post–install batch…"
+  DetailPrint "Running post–install batch…"
 
-  ;DetailPrint "Copying gcc-arm-none-eabi from $PLUGINSDIR to $INSTDIR…"  
+  DetailPrint "Copying gcc-arm-none-eabi from $PLUGINSDIR to $INSTDIR…"  
   ; Убедимся, что папка приёмник существует  
-  ;CreateDirectory "$INSTDIR\gcc-arm-none-eabi"
+  CreateDirectory "$INSTDIR\gcc-arm-none-eabi"
 
   ; Рекурсивно скопируем все файлы и подпапки  
-  ;CopyFiles /SILENT "$PLUGINSDIR\gcc-arm-none-eabi\*.*" "$INSTDIR\gcc-arm-none-eabi\"
+  CopyFiles /SILENT "$PLUGINSDIR\gcc-arm-none-eabi\*.*" "$INSTDIR\gcc-arm-none-eabi\"
   ; Удалим временную директорию (чтобы не оставлять мусор)  
-  ;RMDir /r "$PLUGINSDIR\gcc-arm-none-eabi"
+  RMDir /r "$PLUGINSDIR\gcc-arm-none-eabi"
 
-  ;DetailPrint "Done. INSTDIR now contains:"  
-  ;DetailPrint "  $INSTDIR\gcc-arm-none-eabi"  
+  DetailPrint "Done. INSTDIR now contains:"  
+  DetailPrint "  $INSTDIR\gcc-arm-none-eabi"  
 
-  ;CreateDirectory "$INSTDIR\resources\app.asar.unpacked\resources\modules\win32\lapki-compiler"
-  ;CreateDirectory "$INSTDIR\resources\app.asar.unpacked\resources\modules\win32\lapki-compiler\library"
-  ;CreateDirectory "$INSTDIR\resources\app.asar.unpacked\resources\modules\win32\lapki-compiler\platforms"
-  ;CreateDirectory "$INSTDIR\resources\app.asar.unpacked\resources\modules\win32\lapki-compiler\fullgraphmlparser"
-  ;CreateDirectory "$INSTDIR\resources\app.asar.unpacked\resources\modules\win32\lapki-compiler\fullgraphmlparser\templates"
+  CreateDirectory "$INSTDIR\resources\app.asar.unpacked\resources\modules\win32\lapki-compiler"
+  CreateDirectory "$INSTDIR\resources\app.asar.unpacked\resources\modules\win32\lapki-compiler\library"
+  CreateDirectory "$INSTDIR\resources\app.asar.unpacked\resources\modules\win32\lapki-compiler\platforms"
+  CreateDirectory "$INSTDIR\resources\app.asar.unpacked\resources\modules\win32\lapki-compiler\fullgraphmlparser"
+  CreateDirectory "$INSTDIR\resources\app.asar.unpacked\resources\modules\win32\lapki-compiler\fullgraphmlparser\templates"
 
-  ;CopyFiles /SILENT "$PLUGINSDIR\lapki-compiler\library\*.*" "$INSTDIR\resources\app.asar.unpacked\resources\modules\win32\lapki-compiler\library\"
-  ;CopyFiles /SILENT "$PLUGINSDIR\lapki-compiler\platforms\*.*" "$INSTDIR\resources\app.asar.unpacked\resources\modules\win32\lapki-compiler\platforms\"
-  ;CopyFiles /SILENT "$PLUGINSDIR\lapki-compiler\fullgraphmlparser\templates\*.*" "$INSTDIR\resources\app.asar.unpacked\resources\modules\win32\lapki-compiler\fullgraphmlparser\"
-  DetailPrint "Copying Arduino CLI libs..."
+  CopyFiles /SILENT "$PLUGINSDIR\lapki-compiler\library\*.*" "$INSTDIR\resources\app.asar.unpacked\resources\modules\win32\lapki-compiler\library\"
+  CopyFiles /SILENT "$PLUGINSDIR\lapki-compiler\platforms\*.*" "$INSTDIR\resources\app.asar.unpacked\resources\modules\win32\lapki-compiler\platforms\"
+  CopyFiles /SILENT "$PLUGINSDIR\lapki-compiler\fullgraphmlparser\templates\*.*" "$INSTDIR\resources\app.asar.unpacked\resources\modules\win32\lapki-compiler\fullgraphmlparser\"
   ExecWait 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$PLUGINSDIR\install_arduino_cli_libs.ps1" "$PLUGINSDIR\arduino-cli-libs\packages"'
 !macroend

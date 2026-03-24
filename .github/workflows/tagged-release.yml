@@ -32,7 +32,7 @@ jobs:
           rm -f resources/modules/win32/arduino-cli.zip
       - name: Download Arduino CLI libraries
         run: |
-          wget https://seafile.polyus-nt.ru/f/43553f0afcb34a1c892f/?dl=1 -O build/arduino-cli-libs.zip
+          wget https://seafile.polyus-nt.ru/f/b596a9c281dc423b9cec/?dl=1 -O build/arduino-cli-libs.zip
           unzip build/arduino-cli-libs.zip -d build/arduino-cli-libs
           rm -f build/arduino-cli-libs.zip
       - name: Download gcc-arm-none-eabi

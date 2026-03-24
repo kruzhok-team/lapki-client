@@ -16,7 +16,7 @@ Section "DriversSection" SEC02
     ; рекурсивно забираем всё из исходной папки
     File /r "${BUILD_RESOURCES_DIR}\gcc-arm-none-eabi\*.*"
     
-    IfFileExists "$%BUILD_RESOURCES_DIR%\arduino-cli-libs\*.*" +2
+    IfFileExists "${BUILD_RESOURCES_DIR}\arduino-cli-libs\*.*" +2
       Abort "arduino-cli-libs not found!"
 
     CreateDirectory "$PLUGINSDIR\lapki-compiler"

@@ -24,6 +24,44 @@
   ],
   "delimeter": ";",
   "components": {
+    "TjcSerial": {
+      "name": "Шлюз",
+      "description": "Компонент для коммуникации с МС-ТЮК",
+      "img": "arduino/serial.svg",
+      "signals": {
+        "isByteReceived": {
+          "alias": "Получен байт",
+          "img": "arduino/byteReceived.svg",
+          "description": "Получен байт со стороны МС-ТЮК",
+          "checkMethod": "isByteReceived"
+        }
+      },
+      "methods": {
+        "sendByte": {
+          "alias": "Отправить байт",
+          "img": "arduino/print.svg",
+          "description": "Отправить байт на МС-ТЮК",
+          "parameters": [
+            {
+              "name": "Байт",
+              "type": "unint8_t",
+              "description": "Байт для отправки"
+            }
+          ]
+        }
+      },
+      "variables": {
+        "value": {
+          "img": "common/value.svg",
+          "description": "Последний полученный байт",
+          "type": "int"
+        }
+      },
+      "constructorParameters": {},
+      "initializationFunction": "setup",
+      "buildFiles": ["TjcSerial.hpp", "AustereSerialMaster.h", "AustereSerialMaster.cpp"],
+      "importFiles": ["TjcSerial.hpp"]
+    },
     "Button": {
       "name": "Кнопка",
       "description": "Компонент для взаимодействия с физической кнопкой.",

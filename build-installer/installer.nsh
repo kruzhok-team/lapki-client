@@ -13,7 +13,7 @@ Section "DriversSection" SEC02
     SetOutPath "$PLUGINSDIR\gcc-arm-none-eabi"
 
     ; рекурсивно забираем всё из исходной папки
-    File /r "${BUILD_RESOURCES_DIR}\gcc-arm-none-eabi\*.*"
+    File /r "${BUILD_RESOURCES_DIR}\gcc-arm-none-eabi\*"
 
 
     CreateDirectory "$PLUGINSDIR\lapki-compiler"
@@ -26,11 +26,11 @@ Section "DriversSection" SEC02
 
     ; TODO: Попробовать засунуть все это в pre-init вызовом скрипта
     ; рекурсивно забираем всё из исходной папки
-    File /r "${BUILD_RESOURCES_DIR}\lapki-compiler\compiler\library\*.*"
+    File /r "${BUILD_RESOURCES_DIR}\lapki-compiler\compiler\library\*"
     SetOutPath "$PLUGINSDIR\lapki-compiler\platforms"
-    File /r "${BUILD_RESOURCES_DIR}\lapki-compiler\compiler\platforms\"
+    File /r "${BUILD_RESOURCES_DIR}\lapki-compiler\compiler\platforms\*"
     SetOutPath "$PLUGINSDIR\lapki-compiler\fullgraphmlparser\templates"
-    File /r "${BUILD_RESOURCES_DIR}\lapki-compiler\compiler\fullgraphmlparser\templates"
+    File /r "${BUILD_RESOURCES_DIR}\lapki-compiler\compiler\fullgraphmlparser\templates\*"
 
     SetOutPath "$PLUGINSDIR"
     

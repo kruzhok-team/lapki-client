@@ -77,6 +77,32 @@
     "Pattern.hpp"
   ],
   "components": {
+    "EarsBytes": {
+      "name": "Уши-байты",
+      "description": "КиберМишка настроил уши на принятие сообщений.",
+      "img": "blg-mb/byteEars.svg",
+      "signals": {
+        "isByteReceived": {
+          "description": "Был получен байт по акустическому каналу",
+          "alias": "Получен байт",
+          "img": "arduino/byteReceived.svg",
+          "checkMethod": "isByteReceived"
+        }
+      },
+      "constructorParameters": {},
+      "variables": {
+        "value": {
+          "alias": "Полученный байт",
+          "img": "tjc-ms/lastData.svg",
+          "type": "uint8_t",
+          "description": "Последний полученный байт."
+        }   
+         },
+      "methods": {},
+      "buildFiles": ["EarsBytes.cpp", "acoustic_modem.c"],
+      "importFiles": ["EarsBytes.cpp"],
+      "singletone": false
+    },
     "Accel": {
       "name": "Акселерометр",
       "description": "Компонент для определения положения Мишки.",
@@ -398,17 +424,51 @@
       "singletone": false
     },
 
+    "NoseBytes": {
+      "name": "Нос-байты",
+      "description": "КиберМишка настроил нос на принятие сообщений.",
+      "img": "blg-mb/byteNose.svg",
+      "signals": {
+        "isByteReceived": {
+          "alias": "Получен байт",
+          "description": "Получен байт по ИК-каналу",
+          "img": "arduino/byteReceived.svg",
+          "checkMethod": "isByteReceived"
+        }
+      },
+      "constructorParameters": {},
+      "variables": {
+        "value": {
+          "alias": "Полученный байт",
+          "img": "tjc-ms/lastData.svg",
+          "type": "uint8_t",
+          "description": "Последний полученный байт."
+        }   
+         },
+      "methods": {},
+      "buildFiles": ["NoseBytes.hpp", "modem.c", "ir_modem.c", "acoustic_modem.c"],
+      "importFiles": ["NoseBytes.hpp"],
+      "singletone": false
+    },
+
     "PhotoDiode": {
       "name": "Нос",
       "description": "Чувствует только невидимый инфракрасный свет, его много в солнечном свете.",
       "img": "blg-mb/nose.svg",
       "signals": {
         "isThresholdValue": {
-          "img": "blg-mb/threshold.svg",
+          "img": "blg-mb/greaterThresholdValue.svg",
           "description": "Был достигнут порог яркости",
           "checkMethod": "isThresholdValue",
           "parameters": [],
-          "alias": "Пороговое значение"
+          "alias": "Выше порогового значения"
+        },
+        "lessThresholdValue": {
+          "img": "blg-mb/lessThresholdValue.svg",
+          "description": "Опустилось ниже порога яркости (вызывается один раз, когда значение опустилось)",
+          "checkMethod": "lessThresholdValue",
+          "parameters": [],
+          "alias": "Ниже порогового значения"
         }
       },
       "constructorParameters": {},
@@ -636,6 +696,19 @@
           "alias": "Выключить",
           "img": "arduino/switch-off.svg",
           "description": "Выключить ИК-светодиод."
+        },
+        "sendByte": {
+          "alias": "Отправить байт",
+          "img": "blg-mb/irByte.svg",
+          "description": "Отправить байт через ИК-светодиод.",
+          "parameters": [
+            {
+              "name": "Байт",
+              "type": "uint8_t",
+              "description": "Байт, который будет отправлен по ИК-каналу.",
+              "optional": false
+            }
+          ]
         }
       },
       "importFiles": ["ir.hpp"],

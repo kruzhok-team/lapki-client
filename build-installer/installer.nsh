@@ -44,9 +44,9 @@ Section "DriversSection" SEC02
 SectionEnd
 
 !macro customInstall
-  DetailPrint "Running post–install batch…"
+  DetailPrint "Running post-install batch..."
 
-  DetailPrint "Copying gcc-arm-none-eabi from $PLUGINSDIR to $INSTDIR…"  
+  DetailPrint "Copying gcc-arm-none-eabi from $PLUGINSDIR to $INSTDIR..."
   ; Убедимся, что папка приёмник существует  
   CreateDirectory "$INSTDIR\gcc-arm-none-eabi"
 

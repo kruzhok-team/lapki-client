@@ -38,12 +38,9 @@ Section "DriversSection" SEC02
     ExecWait 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$PLUGINSDIR\install_compiler_deps.ps1" "$INSTDIR"'
     ;ExecWait 'powershell.exe -Command "$PLUGINSDIR\move_compiler_resourses.bat ${BUILD_RESOURCES_DIR}"'
     File /oname=$PLUGINSDIR\install_arduino_cli_libs.ps1 "${BUILD_RESOURCES_DIR}\install_arduino_cli_libs.ps1"
-    CreateDirectory "$PLUGINSDIR\arduino-cli-libs\packages\arduino"
-    CreateDirectory "$PLUGINSDIR\arduino-cli-libs\packages\builtin"
-    SetOutPath "$PLUGINSDIR\arduino-cli-libs\packages\arduino"
-    File /r "${BUILD_RESOURCES_DIR}\arduino-cli-libs\packages\arduino\*.*"
-    SetOutPath "$PLUGINSDIR\arduino-cli-libs\packages\builtin"
-    File /r "${BUILD_RESOURCES_DIR}\arduino-cli-libs\packages\builtin\*.*"
+    CreateDirectory "$PLUGINSDIR\arduino-cli-libs\packages"
+    SetOutPath "$PLUGINSDIR\arduino-cli-libs\packages"
+    File /r "${BUILD_RESOURCES_DIR}\arduino-cli-libs\packages\*.*"
 SectionEnd
 
 !macro customInstall

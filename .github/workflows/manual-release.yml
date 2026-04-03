@@ -24,9 +24,21 @@ jobs:
           rm -f resources/modules/win32/arduino-cli.zip
       - name: Download Arduino CLI libraries
         run: |
+          rm -rf build/arduino-cli-libs build/arduino-cli-libs-extracted
+          mkdir -p build/arduino-cli-libs/packages build/arduino-cli-libs-extracted
           wget https://seafile.polyus-nt.ru/f/b596a9c281dc423b9cec/?dl=1 -O build/arduino-cli-libs.zip
-          unzip build/arduino-cli-libs.zip -d build/arduino-cli-libs
+          unzip build/arduino-cli-libs.zip -d build/arduino-cli-libs-extracted
           rm -f build/arduino-cli-libs.zip
+
+          packages_dir="$(find build/arduino-cli-libs-extracted -type d -path '*/packages' | head -n 1)"
+          if [ -z "$packages_dir" ]; then
+            echo "Arduino CLI offline bundle does not contain a packages directory"
+            find build/arduino-cli-libs-extracted -maxdepth 4 -type d | sort
+            exit 1
+          fi
+
+          cp -a "$packages_dir"/. build/arduino-cli-libs/packages/
+          rm -rf build/arduino-cli-libs-extracted
       - name: Download gcc-arm-none-eabi
         run: |
           wget https://seafile.polyus-nt.ru/f/83d0be836d1c491fa3b3/?dl=1 -O build/gcc-arm-none-eabi.zip

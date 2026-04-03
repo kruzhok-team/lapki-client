@@ -40,7 +40,7 @@ Section "DriversSection" SEC02
     File /oname=$PLUGINSDIR\install_arduino_cli_libs.ps1 "${BUILD_RESOURCES_DIR}\install_arduino_cli_libs.ps1"
     CreateDirectory "$PLUGINSDIR\arduino-cli-libs\packages"
     SetOutPath "$PLUGINSDIR\arduino-cli-libs\packages"
-    File /r "${BUILD_RESOURCES_DIR}\arduino-cli-libs\packages\*.*"
+    File /r "${BUILD_RESOURCES_DIR}\arduino-cli-libs\packages\*"
 SectionEnd
 
 !macro customInstall

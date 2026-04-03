@@ -22,26 +22,47 @@ jobs:
       - name: Download avrdude
         shell: pwsh
         run: |
-          Invoke-WebRequest 'https://github.com/avrdudes/avrdude/releases/download/v8.0/avrdude-v8.0-windows-x86.zip' -OutFile 'resources/modules/win32/avrdude.zip'
+          function Download-File($Url, $OutFile) {
+            curl.exe --fail --location --retry 5 --retry-all-errors --connect-timeout 30 --max-time 600 --output $OutFile $Url
+            if ($LASTEXITCODE -ne 0) {
+              throw "Failed to download $Url"
+            }
+          }
+
+          Download-File 'https://github.com/avrdudes/avrdude/releases/download/v8.0/avrdude-v8.0-windows-x86.zip' 'resources/modules/win32/avrdude.zip'
           Expand-Archive -Path 'resources/modules/win32/avrdude.zip' -DestinationPath 'resources/modules/win32' -Force
           Remove-Item 'resources/modules/win32/avrdude.zip'
 
       - name: Download Arduino CLI
         shell: pwsh
         run: |
-          Invoke-WebRequest 'https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_Windows_64bit.zip' -OutFile 'resources/modules/win32/arduino-cli.zip'
+          function Download-File($Url, $OutFile) {
+            curl.exe --fail --location --retry 5 --retry-all-errors --connect-timeout 30 --max-time 600 --output $OutFile $Url
+            if ($LASTEXITCODE -ne 0) {
+              throw "Failed to download $Url"
+            }
+          }
+
+          Download-File 'https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_Windows_64bit.zip' 'resources/modules/win32/arduino-cli.zip'
           Expand-Archive -Path 'resources/modules/win32/arduino-cli.zip' -DestinationPath 'resources/modules/win32/arduino-cli' -Force
           Remove-Item 'resources/modules/win32/arduino-cli.zip'
 
       - name: Download Arduino CLI libraries
         shell: pwsh
         run: |
+          function Download-File($Url, $OutFile) {
+            curl.exe --fail --location --retry 5 --retry-all-errors --connect-timeout 30 --max-time 600 --output $OutFile $Url
+            if ($LASTEXITCODE -ne 0) {
+              throw "Failed to download $Url"
+            }
+          }
+
           if (Test-Path 'build/arduino-cli-libs') { Remove-Item 'build/arduino-cli-libs' -Recurse -Force }
           if (Test-Path 'build/arduino-cli-libs-extracted') { Remove-Item 'build/arduino-cli-libs-extracted' -Recurse -Force }
           New-Item -ItemType Directory -Path 'build/arduino-cli-libs/packages' -Force | Out-Null
           New-Item -ItemType Directory -Path 'build/arduino-cli-libs-extracted' -Force | Out-Null
 
-          Invoke-WebRequest 'https://seafile.polyus-nt.ru/f/b596a9c281dc423b9cec/?dl=1' -OutFile 'build/arduino-cli-libs.zip'
+          Download-File 'https://seafile.polyus-nt.ru/f/b596a9c281dc423b9cec/?dl=1' 'build/arduino-cli-libs.zip'
           Expand-Archive -Path 'build/arduino-cli-libs.zip' -DestinationPath 'build/arduino-cli-libs-extracted' -Force
           Remove-Item 'build/arduino-cli-libs.zip'
 
@@ -61,8 +82,15 @@ jobs:
       - name: Download gcc-arm-none-eabi
         shell: pwsh
         run: |
+          function Download-File($Url, $OutFile) {
+            curl.exe --fail --location --retry 5 --retry-all-errors --connect-timeout 30 --max-time 600 --output $OutFile $Url
+            if ($LASTEXITCODE -ne 0) {
+              throw "Failed to download $Url"
+            }
+          }
+
           if (Test-Path 'build/gcc-arm-none-eabi') { Remove-Item 'build/gcc-arm-none-eabi' -Recurse -Force }
-          Invoke-WebRequest 'https://seafile.polyus-nt.ru/f/83d0be836d1c491fa3b3/?dl=1' -OutFile 'build/gcc-arm-none-eabi.zip'
+          Download-File 'https://seafile.polyus-nt.ru/f/83d0be836d1c491fa3b3/?dl=1' 'build/gcc-arm-none-eabi.zip'
           Expand-Archive -Path 'build/gcc-arm-none-eabi.zip' -DestinationPath 'build/gcc-arm-none-eabi' -Force
           Remove-Item 'build/gcc-arm-none-eabi.zip'
 

@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  linux-windows-build:
+  linux-build:
     runs-on: ubuntu-latest
 
     steps:
@@ -13,38 +13,7 @@ jobs:
 
       - name: Init submodules
         run: git submodule update --init --checkout --recursive
-      - name: Download avrdude
-        run: |
-          wget https://github.com/avrdudes/avrdude/releases/download/v8.0/avrdude-v8.0-windows-x86.zip -O resources/modules/win32/avrdude.zip
-          unzip resources/modules/win32/avrdude.zip -d resources/modules/win32
-          rm -f resources/modules/win32/avrdude.zip
-      - name: Download Arduino CLI
-        run: |
-          wget https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_Windows_64bit.zip -O resources/modules/win32/arduino-cli.zip
-          unzip resources/modules/win32/arduino-cli.zip -d resources/modules/win32/arduino-cli/
-          rm -f resources/modules/win32/arduino-cli.zip
-      - name: Download Arduino CLI libraries
-        run: |
-          rm -rf build/arduino-cli-libs build/arduino-cli-libs-extracted
-          mkdir -p build/arduino-cli-libs/packages build/arduino-cli-libs-extracted
-          wget https://seafile.polyus-nt.ru/f/b596a9c281dc423b9cec/?dl=1 -O build/arduino-cli-libs.zip
-          unzip build/arduino-cli-libs.zip -d build/arduino-cli-libs-extracted
-          rm -f build/arduino-cli-libs.zip
 
-          packages_dir="$(find build/arduino-cli-libs-extracted -type d -path '*/packages' | head -n 1)"
-          if [ -z "$packages_dir" ]; then
-            echo "Arduino CLI offline bundle does not contain a packages directory"
-            find build/arduino-cli-libs-extracted -maxdepth 4 -type d | sort
-            exit 1
-          fi
-
-          cp -a "$packages_dir"/. build/arduino-cli-libs/packages/
-          rm -rf build/arduino-cli-libs-extracted
-      - name: Download gcc-arm-none-eabi
-        run: |
-          wget https://seafile.polyus-nt.ru/f/83d0be836d1c491fa3b3/?dl=1 -O build/gcc-arm-none-eabi.zip
-          unzip build/gcc-arm-none-eabi.zip -d build/gcc-arm-none-eabi
-          rm -f build/gcc-arm-none-eabi.zip
       - name: Run the build process with Docker
         uses: addnab/docker-run-action@v3
         with:
@@ -54,17 +23,10 @@ jobs:
             npm ci
             npm run build
             npm run bundle:linux
-            npm run bundle:win
             mkdir -p outputs
             cp dist/*.deb outputs/
-            cp dist/*.exe outputs/
             cp dist/*.snap outputs/
             cp dist/*.AppImage outputs/
-
-      - name: Get current date
-        id: date
-        run: |
-          echo "{date}={$(date +'%Y-%m-%d_%H.%M.%S')}" >> $GITHUB_STATE
 
       - name: Upload to Seafile
         uses: chekoopa/upload-to-seafile@v1
@@ -74,7 +36,6 @@ jobs:
           password: ${{ secrets.SEAFILE_PASSWORD }}
           repo-id: ${{ secrets.SEAFILE_REPO_ID }}
           remote-path: '/'
-          # remote-path: /${{ env.date }}
           local-path: 'outputs/*'
           overwrite: 'true'
 
@@ -84,13 +45,6 @@ jobs:
           name: deb-build
           path: |
             dist/*.deb
-
-      - name: Save exe artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: exe-build
-          path: |
-            dist/*.exe
 
       - name: Save snap artifact
         uses: actions/upload-artifact@v4
@@ -107,9 +61,9 @@ jobs:
             dist/*.AppImage
 
   mac-build:
-    runs-on: 'macos-latest'
+    runs-on: macos-latest
 
-    needs: linux-windows-build
+    needs: linux-build
 
     steps:
       - name: Checkout code
@@ -119,6 +73,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '20.x'
+
       - run: npm ci
       - run: npm run build
       - run: npm run bundle:mac
@@ -138,6 +93,5 @@ jobs:
           password: ${{ secrets.SEAFILE_PASSWORD }}
           repo-id: ${{ secrets.SEAFILE_REPO_ID }}
           remote-path: '/'
-          # remote-path: /${{ env.date }}
           local-path: 'dist/*.dmg'
           overwrite: 'true'

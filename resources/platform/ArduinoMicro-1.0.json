@@ -27,7 +27,7 @@
     "TjcSerial": {
       "name": "Шлюз",
       "description": "Компонент для коммуникации с МС-ТЮК",
-      "img": "arduino/serial.svg",
+      "img": "tjc-ms/gateway.svg",
       "signals": {
         "isByteReceived": {
           "alias": "Получен байт",
@@ -39,7 +39,7 @@
       "methods": {
         "sendByte": {
           "alias": "Отправить байт",
-          "img": "arduino/print.svg",
+          "img": "tjc-ms/sendByte.svg",
           "description": "Отправить байт на МС-ТЮК",
           "parameters": [
             {
@@ -51,7 +51,8 @@
         }
       },
       "variables": {
-        "value": {
+        "lastByte": {
+          "alias": "Последний байт",
           "img": "common/value.svg",
           "description": "Последний полученный байт",
           "type": "int"

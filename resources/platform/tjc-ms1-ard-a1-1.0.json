@@ -1,6 +1,7 @@
 {
   "name": "МС-ТЮК-1: Шлюз",
   "id": "tjc-ms1-ard-a1",
+  "nameTag": "MS1Gate",
   "description": "Платформа для программирования шлюза Arduino для МС-ТЮК-1.",
   "icon": "",
   "staticComponents": false,
@@ -83,10 +84,10 @@
       "constructorParameters": {},
       "variables": {
         "lastData": {
-          "alias": "Последний символ",
+          "alias": "Последний байт",
           "img": "common/value.svg",
           "type": "uint8_t",
-          "description": "Последний полученный символ."
+          "description": "Последний полученный байт."
         }
       },
       "methods": {

@@ -65,7 +65,7 @@
     "ArduinoAdapter": {
       "name": "Шлюз",
       "description": "Компонент для взаимодействия с Ардуино.",
-      "img": "arduino/serial.svg",
+      "img": "tjc-ms/gateway.svg",
       "signals": {
         "packetReceived": {
           "alias": "Получен байт",
@@ -75,7 +75,7 @@
         },
         "isQueueOverflow": {
           "alias": "Переполнение очереди",
-          "img": "arduino/byteNotReceived.svg",
+          "img": "math/overflow.svg",
           "description": "Слишком много данных на отправку (> 16 байт).",
           "checkMethod": "isQueueOverflow"
         }
@@ -92,7 +92,7 @@
       "methods": {
         "sendPacket": {
           "alias": "Отправить байт",
-          "img": "tjc-ms/sendPacket.svg",
+          "img": "tjc-ms/sendByte.svg",
           "parameters": [
             {
               "name": "Байт",

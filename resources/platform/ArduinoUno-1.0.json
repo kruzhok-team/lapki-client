@@ -27,7 +27,7 @@
     "TjcSerial": {
       "name": "Шлюз",
       "description": "Компонент для коммуникации с МС-ТЮК",
-      "img": "arduino/serial.svg",
+      "img": "tjc-ms/gateway.svg",
       "signals": {
         "isByteReceived": {
           "alias": "Получен байт",

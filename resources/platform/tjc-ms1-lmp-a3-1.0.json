@@ -231,7 +231,7 @@
         },
 
         "async_blink": {
-          "alias": "Помигать (асинхронно)",
+          "alias": "Помигать (в фоне)",
           "img": "arduino/async_blink.svg",
           "parameters": [
             {

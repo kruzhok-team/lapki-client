@@ -36,6 +36,7 @@ import {
   LinkTransitionParams,
   RenameComponentParams,
   SelectDrawable,
+  SelectedItem,
   SelectEvent,
   UnlinkStateParams,
 } from '@renderer/lib/types';
@@ -119,6 +120,8 @@ export type CanvasControllerEvents = {
   changeEvent: ChangeEventParams;
   changeEventAction: ChangeEventParams;
   deleteEvent: DeleteEventParams;
+  addSelection: SelectedItem;
+  unselect: SelectedItem;
 
   changeNoteFontSize: ChangeNoteFontSizeParams;
   changeNoteTextColor: ChangeNoteTextColorParams;
@@ -133,7 +136,7 @@ export type CanvasControllerEvents = {
   selectEvent: SelectEvent;
   changeStateSelection: ChangeSelectionParams;
   changeState: ChangeStateParams;
-
+  changeEventSelection: SelectEvent;
   changeChoiceSelection: ChangeSelectionParams;
   changeComponentSelection: ChangeSelectionParams;
   changeNoteSelection: ChangeSelectionParams;
@@ -334,6 +337,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
             this.model.off('changeEventAction', this.binded['changeEventAction']);
             this.model.off('deleteEventAction', this.binded['deleteEventAction']);
             this.model.off('deleteEvent', this.binded['deleteEvent']);
+            this.model.off('changeEventSelection', this.binded['changeEventSelection']);
             break;
           case 'initialState':
             this.model.off('createInitial', this.binded['createInitial']);
@@ -379,6 +383,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
               'createTransitionFromInitialState',
               this.binded['createTransitionFromInitialState']
             );
+            this.model.off('changeTransitionSelection', this.binded['changeTransitionSelection']);
             this.model.off('changeTransition', this.binded['changeTransition']);
             this.model.off('changeTransitionPosition', this.binded['changeTransitionPosition']);
             this.model.off('selectTransition', this.binded['selectTransition']);
@@ -442,7 +447,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
           'deleteState',
           this.bindHelper('state', 'deleteState', this.states.deleteState)
         );
-        this.model.on('selectState', this.bindHelper('state', 'selectState', this.selectComponent));
+        this.model.on('selectState', this.bindHelper('state', 'selectState', this.selectState));
         this.model.on(
           'addDragendStateSig',
           this.bindHelper('state', 'addDragendStateSig', this.addDragendState)
@@ -482,11 +487,15 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
         );
         this.model.on(
           'deleteEventAction',
-          this.bindHelper('state', 'deleteEventAction', this.states.deleteEvent)
+          this.bindHelper('state', 'deleteEventAction', this.states.deleteEventAction)
         );
         this.model.on(
           'deleteEvent',
           this.bindHelper('state', 'deleteEvent', this.states.deleteEvent)
+        );
+        this.model.on(
+          'changeEventSelection',
+          this.bindHelper('state', 'changeEventSelection', this.states.changeEventSelection)
         );
         this.initializer.initStates(smId, initData as { [id: string]: State });
         break;
@@ -538,7 +547,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
           this.bindHelper('choice', 'deleteChoice', this.states.deleteChoiceState)
         );
         this.model.on(
-          'selectState',
+          'selectChoice',
           this.bindHelper('choice', 'linkFinalState', this.selectChoice)
         );
         this.model.on(
@@ -622,6 +631,14 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
         this.model.on(
           'createTransition',
           this.bindHelper('transition', 'createTransition', this.transitions.createTransition)
+        );
+        this.model.on(
+          'changeTransitionSelection',
+          this.bindHelper(
+            'transition',
+            'changeTransitionSelection',
+            this.transitions.changeTransitionSelection
+          )
         );
         this.model.on(
           'deleteTransition',
@@ -786,14 +803,14 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     state.setIsSelected(true);
   };
 
-  selectState(args: SelectDrawable) {
+  selectState = (args: SelectDrawable) => {
     const state = this.states.data.states.get(args.id);
     if (!state) {
       return;
     }
     this.removeSelection();
     state.setIsSelected(true);
-  }
+  };
 
   selectComponent = (args: SelectDrawable) => {
     this.components.changeComponentSelection({ ...args, value: true });
@@ -955,7 +972,7 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
 
     this.app.controller.states.forEachState((state) => {
       state.setIsSelected(false);
-      state.eventBox.selection = undefined;
+      state.eventBox.selection = [];
     });
 
     this.app.controller.transitions.forEach((transition) => {

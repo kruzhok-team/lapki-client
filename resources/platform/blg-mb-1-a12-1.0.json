@@ -77,6 +77,45 @@
     "Pattern.hpp"
   ],
   "components": {
+    "BluetoothByte": {
+      "name": "Bluetooth-байты",
+      "description": "Компонент для общения с КиберМишкой по Bluetooth, отправляет и получает байты.",
+      "img": "blg-mb/byteBT.svg",
+      "signals": {
+        "isByteReceived": {
+          "description": "Было получено сообщение по Bluetooth",
+          "alias": "Получено сообщение",
+          "checkMethod": "isByteReceived",
+          "img": "arduino/byteReceived.svg"
+        }
+      },
+      "methods": {
+        "sendByte": {
+          "alias": "Отправить байт",
+          "img": "tjc-ms/sendByte.svg",
+          "parameters": [
+            {
+              "name": "Байт",
+              "type": "byte",
+              "description": "Байт, который будет отправлен"
+            }
+          ],
+          "description": "Отправляет байт"
+        }
+      },
+      "variables": {
+        "data": {
+          "alias": "Последний байт",
+          "img": "tjc-ms/lastData.svg",
+          "type": "byte",
+          "description": "Последний полученный байт"
+        }
+      },
+      "loopActions": [],
+      "buildFiles": ["BluetoothByte.cpp", "bt.c"],
+      "importFiles": ["BluetoothByte.cpp"],
+      "singletone": false
+    },
     "EarsBytes": {
       "name": "Уши-байты",
       "description": "КиберМишка настроил уши на принятие сообщений.",
@@ -96,7 +135,7 @@
           "img": "tjc-ms/lastData.svg",
           "type": "uint8_t",
           "description": "Последний полученный байт."
-        }   
+        }
          },
       "methods": {},
       "buildFiles": ["EarsBytes.cpp", "acoustic_modem.c"],
@@ -443,7 +482,7 @@
           "img": "tjc-ms/lastData.svg",
           "type": "uint8_t",
           "description": "Последний полученный байт."
-        }   
+        }
          },
       "methods": {},
       "buildFiles": ["NoseBytes.hpp", "modem.c", "ir_modem.c", "acoustic_modem.c"],

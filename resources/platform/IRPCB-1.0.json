@@ -1,0 +1,876 @@
+{
+  "name": "ИК-Путеводная",
+  "id": "IRPCB",
+  "description": "Платформа для программирования Ик-Путеводной",
+  "icon": "",
+  "staticComponents": false,
+  "version": "1.0",
+  "standardVersion": "1.0",
+  "formatVersion": "1.0",
+  "language": "C++",
+  "author": "Gleb Chekmarev/glChek",
+  "visual": true,
+  "compile": true,
+  "mainFileExtension": "cpp",
+  "staticActionDelimeter": "::",
+  "headerFileExtension": "hpp",
+  "compilingSettings": [
+    {
+      "command": "make",
+      "flags": [
+        "-C",
+        "{library_dir}/IRPCB/1.0/source",
+        "build_Fromboot",
+        "EXTRA_DIR={base_dir}/",
+        "BUILD_DIR={base_dir}/build",
+        "OUT_DIR={artifacts_dir}/IRPCB"
+      ]
+    }
+  ],
+  "mainFunction": true,
+  "delimeter": ";",
+  "defaultIncludeFiles": [
+    "InitFunctions.hpp",
+    "board.h"
+  ],
+  "defaultBuildFiles": [],
+  "components": {
+    "Led": {
+      "name": "Светодиод",
+      "description": "Компонент для взаимодействия со светодиодом",
+      "img": "arduino/led.svg",
+      "signals": {
+        "isReady": {
+          "img": "arduino/timeout.svg",
+          "description": "Закончил ли светодиод плавные колебания",
+          "checkMethod": "isReady",
+          "alias": "Готов"
+        }
+      },
+      "constructorParameters": {
+        "Контакт": {
+          "type": [
+            "LED_PWM1",
+            "LED_PWM2",
+            "LED_PWM3",
+            "LED_PWM4",
+            "LED_FRONT1",
+            "LED_FRONT2"
+          ],
+          "description": "Контакт, к которому подключен светодиод",
+          "valueAlias": [
+            "PIN_LED1",
+            "PIN_LED2",
+            "PIN_LED3",
+            "PIN_LED4",
+            "PIN_FRONT_LED1",
+            "PIN_FRONT_LED2"
+          ]
+        }
+      },
+      "variables": {},
+      "methods": {
+        "set": {
+          "alias": "Установить яркость",
+          "img": "arduino/switch-on.svg",
+          "parameters": [
+            {
+              "name": "Яркость",
+              "type": "uint32_t",
+              "description": "целое, 0 <= яркость <= 255",
+              "optional": false
+            }
+          ],
+          "description": "Задать яркость светодиода"
+        },
+        "on": {
+          "alias": "Включить",
+          "img": "arduino/switch-on.svg",
+          "description": "Устанавливает наибольшую яркость"
+        },
+        "off": {
+          "alias": "Выключить",
+          "img": "arduino/switch-off.svg",
+          "description": "Устанавливат наименьшую яркость"
+        },
+        "toggle": {
+          "alias": "Переключить",
+          "img": "arduino/toggle.svg",
+          "description": "Меняет состояние светодиода на противоположное"
+        },
+        "fadeTo": {
+          "alias": "Плавно изменить яркость",
+          "img": "arduino/switch-on.svg",
+          "parameters": [
+            {
+              "name": "Продолжительность",
+              "type": "uint32_t",
+              "description": "целое, мс",
+              "optional": false
+            },
+            {
+              "name": "яркость",
+              "type": "uint32_t",
+              "description": "целое, 0 <= яркость <= 255",
+              "optional": false
+            }
+          ],
+          "description": "Плавно меняет яркость светодиода до заданной в течение установленного времени"
+        },
+        "fadeIn": {
+          "alias": "Плавно включить",
+          "img": "arduino/switch-on.svg",
+          "parameters": [
+            {
+              "name": "Продолжительность",
+              "type": "uint32_t",
+              "description": "целое, мс",
+              "optional": false
+            }
+          ],
+          "description": "Плавно меняет яркость светодиода до наибольшей в течение установленного времени"
+        },
+        "fadeOut": {
+          "alias": "Плавно выключить",
+          "img": "arduino/switch-off.svg",
+          "parameters": [
+            {
+              "name": "Продолжительность",
+              "type": "uint32_t",
+              "description": "целое, мс",
+              "optional": false
+            }
+          ],
+          "description": "Плавно меняет яркость светодиода до наименьшей в течение установленного времени"
+        },
+        "blink": {
+          "alias": "Начать моргание",
+          "img": "arduino/blink.svg",
+          "parameters": [
+            {
+              "name": "Длительность импульса",
+              "type": "uint32_t",
+              "description": "целое, мс"
+            },
+            {
+              "name": "Период",
+              "type": "uint32_t",
+              "description": "целое, мс; Длительность полного цикла"
+            }
+          ],
+          "description": "Начинает мигать светодиодом раз в Период"
+        },
+        "stop": {
+          "alias": "Стоп",
+          "img": "arduino/switch-off.svg",
+          "description": "Прекращает действия светодиода"
+        }
+      },
+      "buildFiles": [
+        "LapkiLed.h"
+      ],
+      "importFiles": [
+        "LapkiLed.h"
+      ],
+      "singletone": false
+    },
+    "SystemLed": {
+      "name": "Системный светодиод",
+      "description": "Компонент для взаимодействия с системным светодиодом",
+      "img": "arduino/led.svg",
+      "signals": {},
+      "constructorParameters": {},
+      "variables": {},
+      "methods": {
+        "on": {
+          "alias": "Включить",
+          "img": "arduino/switch-on.svg",
+          "description": "Устанавливает наибольшую яркость"
+        },
+        "off": {
+          "alias": "Выключить",
+          "img": "arduino/switch-off.svg",
+          "description": "Устанавливат наименьшую яркость"
+        },
+        "toggle": {
+          "alias": "Переключить",
+          "img": "arduino/toggle.svg",
+          "description": "Меняет состояние светодиода на противоположное"
+        },
+        "blink": {
+          "alias": "Начать моргание",
+          "img": "arduino/blink.svg",
+          "parameters": [
+            {
+              "name": "Длительность импульса",
+              "type": "uint32_t",
+              "description": "целое, мс"
+            },
+            {
+              "name": "Период",
+              "type": "uint32_t",
+              "description": "целое, мс; Длительность полного цикла"
+            }
+          ],
+          "description": "Начинает мигать светодиодом раз в Период"
+        },
+        "stop": {
+          "alias": "Стоп",
+          "img": "arduino/switch-off.svg",
+          "description": "Прекращает действия светодиода"
+        }
+      },
+      "buildFiles": [
+        "LapkiLed.h"
+      ],
+      "importFiles": [
+        "LapkiLed.h"
+      ],
+      "singletone": false
+    },
+    "Timer": {
+      "name": "Таймер",
+      "description": "Программный таймер",
+      "img": "arduino/timer.svg",
+      "signals": {
+        "timeout": {
+          "img": "arduino/timeout.svg",
+          "description": "Время вышло!",
+          "checkMethod": "timeout",
+          "alias": "Выполнен"
+        },
+        "tick": {
+          "img": "arduino/timeout.svg",
+          "description": "прошёл 1 тик",
+          "checkMethod": "tick",
+          "alias": "Тик"
+        }
+      },
+      "constructorParameters": {},
+      "methods": {
+        "start": {
+          "alias": "Начать отсчёт",
+          "img": "arduino/start.svg",
+          "parameters": [
+            {
+              "name": "Интервал",
+              "type": "uint32_t",
+              "description": "целое, мс; время, через которое \"зазвенит\" таймер"
+            }
+          ],
+          "description": "Завести и включить таймер"
+        },
+        "proceed": {
+          "alias": "Продолжить отсчёт",
+          "img": "arduino/timer-start.svg",
+          "parameters": [],
+          "description": "Включить таймер (отпустить стрелку)"
+        },
+        "pause": {
+          "alias": "Приостановить отсчёт",
+          "img": "arduino/timer-stop.svg",
+          "parameters": [],
+          "description": "Остановить таймер (зафиксировать стрелку)"
+        }
+      },
+      "buildFiles": [
+        "Timer.h"
+      ],
+      "importFiles": [
+        "Timer.h"
+      ],
+      "loopActions": [
+        "updateDifference"
+      ],
+      "variables": {
+        "difference": {
+          "alias": "Оставшееся время",
+          "img": "arduino/difference.svg",
+          "type": "uint32_t",
+          "description": "целое, мс; Оставшееся время до срабатывания таймера"
+        }
+      },
+      "singletone": false
+    },
+    "Counter": {
+      "name": "Счётчик",
+      "description": "Целочисленная Переменная-счетчик",
+      "img": "arduino/counter.svg",
+      "signals": {},
+      "constructorParameters": {},
+      "methods": {
+        "add": {
+          "alias": "Добавить",
+          "img": "arduino/add.svg",
+          "description": "Добавить Значение к значению счетчика",
+          "parameters": [
+            {
+              "name": "Значение",
+              "type": "int32_t",
+              "description": "целое"
+            }
+          ]
+        },
+        "sub": {
+          "alias": "Вычесть",
+          "img": "arduino/sub.svg",
+          "description": "Вычесть Значение из значения счетчика",
+          "parameters": [
+            {
+              "name": "Значение",
+              "type": "int32_t",
+              "description": "целое"
+            }
+          ]
+        },
+        "div": {
+          "alias": "Разделить нацело",
+          "img": "math/div.svg",
+          "description": "Разделить значение счетчика нацело на указанное Значение",
+          "parameters": [
+            {
+              "name": "Значение",
+              "type": "int32_t",
+              "description": "целое"
+            }
+          ]
+        },
+        "mul": {
+          "alias": "Умножить",
+          "img": "math/mul.svg",
+          "description": "Умножить значение счетчика на Значение",
+          "parameters": [
+            {
+              "name": "Значение",
+              "type": "int32_t",
+              "description": "целое"
+            }
+          ]
+        },
+        "set": {
+          "alias": "Установить",
+          "img": "common/set.svg",
+          "description": "Приравнять счётчик к Значению",
+          "parameters": [
+            {
+              "name": "Значение",
+              "type": "int32_t",
+              "description": "целое"
+            }
+          ]
+        },
+        "reset": {
+          "alias": "Обнулить",
+          "img": "arduino/reset.svg",
+          "description": "Обнулить значение счетчика"
+        }
+      },
+      "variables": {
+        "value": {
+          "alias": "значение",
+          "img": "common/value.svg",
+          "description": "Текущее значение счетчика",
+          "type": "int32_t"
+        }
+      },
+      "buildFiles": [
+        "Counter.h"
+      ],
+      "importFiles": [
+        "Counter.h"
+      ],
+      "singletone": false
+    },
+    "Serial": {
+      "name": "Консоль",
+      "img": "arduino/serial.svg",
+      "description": "Вывод и чтение сообщений через usb-uart",
+      "signals": {
+        "isUpdated": {
+          "img": "common/userSignal.svg",
+          "description": "Что-то пришло в буфер",
+          "checkMethod": "isUpdated",
+          "alias": "Получено сообщение"
+        }
+      },
+      "constructorParameters": {},
+      "variables": {
+        "message": {
+          "alias": "Последнее сообщение",
+          "img": "tjs-ms/lastData.svg",
+          "description": "строкоПодобное(\"строка\" или число); Последнее полученное сообщение",
+          "type": "char[] || int64_t"
+        }
+      },
+      "methods": {
+        "printVal": {
+          "alias": "Вывести текст и значение в терминал",
+          "img": "",
+          "parameters": [
+            {
+              "name": "Текст",
+              "type": "char[]",
+              "description": "\"текст в двойных кавычках\"; будет выведено перед значением"
+            },
+            {
+              "name": "Значение",
+              "type": "char[] || int64_t",
+              "description": "строкоПодобное(\"строка\" или число); выведется после текста"
+            }
+          ],
+          "description": "Выводит в usb-com порт текст, отступ, значение, перенос строки"
+        },
+        "print": {
+          "alias": "Вывести значение в терминал",
+          "img": "arduino/print.svg",
+          "parameters": [
+            {
+              "name": "Значение",
+              "type": "char[] || int64_t",
+              "description": "строкоПодобное(\"строка\" или число)"
+            }
+          ],
+          "description": "Выводит значение в usb-com порт и переносит строку"
+        }
+      },
+      "buildFiles": [
+        "Serial.h"
+      ],
+      "importFiles": [
+        "Serial.h"
+      ],
+      "singletone": true
+    },
+    "Button": {
+      "name": "Кнопка",
+      "description": "Компонент для взаимодействия с кнопкой, стянутой с питанием и активным низким уровнем",
+      "img": "arduino/button.svg",
+      "signals": {
+        "pressed": {
+          "img": "arduino/isPressed.svg",
+          "description": "Кнопку нажали",
+          "checkMethod": "pressed",
+          "alias": "Нажата"
+        },
+        "released": {
+          "img": "common/isReleased.svg",
+          "description": "Кнопку отпустили",
+          "checkMethod": "released",
+          "alias": "Отпущена"
+        }
+      },
+      "constructorParameters": {
+        "Контакт": {
+          "type": [
+            "Gpio1",
+            "Gpio2",
+            "Gpio3",
+            "Gpio4"
+          ],
+          "description": "Контакт, на котором кнопка"
+        }
+      },
+      "variables": {},
+      "buildFiles": [
+        "Button.h"
+      ],
+      "importFiles": [
+        "Button.h"
+      ],
+      "methods": {},
+      "loopActions": [
+        "update"
+      ],
+      "singletone": false
+    },
+    "IRpkg": {
+      "name": "ИК-пакет",
+      "description": "Контейнер для данных с ик-датчика",
+      "img": "",
+      "signals": {},
+      "constructorParameters": {},
+      "variables": {
+        "self": {
+          "alias": "Этот компонент",
+          "img": "",
+          "description": "строкоПодобное(\"строка\" или число); Ссылка на себя, при выводе автоматически преобразуется в сообщение в 16ричном виде",
+          "type": "IRpkg"
+        },
+        "word16": {
+          "img": "",
+          "description": "16 битное сообщение",
+          "type": "uint16_t"
+        },
+        "bits_count": {
+          "img": "",
+          "description": "Количество ненулевых бит в сообщении",
+          "type": "uint8_t"
+        }
+      },
+      "buildFiles": [
+        "IRpkg.h"
+      ],
+      "importFiles": [
+        "IRpkg.h"
+      ],
+      "methods": {
+        "setWord": {
+          "alias": "Установить сообщение",
+          "img": "",
+          "parameters": [
+            {
+              "name": "Сообщение",
+              "type": "uint16_t",
+              "description": "16 битное число"
+            }
+          ],
+          "description": "Устанавливает новое сообщение"
+        },
+        "setPkg": {
+          "alias": "Скопировать контейнер",
+          "img": "",
+          "parameters": [
+            {
+              "name": "ИК-Контейнер",
+              "type": "IRpkg",
+              "description": "То, откуда копировать данные"
+            }
+          ],
+          "description": "Копирует данные из ИК-Контейнера"
+        }
+      },
+      "loopActions": [],
+      "singletone": false
+    },
+    "IRReciever": {
+      "name": "ИК-приёмник",
+      "description": "Компонент для взаимодействия с ик-датчиком",
+      "img": "",
+      "signals": {
+        "isUpdated": {
+          "img": "",
+          "description": "пришёл ик-сигнал?",
+          "checkMethod": "isUpdated",
+          "alias": "Получен ик-сигнал"
+        }
+      },
+      "constructorParameters": {},
+      "variables": {
+        "pkg": {
+          "alias": "Последнее сообщение",
+          "img": "",
+          "description": "строкоПодобное(\"строка\" или число); Последнее полученное сообщение",
+          "type": "char[] || int64_t"
+        }
+      },
+      "methods": {
+        "printPkg": {
+          "alias": "Вывести последнее сообщение",
+          "img": "",
+          "parameters": [],
+          "description": "выводит сообщение в usb-терминал"
+        }
+      },
+      "loopActions": [],
+      "buildFiles": [
+        "IRReciever.h"
+      ],
+      "importFiles": [
+        "IRReciever.h"
+      ],
+      "singletone": true
+    },
+    "BlgIrTransmitter": {
+      "name": "ИК-передатчик (КиберМишка)",
+      "description": "Компонент для общения с КиберМишкой по ИК-каналу",
+      "img": "blg-mb/ir.svg",
+      "signals": {},
+      "constructorParameters": {},
+      "variables": {},
+      "methods": {
+        "transmit": {
+          "alias": "Передать сообщение",
+          "img": "",
+          "parameters": [
+            {
+              "name": "Данные",
+              "type": "IRpkg",
+              "description": "ИК-пакет или 16-битное число; Данные для передачи"
+            }
+          ],
+          "description": "Передаёт пакет данных"
+        },
+        "setPower": {
+          "alias": "Установить мощность",
+          "img": "",
+          "parameters": [
+            {
+              "name": "Мощность",
+              "type": "uint8_t",
+              "description": "целое число, от 0 до 255; мощность, с которой будут отправлять ик-пакеты"
+            }
+          ],
+          "description": "Устанавливает мощность ик-передатчика"
+        }
+      },
+      "loopActions": [],
+      "buildFiles": [
+        "BlgIrTransmitter.h"
+      ],
+      "importFiles": [
+        "BlgIrTransmitter.h"
+      ],
+      "singletone": true
+    },
+    "IRTransmitter": {
+      "name": "ИК-передатчик",
+      "description": "Компонент для взаимодействия с ик-передатчиком",
+      "img": "blg-mb/ir.svg",
+      "signals": {},
+      "constructorParameters": {},
+      "variables": {},
+      "methods": {
+        "transmit": {
+          "alias": "Передать сообщение",
+          "img": "",
+          "parameters": [
+            {
+              "name": "Данные",
+              "type": "IRpkg",
+              "description": "ИК-пакет или 16-битное число; Данные для передачи"
+            }
+          ],
+          "description": "Передаёт пакет данных"
+        },
+        "setPower": {
+          "alias": "Установить мощность",
+          "img": "",
+          "parameters": [
+            {
+              "name": "Мощность",
+              "type": "uint8_t",
+              "description": "целое число, от 0 до 255; мощность, с которой будут отправлять ик-пакеты"
+            }
+          ],
+          "description": "Устанавливает мощность ик-передатчика"
+        }
+      },
+      "loopActions": [],
+      "buildFiles": [
+        "IRTransmitter.h"
+      ],
+      "importFiles": [
+        "IRTransmitter.h"
+      ],
+      "singletone": true
+    },
+    "LedStrip": {
+      "name": "Светодиодная лента",
+      "description": "Компонент для взаимодействия со светодиодной лентой",
+      "img": "",
+      "signals": {},
+      "constructorParameters": {
+        "Количетсво светодиодов": {
+          "type": "uint32_t",
+          "description": "число >= 1, Количетсво светодиодов в ленте"
+        }
+      },
+      "variables": {
+        "led_number": {
+          "alias": "Число светодиодов",
+          "img": "",
+          "type": "uint32_t",
+          "description": "Количество светодиодов в ленте"
+        }
+      },
+      "methods": {
+        "setColorRGB": {
+          "alias": "Установить цвет RGB",
+          "img": "",
+          "parameters": [
+            {
+              "name": "Номер светодиода",
+              "type": "uint32_t",
+              "description": "целое число от 1 до количества светодиодов; Номер светодиода"
+            },
+            {
+              "name": "R",
+              "type": "uint8_t",
+              "description": "целое число, от 0 до 255; красный"
+            },
+            {
+              "name": "G",
+              "type": "uint8_t",
+              "description": "целое число, от 0 до 255; зелёный"
+            },
+            {
+              "name": "B",
+              "type": "uint8_t",
+              "description": "целое число, от 0 до 255; синий"
+            }
+          ],
+          "description": "изменение цвета светодиода в схеме RGB"
+        },
+        "setColorHSV": {
+          "alias": "Установить цвет HSV",
+          "img": "",
+          "parameters": [
+            {
+              "name": "Номер светодиода",
+              "type": "uint32_t",
+              "description": "целое число от 1 до количества светодиодов; Номер светодиода"
+            },
+            {
+              "name": "H",
+              "type": "uint16_t",
+              "description": "целое, от 0 до 360; оттенок"
+            },
+            {
+              "name": "S",
+              "type": "uint8_t",
+              "description": "целое, от 0 до 100; насыщенность"
+            },
+            {
+              "name": "V",
+              "type": "uint8_t",
+              "description": "целое, от 0 до 100; яркость"
+            }
+          ],
+          "description": "изменение цвета светодиода в схеме HSV"
+        },
+        "turnOff": {
+          "alias": "Выключить светодиоды",
+          "img": "arduino/switch-off.svg",
+          "parameters": [],
+          "description": "Выключает все светодиоды"
+        }
+      },
+      "loopActions": [],
+      "buildFiles": [
+        "LedStrip.h"
+      ],
+      "importFiles": [
+        "LedStrip.h"
+      ],
+      "singletone": false
+    },
+    "PwmOutput": {
+      "name": "ШИМ-вывод",
+      "description": "Компонент для настройки контактов для генерации шим-сигнала",
+      "img": "",
+      "signals": {},
+      "constructorParameters": {
+        "Контакт": {
+          "type": [
+            "PIN_LED1",
+            "PIN_LED2",
+            "PIN_LED3",
+            "PIN_LED4",
+            "PIN_FRONT_LED1",
+            "PIN_FRONT_LED2"
+          ],
+          "description": "Контакт, настраиваемый для генерации шим-сигнала"
+        },
+        "Режим": {
+          "type": [
+            "Gpio::PushPull",
+            "Gpio::OpenDrain"
+          ],
+          "valueAlias": [
+            "Активный выход",
+            "Пассивный выход"
+          ],
+          "description": "Режим управления шимом"
+        }
+      },
+      "variables": {},
+      "methods": {
+        "setFrequency": {
+          "alias": "Установить частоту",
+          "img": "",
+          "parameters": [
+            {
+              "name": "Частота: ",
+              "type": "uint32_t",
+              "description": "целое число, Гц"
+            }
+          ],
+          "description": "настраивает частоту шим"
+        },
+        "setDuty": {
+          "alias": "Установить заполнение",
+          "img": "",
+          "parameters": [
+            {
+              "name": "Заполнение",
+              "type": "uint32_t",
+              "description": "целое число, от 0 до 255"
+            }
+          ],
+          "description": "Настраивает коэффициент заполнения шим"
+        },
+        "setDutyPortion": {
+          "alias": "Установить долю заполнения",
+          "img": "",
+          "parameters": [
+            {
+              "name": "Заполнение",
+              "type": "float",
+              "description": "число, от 0 до 1"
+            }
+          ],
+          "description": "Настраивает коэффициент заполнения шим"
+        }
+      },
+      "loopActions": [],
+      "buildFiles": [
+        "Pwm_Control.h"
+      ],
+      "importFiles": [
+        "Pwm_Control.h"
+      ],
+      "singletone": false
+    },
+    "Buzzer": {
+      "name": "Пищалка",
+      "description": "Компонент для взаимодействия с пищалкой",
+      "img": "",
+      "signals": {},
+      "constructorParameters": {},
+      "variables": {},
+      "methods": {
+        "beepSpecific": {
+          "alias": "Бип(настраиваемый)",
+          "img": "",
+          "parameters": [
+            {
+              "name": "Частота: ",
+              "type": "uint32_t",
+              "description": "целое число, Гц"
+            },
+            {
+              "name": "Громкость: ",
+              "type": "uint8_t",
+              "description": "целое число, Гц, 0 <= Громкость <= 22"
+            }
+          ],
+          "description": "Издаёт писк с заданными параметрами"
+        },
+        "beep": {
+          "alias": "Бип(короткий)",
+          "img": "",
+          "parameters": [],
+          "description": "Издаёт короткий писк"
+        }
+      },
+      "loopActions": [],
+      "buildFiles": [
+        "Buzzer.h"
+      ],
+      "importFiles": [
+        "Buzzer.h"
+      ],
+      "singletone": true
+    }
+  }
+}

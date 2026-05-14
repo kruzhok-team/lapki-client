@@ -41,7 +41,7 @@
       "img": "arduino/led.svg",
       "signals": {
         "isReady": {
-          "img": "arduino/timeout.svg",
+          "img": "irpcb/ledisReady.svg",
           "description": "Закончил ли светодиод плавные колебания",
           "checkMethod": "isReady",
           "alias": "Готов"
@@ -72,7 +72,7 @@
       "methods": {
         "set": {
           "alias": "Установить яркость",
-          "img": "arduino/switch-on.svg",
+          "img": "tjc-ms/setBright.svg",
           "parameters": [
             {
               "name": "Яркость",
@@ -100,7 +100,7 @@
         },
         "fadeTo": {
           "alias": "Плавно изменить яркость",
-          "img": "arduino/switch-on.svg",
+          "img": "irpcb/fadeTo.svg",
           "parameters": [
             {
               "name": "Продолжительность",
@@ -119,7 +119,7 @@
         },
         "fadeIn": {
           "alias": "Плавно включить",
-          "img": "arduino/switch-on.svg",
+          "img": "irpcb/fadeIn.svg",
           "parameters": [
             {
               "name": "Продолжительность",
@@ -132,7 +132,7 @@
         },
         "fadeOut": {
           "alias": "Плавно выключить",
-          "img": "arduino/switch-off.svg",
+          "img": "irpcb/fadeOut.svg",
           "parameters": [
             {
               "name": "Продолжительность",
@@ -216,7 +216,7 @@
         },
         "stop": {
           "alias": "Стоп",
-          "img": "arduino/switch-off.svg",
+          "img": "arduino/timer-stop.svg",
           "description": "Прекращает действия светодиода"
         }
       },
@@ -240,7 +240,7 @@
           "alias": "Выполнен"
         },
         "tick": {
-          "img": "arduino/timeout.svg",
+          "img": "irpcb/tick.svg",
           "description": "прошёл 1 тик",
           "checkMethod": "tick",
           "alias": "Тик"
@@ -387,7 +387,7 @@
       "description": "Вывод и чтение сообщений через usb-uart",
       "signals": {
         "isUpdated": {
-          "img": "common/userSignal.svg",
+          "img": "arduino/byteReceived.svg",
           "description": "Что-то пришло в буфер",
           "checkMethod": "isUpdated",
           "alias": "Получено сообщение"
@@ -397,7 +397,7 @@
       "variables": {
         "message": {
           "alias": "Последнее сообщение",
-          "img": "tjs-ms/lastData.svg",
+          "img": "tjc-ms/lastData.svg",
           "description": "строкоПодобное(\"строка\" или число); Последнее полученное сообщение",
           "type": "char[] || int64_t"
         }
@@ -405,7 +405,7 @@
       "methods": {
         "printVal": {
           "alias": "Вывести текст и значение в терминал",
-          "img": "",
+          "img": "irpcb/printVal.svg",
           "parameters": [
             {
               "name": "Текст",
@@ -486,23 +486,23 @@
     "IRpkg": {
       "name": "ИК-пакет",
       "description": "Контейнер для данных с ик-датчика",
-      "img": "",
+      "img": "irpcb/IRpkg.svg",
       "signals": {},
       "constructorParameters": {},
       "variables": {
         "self": {
           "alias": "Этот компонент",
-          "img": "",
+          "img": "pkg.svg",
           "description": "строкоПодобное(\"строка\" или число); Ссылка на себя, при выводе автоматически преобразуется в сообщение в 16ричном виде",
           "type": "IRpkg"
         },
         "word16": {
-          "img": "",
+          "img": "irpcb/word16.svg",
           "description": "16 битное сообщение",
           "type": "uint16_t"
         },
         "bits_count": {
-          "img": "",
+          "img": "irpcb/bits_count.svg",
           "description": "Количество ненулевых бит в сообщении",
           "type": "uint8_t"
         }
@@ -516,7 +516,7 @@
       "methods": {
         "setWord": {
           "alias": "Установить сообщение",
-          "img": "",
+          "img": "irpcb/setWord.svg",
           "parameters": [
             {
               "name": "Сообщение",
@@ -528,7 +528,7 @@
         },
         "setPkg": {
           "alias": "Скопировать контейнер",
-          "img": "",
+          "img": "irpcb/setPkg.svg",
           "parameters": [
             {
               "name": "ИК-Контейнер",
@@ -545,10 +545,10 @@
     "IRReciever": {
       "name": "ИК-приёмник",
       "description": "Компонент для взаимодействия с ик-датчиком",
-      "img": "",
+      "img": "irpcb/IRReciever.svg",
       "signals": {
         "isUpdated": {
-          "img": "",
+          "img": "irpcb/signals.svg",
           "description": "пришёл ик-сигнал?",
           "checkMethod": "isUpdated",
           "alias": "Получен ик-сигнал"
@@ -558,7 +558,7 @@
       "variables": {
         "pkg": {
           "alias": "Последнее сообщение",
-          "img": "",
+          "img": "tjc-ms/lastData.svg",
           "description": "строкоПодобное(\"строка\" или число); Последнее полученное сообщение",
           "type": "char[] || int64_t"
         }
@@ -566,7 +566,7 @@
       "methods": {
         "printPkg": {
           "alias": "Вывести последнее сообщение",
-          "img": "",
+          "img": "irpcb/printPkg.svg",
           "parameters": [],
           "description": "выводит сообщение в usb-терминал"
         }
@@ -590,7 +590,7 @@
       "methods": {
         "transmit": {
           "alias": "Передать сообщение",
-          "img": "",
+          "img": "blg-mb/irByte.svg",
           "parameters": [
             {
               "name": "Данные",
@@ -602,7 +602,7 @@
         },
         "setPower": {
           "alias": "Установить мощность",
-          "img": "",
+          "img": "irpcb/setPower.svg",
           "parameters": [
             {
               "name": "Мощность",
@@ -625,14 +625,14 @@
     "IRTransmitter": {
       "name": "ИК-передатчик",
       "description": "Компонент для взаимодействия с ик-передатчиком",
-      "img": "blg-mb/ir.svg",
+      "img": "irpcb/IRTransmitter.svg",
       "signals": {},
       "constructorParameters": {},
       "variables": {},
       "methods": {
         "transmit": {
           "alias": "Передать сообщение",
-          "img": "",
+          "img": "tjc-ms/sendByte.svg",
           "parameters": [
             {
               "name": "Данные",
@@ -644,7 +644,7 @@
         },
         "setPower": {
           "alias": "Установить мощность",
-          "img": "",
+          "img": "irpcb/setPower.svg",
           "parameters": [
             {
               "name": "Мощность",
@@ -667,7 +667,7 @@
     "LedStrip": {
       "name": "Светодиодная лента",
       "description": "Компонент для взаимодействия со светодиодной лентой",
-      "img": "",
+      "img": "irpcb/LedStrip.svg",
       "signals": {},
       "constructorParameters": {
         "Количетсво светодиодов": {
@@ -678,7 +678,7 @@
       "variables": {
         "led_number": {
           "alias": "Число светодиодов",
-          "img": "",
+          "img": "irpcb/led_number.svg",
           "type": "uint32_t",
           "description": "Количество светодиодов в ленте"
         }
@@ -686,7 +686,7 @@
       "methods": {
         "setColorRGB": {
           "alias": "Установить цвет RGB",
-          "img": "",
+          "img": "blg-mb/EyeRGBK.svg",
           "parameters": [
             {
               "name": "Номер светодиода",
@@ -713,7 +713,7 @@
         },
         "setColorHSV": {
           "alias": "Установить цвет HSV",
-          "img": "",
+          "img": "irpcb/setColorHSV.svg",
           "parameters": [
             {
               "name": "Номер светодиода",
@@ -757,7 +757,7 @@
     "PwmOutput": {
       "name": "ШИМ-вывод",
       "description": "Компонент для настройки контактов для генерации шим-сигнала",
-      "img": "",
+      "img": "irpcb/pwm.svg",
       "signals": {},
       "constructorParameters": {
         "Контакт": {
@@ -787,7 +787,7 @@
       "methods": {
         "setFrequency": {
           "alias": "Установить частоту",
-          "img": "",
+          "img": "irpcb/setFrequency.svg",
           "parameters": [
             {
               "name": "Частота: ",
@@ -799,7 +799,7 @@
         },
         "setDuty": {
           "alias": "Установить заполнение",
-          "img": "",
+          "img": "irpcb/setDuty.svg",
           "parameters": [
             {
               "name": "Заполнение",
@@ -811,7 +811,7 @@
         },
         "setDutyPortion": {
           "alias": "Установить долю заполнения",
-          "img": "",
+          "img": "irpcb/setDutePortion.svg",
           "parameters": [
             {
               "name": "Заполнение",
@@ -834,14 +834,14 @@
     "Buzzer": {
       "name": "Пищалка",
       "description": "Компонент для взаимодействия с пищалкой",
-      "img": "",
+      "img": "irpcb/Buzzer.svg",
       "signals": {},
       "constructorParameters": {},
       "variables": {},
       "methods": {
         "beepSpecific": {
           "alias": "Бип(настраиваемый)",
-          "img": "",
+          "img": "irpcb/beepSpecific.svg",
           "parameters": [
             {
               "name": "Частота: ",
@@ -858,7 +858,7 @@
         },
         "beep": {
           "alias": "Бип(короткий)",
-          "img": "",
+          "img": "irpcb/beep.svg",
           "parameters": [],
           "description": "Издаёт короткий писк"
         }

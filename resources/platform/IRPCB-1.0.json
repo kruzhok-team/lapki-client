@@ -492,7 +492,7 @@
       "variables": {
         "self": {
           "alias": "Этот компонент",
-          "img": "pkg.svg",
+          "img": "irpcb/self.svg",
           "description": "Это сам ИК-пакет, при печати покажется как число в шестнадцатеричном виде",
           "type": "IRpkg"
         },

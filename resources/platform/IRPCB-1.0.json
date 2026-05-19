@@ -1,7 +1,7 @@
 {
   "name": "ИК-Путеводная",
   "id": "IRPCB",
-  "description": "Платформа для работы с платой ИК-Путеводная",
+  "description": "Платформа для работы с платой ИК-Путеводная (v1.0)",
   "icon": "",
   "staticComponents": false,
   "version": "1.0",
@@ -155,10 +155,10 @@
             {
               "name": "Время одного мигания",
               "type": "uint32_t",
-              "description": "Длительность одного мигания, включения и выключения (мс)" 
+              "description": "Длительность одного мигания, включения и выключения (мс)"
             }
           ],
-          "description": "Мигает светодиодом с заданной длительностью мигания"
+          "description": "Мигает светодиодом с заданной длительностью мигания, это делается в фоне и не блокирует работу машины состояний"
         },
         "stop": {
           "alias": "Стоп",
@@ -209,7 +209,7 @@
             {
               "name": "Время одного мигания",
               "type": "uint32_t",
-              "description": "Длительность одного мигания, включения и выключения (мс)" 
+              "description": "Длительность одного мигания, включения и выключения (мс)"
             }
           ],
           "description": "Мигает светодиодом с заданной длительностью мигания"
@@ -235,7 +235,7 @@
       "signals": {
         "timeout": {
           "img": "arduino/timeout.svg",
-          "description": "Прошёл очередной интервал таймера",
+          "description": "Прошёл интервал таймера",
           "checkMethod": "timeout",
           "alias": "Тайм-аут"
         },
@@ -258,7 +258,7 @@
               "description": "Интервал срабатывания (мс)"
             }
           ],
-          "description": "Запустить таймер. Будет сигнал раз в интервал"
+          "description": "Запустить таймер. Срабатывает только один раз"
         },
         "proceed": {
           "alias": "Возобновить",
@@ -551,7 +551,7 @@
           "img": "irpcb/signals.svg",
           "description": "Пришёл ИК-сигнал",
           "checkMethod": "isUpdated",
-          "alias": "Получен ик-сигнал"
+          "alias": "Получен ИК-сигнал"
         }
       },
       "constructorParameters": {},
@@ -577,48 +577,6 @@
       ],
       "importFiles": [
         "IRReciever.h"
-      ],
-      "singletone": true
-    },
-    "BlgIrTransmitter": {
-      "name": "ИК-передатчик (КиберМишка)",
-      "description": "Компонент для общения с КиберМишкой по ИК-каналу",
-      "img": "blg-mb/ir.svg",
-      "signals": {},
-      "constructorParameters": {},
-      "variables": {},
-      "methods": {
-        "transmit": {
-          "alias": "Передать сообщение",
-          "img": "blg-mb/irByte.svg",
-          "parameters": [
-            {
-              "name": "Данные",
-              "type": "IRpkg",
-              "description": "ИК-пакет (используйте компонент ИК-пакет для создания сообщения)"
-            }
-          ],
-          "description": "Передаёт пакет данных"
-        },
-        "setPower": {
-          "alias": "Установить мощность",
-          "img": "irpcb/setPower.svg",
-          "parameters": [
-            {
-              "name": "Мощность",
-              "type": "uint8_t",
-              "description": "Мощность ИК-сигнала (от 0 до 255)"
-            }
-          ],
-          "description": "Устанавливает мощность ИК-передатчика"
-        }
-      },
-      "loopActions": [],
-      "buildFiles": [
-        "BlgIrTransmitter.h"
-      ],
-      "importFiles": [
-        "BlgIrTransmitter.h"
       ],
       "singletone": true
     },
@@ -811,7 +769,7 @@
         },
         "setDutyPortion": {
           "alias": "Установить долю заполнения",
-          "img": "irpcb/setDutePortion.svg",
+          "img": "irpcb/setDutyPortion.svg",
           "parameters": [
             {
               "name": "Заполнение",

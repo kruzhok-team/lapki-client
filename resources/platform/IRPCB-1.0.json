@@ -628,7 +628,7 @@
       "img": "irpcb/LedStrip.svg",
       "signals": {},
       "constructorParameters": {
-        "Количетсво светодиодов": {
+        "Количество светодиодов": {
           "type": "uint32_t",
           "description": "Сколько светодиодов в ленте (число >= 1)"
         }

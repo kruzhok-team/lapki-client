@@ -20,6 +20,7 @@ param(
 $PATHS = @(
     "gcc-arm-none-eabi\bin"
     "resources\app.asar.unpacked\resources\modules\win32\arduino-cli\"
+    "irpcb\bin"
     # Add more paths as needed
 )
 
@@ -32,10 +33,10 @@ $pathDirs = $currentPath -split ';'
 # Process each relative path
 foreach ($relativePath in $PATHS) {
     $fullPath = Join-Path -Path $BasePath -ChildPath $relativePath
-    
+
     # Normalize the path (resolve any . or .. and ensure consistent slashes)
     $fullPath = [System.IO.Path]::GetFullPath($fullPath)
-    
+
     # Check if the path exists and isn't already in PATH
     if ($pathDirs -notcontains $fullPath) {
         Write-Host "Adding to PATH: $fullPath"

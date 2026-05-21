@@ -16,6 +16,9 @@ Section "DriversSection" SEC02
     ; рекурсивно забираем всё из исходной папки
     File /r "${BUILD_RESOURCES_DIR}\gcc-arm-none-eabi\*.*"
 
+    CreateDirectory "$PLUGINSDIR\irpcb\bin"
+    SetOutPath "$PLUGINSDIR\irpcb\bin"
+    File "${BUILD_RESOURCES_DIR}\irpcb\bin\*.*"
 
     CreateDirectory "$PLUGINSDIR\lapki-compiler"
     CreateDirectory "$PLUGINSDIR\lapki-compiler\library"
@@ -34,7 +37,6 @@ Section "DriversSection" SEC02
     File /r "${BUILD_RESOURCES_DIR}\lapki-compiler\compiler\fullgraphmlparser\templates"
 
     SetOutPath "$PLUGINSDIR"
-    
     ;ExecWait 'powershell.exe -Command "$PLUGINSDIR\install.bat $PLUGINSDIR"'
     ExecWait 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$PLUGINSDIR\install_compiler_deps.ps1" "$INSTDIR"'
     ;ExecWait 'powershell.exe -Command "$PLUGINSDIR\move_compiler_resourses.bat ${BUILD_RESOURCES_DIR}"'
@@ -50,23 +52,26 @@ SectionEnd
 !macro customInstall
   DetailPrint "Running post–install batch…"
 
-  DetailPrint "Copying gcc-arm-none-eabi from $PLUGINSDIR to $INSTDIR…"  
-  ; Убедимся, что папка приёмник существует  
+  DetailPrint "Copying gcc-arm-none-eabi from $PLUGINSDIR to $INSTDIR…"
+  ; Убедимся, что папка приёмник существует
   CreateDirectory "$INSTDIR\gcc-arm-none-eabi"
 
-  ; Рекурсивно скопируем все файлы и подпапки  
+  ; Рекурсивно скопируем все файлы и подпапки
   CopyFiles /SILENT "$PLUGINSDIR\gcc-arm-none-eabi\*.*" "$INSTDIR\gcc-arm-none-eabi\"
-  ; Удалим временную директорию (чтобы не оставлять мусор)  
+  ; Удалим временную директорию (чтобы не оставлять мусор)
   RMDir /r "$PLUGINSDIR\gcc-arm-none-eabi"
 
-  DetailPrint "Done. INSTDIR now contains:"  
-  DetailPrint "  $INSTDIR\gcc-arm-none-eabi"  
+  DetailPrint "Done. INSTDIR now contains:"
+  DetailPrint "  $INSTDIR\gcc-arm-none-eabi"
 
   CreateDirectory "$INSTDIR\resources\app.asar.unpacked\resources\modules\win32\lapki-compiler"
   CreateDirectory "$INSTDIR\resources\app.asar.unpacked\resources\modules\win32\lapki-compiler\library"
   CreateDirectory "$INSTDIR\resources\app.asar.unpacked\resources\modules\win32\lapki-compiler\platforms"
   CreateDirectory "$INSTDIR\resources\app.asar.unpacked\resources\modules\win32\lapki-compiler\fullgraphmlparser"
   CreateDirectory "$INSTDIR\resources\app.asar.unpacked\resources\modules\win32\lapki-compiler\fullgraphmlparser\templates"
+
+  CreateDirectory "$INSTDIR\irpcb\bin"
+  CopyFiles /SILENT "$PLUGINSDIR\irpcb\bin\*.*" "$INSTDIR\irpcb\bin"
 
   CopyFiles /SILENT "$PLUGINSDIR\lapki-compiler\library\*.*" "$INSTDIR\resources\app.asar.unpacked\resources\modules\win32\lapki-compiler\library\"
   CopyFiles /SILENT "$PLUGINSDIR\lapki-compiler\platforms\*.*" "$INSTDIR\resources\app.asar.unpacked\resources\modules\win32\lapki-compiler\platforms\"

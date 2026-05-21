@@ -40,9 +40,11 @@ jobs:
           wget https://seafile.polyus-nt.ru/f/83d0be836d1c491fa3b3/?dl=1 -O build/gcc-arm-none-eabi.zip
           unzip build/gcc-arm-none-eabi.zip -d build/gcc-arm-none-eabi
           rm -f build/gcc-arm-none-eabi.zip
-      - name: Download gcc-arm-none-eabi
+      - name: Download IRPCB dependencies
         run: |
-          wget https://seafile.polyus-nt.ru/d/29049f2b2c2e40699df1/files/?p=%2Fgcc-arm-none-eabi-10.3-2021.10-win32.exe -O resources/modules/win32/gcc-arm-none-eabi.exe
+          wget https://seafile.polyus-nt.ru/f/6377a640bc344e31bd6d/?dl=1 -O build/irpcb.zip
+          unzip build/irpcb.zip -d build/irpcb
+          rm -f build/irpcb.zip
       - name: Run the build process with Docker
         uses: addnab/docker-run-action@v3
         with:

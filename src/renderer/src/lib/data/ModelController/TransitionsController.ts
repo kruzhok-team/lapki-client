@@ -9,7 +9,7 @@ import {
   State,
   Transition,
 } from '@renderer/lib/drawable';
-import { Layer } from '@renderer/lib/types';
+import { ChangeSelectionParams, Layer } from '@renderer/lib/types';
 import { Point } from '@renderer/lib/types/graphics';
 import {
   ChangePosition,
@@ -221,12 +221,40 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     this.ghost?.setSource(node);
   };
 
-  handleConditionClick = (transition: Transition) => {
-    this.controller.selectTransition({ smId: transition.smId, id: transition.id });
-    this.controller.emit('selectTransition', { smId: transition.smId, id: transition.id });
+  changeTransitionSelection = (args: ChangeSelectionParams) => {
+    const { id, value } = args;
+    const transition = this.items.get(id);
+
+    if (!transition) return;
+
+    transition.setIsSelected(value);
+
+    this.view.isDirty = true;
   };
 
-  handleConditionDoubleClick = (transition: Transition) => {
+  handleConditionClick = (transition: Transition, e: { event: MyMouseEvent }) => {
+    if (e.event.nativeEvent.ctrlKey) {
+      const prevSelection = transition.isSelected;
+      transition.setIsSelected(!transition.isSelected);
+      this.controller.emit(prevSelection ? 'unselect' : 'addSelection', {
+        type: 'transition',
+        data: {
+          id: transition.id,
+          smId: transition.smId,
+        },
+      });
+    } else {
+      this.controller.selectTransition({ smId: transition.smId, id: transition.id });
+      this.controller.emit('selectTransition', {
+        smId: transition.smId,
+        id: transition.id,
+      });
+    }
+    this.view.isDirty = true;
+  };
+
+  handleConditionDoubleClick = (transition: Transition, e: { event: MyMouseEvent }) => {
+    if (e.event.nativeEvent.ctrlKey) return;
     this.controller.emit('openChangeTransitionModalFromController', {
       smId: transition.smId,
       id: transition.id,
@@ -374,7 +402,8 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
   };
 
   watchTransition(transition: Transition) {
-    transition.on('click', this.handleConditionClick.bind(this, transition));
+    // Клик вызывается при mouseup и mousedown
+    transition.on('mousedown', this.handleConditionClick.bind(this, transition));
     transition.on('dblclick', this.handleConditionDoubleClick.bind(this, transition));
     transition.on('mouseup', this.handleMouseUpOnTransition.bind(this, transition));
     transition.on('contextmenu', this.handleContextMenu.bind(this, transition.id));

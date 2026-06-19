@@ -18,6 +18,7 @@ import {
   StateVariant,
   ChangeStateNameParams,
   CreateInitialStateControllerParams,
+  SelectEvent,
 } from '@renderer/lib/types/ControllerTypes';
 import { Point } from '@renderer/lib/types/graphics';
 import {
@@ -412,11 +413,41 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.view.isDirty = true;
   };
 
+  changeEventSelection = (args: SelectEvent) => {
+    const { value, stateId, eventSelection } = args;
+    const state = this.data.states.get(stateId);
+    if (!state) return;
+    const selectedIndex = state.eventBox.isSelected(
+      eventSelection.eventIdx,
+      eventSelection.actionIdx
+    );
+    if (value) {
+      if (selectedIndex === -1) {
+        state.eventBox.selection.push(eventSelection);
+      }
+    } else {
+      if (selectedIndex !== -1) {
+        state.eventBox.selection.splice(selectedIndex, 1);
+      }
+    }
+    this.view.isDirty = true;
+  };
+
   // Редактирование события в состояниях
   changeEvent = (args: ChangeEventParams) => {
     const state = this.data.states.get(args.stateId);
     if (!state) return;
 
+    state.updateEventBox();
+
+    this.view.isDirty = true;
+  };
+
+  deleteEventAction = (args: DeleteEventParams) => {
+    const state = this.data.states.get(args.stateId);
+    if (!state) return;
+
+    state.eventBox.unselectAction(args.event);
     state.updateEventBox();
 
     this.view.isDirty = true;
@@ -428,6 +459,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     const state = this.data.states.get(args.stateId);
     if (!state) return;
 
+    state.eventBox.unselectEvent(args.event);
     state.updateEventBox();
 
     this.view.isDirty = true;
@@ -452,7 +484,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
   handleStateClick = (state: State, e: { event: MyMouseEvent }) => {
     const drawBounds = state.drawBounds;
-    const titleHeight = state.titleHeight;
+    const titleHeight = state.titleHeight / this.controller.scale;
     const y = e.event.y - drawBounds.y;
     const x = e.event.x - drawBounds.x;
 
@@ -462,26 +494,45 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   };
 
   handleStateMouseDown = (state: State, e: { event: MyMouseEvent }) => {
-    this.controller.selectState({ smId: state.smId, id: state.id });
-    this.controller.emit('selectState', { smId: state.smId, id: state.id });
-    const targetPos = state.computedPosition;
-    const titleHeight = state.titleHeight / this.controller.scale;
-    const y = e.event.y - targetPos.y;
-    // FIXME: если будет учёт нажатий на дочерний контейнер, нужно отсеять их здесь
-    if (y > titleHeight) {
-      // FIXME: пересчитывает координаты внутри, ещё раз
-      const idx = state.eventBox.handleClick({ x: e.event.x, y: e.event.y });
-      if (idx) {
-        this.controller.emit('selectEvent', {
+    const add = e.event.nativeEvent.ctrlKey;
+    if (e.event.nativeEvent.ctrlKey) {
+      const pictoSelection = state.eventBox.handleClick({ x: e.event.x, y: e.event.y }, add);
+
+      if (pictoSelection) {
+        const [value, idx] = pictoSelection;
+        this.controller.emit(value ? 'addSelection' : 'unselect', {
+          type: 'event',
+          data: { smId: state.smId, stateId: state.id, selection: idx },
+        });
+      } else {
+        const prevSelection = state.isSelected;
+        state.setIsSelected(!prevSelection);
+        this.controller.emit(prevSelection ? 'unselect' : 'addSelection', {
+          type: 'state',
+          data: { smId: state.smId, id: state.id },
+        });
+      }
+    } else {
+      this.controller.removeSelection();
+      const pictoSelection = state.eventBox.handleClick({ x: e.event.x, y: e.event.y }, add);
+      if (pictoSelection) {
+        const [value, idx] = pictoSelection;
+        this.controller.emit(value ? 'selectEvent' : 'unselect', {
           smId: state.smId,
           stateId: state.id,
           eventSelection: idx,
+          value: true,
         });
+      } else {
+        state.setIsSelected(true);
+        this.controller.emit('selectState', { smId: state.smId, id: state.id });
       }
     }
+    this.view.isDirty = true;
   };
 
   handleStateDoubleClick = (state: State, e: { event: MyMouseEvent }) => {
+    if (e.event.nativeEvent.ctrlKey) return;
     const targetPos = state.computedPosition;
     const titleHeight = state.computedTitleSizes.height;
     const y = e.event.y - targetPos.y;
@@ -519,7 +570,8 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   handleContextMenu = (stateId: string, e: { event: MyMouseEvent }) => {
     const state = this.data.states.get(stateId);
     if (!state) return;
-    this.controller.selectState({ smId: '', id: state.id });
+
+    this.controller.selectState({ smId: state.smId, id: state.id });
 
     const eventIdx = state.eventBox.handleClick({
       x: e.event.x,
@@ -529,13 +581,14 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     const offset = this.app.mouse.getOffset();
 
     if (eventIdx) {
+      const [_, idx] = eventIdx;
       this.emit('eventContextMenu', {
         state,
         position: {
           x: e.event.x + offset.x,
           y: e.event.y + offset.y,
         },
-        event: eventIdx,
+        event: idx,
       });
     } else {
       this.emit('stateContextMenu', {
@@ -641,9 +694,22 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     });
   };
 
-  handleChoiceStateMouseDown = (state: ChoiceState) => {
-    this.controller.selectChoice({ smId: state.smId, id: state.id });
-    this.controller.emit('selectChoice', { smId: state.smId, id: state.id });
+  handleChoiceStateMouseDown = (state: ChoiceState, e: { event: MyMouseEvent }) => {
+    if (e.event.nativeEvent.ctrlKey) {
+      const prevSelection = state.isSelected;
+      state.setIsSelected(!prevSelection);
+      this.controller.emit(prevSelection ? 'unselect' : 'addSelection', {
+        type: 'choiceState',
+        data: {
+          smId: state.smId,
+          id: state.id,
+        },
+      });
+    } else {
+      this.controller.selectChoice({ smId: state.smId, id: state.id });
+      this.controller.emit('selectChoice', { smId: state.smId, id: state.id });
+    }
+    this.view.isDirty = true;
   };
 
   handleChoiceStateDragEnd = (

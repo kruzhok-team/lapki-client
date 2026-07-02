@@ -2682,37 +2682,31 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       }
     }
 
-    const general_parentId = computedParentId ?? parentId;
+    const generalParentId = computedParentId ?? parentId;
 
-    if (general_parentId) {
+    if (generalParentId) {
       const sm = this.model.data.elements.stateMachines[smId];
+      let currentId: string | undefined = generalParentId;
+
+      const hasDeepHistory = Object.values(sm.deepHistory).some((dh) => dh.parentId === currentId);
 
       // Проверка родителей
-      let currentId: string | undefined = general_parentId;
       while (currentId) {
-        const hasDeepHistory = Object.values(sm.deepHistory || {}).some(
-          (dh) => dh.parentId === currentId
-        );
         if (hasDeepHistory) return;
-        currentId = sm.states[currentId]?.parentId;
+        currentId = sm.states[currentId].parentId;
       }
 
       // Проверка дочерних состояний
       const checkChildren = (stateId: string): boolean => {
-        // Используем Object.entries, чтобы получить id (ключ словаря) и сам объект
         const children = Object.entries(sm.states).filter(([, s]) => s.parentId === stateId);
-
         for (const [childId] of children) {
-          const hasDeepHistory = Object.values(sm.deepHistory || {}).some(
-            (dh) => dh.parentId === childId // Используем childId вместо child.id
-          );
           if (hasDeepHistory) return true;
-          if (checkChildren(childId)) return true; // Используем childId вместо child.id
+          if (checkChildren(childId)) return true;
         }
         return false;
       };
 
-      if (checkChildren(general_parentId)) return;
+      if (checkChildren(generalParentId)) return;
     } else {
       const siblingIds = this.getSiblings(smId, id, undefined, 'deepHistory')[1];
       if (siblingIds.length > 0) return;

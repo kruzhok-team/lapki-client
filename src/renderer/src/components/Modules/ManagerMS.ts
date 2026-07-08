@@ -1,3 +1,4 @@
+import blgMbHardwareRefs from './blg-mb-hardware-refs.json';
 import { Binary } from '@renderer/types/CompilerTypes';
 import {
   AddressData,
@@ -308,8 +309,10 @@ export class ManagerMS {
         return 'ArduinoMicro';
       case 'arduino uno':
         return 'ArduinoUno';
-      case 'кибермишка':
-        return (device as BlgMbDevice).version;
+      case 'кибермишка': {
+        const hardwareRef = (device as BlgMbDevice).version;
+        return (blgMbHardwareRefs as Record<string, string>)[hardwareRef];
+      }
     }
     return undefined;
   };

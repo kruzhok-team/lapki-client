@@ -45,8 +45,25 @@ export class Compiler extends ClientWS {
 
   static binary: { [id: string]: Binary[] } = {}; // id машины состояний - бинарники
   static source: { [id: string]: SourceFile[] } = {}; // id машины состояний - файлы
-  // платформа на которой произвелась последняя компиляция;
-  static platform: string | undefined = undefined;
+
+  // бинарники, скомпилированные для конкретной аппаратной ревизии платы (hardware_ref).
+  // '' используется как ключ для компиляций, не привязанных к конкретной ревизии.
+  // нужно, чтобы при одновременном подключении нескольких плат КиберМишки разных ревизий
+  // прошивка каждой платы бралась из бинарника, скомпилированного именно под её ревизию.
+  static binariesByRevision: { [id: string]: { [hardwareRef: string]: Binary[] } } = {};
+  // hardware_ref, с которым отправлен текущий запрос на компиляцию
+  private static currentHardwareRef: string = '';
+  // резолвер/реджектер, вызываемые по завершению текущей компиляции (используется при
+  // последовательной компиляции одной и той же схемы под несколько ревизий платы).
+  // reject вызывается при таймауте, чтобы не оставлять compileForHardwareRef подвешенным
+  // навсегда и не допустить перекрытия с последующим вызовом компиляции.
+  private static onCompileDone:
+    | { resolve: () => void; reject: (reason: Error) => void }
+    | undefined;
+
+  static resetRevisionBinaries() {
+    this.binariesByRevision = {};
+  }
 
   static decodeBinaries(binaries: Array<any>) {
     const decodedBinaries: Binary[] = [];
@@ -90,7 +107,8 @@ export class Compiler extends ClientWS {
     data: Elements | string | StateMachine,
     mode: 'BearlogaImport' | 'BearlogaExport' | 'CGML',
     subPlatform?: string | null,
-    bearlogaSmId?: string
+    bearlogaSmId?: string,
+    boardRefs?: Record<string, string>
   ) {
     this.setCompilerData(undefined);
     await this.connect(this.host, this.port).then((ws: Websocket | undefined) => {
@@ -113,7 +131,9 @@ export class Compiler extends ClientWS {
           case 'CGML':
             ws.send('cgml');
             this.mode = 'compile';
+            this.currentHardwareRef = boardRefs?.hardware_ref ?? '';
             ws.send(exportCGML(data as Elements));
+            ws.send(JSON.stringify(boardRefs ?? {}));
             break;
         }
 
@@ -125,10 +145,36 @@ export class Compiler extends ClientWS {
           if (this.connection && this.connection.OPEN) {
             this.onStatusChange(CompilerStatus.CONNECTED);
           }
+          // если ждали результат конкретной компиляции (compileForHardwareRef) - сообщаем
+          // о неудаче явным reject, иначе промис завис бы навсегда, а следующий вызов
+          // компиляции перезаписал бы onCompileDone поверх ещё не выполненного
+          if (this.onCompileDone) {
+            const reject = this.onCompileDone.reject;
+            this.onCompileDone = undefined;
+            reject(new Error(CompilerNoDataStatus.TIMEOUT));
+          }
         });
       } else {
         console.error('Внутренняя ошибка! Отсутствует подключение');
       }
+    });
+  }
+
+  /**
+   * Компилирует схему под конкретную аппаратную ревизию платы и дожидается результата.
+   * Используется для последовательной компиляции одной схемы под несколько ревизий КиберМишки,
+   * подключённых одновременно, т.к. один запрос на компиляцию несёт только один hardware_ref.
+   */
+  static async compileForHardwareRef(data: Elements, hardwareRef: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.onCompileDone = { resolve, reject };
+      this.compile(
+        data,
+        'CGML',
+        undefined,
+        undefined,
+        hardwareRef ? { hardware_ref: hardwareRef } : undefined
+      );
     });
   }
 
@@ -155,8 +201,17 @@ export class Compiler extends ClientWS {
           this.binary[stateMachineId] = decodedBinaries;
           this.source[stateMachineId] = sm.source;
           compilerResult.state_machines[stateMachineId].binary = decodedBinaries;
+          if (!this.binariesByRevision[stateMachineId]) {
+            this.binariesByRevision[stateMachineId] = {};
+          }
+          this.binariesByRevision[stateMachineId][this.currentHardwareRef] = decodedBinaries;
         }
         this.setCompilerData(compilerResult);
+        if (this.onCompileDone) {
+          const { resolve } = this.onCompileDone;
+          this.onCompileDone = undefined;
+          resolve();
+        }
         break;
       case 'import':
         compilerElements = JSON.parse(msg.data as string);

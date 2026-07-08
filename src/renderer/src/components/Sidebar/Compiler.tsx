@@ -6,8 +6,10 @@ import { ReactComponent as ConnectionStatus } from '@renderer/assets/icons/circl
 import { ReactComponent as OkIcon } from '@renderer/assets/icons/mark-check.svg';
 import { ReactComponent as NotOkIcon } from '@renderer/assets/icons/mark-cross.svg';
 import { Compiler } from '@renderer/components/Modules/Compiler';
+import { BlgMbDevice } from '@renderer/components/Modules/Device';
 import { useErrorModal, useFileOperations, useModal, useSettings } from '@renderer/hooks';
 import { useModelContext } from '@renderer/store/ModelContext';
+import { useFlasher } from '@renderer/store/useFlasher';
 import { useTabs } from '@renderer/store/useTabs';
 import { CompileCommandResult, CompilerResult } from '@renderer/types/CompilerTypes';
 import { Elements, StateMachine } from '@renderer/types/diagram';
@@ -33,6 +35,7 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   setCompilerStatus,
 }) => {
   const modelController = useModelContext();
+  const { devices } = useFlasher();
   const { openLoadError, openSaveError, openImportError } = useErrorModal();
   const { initImportData } = useFileOperations({
     openLoadError,
@@ -91,8 +94,35 @@ export const CompilerTab: React.FC<CompilerProps> = ({
         selectedElements.stateMachines[smId] = stateMachines[smId];
       }
     }
+
+    // Собираем все различные аппаратные ревизии среди подключённых плат КиберМишки:
+    // если разом подключены платы разных ревизий (например a12 и b2), компилировать
+    // нужно под каждую из них по отдельности, иначе прошивка одной из плат окажется
+    // собранной с #define ревизии другой платы.
+    const hardwareRefs = new Set<string>();
+    for (const device of devices.values()) {
+      if (device.isBlgMbDevice()) {
+        hardwareRefs.add((device as BlgMbDevice).version);
+      }
+    }
+
     Compiler.filename = name;
-    modelController.files.compile(selectedElements);
+    Compiler.resetRevisionBinaries();
+    if (hardwareRefs.size === 0) {
+      modelController.files.compile(selectedElements, undefined);
+      return;
+    }
+    for (const hardwareRef of hardwareRefs) {
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        await Compiler.compileForHardwareRef(selectedElements, hardwareRef);
+      } catch {
+        // таймаут (или другая причина обрыва) уже показан пользователю в виде toast
+        // в Compiler.compile; прерываем компиляцию под оставшиеся ревизии, чтобы не
+        // прошить платы бинарниками, собранными для другой ревизии
+        break;
+      }
+    }
   };
 
   const handleSaveSourceIntoFolder = async () => {

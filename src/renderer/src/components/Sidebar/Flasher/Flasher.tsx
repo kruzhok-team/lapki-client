@@ -18,7 +18,8 @@ import { ReactComponent as ReloadIcon } from '@renderer/assets/icons/reload.svg'
 import { ReactComponent as ViewLogIcon } from '@renderer/assets/icons/view-log.svg';
 import { AvrdudeGuideModal } from '@renderer/components/AvrdudeGuide';
 import { ErrorModal, ErrorModalData } from '@renderer/components/ErrorModal';
-import { Device, MSDevice } from '@renderer/components/Modules/Device';
+import { Compiler } from '@renderer/components/Modules/Compiler';
+import { BlgMbDevice, Device, MSDevice } from '@renderer/components/Modules/Device';
 import { Flasher } from '@renderer/components/Modules/Flasher';
 import { ClientStatus } from '@renderer/components/Modules/Websocket/ClientStatus';
 import { useAddressBook } from '@renderer/hooks/useAddressBook';
@@ -588,12 +589,23 @@ export const FlasherTab: React.FC = () => {
           ManagerMS.addLog(noBinary);
           continue;
         }
+        // Берём бинарник, скомпилированный именно под аппаратную ревизию данного устройства
+        // (для не-КиберМишки плат ревизии нет, используется общий ключ ''), чтобы не перепутать
+        // прошивки при подключении нескольких плат разных ревизий одновременно.
+        const hardwareRef = dev && dev.isBlgMbDevice() ? (dev as BlgMbDevice).version : '';
+        const revisionBinaries = Compiler.binariesByRevision[source]?.[hardwareRef];
+        if (!revisionBinaries || revisionBinaries.length === 0) {
+          ManagerMS.addLog(
+            `${devName}: нет прошивки, собранной для этой платы. Пересоберите схему на вкладке Компилятор, когда все нужные платы подключены.`
+          );
+          continue;
+        }
         ManagerMS.binAdd({
           addressInfo: address,
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           device: dev!, // проверка осуществляется ранее в этой функции
           verification: doVerify ?? false,
-          binaries: smData.binary,
+          binaries: revisionBinaries,
           isFile: false,
         });
       }

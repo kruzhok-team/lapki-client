@@ -14,6 +14,7 @@ export enum Layer {
   ChoiceStates,
   InitialStates,
   ShallowHistory,
+  DeepHistory,
   FinalStates,
   Transitions,
   GhostTransition,

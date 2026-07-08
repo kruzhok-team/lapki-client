@@ -4,23 +4,17 @@ import { Shape } from '@renderer/lib/drawable/Shape';
 import { drawCircle } from '@renderer/lib/utils';
 import { drawText } from '@renderer/lib/utils/text';
 import { getColor } from '@renderer/theme';
-import { ShallowHistory as DataShallowHistory } from '@renderer/types/diagram';
+import { DeepHistory as DataDeepHistory } from '@renderer/types/diagram';
 
 /**
- * Представление псевдосостояния локальной истории
+ * Представление псевдосостояния глубокой истории
  */
-export class ShallowHistory extends Shape {
+export class DeepHistory extends Shape {
   isSelected = false;
   edgeHandlers!: EdgeHandlers;
-  data: DataShallowHistory;
+  data: DataDeepHistory;
   smId: string;
-  constructor(
-    app: CanvasEditor,
-    id: string,
-    smId: string,
-    data: DataShallowHistory,
-    parent?: Shape
-  ) {
+  constructor(app: CanvasEditor, id: string, smId: string, data: DataDeepHistory, parent?: Shape) {
     super(app, id, parent);
     this.data = data;
     this.smId = smId;
@@ -28,7 +22,7 @@ export class ShallowHistory extends Shape {
   }
 
   get tooltipText() {
-    return 'Локальная история';
+    return 'Глубокая история';
   }
 
   get position() {
@@ -42,7 +36,7 @@ export class ShallowHistory extends Shape {
     return { width: 50, height: 50 };
   }
   set dimensions(_value) {
-    throw new Error('ShallowHistory does not have dimensions');
+    throw new Error('DeepHistory does not have dimensions');
   }
 
   draw(ctx: CanvasRenderingContext2D, _canvas: HTMLCanvasElement) {
@@ -64,18 +58,31 @@ export class ShallowHistory extends Shape {
       position,
       radius,
       lineWidth,
-      strokeStyle: getColor('primary'),
+      strokeStyle: getColor('error'),
     });
 
-    const fontSize = 40 / this.app.controller.scale;
+    const textFont = 40 / this.app.controller.scale;
 
     drawText(ctx, 'H', {
-      x: position.x,
-      y: position.y - fontSize / 2 - lineWidth * 3,
+      x: position.x - textFont * 0.05,
+      y: position.y - textFont / 2 - lineWidth * 3,
       textAlign: 'center',
-      color: getColor('primary'),
+      color: getColor('error'),
       font: {
-        fontSize,
+        fontSize: textFont,
+        fontFamily: 'Fira Sans',
+      },
+    });
+
+    const symbolFont = 24 / this.app.controller.scale;
+
+    drawText(ctx, '*', {
+      x: position.x + symbolFont * 0.6,
+      y: position.y - symbolFont * 0.95,
+      textAlign: 'center',
+      color: getColor('error'),
+      font: {
+        fontSize: symbolFont,
         fontFamily: 'Fira Sans',
       },
     });

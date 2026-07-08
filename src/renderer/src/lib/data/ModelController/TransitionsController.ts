@@ -9,6 +9,7 @@ import {
   State,
   Transition,
   ShallowHistory,
+  DeepHistory,
 } from '@renderer/lib/drawable';
 import { Layer } from '@renderer/lib/types';
 import { Point } from '@renderer/lib/types/graphics';
@@ -218,7 +219,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     this.controller.states.on('mouseUpOnFinalState', this.handleMouseUpOnFinalState);
   }
 
-  handleStartNewTransition = (node: State | ChoiceState | Note | ShallowHistory) => {
+  handleStartNewTransition = (node: State | ChoiceState | Note | ShallowHistory | DeepHistory) => {
     this.ghost?.setSource(node);
   };
 
@@ -256,7 +257,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     this.view.isDirty = true;
   };
 
-  handleMouseUpOnState = (state: State | ChoiceState | ShallowHistory) => {
+  handleMouseUpOnState = (state: State | ChoiceState | ShallowHistory | DeepHistory) => {
     if (!this.ghost?.source) return;
     this.controller.emit('createTransitionFromController', {
       smId: state.smId,

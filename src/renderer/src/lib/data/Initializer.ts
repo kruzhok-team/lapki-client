@@ -6,6 +6,7 @@ import {
   ChoiceState,
   GhostTransition,
   ShallowHistory,
+  DeepHistory,
 } from '@renderer/lib/drawable';
 import { Layer } from '@renderer/lib/types';
 import {
@@ -18,6 +19,7 @@ import {
   Component,
   StateMachine,
   ShallowHistory as ShallowHistoryData,
+  DeepHistory as DeepHistoryData,
 } from '@renderer/types/diagram';
 
 import { CanvasController } from './ModelController/CanvasController';
@@ -109,6 +111,21 @@ export class Initializer {
       if (!data.parentId) continue;
 
       this.linkShallowHistoryView(data.parentId, id);
+    }
+  }
+
+  initDeepHistory(smId: string, deeps: { [id: string]: DeepHistoryData }) {
+    for (const id in deeps) {
+      const choice = deeps[id];
+      this.createDeepHistoryView(smId, id, choice);
+    }
+
+    for (const id in deeps) {
+      const data = deeps[id];
+
+      if (!data.parentId) continue;
+
+      this.linkDeepHistoryView(data.parentId, id);
     }
   }
 
@@ -264,6 +281,24 @@ export class Initializer {
     this.app.view.children.remove(child, Layer.ShallowHistory);
     child.parent = parent;
     parent.children.add(child, Layer.ShallowHistory);
+  }
+
+  private createDeepHistoryView(smId: string, id: string, deepHistoryData: DeepHistoryData) {
+    const state = new DeepHistory(this.app, id, smId, deepHistoryData);
+    this.states.data.deepHistory.set(state.id, state);
+    this.states.watch(state);
+    this.app.view.children.add(state, Layer.DeepHistory);
+  }
+
+  private linkDeepHistoryView(parentId: string, childId: string) {
+    const parent = this.states.data.states.get(parentId);
+    const child = this.states.data.deepHistory.get(childId);
+
+    if (!parent || !child) return;
+
+    this.app.view.children.remove(child, Layer.DeepHistory);
+    child.parent = parent;
+    parent.children.add(child, Layer.DeepHistory);
   }
 
   private createChoiceStateView(smId: string, id: string, choiceStateData: DataChoiceState) {

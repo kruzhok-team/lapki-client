@@ -9,6 +9,7 @@ import {
   FinalState,
   ChoiceState,
   ShallowHistory,
+  DeepHistory,
 } from '@renderer/lib/drawable';
 import { MyMouseEvent, Layer, DeleteInitialStateParams } from '@renderer/lib/types';
 import {
@@ -43,16 +44,17 @@ type DragInfo = {
 } | null;
 
 interface StatesControllerEvents {
-  mouseUpOnState: State | ChoiceState | ShallowHistory;
+  mouseUpOnState: State | ChoiceState | ShallowHistory | DeepHistory;
   mouseUpOnInitialState: InitialState;
   mouseUpOnFinalState: FinalState;
-  startNewTransitionState: State | ChoiceState | ShallowHistory;
+  startNewTransitionState: State | ChoiceState | ShallowHistory | DeepHistory;
   changeState: State;
   changeStateName: State;
   stateContextMenu: { state: State; position: Point };
   finalStateContextMenu: { state: FinalState; position: Point };
   choiceStateContextMenu: { state: ChoiceState; position: Point };
   shallowHistoryContextMenu: { state: ShallowHistory; position: Point };
+  deepHistoryContextMenu: { state: DeepHistory; position: Point };
   changeEvent: {
     state: State;
     eventSelection: EventSelection;
@@ -434,11 +436,11 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.view.isDirty = true;
   };
 
-  handleStartNewTransition = (state: State | ChoiceState | ShallowHistory) => {
+  handleStartNewTransition = (state: State | ChoiceState | ShallowHistory | DeepHistory) => {
     this.emit('startNewTransitionState', state);
   };
 
-  handleMouseUpOnState = (state: State | ChoiceState | ShallowHistory) => {
+  handleMouseUpOnState = (state: State | ChoiceState | ShallowHistory | DeepHistory) => {
     this.emit('mouseUpOnState', state);
   };
 
@@ -772,6 +774,97 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     });
   };
 
+  changeDeepHistoryPosition = (args: ChangePosition) => {
+    const { id, endPosition } = args;
+    const state = this.data.deepHistory.get(id);
+    if (!state) return;
+
+    state.position = endPosition;
+
+    this.view.isDirty = true;
+  };
+
+  handleDeepHistoryDragEnd = (
+    state: DeepHistory,
+    e: { dragStartPosition: Point; dragEndPosition: Point }
+  ) => {
+    this.changeDeepHistoryPosition({
+      smId: state.smId,
+      id: state.id,
+      startPosition: e.dragStartPosition,
+      endPosition: e.dragEndPosition,
+    });
+    this.controller.emit('changeDeepHistoryPositionFromController', {
+      smId: state.smId,
+      id: state.id,
+      startPosition: e.dragStartPosition,
+      endPosition: e.dragEndPosition,
+    });
+  };
+
+  handleDeepHistoryMouseDown = (state: DeepHistory) => {
+    this.controller.selectDeepHistory({ smId: state.smId, id: state.id });
+    this.controller.emit('selectDeepHistory', { smId: state.smId, id: state.id });
+  };
+
+  linkDeepHistory = (args: LinkStateParams) => {
+    const { childId, parentId } = args;
+    const state = this.data.deepHistory.get(childId);
+    const parent = this.data.states.get(parentId);
+    if (!state || !parent) return;
+
+    state.parent = parent;
+    state.data.parentId = args.parentId;
+    this.view.children.remove(state, Layer.DeepHistory);
+    parent.children.add(state, Layer.DeepHistory);
+
+    this.view.isDirty = true;
+  };
+
+  deleteDeepHistory = (args: DeleteDrawableParams) => {
+    const { id } = args;
+    const state = this.data.deepHistory.get(id);
+    if (!state) return;
+
+    (state.parent || this.view).children.remove(state, Layer.DeepHistory); // Отсоединяемся вью от родителя
+    this.unwatch(state); // Убираем обрабочик событий с вью
+    this.data.deepHistory.delete(id); // Удаляем само вью
+
+    this.view.isDirty = true;
+  };
+
+  initDeepHistory = (params: CreateVertexParams) => {
+    const { id, smId } = params;
+    if (!id) return;
+    const state = new DeepHistory(this.app, id, smId, { ...params });
+
+    this.data.deepHistory.set(id, state);
+
+    this.view.children.add(state, Layer.DeepHistory);
+
+    this.watch(state);
+
+    this.view.isDirty = true;
+    return state;
+  };
+
+  createDeepHistory = (params: CreateVertexParams) => {
+    const state = this.initDeepHistory(params);
+    if (!state) return;
+
+    this.bindEdgeHandlers(state);
+  };
+
+  handleDeepHistoryContextMenu = (stateId: string, e: { event: MyMouseEvent }) => {
+    const item = this.data.deepHistory.get(stateId);
+    if (!item) return;
+    this.controller.selectDeepHistory({ smId: item.smId, id: stateId });
+    this.emit('deepHistoryContextMenu', {
+      state: item,
+      position: { x: e.event.nativeEvent.clientX, y: e.event.nativeEvent.clientY },
+    });
+  };
+
   watch(state: StateVariant) {
     if (state instanceof State) {
       return this.watchState(state);
@@ -787,6 +880,10 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
     if (state instanceof ShallowHistory) {
       return this.watchShallowHistory(state);
+    }
+
+    if (state instanceof DeepHistory) {
+      return this.watchDeepHistory(state);
     }
 
     this.watchInitialState(state);
@@ -818,6 +915,9 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     for (const state of this.data.shallowHistory.values()) {
       this.bindEdgeHandlers(state);
     }
+    for (const state of this.data.deepHistory.values()) {
+      this.bindEdgeHandlers(state);
+    }
   }
 
   unwatch(state: StateVariant) {
@@ -837,6 +937,10 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
       return this.unwatchShallowHistory(state);
     }
 
+    if (state instanceof DeepHistory) {
+      return this.unwatchDeepHistory(state);
+    }
+
     this.unwatchInitialState(state);
   }
 
@@ -845,7 +949,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   на момент инициализации данных, из-за чего происходил краш IDE.
   */
 
-  bindEdgeHandlers(state: State | ChoiceState | ShallowHistory) {
+  bindEdgeHandlers(state: State | ChoiceState | ShallowHistory | DeepHistory) {
     state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition.bind(this, state);
     state.edgeHandlers.bindEvents();
   }
@@ -861,6 +965,20 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     state.on('mouseup', this.handleMouseUpOnState.bind(this, state));
     // state.on('dblclick', this.handleStateDoubleClick.bind(this, state));
     state.on('contextmenu', this.handleShallowHistoryContextMenu.bind(this, state.id));
+    // state.on('longpress', this.handleStateLongPress.bind(this, state));
+  }
+
+  private unwatchDeepHistory(state: DeepHistory) {
+    state.handlers.clear();
+    state.edgeHandlers.unbindEvents();
+  }
+
+  private watchDeepHistory(state: DeepHistory) {
+    state.on('dragend', this.handleDeepHistoryDragEnd.bind(this, state));
+    state.on('mousedown', this.handleDeepHistoryMouseDown.bind(this, state));
+    state.on('mouseup', this.handleMouseUpOnState.bind(this, state));
+    // state.on('dblclick', this.handleStateDoubleClick.bind(this, state));
+    state.on('contextmenu', this.handleDeepHistoryContextMenu.bind(this, state.id));
     // state.on('longpress', this.handleStateLongPress.bind(this, state));
   }
 

@@ -46,6 +46,7 @@ import {
   InitialState,
   Note,
   ShallowHistory,
+  DeepHistory,
   State,
   StateMachine,
   Transition,
@@ -71,7 +72,8 @@ export type CanvasSubscribeAttribute =
   | 'choice'
   | 'initialState'
   | 'stateMachine'
-  | 'shallowHistory';
+  | 'shallowHistory'
+  | 'deepHistory';
 
 type DiagramData =
   | { [id: string]: State }
@@ -170,6 +172,15 @@ export type CanvasControllerEvents = {
   unlinkShallowHistoryParams: UnlinkStateParams;
   changeShallowHistoryPositionFromController: ChangePosition;
   selectShallowHistory: SelectDrawable;
+
+  createDeepHistory: CreateVertexParams;
+  deleteDeepHistory: DeleteDrawableParams;
+  changeDeepHistoryPosition: ChangePosition;
+  changeDeepHistorySelection: ChangeSelectionParams;
+  linkDeepHistory: LinkStateParams;
+  unlinkDeepHistoryParams: UnlinkStateParams;
+  changeDeepHistoryPositionFromController: ChangePosition;
+  selectDeepHistory: SelectDrawable;
 };
 
 export type CanvasData = {
@@ -411,6 +422,13 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
               'changeShallowHistoryPosition',
               this.binded['changeShallowHistoryPosition']
             );
+            break;
+          case 'deepHistory':
+            this.model.off('createDeepHistory', this.binded['createDeepHistory']);
+            this.model.off('deleteDeepHistory', this.binded['deleteDeepHistory']);
+            this.model.off('changeDeepHistorySelection', this.binded['changeDeepHistorySelection']);
+            this.model.off('linkDeepHistory', this.binded['linkDeepHistory']);
+            this.model.off('changeDeepHistoryPosition', this.binded['changeDeepHistoryPosition']);
             break;
           default:
             throw new Error('Unknown attribute');
@@ -728,11 +746,34 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
           'changeShallowHistoryPosition',
           this.bindHelper(
             'shallowHistory',
-            'changeChoicePosition',
+            'changeShallowHistoryPosition',
             this.states.changeShallowHistoryPosition
           )
         );
         this.initializer.initShallowHistory(smId, initData as { [id: string]: ShallowHistory });
+        break;
+      case 'deepHistory':
+        this.model.on(
+          'createDeepHistory',
+          this.bindHelper('deepHistory', 'createDeepHistory', this.states.createDeepHistory)
+        );
+        this.model.on(
+          'deleteDeepHistory',
+          this.bindHelper('deepHistory', 'deleteDeepHistory', this.states.deleteDeepHistory)
+        );
+        this.model.on(
+          'linkDeepHistory',
+          this.bindHelper('deepHistory', 'changeDeepHistorySelection', this.states.linkDeepHistory)
+        );
+        this.model.on(
+          'changeDeepHistoryPosition',
+          this.bindHelper(
+            'deepHistory',
+            'changeDeepHistoryPosition',
+            this.states.changeDeepHistoryPosition
+          )
+        );
+        this.initializer.initDeepHistory(smId, initData as { [id: string]: DeepHistory });
         break;
       default:
         throw new Error('Unknown attribute');
@@ -843,6 +884,15 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
 
   selectShallowHistory = (args: SelectDrawable) => {
     const state = this.states.data.shallowHistory.get(args.id);
+    if (!state) {
+      return;
+    }
+    this.removeSelection();
+    state.setIsSelected(true);
+  };
+
+  selectDeepHistory = (args: SelectDrawable) => {
+    const state = this.states.data.deepHistory.get(args.id);
     if (!state) {
       return;
     }
@@ -1023,6 +1073,10 @@ export class CanvasController extends EventEmitter<CanvasControllerEvents> {
     });
     // debugger;
     this.app.controller.states.data.shallowHistory.forEach((state) => {
+      state.setIsSelected(false);
+    });
+
+    this.app.controller.states.data.deepHistory.forEach((state) => {
       state.setIsSelected(false);
     });
 

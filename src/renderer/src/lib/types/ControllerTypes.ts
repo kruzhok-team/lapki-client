@@ -4,6 +4,7 @@ import {
   FinalState,
   ChoiceState,
   ShallowHistory,
+  DeepHistory,
   EventSelection,
 } from '@renderer/lib/drawable';
 import {
@@ -140,6 +141,7 @@ export const getStatesControllerDefaultData = () => {
     finalStates: new Map<string, FinalState>(),
     choiceStates: new Map<string, ChoiceState>(),
     shallowHistory: new Map<string, ShallowHistory>(),
+    deepHistory: new Map<string, DeepHistory>(),
   } as const;
 };
 

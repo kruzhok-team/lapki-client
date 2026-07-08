@@ -68,6 +68,10 @@ export interface ShallowHistory extends BaseState {
   selection?: boolean;
 }
 
+export interface DeepHistory extends BaseState {
+  selection?: boolean;
+}
+
 export type Variable = {
   component: string;
   method: string;
@@ -131,6 +135,7 @@ export type StateMachine = {
   transitions: { [id: string]: Transition };
   components: { [name: string]: Component };
   shallowHistory: { [name: string]: ShallowHistory };
+  deepHistory: { [name: string]: DeepHistory };
   notes: { [id: string]: Note };
 
   platform: string;
@@ -155,6 +160,7 @@ export function emptyStateMachine(): StateMachine {
     transitions: {},
     components: {},
     shallowHistory: {},
+    deepHistory: {},
     notes: {},
     platform: '',
     visual: true,

@@ -310,7 +310,7 @@ export function serializeCondition(
 }
 
 type Vertex = FinalState | ChoiceState | InitialState;
-type VertexType = 'final' | 'initial' | 'choice' | 'shallowHistory';
+type VertexType = 'final' | 'initial' | 'choice' | 'shallowHistory' | 'deepHistory';
 
 function serializeVertex(
   vertexes: { [id: string]: Vertex },
@@ -528,7 +528,7 @@ export function exportCGML(elements: Elements): string {
       finals: serializeVertex(sm.finalStates, 'final'),
       choices: serializeVertex(sm.choiceStates, 'choice'),
       shallowHistory: serializeVertex(sm.shallowHistory, 'shallowHistory'),
-      deepHistory: {},
+      deepHistory: serializeVertex(sm.deepHistory, 'deepHistory'),
       meta: exportMeta(sm.visual, sm.meta, platform),
       platform: sm.platform,
       name: sm.name,

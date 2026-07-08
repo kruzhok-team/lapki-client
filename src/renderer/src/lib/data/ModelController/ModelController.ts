@@ -55,6 +55,7 @@ import {
   Action,
   Component,
   ShallowHistory,
+  DeepHistory,
   EventData,
 } from '@renderer/types/diagram';
 
@@ -196,6 +197,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     controller.subscribe(smId, 'initialState', sm.initialStates);
     controller.subscribe(smId, 'component', sm.components);
     controller.subscribe(smId, 'shallowHistory', sm.shallowHistory);
+    controller.subscribe(smId, 'deepHistory', sm.deepHistory);
     controller.subscribe(smId, 'transition', sm.transitions);
     controller.watch();
 
@@ -229,6 +231,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     controller.on('changeStateMachinePosition', this.changeStateMachinePosition);
     controller.on('selectShallowHistory', this.selectShallowHistory);
     controller.on('changeShallowHistoryPositionFromController', this.changeShallowHistoryPosition);
+    controller.on('selectDeepHistory', this.selectDeepHistory);
+    controller.on('changeDeepHistoryPositionFromController', this.changeDeepHistoryPosition);
     controller.on('selectEvent', this.selectEvent);
   }
 
@@ -275,7 +279,16 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       if (!this.getBySourceId(args.smId, args.sourceId)) {
         this.createTransition({ ...args });
       } else {
-        // TODO (L140-beep): тостер с информацией о неудачном создани
+        // TODO (L140-beep): тостер с информацией о неудачном создании
+      }
+      return;
+    }
+    if (sm.deepHistory[args.sourceId]) {
+      // Для глубокой истории нельзя делать несколько исходящих переходов
+      if (!this.getBySourceId(args.smId, args.sourceId)) {
+        this.createTransition({ ...args });
+      } else {
+        // тостер с информацией о неудачном создании
       }
       return;
     }
@@ -501,14 +514,16 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       sm.notes[sourceId] ||
       sm.initialStates[sourceId] ||
       sm.choiceStates[sourceId] ||
-      sm.shallowHistory[sourceId];
+      sm.shallowHistory[sourceId] ||
+      sm.deepHistory[sourceId];
     const target =
       sm.states[targetId] ||
       sm.notes[targetId] ||
       sm.choiceStates[targetId] ||
       sm.transitions[targetId] ||
       sm.finalStates[targetId] ||
-      sm.shallowHistory[targetId];
+      sm.shallowHistory[targetId] ||
+      sm.deepHistory[targetId];
 
     if (!source || !target) return;
 
@@ -563,8 +578,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     stateId: string | undefined,
     parentId: string | undefined | null,
     stateType: StatesControllerDataStateType = 'states'
-  ): [(State | ChoiceState | InitialState | ShallowHistory)[], string[]] {
-    const siblings: (State | ChoiceState | InitialState | ShallowHistory)[] = [];
+  ): [(State | ChoiceState | InitialState | ShallowHistory | DeepHistory)[], string[]] {
+    const siblings: (State | ChoiceState | InitialState | ShallowHistory | DeepHistory)[] = [];
     const siblingIds: string[] = [];
     for (const value of Object.entries(this.model.data.elements.stateMachines[smId][stateType])) {
       const [id, state] = value;
@@ -661,7 +676,16 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       },
       this,
       // Порядок важен!
-      ['state', 'choice', 'final', 'initialState', 'shallowHistory', 'note', 'transition']
+      [
+        'state',
+        'choice',
+        'final',
+        'initialState',
+        'shallowHistory',
+        'deepHistory',
+        'note',
+        'transition',
+      ]
     );
     editor.setController(controller);
     this.controllers[canvasId] = controller;
@@ -978,7 +1002,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       sm.finalStates[id] ||
       sm.choiceStates[id] ||
       sm.initialStates[id] ||
-      sm.shallowHistory[id];
+      sm.shallowHistory[id] ||
+      sm.deepHistory[id];
     let { x, y } = state.position;
     if (state.parentId) {
       const { x: px, y: py } = this.compoundPosition(smId, state.parentId);
@@ -1510,6 +1535,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       | 'compilerSettings'
     > = {
       shallowHistory: {},
+      deepHistory: {},
       states: {},
       initialStates: {},
       finalStates: {},
@@ -1927,6 +1953,13 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         const shallowHistory = sm.shallowHistory[key];
         if (shallowHistory.selection) {
           this.deleteShallowHistory({ smId, id: key });
+        }
+      });
+
+      Object.keys(sm.deepHistory).forEach((key) => {
+        const deepHistory = sm.deepHistory[key];
+        if (deepHistory.selection) {
+          this.deleteDeepHistory({ smId, id: key });
         }
       });
     }
@@ -2450,6 +2483,13 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
           this.model.changeVertexSelection(smId, id, false, 'shallowHistory');
           this.emit('changeShallowHistorySelection', { smId, id, value: false });
         });
+
+      Object.keys(sm.deepHistory)
+        .filter((value) => !exclude.includes(value))
+        .forEach((id) => {
+          this.model.changeVertexSelection(smId, id, false, 'deepHistory');
+          this.emit('changeDeepHistorySelection', { smId, id, value: false });
+        });
     }
   }
 
@@ -2461,7 +2501,11 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         ? 'states'
         : sm.choiceStates[args.source]
         ? 'choiceStates'
-        : 'shallowHistory';
+        : sm.shallowHistory[args.source]
+        ? 'shallowHistory'
+        : sm.deepHistory[args.source]
+        ? 'deepHistory'
+        : 'finalStates';
 
       const targetType = sm.states[args.source]
         ? 'states'
@@ -2469,6 +2513,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
         ? 'choiceStates'
         : sm.shallowHistory[args.source]
         ? 'shallowHistory'
+        : sm.deepHistory[args.source]
+        ? 'deepHistory'
         : 'finalStates';
       const sourceSm = this.getSmIdByElementId(args.source, sourceType);
       const targetSm = this.getSmIdByElementId(args.target, targetType);
@@ -2596,5 +2642,142 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     }
     this.model.deleteVertex(smId, id, 'shallowHistory'); // Удаляем модель
     this.emit('deleteShallowHistory', args);
+  }
+
+  changeDeepHistoryPosition = (args: ChangePosition, canUndo = true) => {
+    this.model.changeVertexPosition(args.smId, args.id, args.endPosition, 'deepHistory');
+    const { startPosition } = args;
+    if (canUndo && startPosition !== undefined) {
+      this.history.do({
+        type: 'changeDeepHistoryPosition',
+        args: { ...args, startPosition: startPosition },
+      });
+    }
+    this.emit('changeDeepHistoryPosition', args);
+  };
+
+  private linkDeepHistory(smId: string, stateId: string, parentId: string) {
+    const state = this.model.data.elements.stateMachines[smId].deepHistory[stateId];
+    const parent = this.model.data.elements.stateMachines[smId].states[parentId];
+    if (!state || !parent) return;
+
+    this.model.linkVertex(smId, stateId, parentId, 'deepHistory');
+
+    this.emit('linkDeepHistory', { smId, childId: stateId, parentId });
+  }
+
+  // Лютый вайбкод
+  createDeepState = (args: CreateVertexParams, canUndo = true) => {
+    const { smId, parentId, linkByPoint = true } = args;
+    let { id } = args;
+    let computedParentId: string | undefined = undefined;
+    // Страшно, очень страшно
+
+    let parent = parentId ? this.model.data.elements.stateMachines[smId].states[parentId] : null;
+    if (!parent) {
+      const possibleParent = linkByPoint ? this.getPossibleParentState(smId, args.position) : null;
+      if (possibleParent && possibleParent[0]) {
+        computedParentId = possibleParent[0];
+        parent = possibleParent[1];
+      }
+    }
+
+    const generalParentId = computedParentId ?? parentId;
+
+    if (generalParentId) {
+      const sm = this.model.data.elements.stateMachines[smId];
+      let currentId: string | undefined = generalParentId;
+
+      const hasDeepHistory = Object.values(sm.deepHistory).some((dh) => dh.parentId === currentId);
+
+      // Проверка родителей
+      while (currentId) {
+        if (hasDeepHistory) return;
+        currentId = sm.states[currentId].parentId;
+      }
+
+      // Проверка дочерних состояний
+      const checkChildren = (stateId: string): boolean => {
+        const children = Object.entries(sm.states).filter(([, s]) => s.parentId === stateId);
+        for (const [childId] of children) {
+          if (hasDeepHistory) return true;
+          if (checkChildren(childId)) return true;
+        }
+        return false;
+      };
+
+      if (checkChildren(generalParentId)) return;
+    } else {
+      const siblingIds = this.getSiblings(smId, id, undefined, 'deepHistory')[1];
+      if (siblingIds.length > 0) return;
+    }
+
+    id = this.model.createVertex(args, 'deepHistory');
+    const state = this.model.data.elements.stateMachines[smId].deepHistory[id];
+    this.emit('createDeepHistory', { ...args, id });
+
+    if (parentId) {
+      this.linkDeepHistory(smId, id, parentId);
+    } else if (linkByPoint && parent && computedParentId) {
+      const parentCompoundPosition = this.compoundPosition(smId, computedParentId);
+      const newPosition = {
+        x: state.position.x - parentCompoundPosition.x,
+        y: state.position.y - parentCompoundPosition.y - parent.dimensions.height,
+      };
+
+      this.linkDeepHistory(smId, id, computedParentId);
+      this.changeDeepHistoryPosition({ smId, id, endPosition: newPosition }, false);
+    }
+
+    if (canUndo) {
+      this.history.do({
+        type: 'createDeepHistory',
+        args: { ...args, ...state, id: id },
+        numberOfConnectedActions: 0,
+      });
+    }
+
+    return state;
+  };
+
+  selectDeepHistory = (args: SelectDrawable) => {
+    const { id, smId } = args;
+
+    const state = this.model.data.elements.stateMachines[smId].deepHistory[id];
+    if (!state) return;
+
+    this.removeSelection([id]);
+
+    this.model.changeVertexSelection(smId, id, true, 'deepHistory');
+
+    // this.emit('selectChoice', { smId: '', id: id });
+  };
+
+  deleteDeepHistory(args: DeleteDrawableParams, canUndo = true) {
+    const { smId, id } = args;
+    const state = this.model.data.elements.stateMachines[smId].deepHistory[id];
+    if (!state) return;
+
+    let numberOfConnectedActions = 0;
+
+    // Удаляем зависимые переходы
+    const dependetTransitionsIds = [
+      ...this.getAllByTargetId(smId, id)[1],
+      ...this.getAllBySourceId(smId, id).map((value) => value[0]),
+    ];
+    dependetTransitionsIds.forEach((transitionId) => {
+      this.deleteTransition({ smId, id: transitionId }, canUndo);
+      numberOfConnectedActions += 1;
+    });
+
+    if (canUndo) {
+      this.history.do({
+        type: 'deleteDeepHistory',
+        args: { smId, id, stateData: { ...structuredClone(state), parentId: state.parentId } },
+        numberOfConnectedActions,
+      });
+    }
+    this.model.deleteVertex(smId, id, 'deepHistory'); // Удаляем модель
+    this.emit('deleteDeepHistory', args);
   }
 }

@@ -642,6 +642,7 @@ export function importGraphml(
         );
       }
       sm.shallowHistory = getVertexes(rawSm.shallowHistory);
+      sm.deepHistory = getVertexes(rawSm.deepHistory);
       sm.platform = platformName;
       sm.choiceStates = getVertexes(rawSm.choices);
       sm.name = rawSm.name;

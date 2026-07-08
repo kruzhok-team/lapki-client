@@ -886,7 +886,8 @@ export class EditorModel {
       };
     };
 
-    if (!this.data.elements.stateMachines[smId][type]) throw new Error('фывфывфвфвфвы');
+    if (!this.data.elements.stateMachines[smId][type])
+      throw new Error('Элемент не найден в машине состояний');
 
     this.data.elements.stateMachines[smId][type][id] = {
       ...other,
@@ -899,7 +900,8 @@ export class EditorModel {
   }
 
   deleteVertex(smId: string, id: string, type: VertexFields) {
-    if (!this.data.elements.stateMachines[smId][type]) throw new Error('фывфывфвфвфвы');
+    if (!this.data.elements.stateMachines[smId][type])
+      throw new Error('Элемент не найден в машине состояний');
 
     const state = this.data.elements.stateMachines[smId][type][id];
     if (!state) return false;

@@ -18,7 +18,12 @@ export type StateMachineData = {
   platform: string;
 };
 
-export type VertexFields = 'shallowHistory' | 'choiceStates' | 'initialStates' | 'finalStates';
+export type VertexFields =
+  | 'shallowHistory'
+  | 'deepHistory'
+  | 'choiceStates'
+  | 'initialStates'
+  | 'finalStates';
 
 export const emptyEditorData = () => ({
   basename: null as string | null,

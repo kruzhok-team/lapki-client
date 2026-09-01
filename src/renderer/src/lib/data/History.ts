@@ -205,7 +205,7 @@ export const actionFunctions: ActionFunctions = {
         events: stateData.events,
         color: stateData.color,
         linkByPoint: false,
-        canBeInitial: false,
+        canBeInitial: true,
       },
       false
     ),
@@ -259,7 +259,7 @@ export const actionFunctions: ActionFunctions = {
     redo: sM.unlinkState.bind(sM, { ...params, parentId, childId: params.id, canUndo: false }),
     undo: sM.linkState.bind(
       sM,
-      { smId, parentId, childId: params.id, canBeInitial: false, dragEndPos },
+      { smId, parentId, childId: params.id, canBeInitial: true, dragEndPos },
       false,
       true
     ),

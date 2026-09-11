@@ -79,7 +79,7 @@ export const SerialMonitorStatus: React.FC = () => {
   const { device, connectionStatus } = useSerialMonitor();
 
   return (
-    <span className="font-normal">
+    <span className="h2-header">
       Статус:{' '}
       <span className="text-primary">{getCurrentDeviceDisplay(device, connectionStatus)}</span>
     </span>
@@ -310,7 +310,7 @@ export const SerialMonitorTab: React.FC<SerialMonitorTabProps> = ({
       <div className="flex items-center gap-3">
         <button
           type="button"
-          className="btn-secondary h-8 min-w-0 border-primary px-3 py-1.5 text-primary"
+          className="btn-secondary mr-3 h-8 min-w-0 border-primary px-3 py-1.5 text-primary"
           onClick={openDeviceList}
           disabled={
             connectionStatus === SERIAL_MONITOR_CONNECTING ||
@@ -322,6 +322,7 @@ export const SerialMonitorTab: React.FC<SerialMonitorTabProps> = ({
 
         <span>Бод:</span>
         <ParameterSelect
+          menuWidth="content"
           containerClassName="w-24"
           value={makeOption(monitorSetting.baudRate)}
           onChange={(option) => {
@@ -399,6 +400,7 @@ export const SerialMonitorTab: React.FC<SerialMonitorTabProps> = ({
           )}
         </WithHint>
         <ParameterSelect
+          menuWidth="content"
           containerClassName="w-24 shrink-0"
           value={TextModeOptions[monitorSetting.textMode]}
           onChange={(option) => {
@@ -409,6 +411,7 @@ export const SerialMonitorTab: React.FC<SerialMonitorTabProps> = ({
           options={[TextModeOptions.text, TextModeOptions.hex]}
         />
         <ParameterSelect
+          menuWidth="content"
           containerClassName="w-24 shrink-0"
           value={LineBreakOptions[monitorSetting.lineBreak]}
           onChange={(option) => {

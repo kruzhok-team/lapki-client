@@ -3,6 +3,7 @@
   "primaryHover": "#225EF9",
   "primaryActive": "#2A62F4",
   "error": "red",
+  "danger": "#FF4848",
   "success": "lime",
 
   "bg-primary": "#e7e7e7",
@@ -17,7 +18,7 @@
   "border-contrast": "#343a40",
   "text-primary": "#000",
   "text-secondary": "#fff",
-  "text-inactive": "#b3b2b2",
+  "text-inactive": "#9D9D9D",
   "text-disabled": "rgb(156,163,175)",
 
   "codeEditorTheme": "vs-light",

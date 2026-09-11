@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
@@ -13,6 +13,8 @@ import {
   SimulationResult,
 } from '@renderer/types/InterpreterTypes';
 
+import { ExecutionHistory } from './ExecutionHistory';
+import { GardenerMarker, gardenerCellStyles } from './GardenerField';
 import {
   GardenerCell,
   GardenerOrientation,
@@ -24,17 +26,15 @@ import {
   resizeField,
   setFieldCell,
 } from './model';
-import { ExecutionHistory } from './ExecutionHistory';
-import { GardenerMarker, gardenerCellStyles } from './GardenerField';
 import { countUnicodeCharacters, limitUnicodeCharacters } from './readerModel';
 import { ReaderResult } from './ReaderResult';
-import { SimulationMode, SimulationRunPanel } from './SimulationRunPanel';
 import {
   SimulationMachineOption,
   getSimulationMachineOptions,
   isSimulationResultStale,
   selectInitialMachineId,
 } from './selection';
+import { SimulationMode, SimulationRunPanel } from './SimulationRunPanel';
 import { TaskMode } from './TaskMode';
 import { taskForProtocol } from './taskProtocol';
 import { useInterpreter } from './useInterpreter';
@@ -89,10 +89,10 @@ const orientationOptions: { value: GardenerOrientation; label: string }[] = [
 ];
 
 const controlClassName =
-  'h-8 w-full rounded-lg border border-border-primary bg-bg-primary px-3 text-xs text-text-primary outline-none focus:border-primary';
+  'h-8 w-full rounded-lg border border-border-primary bg-bg-primary px-3 text-xs text-text-primary outline-none focus:border-text-inactive';
 
 const gardenerNumericControlClassName =
-  'h-8 w-full rounded-lg border border-border-primary bg-bg-primary px-3 text-xs text-text-primary outline-none';
+  'h-8 w-full rounded-lg border border-border-primary bg-bg-primary px-3 text-xs text-text-primary outline-none focus:border-text-inactive';
 
 const PLAYBACK_INTERVAL_MS = 500;
 
@@ -194,7 +194,7 @@ const GardenerSimulator: React.FC<GardenerRuntimeProps> = ({
     };
   }, [reviewingHistory]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     setHistoryIndex(Math.max(0, steps.length - 1));
     setReviewingHistory(steps.length > 0);
     setIsPlaying(false);
@@ -296,6 +296,7 @@ const GardenerSimulator: React.FC<GardenerRuntimeProps> = ({
           error={error}
           message={result?.message}
           stale={stale}
+          reserveFeedbackSpace
           onModeChange={(nextMode) => {
             stopHistoryPlayback();
             setMode(nextMode);
@@ -509,7 +510,7 @@ const ReaderSimulator: React.FC<ReaderRuntimeProps> = ({
   const [timeout, setTimeoutValue] = useState(10);
 
   return (
-    <div className="grid min-h-0 flex-1 grid-cols-[205px_250px_170px] content-start justify-start gap-x-6 gap-y-5 overflow-auto text-sm max-[729px]:grid-cols-1">
+    <div className="grid min-h-0 flex-1 grid-cols-[205px_250px_170px] justify-start gap-x-6 gap-y-5 overflow-hidden text-sm max-[983px]:content-start max-[983px]:overflow-auto max-[729px]:grid-cols-1">
       <SimulationRunPanel
         machineSelector={machineSelector}
         mode={mode}
@@ -523,9 +524,9 @@ const ReaderSimulator: React.FC<ReaderRuntimeProps> = ({
         onCancel={onCancel}
       />
 
-      <section className="min-w-0">
+      <section className="flex min-h-0 min-w-0 flex-col">
         <h2 className="h2-header mb-2">Импульсы</h2>
-        <ReaderResult result={result} stale={stale} />
+        <ReaderResult result={result} stale={stale} active={active} />
       </section>
 
       <section className="min-w-0 max-[983px]:col-span-2 max-[729px]:col-span-1">
@@ -686,15 +687,9 @@ export const Simulator: React.FC<SimulatorProps> = ({
         <div className="mb-6 flex items-center gap-11 border-b border-border-primary pb-3 text-sm font-medium">
           <span>Симулятор</span>
           <span className="font-normal">
-            Статус: <span className="text-primary">{interpreter.status}</span>
+            <span className="font-medium">Статус: </span>
+            <span className="text-primary">{interpreter.status}</span>
           </span>
-        </div>
-      )}
-      {!machine && (
-        <div className="p-6 text-text-inactive">
-          {activeTask
-            ? `В текущем документе нет машины для платформы ${activeTask.platformId}. Откройте или создайте совместимый документ.`
-            : 'В текущем документе нет машин с поддержкой симуляции.'}
         </div>
       )}
       {(activeTask ||

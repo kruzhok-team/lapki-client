@@ -1,10 +1,6 @@
-<?xml version="1.0" encoding="iso-8859-1"?>
-<svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-	 viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve">
-<g>
-	<path style="fill:currentColor;" d="M2.083,9H0.062H0v5l1.481-1.361C2.932,14.673,5.311,16,8,16c4.08,0,7.446-3.054,7.938-7h-2.021
-		c-0.476,2.838-2.944,5-5.917,5c-2.106,0-3.96-1.086-5.03-2.729L5.441,9H2.083z"/>
-	<path style="fill:currentColor;" d="M8,0C3.92,0,0.554,3.054,0.062,7h2.021C2.559,4.162,5.027,2,8,2c2.169,0,4.07,1.151,5.124,2.876
-		L11,7h2h0.917h2.021H16V2l-1.432,1.432C13.123,1.357,10.72,0,8,0z"/>
-</g>
+<svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M5.95997 9.68311H3.04321V12.5998" stroke="#186AA9" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M11.4538 9.09814C11.1267 9.90766 10.5791 10.6092 9.87318 11.123C9.16726 11.6368 8.33135 11.9423 7.46046 12.0047C6.58958 12.0671 5.71864 11.884 4.94665 11.4761C4.17466 11.0683 3.53258 10.452 3.09338 9.69741" stroke="#186AA9" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M8.29358 5.01676H11.2103V2.1001" stroke="#186AA9" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M2.80005 5.60161C3.12713 4.79209 3.67475 4.09056 4.38067 3.57676C5.08659 3.06295 5.9225 2.75747 6.79338 2.69505C7.66427 2.63263 8.5352 2.81576 9.30719 3.22363C10.0792 3.6315 10.7213 4.24776 11.1605 5.00235" stroke="#186AA9" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

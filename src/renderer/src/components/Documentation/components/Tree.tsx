@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 
 import { ReactComponent as FileIcon } from '@renderer/assets/icons/file.svg';
 import { File } from '@renderer/types/documentation';
@@ -8,22 +8,12 @@ import { Item } from './Item';
 
 interface TreeProps {
   root: File;
-  borderWidth?: number;
   onItemClick: (filePath: string) => void;
 }
 
-export const Tree: React.FC<TreeProps> = ({ root, borderWidth, onItemClick }) => {
-  const color_gen = useMemo(() => Math.floor(Math.random() * 16777215).toString(16), []);
-  const borderWidthVal = typeof borderWidth === 'undefined' ? 2 : 0;
-
+export const Tree: React.FC<TreeProps> = ({ root, onItemClick }) => {
   return (
-    <ul
-      style={{
-        borderLeftColor: `#${color_gen}`,
-        borderLeftWidth: borderWidthVal,
-      }}
-      className="h-full max-h-[calc(100%-49.6px-41.6px)] w-full overflow-y-auto p-2 pb-0 pt-0 scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
-    >
+    <ul className="h-full max-h-[calc(100%-49.6px-41.6px)] w-full overflow-y-auto p-2 pb-0 pt-0 scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
       {root?.children &&
         root.children.map((item) => {
           if (item.children && item.children.length > 0)
@@ -36,7 +26,7 @@ export const Tree: React.FC<TreeProps> = ({ root, borderWidth, onItemClick }) =>
                 onItemClick(item.path ?? '');
               }}
             >
-              <span className="block max-w-[341px] truncate p-2 pl-0 transition hover:bg-[#4391bf] hover:bg-opacity-50">
+              <span className="block max-w-[341px] truncate rounded-lg p-2 pl-3 transition hover:bg-[#E6F4FF]">
                 <FileIcon className="mr-2 inline-block h-5 w-5" />
                 {item.name}
               </span>

@@ -12,5 +12,6 @@ export * from './TextAreaAutoResize';
 export * from './TextArea';
 export * from './SubstractButton';
 export * from './AddButton';
+export * from './PanelHeader';
 export * from './ScrollArea';
 export * from './DropdownMenu';

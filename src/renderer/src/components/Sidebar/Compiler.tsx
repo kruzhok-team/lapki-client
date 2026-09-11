@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
+import { twMerge } from 'tailwind-merge';
+
 import { CodeEditor } from '@renderer/components/CodeEditor';
 import { Compiler } from '@renderer/components/Modules/Compiler';
 import { Checkbox, ScrollArea } from '@renderer/components/UI';
@@ -208,13 +210,13 @@ export const CompilerTab: React.FC = () => {
   const activeSourceTab = sourceTabs.find(({ id }) => id === activeContentTab);
 
   return (
-    <section className="flex h-full min-h-0 gap-8">
+    <section className="flex gap-8">
       <div className="flex w-[222px] shrink-0 flex-col">
         <h2 className="h2-header mb-3">Машины состояний</h2>
-        <ScrollArea className="mb-4 max-h-[112px] py-0" viewportClassName="flex flex-col gap-2">
+        <ScrollArea className="mb-4 h-auto py-0" contentClassName="flex flex-col gap-2">
           <label className="flex cursor-pointer items-center gap-3">
             <Checkbox
-              className="h-3 w-3 min-w-3 rounded-none bg-bg-primary"
+              className="bg-bg-primary"
               checked={allSelected}
               onCheckedChange={(checked) => handleSelectAll(checked === true)}
             />
@@ -223,7 +225,7 @@ export const CompilerTab: React.FC = () => {
           {stateMachineEntries.map(([id, stateMachine]) => (
             <label key={id} className="flex cursor-pointer items-center gap-3">
               <Checkbox
-                className="h-3 w-3 min-w-3 rounded-none bg-bg-primary"
+                className="bg-bg-primary"
                 checked={selectedStateMachines[id] ?? false}
                 onCheckedChange={(checked) => handleStateMachineSelection(id, checked === true)}
               />
@@ -245,20 +247,18 @@ export const CompilerTab: React.FC = () => {
           </button>
         </div>
 
-        {bearlogaSmId !== undefined ? (
-          <div className="mb-3 flex">
+        <div className="flex flex-col items-start gap-4 pl-3 font-medium">
+          {bearlogaSmId !== undefined ? (
             <button
               type="button"
               disabled={compileDisabled}
-              className="text-left text-primary hover:underline disabled:cursor-not-allowed disabled:opacity-30"
+              className="text-left text-primary hover:underline disabled:cursor-not-allowed disabled:text-text-disabled disabled:no-underline"
               onClick={handleExportBearloga}
             >
               Экспорт в Берлогу
             </button>
-          </div>
-        ) : undefined}
+          ) : undefined}
 
-        <div className="flex flex-col items-start gap-4 pl-3">
           {buttons.map(({ name, handler, disabled: buttonDisabled }) => (
             <button
               key={name}
@@ -274,8 +274,8 @@ export const CompilerTab: React.FC = () => {
         <div className="mt-auto">{showReconnectTime()}</div>
       </div>
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        <div className="mb-3 flex min-h-5 items-center gap-5 overflow-x-auto">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col [contain:size]">
+        <div className="mb-3 flex min-h-5 items-center gap-5 overflow-x-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb [&::-webkit-scrollbar]:!h-[2px]">
           {sourceTabs.length === 0 ? (
             <h2 className="h2-header">Журнал компиляции</h2>
           ) : (
@@ -309,7 +309,12 @@ export const CompilerTab: React.FC = () => {
             </>
           )}
         </div>
-        <div className="min-h-0 flex-1 overflow-auto rounded-lg border border-border-primary bg-bg-primary font-Fira-Mono text-xs leading-4">
+        <div
+          className={twMerge(
+            'h-0 min-h-0 flex-1 rounded-lg border border-border-primary bg-bg-primary font-Fira text-xs leading-4',
+            activeSourceTab ? 'overflow-hidden' : 'overflow-auto'
+          )}
+        >
           {activeSourceTab ? (
             <CodeEditor
               key={activeSourceTab.id}
@@ -317,7 +322,7 @@ export const CompilerTab: React.FC = () => {
               language={activeSourceTab.language}
             />
           ) : compilationLogLines.length > 0 ? (
-            <div className="grid min-w-max grid-cols-[auto_1fr] py-1">
+            <div className="grid min-w-max select-text grid-cols-[auto_1fr] py-1">
               {compilationLogLines.map((line, index) => (
                 <React.Fragment key={index}>
                   <span className="select-none border-r border-border-primary px-2 text-right text-text-inactive">

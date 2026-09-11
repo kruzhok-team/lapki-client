@@ -1,20 +1,22 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
-import { useForm } from 'react-hook-form';
-
-import { ReactComponent as StateMachineIcon } from '@renderer/assets/icons/state_machine.svg';
 import { Modal, ParameterSelect, ParameterSelectOption } from '@renderer/components/UI';
-import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
-import { getPlatform } from '@renderer/lib/data/PlatformLoader';
 import { useModelContext } from '@renderer/store/ModelContext';
-import { Meta as MetaData, StateMachine } from '@renderer/types/diagram';
+import { StateMachine } from '@renderer/types/diagram';
 import { dateFormatTimeAndDate } from '@renderer/utils';
 
-import { Meta, MetaFormValues } from './Meta';
+import { Meta } from './Meta';
+import {
+  areMetadataEqual,
+  createMetadataDrafts,
+  MetadataDraftErrors,
+  MetadataDrafts,
+  metadataDraftToMeta,
+  validateMetadataDrafts,
+} from './metadataDrafts';
 
 interface PropertiesModalProps {
-  controller: CanvasController;
-  stateMachines: { [id: string]: StateMachine };
+  stateMachines: Record<string, StateMachine>;
   stateMachinesId: string[];
   isOpen: boolean;
   onClose: () => void;
@@ -22,123 +24,200 @@ interface PropertiesModalProps {
   setSelectedSm: React.Dispatch<React.SetStateAction<string>>;
 }
 
+type FileProperty = [name: string, value: string];
+
+const numberFormat = new Intl.NumberFormat('ru-RU');
+
+const unavailableFileProperties = (
+  name: string | null,
+  basename: string | null
+): FileProperty[] => [
+  ['Название', name ?? '—'],
+  ['Путь к файлу', basename ?? '—'],
+  ['Размер файла', '—'],
+  ['Дата и время создания файла', '—'],
+  ['Дата и время последнего изменения файла', '—'],
+];
+
 export const PropertiesModal: React.FC<PropertiesModalProps> = ({
   setSelectedSm,
   selectedSm,
   onClose,
   stateMachines,
   stateMachinesId,
-  ...props
+  isOpen,
 }) => {
-  const modelController = useModelContext();
-  const model = modelController.model;
-  const name = model.useData('', 'name');
-  const basename = model.useData('', 'basename');
-  const smName = modelController.model.useData(selectedSm, 'elements.name');
-  const platform = model.useData(selectedSm, 'elements.platform');
-  const meta = model.useData(selectedSm, 'elements.meta') as MetaData;
-  const [baseProperties, setBaseProperties] = useState<[string, string][]>([]);
-  const metaForm = useForm<MetaFormValues>();
+  const model = useModelContext().model;
+  const name = model.useData('', 'name') as string | null;
+  const basename = model.useData('', 'basename') as string | null;
+  const [fileProperties, setFileProperties] = useState<FileProperty[]>(() =>
+    unavailableFileProperties(name, basename)
+  );
+  const [drafts, setDrafts] = useState<MetadataDrafts>({});
+  const [draftErrors, setDraftErrors] = useState<MetadataDraftErrors>({});
+  const [focusRowId, setFocusRowId] = useState<string | null>(null);
+  const nextRowId = useRef(0);
 
-  useMemo(async () => {
-    const propertiesValues: [string, string][] = [
-      ['Название', name ?? 'отсутствует'],
-      ['Платформа', getPlatform(platform)?.name ?? 'отсутствует'],
-    ];
-    if (basename) {
-      // (chekoopa): На будущее: кажется тонким местом, где может быть подвисание/вылет.
-      const stat = await window.api.fileHandlers.getMetadata(basename);
-      propertiesValues.push(['Путь к файлу', basename]);
-      propertiesValues.push([
-        'Дата и время последнего изменения файла',
-        dateFormatTimeAndDate(stat['mtime']),
-      ]);
-      propertiesValues.push([
-        'Дата и время создания файла',
-        dateFormatTimeAndDate(stat['birthtime']),
-      ]);
-      propertiesValues.push(['Размер файла', stat['size'] + ' байтов']);
-    }
-    metaForm.setValue(
-      'meta',
-      Object.entries(meta).map(([name, value]) => ({ name, value })) as never
-    );
-    metaForm.clearErrors();
-    setBaseProperties(propertiesValues);
-  }, [platform, basename, name, smName, meta]);
+  useEffect(() => {
+    if (!isOpen) return;
 
-  const smOptions: ParameterSelectOption[] = useMemo(() => {
-    const getOption = (id: string) => {
-      return {
-        value: id,
-        label: id,
-        hint: undefined,
-        icon: <StateMachineIcon className="size-8 fill-border-contrast px-1" />,
-      };
+    const nextDrafts = createMetadataDrafts(stateMachinesId, stateMachines);
+    const nextSelectedSm = stateMachinesId.includes(selectedSm)
+      ? selectedSm
+      : stateMachinesId[0] ?? '';
+
+    setDrafts(nextDrafts);
+    setDraftErrors({});
+    setFocusRowId(null);
+    setSelectedSm(nextSelectedSm);
+    nextRowId.current = Object.values(nextDrafts).reduce((count, rows) => count + rows.length, 0);
+    // Drafts are intentionally recreated only when the modal is opened.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    let cancelled = false;
+    setFileProperties(unavailableFileProperties(name, basename));
+
+    if (!basename) return;
+
+    window.api.fileHandlers
+      .getMetadata(basename)
+      .then((stat) => {
+        if (cancelled) return;
+
+        setFileProperties([
+          ['Название', name ?? '—'],
+          ['Путь к файлу', basename],
+          ['Размер файла', `${numberFormat.format(stat.size)} байтов`],
+          ['Дата и время создания файла', dateFormatTimeAndDate(stat.birthtime)],
+          ['Дата и время последнего изменения файла', dateFormatTimeAndDate(stat.mtime)],
+        ]);
+      })
+      .catch(() => {
+        // The path may become unavailable between opening the document and this modal.
+        if (!cancelled) setFileProperties(unavailableFileProperties(name, null));
+      });
+
+    return () => {
+      cancelled = true;
     };
+  }, [basename, isOpen, name]);
 
-    return stateMachinesId.map((smId) =>
-      getOption(
-        (stateMachines[smId].name !== undefined && stateMachines[smId].name !== ''
-          ? stateMachines[smId].name
-          : smId) as string
-      )
+  const stateMachineOptions: ParameterSelectOption[] = useMemo(
+    () =>
+      stateMachinesId.map((stateMachineId) => ({
+        value: stateMachineId,
+        label: stateMachines[stateMachineId]?.name || stateMachineId,
+      })),
+    [stateMachines, stateMachinesId]
+  );
+
+  const updateDrafts = (nextDrafts: MetadataDrafts) => {
+    setDrafts(nextDrafts);
+    if (Object.keys(draftErrors).length > 0) {
+      setDraftErrors(validateMetadataDrafts(nextDrafts));
+    }
+  };
+
+  const handleAdd = () => {
+    if (!selectedSm) return;
+
+    const rowId = `draft:${nextRowId.current++}`;
+    updateDrafts({
+      ...drafts,
+      [selectedSm]: [...(drafts[selectedSm] ?? []), { id: rowId, name: '', value: '' }],
+    });
+    setFocusRowId(rowId);
+  };
+
+  const handleChange = (rowId: string, field: 'name' | 'value', value: string) => {
+    if (!selectedSm) return;
+
+    updateDrafts({
+      ...drafts,
+      [selectedSm]: (drafts[selectedSm] ?? []).map((row) =>
+        row.id === rowId ? { ...row, [field]: value } : row
+      ),
+    });
+  };
+
+  const handleDelete = (rowId: string) => {
+    if (!selectedSm) return;
+
+    updateDrafts({
+      ...drafts,
+      [selectedSm]: (drafts[selectedSm] ?? []).filter((row) => row.id !== rowId),
+    });
+  };
+
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+
+    const nextErrors = validateMetadataDrafts(drafts);
+    const firstInvalidStateMachine = stateMachinesId.find(
+      (stateMachineId) => nextErrors[stateMachineId]
     );
-  }, [smName, selectedSm, stateMachines, stateMachinesId]);
 
-  const handleMetaSubmit = metaForm.handleSubmit((data) => {
-    model.setMeta(
-      selectedSm,
-      data.meta.reduce((acc, cur) => {
-        acc[cur.name] = cur.value;
+    if (firstInvalidStateMachine) {
+      setDraftErrors(nextErrors);
+      setSelectedSm(firstInvalidStateMachine);
+      return;
+    }
 
-        return acc;
-      }, {})
-    );
+    stateMachinesId.forEach((stateMachineId) => {
+      const nextMeta = metadataDraftToMeta(drafts[stateMachineId] ?? []);
+      const currentMeta = stateMachines[stateMachineId]?.meta ?? {};
+      if (!areMetadataEqual(currentMeta, nextMeta)) model.setMeta(stateMachineId, nextMeta);
+    });
 
     onClose();
-  });
-
-  const handleStateMachineChange = async (smId: string) => {
-    if (!smId) return;
-    const newSm =
-      modelController.model.data.elements.stateMachines[smId] ||
-      Object.values(modelController.model.data.elements.stateMachines).find(
-        (sm) => sm.name === smId
-      );
-    metaForm.setValue(
-      'meta',
-      Object.entries(newSm.meta).map(([name, value]) => ({ name, value }))
-    );
-    metaForm.clearErrors();
-    setSelectedSm(newSm.name && newSm.name !== '' ? newSm.name : smId);
   };
+
+  const selectedRows = selectedSm ? drafts[selectedSm] ?? [] : [];
+  const selectedErrors = selectedSm ? draftErrors[selectedSm] ?? {} : {};
 
   return (
     <Modal
-      {...props}
+      isOpen={isOpen}
       onRequestClose={onClose}
-      // onAfterOpen={onAfterOpen}
-      onSubmit={handleMetaSubmit}
+      onSubmit={handleSubmit}
       title="Свойства"
+      hideCancelButton
+      submitDisabled={stateMachinesId.length === 0}
+      submitClassName="btn-primary disabled:border-inactive-button disabled:bg-inactive-button disabled:text-text-disabled disabled:opacity-100"
     >
-      <h3 className="mb-1 text-xl">Свойства файла</h3>
-      <ParameterSelect
-        containerClassName="w-[250px]"
-        options={smOptions}
-        onChange={(opt) => handleStateMachineChange(opt?.value ?? '')}
-        value={smOptions.find((o) => o.value === selectedSm || o.value === smName)}
-        isSearchable={false}
-        noOptionsMessage={() => 'Нет подходящих атрибутов'}
-      />
-      <div className="mb-2 flex flex-col gap-1">
-        {[...baseProperties].map(([name, value]) => (
-          <div key={name}>
-            <b>{name}:</b> {value}
+      <dl className="flex flex-col gap-2">
+        {fileProperties.map(([propertyName, value]) => (
+          <div key={propertyName}>
+            <dt className="inline font-medium">{propertyName}: </dt>
+            <dd className="inline break-words">{value}</dd>
           </div>
         ))}
-      </div>
-      <Meta form={metaForm} />
+      </dl>
+
+      <ParameterSelect
+        containerClassName="mt-6 w-[216px]"
+        options={stateMachineOptions}
+        onChange={(option) => setSelectedSm(option?.value ?? '')}
+        value={stateMachineOptions.find((option) => option.value === selectedSm) ?? null}
+        menuWidth="content"
+        isSearchable={false}
+        noOptionsMessage={() => 'Нет машин состояний'}
+      />
+
+      <Meta
+        rows={selectedRows}
+        errors={selectedErrors}
+        canAdd={!!selectedSm}
+        focusRowId={focusRowId}
+        onAdd={handleAdd}
+        onChange={handleChange}
+        onDelete={handleDelete}
+        onFocusHandled={() => setFocusRowId(null)}
+      />
     </Modal>
   );
 };

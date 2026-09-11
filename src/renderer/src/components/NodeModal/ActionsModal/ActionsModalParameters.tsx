@@ -121,8 +121,8 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
 
   return (
     <ScrollArea className="min-h-0 flex-1">
-      <div className="flex min-w-0 flex-col gap-2">
-        <h3 className="mb-1 text-xs">Параметры</h3>
+      <div className="grid min-w-0 grid-cols-[max-content,minmax(0,1fr)] gap-x-2 gap-y-2">
+        <h3 className="col-span-2 mb-1 text-xs font-medium">Параметры</h3>
         {protoParameters.map((proto, idx) => {
           const { name, description = '', type = '', range } = proto;
           const parameter = parameters[name] ?? { value: '', order: idx };
@@ -145,10 +145,11 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
               <ComponentFormFieldLabel
                 key={name}
                 label={label}
-                labelClassName="whitespace-pre"
+                labelClassName="w-auto whitespace-pre"
                 hint={hint}
                 error={error}
                 childrenDivClassname="min-w-0 w-full"
+                sharedGrid
               >
                 <ParameterSelect
                   options={options}
@@ -176,10 +177,11 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                   as="div"
                   key={name}
                   label={label}
-                  labelClassName="whitespace-pre"
+                  labelClassName="w-auto whitespace-pre"
                   hint={hint}
                   error={error}
                   name={name}
+                  sharedGrid
                 >
                   <MatrixWidget
                     key={name}
@@ -220,91 +222,85 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
             // rely on initialized state from useEffect; do not mutate during render
           }
           const attributeOptions = attributeOptionsSearch(selectedParameterComponent);
-          return (
-            // Clamp row height and hide overflow so visual outlines or internal focus
-            // states (like react-select indicators) cannot increase the row height
-            // and cause a scrollbar to appear.
-            <div className={'flex min-h-[32px] items-center space-x-2 overflow-hidden'} key={name}>
-              <div className="self-center">
-                <AttributeConstSwitch
-                  checked={currentChecked}
-                  onCheckedChange={(newChecked: boolean) => {
-                    setCheckedTo(name, newChecked);
-                    if (newChecked) {
-                      handleInputChange(name, idx, { component: '', method: '' });
-                    } else {
-                      handleInputChange(name, idx, '');
-                    }
-                  }}
-                  hint={
-                    currentChecked
-                      ? 'Переключиться на константу'
-                      : 'Переключиться на атрибут компонента'
+          const switchControl = (
+            <div className="mr-1 shrink-0 self-center">
+              <AttributeConstSwitch
+                checked={currentChecked}
+                onCheckedChange={(newChecked: boolean) => {
+                  setCheckedTo(name, newChecked);
+                  if (newChecked) {
+                    handleInputChange(name, idx, { component: '', method: '' });
+                  } else {
+                    handleInputChange(name, idx, '');
                   }
+                }}
+                hint={
+                  currentChecked
+                    ? 'Переключиться на константу'
+                    : 'Переключиться на атрибут компонента'
+                }
+              />
+            </div>
+          );
+          return currentChecked ? (
+            <ComponentFormFieldLabel
+              as="div"
+              key={name}
+              label={label}
+              labelClassName="w-auto whitespace-pre"
+              childrenDivClassname="min-h-[32px] w-full min-w-0 overflow-hidden"
+              hint={hint}
+              error={error}
+              leadingContent={switchControl}
+              sharedGrid
+            >
+              <div className="flex w-full gap-3">
+                <ParameterSelect
+                  containerClassName={'flex-1 min-w-0 h-8 box-border'}
+                  options={componentOptions}
+                  onChange={(opt) =>
+                    handleComponentAttributeChange(name, idx, opt?.value ?? '', '')
+                  }
+                  value={
+                    componentOptions.find((o) => o.value === selectedParameterComponent) ?? null
+                  }
+                  isSearchable={false}
+                  noOptionsMessage={() => 'Нет подходящих компонентов'}
+                  placeholder="Выберите компонент..."
+                />
+                <ParameterSelect
+                  containerClassName={'flex-1 min-w-0 h-8 box-border'}
+                  options={attributeOptions}
+                  onChange={(opt) =>
+                    handleComponentAttributeChange(
+                      name,
+                      idx,
+                      selectedParameterComponent ?? '',
+                      opt?.value ?? ''
+                    )
+                  }
+                  value={attributeOptions.find((o) => o.value === selectedParameterMethod) ?? null}
+                  isSearchable={false}
+                  noOptionsMessage={() => 'Нет подходящих атрибутов'}
+                  placeholder="Выберите атрибут..."
                 />
               </div>
-              {/* Use ComponentFormFieldLabel here as well so the label column
-                  size matches the unchecked rows. childrenDivClassname="w-full min-w-0"
-                  ensures the right-side content can shrink and won't push layout. */}
-              {currentChecked ? (
-                <ComponentFormFieldLabel
-                  as="div"
-                  label={label}
-                  labelClassName="whitespace-pre"
-                  childrenDivClassname="w-full min-w-0"
-                  hint={hint}
-                  error={error}
-                >
-                  <div className="flex w-full gap-3">
-                    {/* Use `flex-1 min-w-0` so ParameterSelect can shrink inside a flex row without forcing a wrap.
-                      `h-8 box-border` keeps the control height fixed to prevent layout jumps. */}
-                    <ParameterSelect
-                      containerClassName={'flex-1 min-w-0 h-8 box-border'}
-                      options={componentOptions}
-                      onChange={(opt) =>
-                        handleComponentAttributeChange(name, idx, opt?.value ?? '', '')
-                      }
-                      value={
-                        componentOptions.find((o) => o.value === selectedParameterComponent) ?? null
-                      }
-                      isSearchable={false}
-                      noOptionsMessage={() => 'Нет подходящих компонентов'}
-                      placeholder="Выберите компонент..."
-                    />
-                    <ParameterSelect
-                      containerClassName={'flex-1 min-w-0 h-8 box-border'}
-                      options={attributeOptions}
-                      onChange={(opt) =>
-                        handleComponentAttributeChange(
-                          name,
-                          idx,
-                          selectedParameterComponent ?? '',
-                          opt?.value ?? ''
-                        )
-                      }
-                      value={
-                        attributeOptions.find((o) => o.value === selectedParameterMethod) ?? null
-                      }
-                      isSearchable={false}
-                      noOptionsMessage={() => 'Нет подходящих атрибутов'}
-                      placeholder="Выберите атрибут..."
-                    />
-                  </div>
-                </ComponentFormFieldLabel>
-              ) : (
-                <ComponentFormFieldLabel
-                  key={name}
-                  label={label}
-                  hint={hint}
-                  error={error}
-                  childrenDivClassname="w-full min-w-0"
-                  value={value as string}
-                  name={name}
-                  placeholder="Введите значение..."
-                  onChange={(e) => handleInputChange(name, idx, e.target.value)}
-                />
-              )}
-            </div>
+            </ComponentFormFieldLabel>
+          ) : (
+            <ComponentFormFieldLabel
+              key={name}
+              label={label}
+              labelClassName="w-auto whitespace-pre"
+              hint={hint}
+              error={error}
+              childrenDivClassname="min-h-[32px] w-full min-w-0 overflow-hidden"
+              leadingContent={switchControl}
+              sharedGrid
+              value={value as string}
+              name={name}
+              placeholder="Введите значение..."
+              onChange={(e) => handleInputChange(name, idx, e.target.value)}
+            />
           );
         })}
       </div>

@@ -82,7 +82,7 @@ export const Autosave: React.FC<AutosaveProps> = ({ isOpen, onClose, ...props })
       hideCancelButton
       className="w-[348px]"
     >
-      <div className="flex flex-col gap-4 text-xs">
+      <div className="flex flex-col gap-3 text-xs">
         <div className="flex items-center gap-3">
           <span>Автосохранение</span>
           <Controller
@@ -103,13 +103,13 @@ export const Autosave: React.FC<AutosaveProps> = ({ isOpen, onClose, ...props })
           />
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center">
           <span>Интервал</span>
           <div onClick={handleIntervalClick}>
             <TextInput
               {...register('interval', { valueAsNumber: true })}
               maxLength={4}
-              className="w-[62px] max-w-none disabled:cursor-not-allowed disabled:opacity-50"
+              className="ml-3 mr-2 w-[62px] rounded-lg"
               disabled={watch('disabled')}
               onInput={(event) => {
                 const { target } = event;
@@ -130,8 +130,8 @@ export const Autosave: React.FC<AutosaveProps> = ({ isOpen, onClose, ...props })
           </WithHint>
         </div>
 
-        {errors.interval && <p className="text-error">{errors.interval.message}</p>}
-        {errors.disabled && <p className="text-warning">{errors.disabled.message}</p>}
+        {errors.interval && <p className="text-xs text-error">{errors.interval.message}</p>}
+        {errors.disabled && <p className="text-xs text-warning">{errors.disabled.message}</p>}
       </div>
     </MovingModal>
   );

@@ -11,6 +11,8 @@ interface ScrollableListProps<T> {
   containerProps?: Omit<ComponentProps<'div'>, 'className'>;
 }
 
+// TODO (L140-beep): Под вопросом нужность этого компонента, он только в документации используется
+
 export const ScrollableList = <T,>(props: ScrollableListProps<T>) => {
   const {
     listItems,

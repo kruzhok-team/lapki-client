@@ -2,9 +2,9 @@ import { useState } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
-import { ReactComponent as ArrowIcon } from '@renderer/assets/icons/arrow-down.svg';
 import { Hierarchy } from '@renderer/components/Hierarchy';
 import { Filter } from '@renderer/components/Hierarchy/Filter';
+import { PanelHeader, ScrollArea } from '@renderer/components/UI';
 import { useSettings } from '@renderer/hooks';
 import { useModelContext } from '@renderer/store/ModelContext';
 
@@ -25,66 +25,42 @@ export const StateMachinesHierarchy: React.FC<StateMachinesHierarchyProps> = ({
   );
   const [theme] = useSettings('theme');
   const [search, setSearch] = useState('');
-  const [expand, setExpand] = useState(true);
-  const [collapse, setCollapse] = useState(true);
+  const expand = true;
+  const collapse = true;
+  const collapsed = isCollapsed();
   const handleChangeSearch = (value: string) => {
     if (!value) value = '';
     setSearch(value);
   };
 
-  const onExpandAll = () => {
-    setExpand(true);
-    setCollapse(false);
-  };
-
-  const onCollapseAll = () => {
-    setCollapse(true);
-    setExpand(false);
-  };
-
-  const header = () => {
-    return (
-      <button className="flex h-11 items-center" onClick={() => togglePanel()}>
-        <ArrowIcon
-          className={twMerge('size-3 rotate-0 transition-transform', isCollapsed() && '-rotate-90')}
-        />
-        <h3 className="ml-1 text-xs font-medium">Иерархия</h3>
-      </button>
-    );
-  };
-
   return (
-    <div className={twMerge(theme !== 'light' && 'rct-dark', 'flex h-full flex-col')}>
-      {header()}
-      <Filter
-        onExpandAll={onExpandAll}
-        onCollapseAll={onCollapseAll}
-        search={search}
-        onChangeSearch={handleChangeSearch}
-        disabled={headControllerId === ''}
-      />
-      <div
-        className={
-          'overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb'
-        }
-      >
-        {headControllerId === '' ? (
-          <p className="text-text-inactive">
-            <i>Нет активной диаграммы</i>
-          </p>
-        ) : (
-          stateMachinesIds.map((smId) => (
-            <Hierarchy
-              key={smId}
-              expand={expand}
-              collapse={collapse}
-              search={search}
-              controller={controller}
-              smId={smId}
-            />
-          ))
-        )}
-      </div>
+    <div className={twMerge(theme !== 'light' && 'rct-dark', 'flex h-full min-h-0 flex-col')}>
+      <PanelHeader title="Иерархия" isCollapsed={isCollapsed} togglePanel={togglePanel} />
+      {!collapsed && (
+        <>
+          <Filter
+            search={search}
+            onChangeSearch={handleChangeSearch}
+            disabled={headControllerId === ''}
+          />
+          <ScrollArea className="flex-1">
+            {headControllerId === '' ? (
+              <p className="pl-[19px] text-text-inactive">Нет активной диаграммы</p>
+            ) : (
+              stateMachinesIds.map((smId) => (
+                <Hierarchy
+                  key={smId}
+                  expand={expand}
+                  collapse={collapse}
+                  search={search}
+                  controller={controller}
+                  smId={smId}
+                />
+              ))
+            )}
+          </ScrollArea>
+        </>
+      )}
     </div>
   );
 };

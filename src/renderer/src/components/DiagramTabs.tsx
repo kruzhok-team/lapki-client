@@ -4,7 +4,7 @@ import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as ConnectionStatus } from '@renderer/assets/icons/circle.svg';
 import { ReactComponent as CompilerIcon } from '@renderer/assets/icons/compiler.svg';
-import { ReactComponent as FlasherIcon } from '@renderer/assets/icons/flasher.svg';
+import { ReactComponent as FlasherIcon } from '@renderer/assets/icons/loader.svg';
 import { ReactComponent as SerialMonitorIcon } from '@renderer/assets/icons/serial_monitor.svg';
 import { ReactComponent as EditorIcon } from '@renderer/assets/icons/state_machine.svg';
 import { CompilerTab } from '@renderer/components/Sidebar/Compiler';
@@ -34,22 +34,22 @@ const humanizeCompilerResult = (status?: string): string => {
 const tabs = {
   editor: {
     title: 'Редактор',
-    Icon: <EditorIcon className="h-6 w-6 [&_*]:stroke-current" />,
+    Icon: <EditorIcon />,
     className: '',
     modalTitle: undefined,
   },
   compiler: {
     title: 'Компилятор',
-    Icon: <CompilerIcon className="h-6 w-6 [&_*]:stroke-current" />,
-    className: 'h-[406px] max-h-[calc(100vh-24px)] w-[1074px] max-w-[calc(100vw-24px)]',
+    Icon: <CompilerIcon />,
+    className: 'max-h-[calc(100vh-24px)] w-[1074px] max-w-[calc(100vw-24px)]',
     modalTitle: undefined,
   },
   flasher: {
     title: 'Загрузчик',
-    Icon: <FlasherIcon className="h-6 w-6 [&_*]:stroke-current" />,
+    Icon: <FlasherIcon />,
     className: 'h-[644px] max-h-[calc(100vh-24px)] w-[1074px] max-w-[calc(100vw-24px)]',
     modalTitle: (
-      <div className="flex items-center gap-12">
+      <div className="flex items-center gap-11">
         <span>Загрузчик</span>
         <FlasherStatus />
       </div>
@@ -58,12 +58,12 @@ const tabs = {
   serialMonitor: {
     title: 'Монитор порта',
     modalTitle: (
-      <div className="flex items-center gap-12">
+      <div className="flex items-center gap-11">
         <span>Монитор порта</span>
         <SerialMonitorStatus />
       </div>
     ),
-    Icon: <SerialMonitorIcon className="h-6 w-6 [&_*]:stroke-current" />,
+    Icon: <SerialMonitorIcon />,
     className: 'h-[740px] max-h-[calc(100vh-24px)] w-[1074px] max-w-[calc(100vw-24px)]',
   },
 };
@@ -103,14 +103,13 @@ export const DiagramTabs = () => {
           width="8px"
           height="8px"
         />
-        <span className="ml-10 font-normal">Статус:</span>
-        <span
-          className={twMerge(
-            'font-normal text-primary',
-            compilerData?.result === 'NOTOK' && 'text-error'
-          )}
-        >
-          {humanizeCompilerResult(compilerData?.result)}
+        <span className="ml-10 font-normal">
+          <span className="font-medium">Статус: </span>
+          <span
+            className={twMerge('text-primary', compilerData?.result === 'NOTOK' && 'text-danger')}
+          >
+            {humanizeCompilerResult(compilerData?.result)}
+          </span>
         </span>
       </div>
     ) : (
@@ -126,9 +125,10 @@ export const DiagramTabs = () => {
               {(hintProps) => (
                 <button
                   type="button"
-                  className={`rounded p-1 text-icon-secondary transition-colors hover:text-icon-hover ${
-                    activeTab === name ? 'bg-icon-selected-bg text-white [&_*]:stroke-white' : ''
-                  }`}
+                  className={twMerge(
+                    'rounded p-1 text-icon-secondary transition-colors hover:text-icon-hover',
+                    activeTab === name && 'bg-icon-selected-bg text-white'
+                  )}
                   aria-label={title}
                   onClick={() => setActiveTab(name)}
                   {...hintProps}
@@ -151,7 +151,9 @@ export const DiagramTabs = () => {
           hideCancelButton
           className={tab.className}
         >
-          <div className="h-full overflow-auto">{renderTab()}</div>
+          <div className={twMerge('overflow-auto', activeTab !== 'compiler' && 'h-full')}>
+            {renderTab()}
+          </div>
         </MovingModal>
       )}
     </>

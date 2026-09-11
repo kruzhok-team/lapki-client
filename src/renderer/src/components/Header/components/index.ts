@@ -4,6 +4,5 @@ export * from './CompilerSelectModal';
 export * from './DocSelectModal';
 export * from './FlasherSelectModal';
 export * from './History';
-export * from './MenuDropdown';
 export * from './ResetSettingsModal';
 export * from './Setting';

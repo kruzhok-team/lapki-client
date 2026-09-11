@@ -16,7 +16,7 @@ import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as ClearIcon } from '@renderer/assets/icons/clear.svg';
 import { ReactComponent as ColorPalette } from '@renderer/assets/icons/color_palette.svg';
-import { useClickOutside } from '@renderer/hooks';
+import { useClickOutside, usePortalZIndex } from '@renderer/hooks';
 import { getColor } from '@renderer/theme';
 import { presetColors, randomColor } from '@renderer/utils';
 
@@ -63,6 +63,7 @@ export const ColorInput: React.FC<ColorInputProps> = (props) => {
   const click = useClick(context);
 
   const { getReferenceProps, getFloatingProps } = useInteractions([click]);
+  const zIndex = usePortalZIndex(refs.reference, isOpen);
 
   const handleClose = () => {
     context.onOpenChange(false);
@@ -95,9 +96,9 @@ export const ColorInput: React.FC<ColorInputProps> = (props) => {
         <FloatingPortal>
           <div
             id="color-picker"
-            className="z-[100] max-w-52 rounded border border-border-primary bg-bg-secondary p-1 shadow-xl"
+            className="max-w-52 rounded border border-border-primary bg-bg-secondary p-1 shadow-xl"
             ref={refs.setFloating}
-            style={floatingStyles}
+            style={{ ...floatingStyles, zIndex }}
             {...getFloatingProps()}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {

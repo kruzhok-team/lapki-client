@@ -94,7 +94,7 @@ export const StateMachineEditModal: React.FC<StateMachineEditModalProps> = ({
       className="top-5 w-[calc(100%-40px)] max-w-[404px]"
       contentClassName="mb-6"
       actionsClassName="gap-3"
-      sideClassName="btn-secondary border-red-500 danger"
+      sideClassName="btn-secondary border-danger danger"
       middleClassName="btn-secondary border-primary text-primary"
       hideCancelButton
     >

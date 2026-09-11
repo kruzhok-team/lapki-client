@@ -1,10 +1,8 @@
-import { useLayoutEffect, useRef } from 'react';
-
 import { twMerge } from 'tailwind-merge';
 
-import { ReactComponent as DeleteIcon } from '@renderer/assets/icons/delete.svg';
-import { ScrollArea } from '@renderer/components/UI';
 import { Platform } from '@renderer/types/platform';
+
+import { DeleteButton } from '../UI/DeleteButton';
 export type StateMachinesStackItem = {
   id: string;
   platform: Platform;
@@ -25,23 +23,13 @@ export const StateMachinesStack: React.FC<StateMachinesStackProps> = ({
   onSelect,
   onDelete,
 }) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  useLayoutEffect(() => {
-    if (!containerRef.current) return;
-    containerRef.current.scrollTop = containerRef.current.scrollHeight;
-  }, [selectedStateMachines]);
-
   const handleOnDelte = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>, index: number) => {
     e.stopPropagation();
     onDelete(index);
   };
 
   return (
-    <ScrollArea
-      className="h-full w-full"
-      viewportClassName="scroll-auto px-[7px] scrollbar-thumb-scrollbar-thumb"
-      ref={containerRef}
-    >
+    <>
       {selectedStateMachines.map((sm, index) => {
         return (
           <div
@@ -56,20 +44,12 @@ export const StateMachinesStack: React.FC<StateMachinesStackProps> = ({
             onClick={() => onSelect(index)}
           >
             <div className="min-w-0 leading-4">
-              <div className="truncate">{sm.id}</div>
-              <div className="truncate text-text-inactive">{sm.platform.name}</div>
+              <div className="truncate">{sm.platform.name}</div>
             </div>
-            <button
-              type="button"
-              aria-label={`Удалить ${sm.id}`}
-              className="ml-auto rounded p-1 opacity-0 transition-all group-hover:opacity-100 hover:bg-bg-active focus:opacity-100"
-              onClick={(e) => handleOnDelte(e, index)}
-            >
-              <DeleteIcon className="danger h-3 w-3" />
-            </button>
+            <DeleteButton onClick={(e) => handleOnDelte(e, index)} />
           </div>
         );
       })}
-    </ScrollArea>
+    </>
   );
 };

@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useMemo, useState } from 'react';
+import React, { useCallback, useLayoutEffect, useMemo, useState } from 'react';
 
 import { SingleValue } from 'react-select';
 
@@ -103,13 +103,13 @@ export const useActionsModal = (
     updateParameters(selectedComponent, value?.value ?? null);
   };
 
-  const reset = () => {
+  const reset = useCallback(() => {
     setSelectedComponent(null);
     setSelectedMethod(null);
     setProtoParameters([]);
     setParameters({});
     setErrors({});
-  };
+  }, []);
 
   const handleSubmit = (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -200,7 +200,7 @@ export const useActionsModal = (
     const { action, isEditingEvent: isEditingAction } = initialData;
 
     init(structuredClone(action), isEditingAction ? 'signals' : 'methods');
-  }, [smId, controller, platforms, initialData]);
+  }, [smId, controller, platforms, initialData, reset]);
 
   return {
     handleSubmit,
@@ -219,5 +219,6 @@ export const useActionsModal = (
     controller,
     smId,
     attributeOptionsSearch,
+    reset,
   };
 };

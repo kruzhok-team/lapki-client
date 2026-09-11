@@ -24,6 +24,7 @@ import { ContextMenu, MenuItem } from './ContextMenu';
 import { ComponentDeleteModal } from '../ComponentDeleteModal';
 import { ComponentEditModal } from '../ComponentEditModal';
 import { PropertiesModal } from '../PropertiesModal';
+import { StateMachineDeleteModal } from '../Sidebar/StateMachinesTab';
 import { StateMachineEditModal } from '../StateMachineEditModal';
 
 type MenuVariant =
@@ -44,7 +45,7 @@ export const SchemeScreenContextMenu: React.FC<SchemeScreenContextMenuProps> = (
 
   const [isOpen, open, close] = useModal(false);
   const [menuVariant, setMenuVariant] = useState<MenuVariant | null>(null);
-  const { propertiesModalProps, setSelectedSmId, openPropertiesModal } = useProperties(controller);
+  const { propertiesModalProps, setSelectedSmId, openPropertiesModal } = useProperties();
   const { refs, floatingStyles } = useFloating({
     placement: 'bottom',
     middleware: [offset(), flip(), shift({ padding: 5 })],
@@ -115,7 +116,7 @@ export const SchemeScreenContextMenu: React.FC<SchemeScreenContextMenuProps> = (
       return (
         <ContextMenu onClose={close}>
           <MenuItem onClick={sMFuncs.onRequestAddStateMachine}>
-            <StateMachineIcon className="size-6 flex-shrink-0 fill-border-contrast" />
+            <StateMachineIcon className="size-6 flex-shrink-0" />
             Вставить машину состояний
           </MenuItem>
         </ContextMenu>
@@ -194,11 +195,12 @@ export const SchemeScreenContextMenu: React.FC<SchemeScreenContextMenuProps> = (
     <div
       ref={refs.setFloating}
       style={floatingStyles}
-      className={twMerge('z-50 w-80 rounded bg-bg-secondary p-2 shadow-xl', !isOpen && 'hidden')}
+      className={twMerge('dropdown-menu z-50 w-80', !isOpen && 'hidden')}
     >
       {content}
       <ComponentDeleteModal {...componentFuncs.deleteProps} />
       <ComponentEditModal {...componentFuncs.editProps} />
+      <StateMachineDeleteModal {...sMFuncs.deleteProps} />
       <StateMachineEditModal
         variant="create"
         form={sMFuncs.addProps.addForm}

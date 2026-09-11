@@ -21,6 +21,7 @@ import {
 import { hideLoadingOverlay } from '@renderer/components/utils/OverlayControl';
 import { useErrorModal, useFileOperations, useSettings } from '@renderer/hooks';
 import { useAppTitle } from '@renderer/hooks/useAppTitle';
+import { useFileMenu } from '@renderer/hooks/useFileMenu';
 import { useModal } from '@renderer/hooks/useModal';
 import { useRecentFilesHooks } from '@renderer/hooks/useRecentFilesHooks';
 import { useWindowManagerStore } from '@renderer/hooks/useWindowManagerStore';
@@ -31,12 +32,14 @@ import {
 } from '@renderer/lib/data/PlatformLoader';
 import { preloadPicto } from '@renderer/lib/drawable';
 import { useModelContext } from '@renderer/store/ModelContext';
+import { useManagerMS } from '@renderer/store/useManagerMS';
 import { useTasks } from '@renderer/store/useTasks';
 import { useWorkspace } from '@renderer/store/useWorkspace';
 
-import { NotInitialized } from './NotInitialized';
+import { StartScreen } from './StartScreen';
 
 import type { TaskCatalog } from '../../../../common/tasks';
+import { CompilerConnection } from '../Modules/CompilerConnection';
 import { RestoreDataModal } from '../RestoreDataModal';
 
 export const MainContainer: React.FC = () => {
@@ -79,6 +82,19 @@ export const MainContainer: React.FC = () => {
     openImportError,
   });
   const isSaveModalOpen = saveModalProps.isOpen;
+  const [openData, setOpenData] = useState<
+    [boolean, string | null, string | null, string] | undefined
+  >(undefined);
+  const compilerStatus = useManagerMS((state) => state.compilerStatus);
+  const { items: fileMenuItems, modals: fileMenuModals } = useFileMenu({
+    onRequestNewFile: operations.onRequestNewFile,
+    onRequestOpenFile: operations.onRequestOpenFile,
+    onRequestSaveFile: operations.onRequestSaveFile,
+    onRequestSaveAsFile: operations.onRequestSaveAsFile,
+    onRequestImport: operations.onRequestImportFile,
+    compilerStatus,
+    setOpenData,
+  });
 
   useRecentFilesHooks();
 
@@ -201,33 +217,17 @@ export const MainContainer: React.FC = () => {
   return (
     <div className="h-screen select-none overflow-hidden">
       <div className="relative flex h-full w-full flex-col">
-        <Header
-          callbacks={operations}
-          onCompilerImportData={initImportData}
-          initialSimulationSmId={initialSimulationSmId}
-          renderStartScreen={
-            !isInitialized
-              ? (fileMenu) => (
-                  <main
-                    className={twMerge(
-                      'relative flex min-h-0 flex-1 items-center justify-center overflow-auto bg-bg-primary px-6 py-8',
-                      isDragActive && 'bg-bg-hover'
-                    )}
-                    {...getRootProps()}
-                  >
-                    <input {...getInputProps()} />
-                    <div className="flex items-center">
-                      <aside className="mr-[24px] w-[188px]">{fileMenu}</aside>
-                      <div className="h-[400px] w-px bg-border-primary" aria-hidden="true" />
-                      <div className="ml-[103px]">
-                        <NotInitialized />
-                      </div>
-                    </div>
-                  </main>
-                )
-              : undefined
-          }
-        />
+        <Header fileMenuItems={fileMenuItems} initialSimulationSmId={initialSimulationSmId} />
+        {!isInitialized && (
+          <StartScreen
+            fileMenuItems={fileMenuItems}
+            getInputProps={getInputProps}
+            getRootProps={getRootProps}
+            isDragActive={isDragActive}
+          />
+        )}
+        {fileMenuModals}
+        <CompilerConnection openData={openData} onImportData={initImportData} />
         {isInitialized && (
           <div
             className={twMerge(
@@ -248,7 +248,11 @@ export const MainContainer: React.FC = () => {
             >
               <input {...getInputProps()} />
               {workspace === 'editor' ? (
-                <DiagramEditor key={controller.id} controller={controller} editor={controller.app} />
+                <DiagramEditor
+                  key={controller.id}
+                  controller={controller}
+                  editor={controller.app}
+                />
               ) : (
                 <Simulator initialSmId={initialSimulationSmId} />
               )}

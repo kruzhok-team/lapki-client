@@ -34,12 +34,11 @@ export const RestoreDataModal: React.FC<RestoreDataModalProps> = ({
       submitLabel="Да"
       onSubmit={handleSubmit}
       cancelLabel="Нет"
-      cancelClassName="btn-error"
     >
       Работа программы была прервана неожиданно. Хотите восстановить несохранённые данные?
       <br></br>
-      <b>Внимание!</b> Если Вы выберете «Нет» или закроете окно, то несохранённые данные будут
-      утеряны навсегда!
+      <span className="font-medium">Внимание!</span> Если Вы выберете «Нет» или закроете окно, то
+      несохранённые данные будут утеряны навсегда!
     </Modal>
   );
 };

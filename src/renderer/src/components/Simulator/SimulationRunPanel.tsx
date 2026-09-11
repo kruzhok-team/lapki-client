@@ -18,6 +18,7 @@ interface SimulationRunPanelProps {
   error?: string;
   message?: string;
   stale?: boolean;
+  reserveFeedbackSpace?: boolean;
   onModeChange: (mode: SimulationMode) => void;
   onTimeoutChange: (timeout: number) => void;
   onStart: () => void;
@@ -25,7 +26,7 @@ interface SimulationRunPanelProps {
 }
 
 const controlClassName =
-  'h-8 w-full rounded-lg border border-border-primary bg-bg-primary px-3 text-xs text-text-primary outline-none focus:border-primary';
+  'h-8 w-full rounded-lg border border-border-primary bg-bg-primary px-3 text-xs text-text-primary outline-none focus:border-text-inactive disabled:cursor-not-allowed disabled:bg-inactive-input disabled:text-text-inactive';
 
 const buttonClassName =
   'h-8 rounded-lg px-3 text-xs transition-colors enabled:bg-primary enabled:text-text-secondary disabled:cursor-not-allowed disabled:bg-bg-active disabled:text-text-disabled';
@@ -50,6 +51,7 @@ export const SimulationRunPanel: React.FC<SimulationRunPanelProps> = ({
   error,
   message,
   stale,
+  reserveFeedbackSpace = false,
   onModeChange,
   onTimeoutChange,
   onStart,
@@ -66,6 +68,7 @@ export const SimulationRunPanel: React.FC<SimulationRunPanelProps> = ({
             className="w-full"
             isSearchable={false}
             isClearable={false}
+            isDisabled={active}
             options={simulationModeOptions}
             value={simulationModeOptions.find((option) => option.value === mode)}
             onChange={(option) => {
@@ -82,34 +85,30 @@ export const SimulationRunPanel: React.FC<SimulationRunPanelProps> = ({
               min={1}
               max={30}
               value={timeout}
-              disabled={mode === 'endless'}
+              disabled={active || mode === 'endless'}
               onChange={(event) =>
                 onTimeoutChange(Math.max(1, Math.min(30, Number(event.target.value))))
               }
             />
           </FieldInput>
         </div>
-        <div className="mt-3 grid grid-cols-2 gap-3">
+        <div className="mt-3">
           <button
             type="button"
-            className={buttonClassName}
-            disabled={!ready || active}
-            onClick={onStart}
+            className={`${buttonClassName} w-full`}
+            disabled={!active && !ready}
+            onClick={active ? onCancel : onStart}
           >
-            Запустить
-          </button>
-          <button
-            type="button"
-            className="h-8 rounded-lg border border-primary px-3 text-xs text-primary transition-colors hover:bg-bg-hover disabled:cursor-not-allowed disabled:border-border-primary disabled:text-text-disabled"
-            disabled={!active}
-            onClick={onCancel}
-          >
-            Отменить
+            {active ? 'Отменить' : 'Запустить'}
           </button>
         </div>
-        {error && <p className="mt-3 text-xs text-error">{error}</p>}
-        {message && <p className="mt-3 text-xs">{message}</p>}
-        {stale && <p className="mt-3 text-xs text-warning">Результат устарел.</p>}
+        {(reserveFeedbackSpace || error || message || stale) && (
+          <div className="mt-3 min-h-4 space-y-3">
+            {error && <p className="text-xs text-error">{error}</p>}
+            {message && <p className="text-xs">{message}</p>}
+            {stale && <p className="text-xs text-warning">Результат устарел.</p>}
+          </div>
+        )}
       </div>
     </section>
   </div>

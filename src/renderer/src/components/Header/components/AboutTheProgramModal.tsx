@@ -13,11 +13,12 @@ export const AboutTheProgramModal: React.FC<AboutTheProgramModalProps> = ({
   onClose,
   ...props
 }) => {
+  const linkClassname = 'text-primary';
   const devInfo = (
     <>
-      <b>Разработка:</b>{' '}
+      <span className="h2-header">Разработка:</span>{' '}
       <a
-        className="text-blue-500 transition duration-150 ease-in-out hover:text-blue-300 focus:text-blue-300 active:text-blue-700"
+        className={linkClassname}
         href="https://polyus-nt.ru"
         target="_blank"
         rel="noopener noreferrer"
@@ -26,7 +27,7 @@ export const AboutTheProgramModal: React.FC<AboutTheProgramModalProps> = ({
       </a>{' '}
       и{' '}
       <a
-        className="text-blue-500 transition duration-150 ease-in-out hover:text-blue-300 focus:text-blue-300 active:text-blue-700"
+        className={linkClassname}
         href="https://github.com/kruzhok-team/lapki-client"
         target="_blank"
         rel="noopener noreferrer"
@@ -47,26 +48,24 @@ export const AboutTheProgramModal: React.FC<AboutTheProgramModalProps> = ({
     >
       <div className="text-xs leading-[15px]">
         <div className="mb-3">
-          <div>Cyberiada IDE</div>
-          <div>Версия: {appVersion}</div>
+          <div className="h2-header">Cyberiada IDE</div>
+          <div>
+            <span className="h2-header">Версия: </span>
+            {appVersion}
+          </div>
         </div>
 
         {showDevInfo && <div>{devInfo}</div>}
         <div>
-          <b>Исходные коды проекта:</b>{' '}
-          <a
-            className="text-blue-500 transition duration-150 ease-in-out hover:text-blue-300 focus:text-blue-300 active:text-blue-700"
-            href={sourceLink}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          <span className="h2-header">Исходные коды проекта:</span>{' '}
+          <a className={linkClassname} href={sourceLink} target="_blank" rel="noopener noreferrer">
             {sourceLink}
           </a>
         </div>
         <div>
-          <b>Обратная связь:</b>{' '}
+          <span className="h2-header">Обратная связь:</span>{' '}
           <a
-            className="text-blue-500 transition duration-150 ease-in-out hover:text-blue-300 focus:text-blue-300 active:text-blue-700"
+            className={linkClassname}
             href="https://github.com/kruzhok-team/lapki-client/issues/new"
             target="_blank"
             rel="noopener noreferrer"
@@ -74,7 +73,7 @@ export const AboutTheProgramModal: React.FC<AboutTheProgramModalProps> = ({
             сообщить об ошибке,
           </a>{' '}
           <a
-            className="text-blue-500 transition duration-150 ease-in-out hover:text-blue-300 focus:text-blue-300 active:text-blue-700"
+            className={linkClassname}
             href={telegramLink}
             target="_blank"
             rel="noopener noreferrer"

@@ -1,0 +1,15 @@
+.header-menu-button {
+  @apply h-full rounded-lg px-3 text-xs text-text-primary transition-colors hover:bg-bg-hover focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary;
+}
+
+.header-popover {
+  @apply absolute left-0 top-full z-[110] max-h-[calc(100vh-25px)] min-w-[260px] overflow-y-auto border border-border-primary bg-white shadow-[0_2px_4px_rgba(0,0,0,0.2)];
+}
+
+.header-settings-popover {
+  @apply absolute left-[11px] top-full z-[110] w-[160px] overflow-visible;
+}
+
+.header-file-popover {
+  @apply absolute left-[11px] top-full z-[110] w-[144px];
+}

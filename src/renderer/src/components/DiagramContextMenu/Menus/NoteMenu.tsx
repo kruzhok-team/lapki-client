@@ -13,7 +13,7 @@ import { Note } from '@renderer/lib/drawable';
 import { Point } from '@renderer/lib/types';
 import { useModelContext } from '@renderer/store/ModelContext';
 
-import { ContextMenu, MenuItem, SubMenu, SubMenuContainer } from '../ContextMenu';
+import { ContextMenu, MenuItem, SubMenu, SubMenuArrow, SubMenuContainer } from '../ContextMenu';
 
 interface NoteMenuProps {
   smId: string;
@@ -97,6 +97,7 @@ export const NoteMenu: React.FC<NoteMenuProps> = ({
         <MenuItem>
           <FontSizeIcon className="size-6 flex-shrink-0" />
           Размер шрифта
+          <SubMenuArrow />
         </MenuItem>
 
         <SubMenu className="w-28 justify-between" position={position.x < 800 ? 'left' : 'right'}>
@@ -116,7 +117,7 @@ export const NoteMenu: React.FC<NoteMenuProps> = ({
         </SubMenu>
       </SubMenuContainer>
       <MenuItem
-        className="danger enabled:hover:bg-error"
+        className="danger"
         onClick={() => modelController.deleteNote({ smId, id: note.id })}
       >
         <DeleteIcon className="size-6 flex-shrink-0" /> Удалить

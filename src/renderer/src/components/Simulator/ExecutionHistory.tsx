@@ -23,26 +23,29 @@ export const ExecutionHistory: React.FC<ExecutionHistoryProps> = ({
   isTruncated,
   onSelectStep,
   onTogglePlayback,
-}) => (
-  <section className="mt-6">
-    <h2 className="h2-header mb-2">История</h2>
-    <div className="min-h-[200px] rounded-lg border border-border-primary p-3">
-      {steps.length === 0 ? (
-        <p className="text-xs leading-4 text-text-inactive">История появится после запуска.</p>
-      ) : (
+}) => {
+  const hasSteps = steps.length > 0;
+  const currentStep = hasSteps ? steps[historyIndex] : undefined;
+
+  return (
+    <section className="mt-6">
+      <h2 className="h2-header mb-2">История</h2>
+      <div className="min-h-[200px] rounded-lg border border-border-primary p-3">
         <div className="grid gap-3 text-xs">
           <input
             aria-label="Шаг истории"
             type="range"
             min={0}
-            max={steps.length - 1}
+            max={Math.max(steps.length - 1, 0)}
             value={historyIndex}
+            disabled={!hasSteps}
             onChange={(event) => onSelectStep(Number(event.target.value))}
           />
           <div className="grid gap-2">
             <button
               type="button"
               className={twMerge(buttonClassName, 'w-full')}
+              disabled={!hasSteps}
               onClick={onTogglePlayback}
             >
               {isPlaying ? 'Пауза' : 'Воспроизвести'}
@@ -52,30 +55,31 @@ export const ExecutionHistory: React.FC<ExecutionHistoryProps> = ({
             <button
               type="button"
               className={twMerge(buttonClassName, 'min-w-0 px-2')}
-              disabled={historyIndex === 0}
+              disabled={!hasSteps || historyIndex === 0}
               onClick={() => onSelectStep(historyIndex - 1)}
             >
               Назад
             </button>
             <span className="whitespace-nowrap text-center">
-              Шаг {historyIndex + 1} / {steps.length}
+              Шаг {hasSteps ? historyIndex + 1 : 0} / {steps.length}
             </span>
             <button
               type="button"
               className={twMerge(buttonClassName, 'min-w-0 px-2')}
-              disabled={historyIndex === steps.length - 1}
+              disabled={!hasSteps || historyIndex === steps.length - 1}
               onClick={() => onSelectStep(historyIndex + 1)}
             >
               Вперёд
             </button>
           </div>
           <p className="text-text-inactive">
-            Позиция: {steps[historyIndex].position.x}, {steps[historyIndex].position.y} ·{' '}
-            {steps[historyIndex].orientation}
+            {currentStep
+              ? `Позиция: ${currentStep.position.x}, ${currentStep.position.y} · ${currentStep.orientation}`
+              : 'Позиция: —'}
           </p>
           {isTruncated && <p className="text-warning">Показаны первые 5 000 шагов.</p>}
         </div>
-      )}
-    </div>
-  </section>
-);
+      </div>
+    </section>
+  );
+};

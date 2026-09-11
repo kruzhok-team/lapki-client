@@ -64,21 +64,16 @@ export const Setting: React.FC<SettingProps> = ({
   return (
     <DropdownMenu>
       <div className="group relative">
-        <DropdownMenuItem className="justify-between" aria-haspopup="menu">
-          Тема
-          <span aria-hidden="true">›</span>
-        </DropdownMenuItem>
+        <DropdownMenuItem aria-haspopup="menu">Тема</DropdownMenuItem>
         <DropdownMenu className="dropdown-submenu">
           {(['light'] as const).map((value) => (
             <DropdownMenuItem
               key={value}
               role="menuitemradio"
               aria-checked={theme === value}
-              className="justify-between"
               onClick={() => handleChangeTheme(value)}
             >
               {value === 'light' ? 'Светлая' : 'Тёмная'}
-              {theme === value && <span aria-hidden="true">✓</span>}
             </DropdownMenuItem>
           ))}
         </DropdownMenu>
@@ -101,28 +96,21 @@ export const Setting: React.FC<SettingProps> = ({
       </DropdownMenuItem>
 
       <div className="group relative">
-        <DropdownMenuItem className="justify-between" aria-haspopup="menu">
-          Анимации на холсте
-          <span aria-hidden="true">›</span>
-        </DropdownMenuItem>
+        <DropdownMenuItem aria-haspopup="menu">Анимации на холсте</DropdownMenuItem>
         <DropdownMenu className="dropdown-submenu">
           <DropdownMenuItem
             role="menuitemradio"
             aria-checked={canvasSettings?.animations === true}
-            className="justify-between"
             onClick={() => handleChangeCanvasAnimations(true)}
           >
             Вкл
-            {canvasSettings?.animations && <span aria-hidden="true">✓</span>}
           </DropdownMenuItem>
           <DropdownMenuItem
             role="menuitemradio"
             aria-checked={canvasSettings?.animations === false}
-            className="justify-between"
             onClick={() => handleChangeCanvasAnimations(false)}
           >
             Выкл
-            {canvasSettings && !canvasSettings.animations && <span aria-hidden="true">✓</span>}
           </DropdownMenuItem>
         </DropdownMenu>
       </div>

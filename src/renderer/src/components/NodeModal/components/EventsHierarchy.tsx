@@ -23,7 +23,7 @@ interface EventsHierarchyProps {
   onSelectEvent: (eventIndex: number) => void;
   onSelectAction: (eventIndex: number, actionIndex: number) => void;
   onAddEvent: () => void;
-  onRemoveEvent: () => void;
+  onRemoveSelected: () => void;
 }
 
 // Левая панель иерархии событий и действий в StateModal.
@@ -38,7 +38,7 @@ export const EventsHierarchy: React.FC<EventsHierarchyProps> = ({
   onSelectEvent,
   onSelectAction,
   onAddEvent,
-  onRemoveEvent,
+  onRemoveSelected,
 }) => {
   const modelController = useModelContext();
   const visualData = modelController.model.useData(smId, 'elements.visual');
@@ -76,13 +76,19 @@ export const EventsHierarchy: React.FC<EventsHierarchyProps> = ({
     return event.do as Action[];
   };
 
+  const selectedEvent = selectedEventIndex === undefined ? undefined : events[selectedEventIndex];
+  const selectedActions = selectedEvent ? getEventActions(selectedEvent) : [];
+  const hasSelectedElement =
+    selectedEvent !== undefined &&
+    (selectedActionIndex === null || selectedActions[selectedActionIndex] !== undefined);
+
   return (
-    <div className="flex h-full min-h-[290px] flex-col rounded border border-border-primary p-3">
-      <div className="flex flex-row justify-between">
+    <div className="flex h-full min-h-[290px] flex-col rounded-lg border border-border-primary p-3">
+      <div className="flex flex-row justify-between pb-3">
         <span className="font-medium">События и действия</span>
-        <div className="mb-2 flex gap-3">
+        <div className="flex gap-3">
           <AddButton onClick={onAddEvent} />
-          <DeleteButton disabled={selectedEventIndex === undefined} onClick={onRemoveEvent} />
+          <DeleteButton disabled={!hasSelectedElement} onClick={onRemoveSelected} />
         </div>
       </div>
       {/* Список событий с действиями */}
@@ -106,8 +112,9 @@ export const EventsHierarchy: React.FC<EventsHierarchyProps> = ({
                     <div
                       {...hintProps}
                       className={twMerge(
-                        'flex cursor-pointer select-none items-center gap-1 rounded-lg px-1 hover:bg-bg-hover',
-                        isEventSelected && selectedActionIndex === null && 'bg-bg-active'
+                        'mt-1.5 flex cursor-pointer select-none items-center gap-1 rounded-lg px-1 hover:bg-bg-hover',
+                        isEventSelected && selectedActionIndex === null && 'bg-bg-active',
+                        eventIdx === 0 && 'my-0'
                       )}
                       onClick={() => onSelectEvent(eventIdx)}
                     >
@@ -133,10 +140,10 @@ export const EventsHierarchy: React.FC<EventsHierarchyProps> = ({
                       </div>
 
                       {/* Текст события */}
-                      <div className="flex min-w-0 flex-1 flex-row gap-2">
+                      <div className="flex min-w-0 flex-1 flex-row items-center gap-2">
                         <EventIcon className="flex-shrink-0" />
-                        <div className="min-w-0 truncate">
-                          <span className="font-medium">{getTriggerText(event)}</span>
+                        <div className="min-w-0 truncate leading-5">
+                          <span>{getTriggerText(event)}</span>
                           {event.condition && <span>{getConditionText(event.condition)}</span>}
                         </div>
                       </div>
@@ -150,7 +157,7 @@ export const EventsHierarchy: React.FC<EventsHierarchyProps> = ({
                     <div
                       key={actionIdx}
                       className={twMerge(
-                        'flex cursor-pointer select-none flex-row items-center gap-1 truncate rounded-lg pl-7 pr-2 text-text-primary hover:bg-bg-hover',
+                        'mt-1.5 flex cursor-pointer select-none flex-row items-center gap-1 truncate rounded-lg pl-7 pr-2 text-text-primary hover:bg-bg-hover',
                         selectedEventIndex === eventIdx &&
                           selectedActionIndex === actionIdx &&
                           'bg-bg-active'

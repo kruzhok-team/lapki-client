@@ -2,6 +2,8 @@ import React, { ComponentProps } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
+import { ReactComponent as ArrowIcon } from '@renderer/assets/icons/arrow-down.svg';
+
 import { ContextMenuContext, useContextMenuContext } from './ContextMenuContext';
 
 interface ContextMenuProps {
@@ -30,10 +32,7 @@ export const MenuItem: React.FC<MenuItemProps> = ({
 
   return (
     <div
-      className={twMerge(
-        'flex w-full items-center gap-2 rounded px-4 py-2 transition-colors hover:cursor-pointer hover:bg-bg-hover active:bg-bg-active',
-        className
-      )}
+      className={twMerge('context-menu-item gap-2', className)}
       onClick={(e) => {
         onClick?.(e);
 
@@ -49,6 +48,13 @@ export const SubMenuContainer: React.FC<SubMenuContainerProps> = ({ className, .
   return <div className={twMerge('group relative', className)} {...props} />;
 };
 
+export const SubMenuArrow: React.FC = () => (
+  <ArrowIcon
+    aria-hidden="true"
+    className="context-menu-arrow ml-auto size-2.5 shrink-0 -rotate-90"
+  />
+);
+
 interface SubMenuProps extends ComponentProps<'div'> {
   position: 'left' | 'right';
 }
@@ -56,7 +62,7 @@ export const SubMenu: React.FC<SubMenuProps> = ({ className, position, ...props 
   return (
     <div
       className={twMerge(
-        'absolute top-0 hidden w-80 flex-col rounded bg-bg-secondary p-2 shadow-xl group-hover:flex',
+        'dropdown-menu absolute top-0 hidden w-80 flex-col group-hover:flex',
         className,
         position === 'left' ? 'left-full' : 'right-full'
       )}

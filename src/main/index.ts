@@ -77,9 +77,7 @@ function createWindow(): BrowserWindow {
 
   //Получаем ответ из рендера и закрываем приложение
   ipcMain.on('closed', async (_) => {
-    await ModuleManager.stopModule('lapki-compiler');
-    await ModuleManager.stopModule('lapki-flasher');
-    await ModuleManager.stopModule('sm-interpreter');
+    await ModuleManager.stopAllModules();
     app.exit(0);
   });
 
@@ -228,9 +226,6 @@ app.whenReady().then(async () => {
 
 // Завершаем приложение, когда окна закрыты.
 app.on('window-all-closed', async () => {
-  // явно останавливаем загрузчик, так как в некоторых случаях он остаётся висеть
-  await ModuleManager.stopModule('lapki-flasher');
-  await ModuleManager.stopModule('lapki-compiler');
-  await ModuleManager.stopModule('sm-interpreter');
+  await ModuleManager.stopAllModules();
   app.quit();
 });

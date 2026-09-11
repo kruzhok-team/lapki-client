@@ -64,7 +64,7 @@ export const ComponentReferenceV: React.FC<ComponentReferenceProps> = ({ platfor
     const options: ParameterSelectOption[] = components.map((c) => ({
       value: c.idx,
       label: c.name || c.idx,
-      icon: manager.getRawComponentIcon(c.idx, 'mr-1 h-7 w-7'),
+      icon: manager.getRawComponentIcon(c.idx, 'mr-2 size-5'),
     }));
     setPlatformComponents(components);
     setComponentOptions(options);
@@ -92,7 +92,7 @@ export const ComponentReferenceV: React.FC<ComponentReferenceProps> = ({ platfor
       <ComponentInfo
         component={entry}
         manager={manager}
-        className="mt-2 h-[calc(100%-100px)] flex-1 overflow-y-scroll p-2"
+        className="mt-6 min-h-0 flex-1"
         noTitle={true}
         noTypeIcons={true}
       />
@@ -100,9 +100,10 @@ export const ComponentReferenceV: React.FC<ComponentReferenceProps> = ({ platfor
   }, [entry, manager, componentOptions]);
 
   return (
-    <div className="h-full gap-2">
+    <div className="flex min-h-0 flex-1 flex-col">
       <ParameterSelect
         className="w-full"
+        indicatorClassName="text-black"
         options={componentOptions}
         value={componentOptions.find((o) => o.value === cursor) ?? null}
         onChange={onCompClick}

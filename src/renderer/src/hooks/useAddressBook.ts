@@ -12,7 +12,6 @@ export type addressBookReturn = {
   onAdd: (data: AddressData) => void;
   onRemove: (index: number) => void;
   onEdit: (data: AddressData, index: number) => void;
-  onSwapEntries: (index1: number, index2: number) => void;
   getID: (index: number) => number | null;
   getIndex: (id: number) => number | undefined;
   getEntryById: (id: number) => AddressData | undefined;
@@ -111,43 +110,6 @@ export const useAddressBook = (): addressBookReturn => {
     setIndexToId(indexToId.toSpliced(index, 1));
     setAddressBookSetting(addressBookSetting.toSpliced(index, 1));
   };
-  const onSwapEntries = (index1: number, index2: number) => {
-    if (addressBookSetting === null) {
-      return;
-    }
-    const firstEntry = addressBookSetting[index1];
-    const secondEntry = addressBookSetting[index2];
-    const newBook = addressBookSetting.map((v, i) => {
-      if (i === index1) {
-        return secondEntry;
-      }
-      if (i === index2) {
-        return firstEntry;
-      }
-      return v;
-    });
-    const newIdToIndex = new Map(idToIndex);
-    newIdToIndex.set(indexToId[index1], index2);
-    newIdToIndex.set(indexToId[index2], index1);
-    const newIndexToId = indexToId.map((v, i) => {
-      if (i === index1) {
-        return indexToId[index2];
-      }
-      if (i === index2) {
-        return indexToId[index1];
-      }
-      return v;
-    });
-    if (index1 === selectedAddressIndex) {
-      setSelectedAddressIndex(index2);
-    } else if (index2 === selectedAddressIndex) {
-      setSelectedAddressIndex(index1);
-    }
-    setAddressBookSetting(newBook);
-    setIdToIndex(newIdToIndex);
-    setIndexToId(newIndexToId);
-  };
-
   const selectedAddress = () => {
     if (
       addressBookSetting === null ||
@@ -201,7 +163,6 @@ export const useAddressBook = (): addressBookReturn => {
     onAdd,
     onRemove,
     onEdit,
-    onSwapEntries,
     getID,
     getIndex,
     getEntryById,

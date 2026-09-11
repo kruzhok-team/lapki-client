@@ -76,7 +76,7 @@ export const Action: React.FC<ActionProps> = (props) => {
   return (
     <div
       className={twMerge(
-        'w-full min-w-max gap-2 py-1.5 pl-3 scrollbar-w-full hover:bg-bg-hover',
+        'w-full min-w-max gap-2 rounded-lg py-1.5 pl-3 scrollbar-w-full first:pt-[10px] last:pb-[10px] hover:bg-bg-hover',
         isSelected && 'bg-bg-active'
       )}
       onClick={onSelect}

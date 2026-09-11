@@ -1,8 +1,6 @@
 import { useCallback, useState } from 'react';
 
-import { ActionsModalData } from '@renderer/components';
 import { ParameterSelectOption } from '@renderer/components/UI';
-import { useModal } from '@renderer/hooks/useModal';
 import { serializeActions } from '@renderer/lib/data/GraphmlBuilder';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { useModelContext } from '@renderer/store/ModelContext';
@@ -20,9 +18,6 @@ export const useActions = (
   };
   const visual = controller.useData('visual') as boolean;
 
-  const [isActionsModalOpen, openActionsModal, closeActionsModal] = useModal(false);
-  const [actionsModalData, setActionsModalData] = useState<ActionsModalData>();
-
   const [tabValue, setTabValue] = useState(0);
 
   const [actions, setActions] = useState<Action[]>(
@@ -33,14 +28,6 @@ export const useActions = (
     typeof defaultActions === 'string' ? defaultActions : ''
   );
 
-  const handleAddAction = () => {
-    setActionsModalData(undefined);
-    openActionsModal();
-  };
-  const handleChangeAction = (action: Action) => {
-    setActionsModalData(action && { smId, action, isEditingEvent: false });
-    openActionsModal();
-  };
   const handleDeleteAction = (index: number) => {
     setActions((p) => p.filter((_, i) => index !== i));
     // TODO(L140-beep) мб удалять и из модели сразу?
@@ -53,21 +40,6 @@ export const useActions = (
 
       return newActions;
     });
-  };
-
-  const handleActionsModalSubmit = (data: Action, idx?: number | null) => {
-    if (actionsModalData && idx !== undefined && idx !== null) {
-      setActions((p) => {
-        const newActions = [...p];
-
-        newActions[idx] = data;
-        return newActions;
-      });
-    } else {
-      setActions((p) => [...p, data]);
-    }
-
-    closeActionsModal();
   };
 
   const getComponentName = (id: string) => {
@@ -199,8 +171,6 @@ export const useActions = (
     actions,
     setActions,
 
-    onAddAction: handleAddAction,
-    onChangeAction: handleChangeAction,
     onDeleteAction: handleDeleteAction,
     onReorderAction: handleReorderAction,
 
@@ -210,12 +180,6 @@ export const useActions = (
     text,
     onChangeText: setText,
 
-    modal: {
-      isOpen: isActionsModalOpen,
-      onClose: closeActionsModal,
-      onSubmit: handleActionsModalSubmit,
-      initialData: actionsModalData,
-    },
     smId,
     getComponentName,
     controller,

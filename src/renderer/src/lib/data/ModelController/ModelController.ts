@@ -59,6 +59,8 @@ import {
 } from '@renderer/types/diagram';
 
 import { CanvasController, CanvasControllerEvents } from './CanvasController';
+import { getEventDeletionTarget } from './EventDeletion';
+import { getStateMachineDeletionFallbackId } from './StateMachineNavigation';
 import { UserInputValidator } from './UserInputValidator';
 
 import { EditorModel } from '../EditorModel';
@@ -703,12 +705,26 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   deleteStateMachine(smId: string, canUndo = true) {
     const sm = { ...this.model.data.elements.stateMachines[smId] };
-    // Сделать общий канвас канвасом по умолчанию?
+    const stateMachineIds = Object.keys(this.model.data.elements.stateMachines).filter(
+      (id) => id !== ''
+    );
     const specificCanvas = Object.values(this.controllers).find(
       (controller) => controller.stateMachinesSub[smId] && controller.type === 'specific'
     );
 
     if (!specificCanvas) throw new Error('No controller for specific canvas!');
+
+    if (this.model.data.headControllerId === specificCanvas.id) {
+      const fallbackSmId = getStateMachineDeletionFallbackId(stateMachineIds, smId);
+      const fallbackCanvas = fallbackSmId
+        ? Object.values(this.controllers).find(
+            (controller) =>
+              controller.type === 'specific' && controller.stateMachinesSub[fallbackSmId]
+          )
+        : this.controllers[''];
+
+      this.changeHeadControllerId(fallbackCanvas?.id ?? '');
+    }
 
     this.unwatch(specificCanvas);
     delete this.controllers[specificCanvas.id];
@@ -2017,33 +2033,26 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const state = this.model.data.elements.stateMachines[smId].states[stateId];
     if (!state) return false;
 
-    const { eventIdx, actionIdx } = event;
+    const { eventIdx } = event;
+    const deletionTarget = getEventDeletionTarget(state.events, event);
+    if (!deletionTarget) return false;
 
-    if (actionIdx !== null) {
-      // Проверяем если действие в событие последнее то надо удалить всё событие
-      if (state.events[eventIdx].do.length === 1) {
-        return this.deleteEvent({ stateId, smId, event: { eventIdx, actionIdx: null } });
-      }
-
-      const prevValue = state.events[eventIdx].do[actionIdx];
-
+    if (deletionTarget.type === 'action') {
       if (!this.model.deleteEventAction(smId, stateId, event)) return false;
       this.emit('deleteEventAction', { smId, stateId, event });
       if (canUndo) {
         this.history.do({
           type: 'deleteEventAction',
-          args: { smId, stateId, event, prevValue: prevValue as Action },
+          args: { smId, stateId, event, prevValue: deletionTarget.value },
         });
       }
     } else {
-      const prevValue = state.events[eventIdx];
-
       if (!this.model.deleteEvent(smId, stateId, eventIdx)) return false;
       this.emit('deleteEvent', { smId, stateId, event });
       if (canUndo) {
         this.history.do({
           type: 'deleteEvent',
-          args: { smId, stateId, eventIdx, prevValue },
+          args: { smId, stateId, eventIdx, prevValue: deletionTarget.value },
         });
       }
     }

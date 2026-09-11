@@ -1,0 +1,16 @@
+<svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="6.5" y="6.5" width="13" height="13" rx="0.5" stroke="currentColor"/>
+<path d="M8 4V6" stroke="currentColor" stroke-linecap="round"/>
+<path d="M18 4V6" stroke="currentColor" stroke-linecap="round"/>
+<path d="M13 4V6" stroke="currentColor" stroke-linecap="round"/>
+<path d="M8 20V22" stroke="currentColor" stroke-linecap="round"/>
+<path d="M18 20V22" stroke="currentColor" stroke-linecap="round"/>
+<path d="M13 20V22" stroke="currentColor" stroke-linecap="round"/>
+<path d="M22 8L20 8" stroke="currentColor" stroke-linecap="round"/>
+<path d="M22 18L20 18" stroke="currentColor" stroke-linecap="round"/>
+<path d="M22 13L20 13" stroke="currentColor" stroke-linecap="round"/>
+<path d="M6 8L4 8" stroke="currentColor" stroke-linecap="round"/>
+<path d="M6 18L4 18" stroke="currentColor" stroke-linecap="round"/>
+<path d="M6 13L4 13" stroke="currentColor" stroke-linecap="round"/>
+<path d="M12.5 17C12.5 17.2761 12.7239 17.5 13 17.5C13.2761 17.5 13.5 17.2761 13.5 17L13 17L12.5 17ZM13.3536 8.64645C13.1583 8.45118 12.8417 8.45118 12.6464 8.64645L9.46447 11.8284C9.2692 12.0237 9.2692 12.3403 9.46447 12.5355C9.65973 12.7308 9.97631 12.7308 10.1716 12.5355L13 9.70711L15.8284 12.5355C16.0237 12.7308 16.3403 12.7308 16.5355 12.5355C16.7308 12.3403 16.7308 12.0237 16.5355 11.8284L13.3536 8.64645ZM13 17L13.5 17L13.5 9L13 9L12.5 9L12.5 17L13 17Z" fill="currentColor"/>
+</svg>

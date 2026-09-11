@@ -54,20 +54,20 @@ export const NotInitialized: React.FC = () => {
     'flex h-5 min-w-5 items-center justify-center rounded border border-border-contrast px-1 text-xs leading-none';
 
   return (
-    <section className="flex w-[366px] flex-col items-center text-[13px] leading-5 text-text-primary">
-      <StateMachineIcon aria-hidden="true" className="h-[179px] w-[142px]" />
-      <p className="mt-3 text-center text-base font-bold leading-5">
+    <section className="flex flex-col items-center leading-5 text-text-primary">
+      <StateMachineIcon />
+      <p className="text-center text-base font-bold leading-5">
         {appName} {shownVersion ? `v${shownVersion}` : ''}
       </p>
-      <p className="mt-2 text-center">
+      <p className="mt-3 text-center font-medium">
         Перетащите файл в эту область или воспользуйтесь комбинацией клавиш:
       </p>
-      <table className="mt-2">
+      <table>
         <tbody>
           {combination.map((value) => (
             <tr key={value.name}>
-              <td className="py-1 pr-12">{value.name}</td>
-              <td className="flex items-center py-1">
+              <td className="pr-6 pt-3">{value.name}</td>
+              <td className="flex items-center pt-3 first:py-0">
                 <div className={hotKeyStyle}>{value.command.button1}</div>
                 {value.command.button2 && (
                   <>

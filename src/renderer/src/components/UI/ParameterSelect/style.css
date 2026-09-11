@@ -11,7 +11,7 @@
 }
 
 .ParameterSelect__indicator {
-  @apply p-1 text-border-primary !important;
+  @apply px-[10px] py-1 text-border-primary !important;
 }
 
 .ParameterSelect__indicator-separator {
@@ -19,7 +19,16 @@
 }
 
 .ParameterSelect__control--is-focused {
-  @apply border-text-primary !important;
+  @apply border-text-inactive !important;
+}
+
+.ParameterSelect__control--is-disabled {
+  @apply cursor-not-allowed bg-inactive-input !important;
+}
+
+.ParameterSelect__control--is-disabled .ParameterSelect__single-value,
+.ParameterSelect__control--is-disabled .ParameterSelect__indicator {
+  @apply text-text-inactive !important;
 }
 
 .ParameterSelect__single-value {
@@ -31,11 +40,11 @@
 }
 
 .ParameterSelect__menu-list {
-  @apply bg-white text-text-primary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb;
+  @apply bg-white text-text-primary;
 }
 
 .ParameterSelect__option {
-  @apply w-full cursor-pointer rounded-lg px-3 py-1.5 text-left text-xs text-text-primary outline-none transition-colors !important;
+  @apply w-full cursor-pointer whitespace-nowrap rounded-lg px-3 py-1.5 text-left text-xs text-text-primary outline-none transition-colors !important;
 }
 
 .ParameterSelect__option--is-focused,
@@ -52,5 +61,5 @@
 }
 
 .ParameterSelect__placeholder {
-  @apply text-border-contrast !important;
+  @apply text-text-inactive !important;
 }

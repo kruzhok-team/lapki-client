@@ -39,7 +39,7 @@ import { useModelContext } from '@renderer/store/ModelContext';
 import { useTabs } from '@renderer/store/useTabs';
 import { getVirtualElement } from '@renderer/utils';
 
-import { ContextMenu, MenuItem, SubMenuContainer, SubMenu } from './ContextMenu';
+import { ContextMenu, MenuItem, SubMenuArrow, SubMenuContainer, SubMenu } from './ContextMenu';
 import { NoteMenu } from './Menus/NoteMenu';
 
 type MenuVariant =
@@ -266,7 +266,7 @@ export const StateMachineContextMenu: React.FC<StateMachineContextMenuProps> = (
           <SubMenuContainer>
             <MenuItem closeable={false}>
               <EditIcon className="size-6 flex-shrink-0" /> Редактировать
-              <span className="ml-auto">{'>'}</span>
+              <SubMenuArrow />
             </MenuItem>
 
             <SubMenu position={position.x < 800 ? 'left' : 'right'}>
@@ -306,7 +306,7 @@ export const StateMachineContextMenu: React.FC<StateMachineContextMenuProps> = (
           </MenuItem>
 
           <MenuItem
-            className="danger enabled:hover:bg-error"
+            className="danger"
             onClick={() => modelController.deleteState({ smId: smId, id: state.id })}
           >
             <DeleteIcon className="size-6 flex-shrink-0" /> Удалить
@@ -321,7 +321,7 @@ export const StateMachineContextMenu: React.FC<StateMachineContextMenuProps> = (
       return (
         <ContextMenu onClose={close}>
           <MenuItem
-            className="danger enabled:hover:bg-error"
+            className="danger"
             onClick={() => modelController.deleteFinalState({ smId: smId, id: state.id })}
           >
             <DeleteIcon className="size-6 flex-shrink-0" /> Удалить
@@ -337,7 +337,7 @@ export const StateMachineContextMenu: React.FC<StateMachineContextMenuProps> = (
       return (
         <ContextMenu onClose={close}>
           <MenuItem
-            className="danger enabled:hover:bg-error"
+            className="danger"
             onClick={() => modelController.deleteChoiceState({ smId: smId, id: state.id })}
           >
             <DeleteIcon className="size-6 flex-shrink-0" /> Удалить
@@ -353,7 +353,7 @@ export const StateMachineContextMenu: React.FC<StateMachineContextMenuProps> = (
       return (
         <ContextMenu onClose={close}>
           <MenuItem
-            className="danger enabled:hover:bg-error"
+            className="danger"
             onClick={() =>
               modelController.deleteEvent({
                 smId: smId,
@@ -396,7 +396,7 @@ export const StateMachineContextMenu: React.FC<StateMachineContextMenuProps> = (
           <SubMenuContainer>
             <MenuItem closeable={false}>
               <EditIcon className="size-6 flex-shrink-0" /> Выбрать исход
-              <span className="ml-auto">{'>'}</span>
+              <SubMenuArrow />
             </MenuItem>
 
             <SubMenu position={position.x < 800 ? 'left' : 'right'}>
@@ -424,7 +424,7 @@ export const StateMachineContextMenu: React.FC<StateMachineContextMenuProps> = (
           <SubMenuContainer>
             <MenuItem closeable={false}>
               <EditIcon className="size-6 flex-shrink-0" /> Выбрать цель
-              <span className="ml-auto">{'>'}</span>
+              <SubMenuArrow />
             </MenuItem>
 
             <SubMenu position={position.x < 800 ? 'left' : 'right'}>
@@ -461,7 +461,7 @@ export const StateMachineContextMenu: React.FC<StateMachineContextMenuProps> = (
           </MenuItem>
 
           <MenuItem
-            className="danger enabled:hover:bg-error"
+            className="danger"
             onClick={() =>
               modelController.deleteTransition({
                 smId: smId,
@@ -493,7 +493,7 @@ export const StateMachineContextMenu: React.FC<StateMachineContextMenuProps> = (
       return (
         <ContextMenu onClose={close}>
           <MenuItem
-            className="danger enabled:hover:bg-error"
+            className="danger"
             onClick={() =>
               modelController.deleteShallowHistory({ smId: smId, id: menuVariant.state.id })
             }
@@ -512,7 +512,7 @@ export const StateMachineContextMenu: React.FC<StateMachineContextMenuProps> = (
     <div
       ref={refs.setFloating}
       style={floatingStyles}
-      className={twMerge('z-50 w-80 rounded bg-bg-secondary p-2 shadow-xl', !isOpen && 'hidden')}
+      className={twMerge('dropdown-menu z-50 w-80', !isOpen && 'hidden')}
     >
       {content}
     </div>

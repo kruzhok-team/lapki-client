@@ -40,11 +40,11 @@ const HistoryItem: React.FC<{ data: HistoryAction }> = ({ data }) => {
   const description = actionDescriptions[data.type](data.args);
 
   return (
-    <div className="overflow-hidden rounded-lg border border-border-primary bg-bg-primary">
+    <div className="overflow-hidden rounded-lg border border-border-primary bg-white">
       <input id={id} type="checkbox" className="peer sr-only" />
       <label
         htmlFor={id}
-        className="flex min-h-9 w-full cursor-pointer items-center gap-2 px-3 py-2 transition-colors peer-checked:bg-bg-hover peer-focus-visible:ring-1 peer-focus-visible:ring-inset peer-focus-visible:ring-primary hover:bg-bg-hover peer-checked:[&>svg]:rotate-180"
+        className="flex min-h-9 w-full cursor-pointer items-center gap-2 px-3 py-2 peer-focus-visible:ring-1 peer-focus-visible:ring-inset peer-focus-visible:ring-primary peer-checked:[&>svg]:rotate-180"
       >
         <span className="min-w-0 flex-1 break-words font-medium">{description.name}</span>
         <Arrow className="size-4 shrink-0 transition-transform" />
@@ -76,10 +76,7 @@ const HistoryList: React.FC<{ stack: Stack; emptyText: string }> = ({ stack, emp
     <div className="space-y-2">
       {groups.map((item, i) =>
         Array.isArray(item) ? (
-          <div
-            key={i}
-            className="space-y-1 rounded-lg border border-border-primary bg-bg-secondary p-1"
-          >
+          <div key={i} className="space-y-1 rounded-lg border border-border-primary p-1">
             {item.map((data, j) => (
               <HistoryItem key={j} data={data} />
             ))}
@@ -111,7 +108,7 @@ const HistoryWithEditor: React.FC = () => {
   };
 
   const actionButtonClass =
-    'flex h-8 min-w-0 flex-1 items-center justify-center gap-2 rounded-lg border border-border-primary px-3 font-medium transition-colors enabled:hover:bg-bg-hover enabled:active:bg-bg-active disabled:cursor-not-allowed disabled:text-text-disabled disabled:opacity-60';
+    'btn-secondary flex h-8 min-w-0 flex-1 items-center justify-center gap-2 px-3 py-1.5';
 
   return (
     <div className="flex min-h-0 flex-col">
@@ -138,7 +135,7 @@ const HistoryWithEditor: React.FC = () => {
 
       <button
         type="button"
-        className="mt-2 flex h-8 w-full items-center justify-center gap-2 rounded-lg border border-primary px-3 font-medium text-primary transition-colors hover:bg-bg-hover active:bg-bg-active"
+        className="btn-primary mt-2 flex h-8 w-full items-center justify-center gap-2 px-3 py-1.5"
         onClick={exportHistory}
       >
         <ExportIcon className="size-4" />
@@ -146,7 +143,7 @@ const HistoryWithEditor: React.FC = () => {
       </button>
 
       <div
-        className="mt-4 grid grid-cols-2 rounded-lg bg-bg-primary p-1"
+        className="mt-4 grid grid-cols-2 border-b border-border-primary"
         role="tablist"
         aria-label="Разделы истории изменений"
       >
@@ -162,8 +159,10 @@ const HistoryWithEditor: React.FC = () => {
             role="tab"
             aria-selected={activeSection === section}
             className={twMerge(
-              'flex h-8 items-center justify-center gap-2 rounded-md px-2 transition-colors hover:bg-bg-hover',
-              activeSection === section && 'bg-bg-secondary font-medium shadow-sm'
+              '-mb-px flex h-8 items-center justify-center gap-2 border-b px-2',
+              activeSection === section
+                ? 'border-primary font-medium text-primary'
+                : 'border-transparent text-text-inactive'
             )}
             onClick={() => setActiveSection(section)}
           >
@@ -201,7 +200,7 @@ export const History: React.FC = () => {
   return (
     <section className="flex min-h-0 flex-col p-4">
       <div className="mb-4 border-b border-border-primary pb-3">
-        <h2 className="text-sm font-medium">История изменений</h2>
+        <h2 className="h2-header">История изменений</h2>
         <p className="mt-1 text-text-inactive">Последние действия в текущей диаграмме</p>
       </div>
       {isInitialized ? (

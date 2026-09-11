@@ -1,5 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 
+import { GardenerMarker, type GardenerFieldOrientation, gardenerCellStyles } from './GardenerField';
+import { ReaderImpulseList } from './ReaderResult';
+
 import type {
   CatalogTask,
   GardenerTaskInput,
@@ -8,7 +11,6 @@ import type {
 } from '../../../../common/tasks';
 import { type TaskTestPhase, useTasks } from '../../store/useTasks';
 import type { SimulationResult } from '../../types/InterpreterTypes';
-import { GardenerMarker, type GardenerFieldOrientation, gardenerCellStyles } from './GardenerField';
 
 const phaseLabels = {
   idle: 'Не запускался',
@@ -143,11 +145,8 @@ const GardenerDetails: React.FC<{
   return (
     <div className="grid min-h-0 flex-1 grid-cols-2 content-start items-start gap-4 overflow-y-auto bg-bg-primary p-4">
       <section className="min-w-0 rounded-xl border border-border-primary bg-bg-primary p-4 shadow-sm">
-        <div className="mb-4">
-          <p className="text-xs font-medium uppercase tracking-wide text-text-inactive">
-            Исходные данные
-          </p>
-          <h3 className="h2-header mt-1">Входное поле</h3>
+        <div className="mb-4 flex h-4 items-center">
+          <h3 className="h2-header">Входное поле</h3>
         </div>
         <div className="flex justify-center">
           <FieldView input={input} />
@@ -155,15 +154,16 @@ const GardenerDetails: React.FC<{
       </section>
 
       <section className="min-w-0 rounded-xl border border-border-primary bg-bg-primary p-4 shadow-sm">
-        <div className="mb-4 flex items-start justify-between gap-3">
+        <div className="mb-4 flex h-4 items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-text-inactive">
-              Результат
-            </p>
-            <h3 className="h2-header mt-1">Фактическое поле</h3>
+            <h3 className="h2-header">Фактическое поле</h3>
           </div>
-          <span className="shrink-0 rounded-full bg-bg-secondary px-2 py-1 text-xs text-text-inactive">
-            {steps.length > 0 ? `${stepIndex + 1} / ${steps.length}` : 'Нет запуска'}
+          <span className="shrink-0 rounded-full bg-bg-secondary px-1.5 text-[10px] leading-4 text-text-inactive">
+            {steps.length > 0
+              ? `${stepIndex + 1} / ${steps.length}`
+              : execution
+              ? 'Итог'
+              : 'Нет запуска'}
           </span>
         </div>
 
@@ -233,21 +233,13 @@ const ReaderDetails: React.FC<{
     <div className="grid gap-4 overflow-y-auto bg-bg-primary p-4 lg:grid-cols-2">
       <section className="rounded-xl border border-border-primary bg-bg-primary p-4 shadow-sm">
         <h3 className="h2-header mb-3">Входная строка</h3>
-        <pre className="whitespace-pre-wrap rounded-lg border border-border-primary bg-bg-secondary p-3 text-xs">
+        <pre className="whitespace-pre-wrap rounded-lg border border-border-primary p-3 text-xs">
           {input.message}
         </pre>
       </section>
       <section className="rounded-xl border border-border-primary bg-bg-primary p-4 shadow-sm">
         <h3 className="h2-header mb-3">Выходные импульсы</h3>
-        {impulses.length ? (
-          <ol className="list-decimal space-y-1 pl-5 text-xs">
-            {impulses.map((signal, index) => (
-              <li key={`${signal}-${index}`}>{signal}</li>
-            ))}
-          </ol>
-        ) : (
-          <p className="text-xs text-text-inactive">Импульсы ещё не получены.</p>
-        )}
+        <ReaderImpulseList impulses={impulses} emptyMessage="Импульсы ещё не получены." />
       </section>
     </div>
   );
@@ -313,7 +305,7 @@ export const TaskMode: React.FC<TaskModeProps> = ({
     : undefined;
 
   return (
-    <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_304px] overflow-hidden rounded-t-xl border border-border-primary">
+    <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_304px] overflow-hidden rounded-lg border border-border-primary">
       <div className="flex min-h-0 flex-col">
         <div className="border-b border-border-primary px-5 py-4">
           <div className="flex items-center justify-between gap-4">
@@ -325,7 +317,7 @@ export const TaskMode: React.FC<TaskModeProps> = ({
               <h2 className="h2-header mt-1 truncate">{selectedTest?.title}</h2>
             </div>
             <div
-              className={`flex shrink-0 items-center gap-2 rounded-full bg-bg-secondary px-3 py-1.5 text-xs font-medium ${selectedPhaseStyle.text}`}
+              className={`flex shrink-0 items-center gap-2 px-3 py-1.5 text-xs ${selectedPhaseStyle.text}`}
             >
               <span className={`size-2 rounded-full ${selectedPhaseStyle.dot}`} />
               {selectedPhaseStyle.label}

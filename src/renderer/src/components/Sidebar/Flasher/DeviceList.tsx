@@ -5,7 +5,7 @@ import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as Update } from '@renderer/assets/icons/update.svg';
 import { Flasher } from '@renderer/components/Modules/Flasher';
-import { Modal } from '@renderer/components/UI';
+import { Modal, ScrollArea } from '@renderer/components/UI';
 import { useFlasher } from '@renderer/store/useFlasher';
 
 import { ArduinoDevice, BlgMbDevice, Device, MSDevice } from '../../Modules/Device';
@@ -17,7 +17,6 @@ interface DeviceListProps {
   onSubmit: (deviceIds: string[]) => void;
   submitLabel: string;
   devices: Map<string, Device>;
-  listExtraLabel?: string;
 }
 
 export const DeviceList: React.FC<DeviceListProps> = ({
@@ -26,7 +25,6 @@ export const DeviceList: React.FC<DeviceListProps> = ({
   onSubmit,
   submitLabel,
   devices,
-  listExtraLabel,
   ...props
 }) => {
   const { handleSubmit: hookHandleSubmit } = useForm();
@@ -99,15 +97,26 @@ export const DeviceList: React.FC<DeviceListProps> = ({
   const renderContent = () => {
     if (connectionStatus === ClientStatus.CONNECTED) {
       return (
-        <div className="grid h-full min-h-0 grid-cols-2 gap-6">
-          <div className="flex min-h-0 flex-col">
-            <div className="mb-2 flex min-h-[32px] items-center justify-between gap-3">
-              <span className="font-medium">Устройства</span>
-              {listExtraLabel && (
-                <span className="truncate text-text-inactive">{listExtraLabel}</span>
-              )}
+        <div className="grid w-[618px] grid-cols-[310px_284px] gap-x-6">
+          <div>
+            <div className="mb-[11px] flex items-center gap-3 font-medium">
+              <span>Устройства</span>
+              <button
+                className="text-primary transition-opacity disabled:cursor-not-allowed disabled:opacity-60"
+                onClick={handleGetList}
+                disabled={connectionStatus !== ClientStatus.CONNECTED}
+                type="button"
+                aria-label="Обновить"
+                title="Обновить"
+              >
+                <Update className="h-4 w-4" />
+              </button>
             </div>
-            <div className="min-h-0 flex-1 overflow-y-auto rounded-lg border border-border-primary p-1.5 scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
+            <ScrollArea
+              className="h-[140px] rounded-lg border border-border-primary bg-bg-control"
+              viewportClassName="px-[8px]"
+              horizontalScroll={false}
+            >
               {devices.size === 0 ? (
                 <p className="px-3 py-2 text-text-inactive">Устройства не найдены</p>
               ) : (
@@ -115,8 +124,8 @@ export const DeviceList: React.FC<DeviceListProps> = ({
                   <button
                     key={key}
                     className={twMerge(
-                      'block w-full rounded-lg px-3 py-2 text-left transition-colors hover:bg-bg-hover',
-                      isActive(key) && 'bg-bg-active hover:bg-bg-active'
+                      'flex h-[25px] w-full cursor-pointer select-none items-center rounded-lg px-3 text-left leading-4 transition-colors hover:bg-bg-hover',
+                      isActive(key) && 'bg-bg-active'
                     )}
                     onClick={() => setCurrentDevice(key)}
                     type="button"
@@ -125,20 +134,22 @@ export const DeviceList: React.FC<DeviceListProps> = ({
                   </button>
                 ))
               )}
-            </div>
+            </ScrollArea>
           </div>
 
-          <div className="flex min-h-0 flex-col">
-            <span className="mb-2 flex min-h-[32px] items-center font-medium">
-              Информация об устройстве
-            </span>
-            <div className="min-h-0 flex-1 overflow-y-auto break-words rounded-lg border border-border-primary p-3 text-left leading-[18px] scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
+          <div>
+            <h2 className="mb-[11px] font-medium">Описание</h2>
+            <ScrollArea
+              className="h-[140px]"
+              viewportClassName="break-words text-left leading-4"
+              horizontalScroll={false}
+            >
               {currentDeviceID ? (
                 deviceInfoDisplay(devices.get(currentDeviceID))
               ) : (
-                <p className="text-text-inactive">Выберите устройство из списка</p>
+                <p>Выберите устройство из списка, чтобы посмотреть информацию о нем</p>
               )}
-            </div>
+            </ScrollArea>
           </div>
         </div>
       );
@@ -159,30 +170,10 @@ export const DeviceList: React.FC<DeviceListProps> = ({
       onRequestClose={onClose}
       submitLabel={submitLabel}
       onSubmit={handleSubmit}
-      className="top-[18px] box-border flex h-[430px] max-h-[calc(100vh-36px)] w-[calc(100%-40px)] max-w-[640px] flex-col bg-bg-primary p-6"
-      headerClassName="mb-[23px] min-h-[39px] pb-3"
-      titleClassName="text-xs font-medium"
-      closeClassName="p-2"
-      closeIconClassName="h-2.5 w-2.5"
-      formClassName="flex min-h-0 flex-1 flex-col"
-      contentClassName="mb-0 min-h-0 flex-1"
-      actionsClassName="mt-6"
-      submitClassName="btn-primary h-8 min-w-[77px] px-3 py-1.5"
       hideCancelButton
       submitDisabled={!currentDeviceID}
     >
-      <section className="flex h-full min-h-0 flex-col">
-        <button
-          className="btn-secondary mb-4 flex h-8 w-fit min-w-0 items-center justify-center gap-2 border-primary px-3 py-1.5 text-primary"
-          onClick={() => handleGetList()}
-          disabled={connectionStatus !== ClientStatus.CONNECTED}
-          type="button"
-        >
-          <Update className="h-4 w-4" />
-          Обновить
-        </button>
-        <div className="min-h-0 flex-1">{renderContent()}</div>
-      </section>
+      {renderContent()}
     </Modal>
   );
 };

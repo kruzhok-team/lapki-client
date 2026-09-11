@@ -1,13 +1,5 @@
 /* React Window Manager UI - Headless CSS */
 
-/* Reset and base styles */
-.react-window-manager {
-  box-sizing: border-box;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
-  color: #1a1a1a;
-}
-
 .react-window-manager *,
 .react-window-manager *::before,
 .react-window-manager *::after {
@@ -22,7 +14,6 @@
   flex-direction: column;
   border: none;
   background-color: #ffffff;
-  color: #1a1a1a;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
     0 2px 4px -1px rgba(0, 0, 0, 0.06);
   border-radius: 0.5rem;

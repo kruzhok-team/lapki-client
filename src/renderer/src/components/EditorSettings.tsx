@@ -4,6 +4,7 @@ import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as Grid } from '@renderer/assets/icons/grid.svg';
 import { ReactComponent as Redo } from '@renderer/assets/icons/redo.svg';
+import { ReactComponent as Undo } from '@renderer/assets/icons/undo.svg';
 import { ReactComponent as ZoomIn } from '@renderer/assets/icons/zoom-in.svg';
 import { ReactComponent as ZoomOut } from '@renderer/assets/icons/zoom-out.svg';
 import { useSettings } from '@renderer/hooks/useSettings';
@@ -19,7 +20,7 @@ interface SettingsItem {
   disabled?: boolean;
 }
 
-const defaultItemClassName = 'px-2 outline-none hover:bg-bg-hover active:bg-bg-active';
+const defaultItemClassName = 'py-[6px] px-[7px] outline-none';
 
 export const EditorSettings: React.FC = () => {
   const modelController = useModelContext();
@@ -67,47 +68,47 @@ export const EditorSettings: React.FC = () => {
 
   const buttons: SettingsItem[] = [
     {
-      className: defaultItemClassName + ' horizontal-flip',
+      className: defaultItemClassName + ' pl-2',
       hint: 'Отменить действие',
-      content: <Redo width={20} height={20} />,
+      content: <Undo />,
       onClick: handleUndo,
       disabled: undoStack.length === 0,
     },
     {
       className: defaultItemClassName,
       hint: 'Вернуть отменённое действие',
-      content: <Redo width={20} height={20} />,
+      content: <Redo />,
       onClick: handleRedo,
       disabled: redoStack.length === 0,
     },
     {
       className: defaultItemClassName,
       hint: canvasSettings && canvasSettings.grid ? 'Выключить сетку' : 'Включить сетку',
-      content: <Grid width={20} height={20} />,
+      content: <Grid />,
       onClick: handleCanvasGrid,
     },
     {
       className: defaultItemClassName,
       hint: 'Отдалить',
-      content: <ZoomOut width={20} height={20} />,
+      content: <ZoomOut />,
       onClick: handleZoomOut,
     },
     {
-      className: 'flex w-16 justify-center py-2 outline-none hover:bg-bg-hover active:bg-bg-active',
+      className: 'w-10 py-[6px] outline-none flex items-center justify-center text-center',
       hint: 'Текущий масштаб. Нажмите, чтобы вернуть масштаб на стандартное значение.',
       content: Math.floor((1 / scale) * 100).toString() + '%',
       onClick: handleReset,
     },
     {
-      className: defaultItemClassName,
+      className: defaultItemClassName + ' pr-2',
       hint: 'Приблизить',
-      content: <ZoomIn width={20} height={20} />,
+      content: <ZoomIn />,
       onClick: handleZoomIn,
     },
   ];
 
   return (
-    <div className="absolute -left-[280px] bottom-3 flex items-stretch overflow-hidden rounded bg-bg-secondary">
+    <div className="absolute -left-[314px] bottom-3 flex items-center overflow-hidden rounded-lg bg-white">
       {buttons.map(({ className, content, hint, onClick, disabled }, index) => (
         <WithHint key={index} hint={hint}>
           {(props) => (
@@ -116,11 +117,18 @@ export const EditorSettings: React.FC = () => {
               // Подсказка  не появляется, если кнопка залочена, поэтому делаем ее "залоченной" вручную
               className={twMerge(
                 className,
-                disabled && 'cursor-default opacity-50 hover:bg-transparent active:bg-transparent'
+                disabled && 'cursor-default opacity-50 active:bg-transparent'
               )}
               onClick={!disabled ? onClick : () => undefined}
             >
-              {content}
+              <span
+                className={twMerge(
+                  'inline-flex h-[34px] items-center justify-center rounded-[4px] p-1 hover:bg-util-button-hover',
+                  disabled && 'hover:bg-transparent'
+                )}
+              >
+                {content}
+              </span>
             </button>
           )}
         </WithHint>

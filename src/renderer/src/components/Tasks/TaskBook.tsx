@@ -4,17 +4,21 @@ import { toast } from 'sonner';
 import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as ArrowIcon } from '@renderer/assets/icons/arrow-down.svg';
-import { ReactComponent as Close } from '@renderer/assets/icons/close.svg';
+import { ReactComponent as GardenerIcon } from '@renderer/assets/icons/gardener.svg';
+import { ReactComponent as ReaderIcon } from '@renderer/assets/icons/reader.svg';
+import { Filter } from '@renderer/components/Hierarchy/Filter';
 import { InterpreterClient } from '@renderer/components/Modules/Interpreter';
 import { CloseButton } from '@renderer/components/UI/Modal/CloseButton';
 import { useSimulatorWindow } from '@renderer/store/useSimulatorWindow';
 import { getActiveTask, useTasks } from '@renderer/store/useTasks';
 
+import { filterTasks } from './filterTasks';
+
 import type { CatalogTask } from '../../../../common/tasks';
 
-const platformNames = {
-  'junior-gardener': 'Садовник',
-  'junior-reader': 'Строчник',
+const platformIcons = {
+  'junior-gardener': GardenerIcon,
+  'junior-reader': ReaderIcon,
 };
 
 const inlineText = (text: string): React.ReactNode[] =>
@@ -33,9 +37,21 @@ const MarkdownDescription: React.FC<{
   assetRootUrl: string;
 }> = ({ task, assetRootUrl }) => {
   const imagePattern = /^!\[([^\]]*)\]\(([^)]+)\)$/;
+  const descriptionLines = task.description.split('\n');
+  const firstContentLineIndex = descriptionLines.findIndex((line) => line.trim());
+  const hasTitle = descriptionLines[firstContentLineIndex]?.trim().startsWith('# ');
+  const bodyStartIndex = hasTitle
+    ? descriptionLines.findIndex(
+        (line, index) => index > firstContentLineIndex && line.trim() !== ''
+      )
+    : 0;
+  const bodyLines = hasTitle
+    ? descriptionLines.slice(bodyStartIndex === -1 ? descriptionLines.length : bodyStartIndex)
+    : descriptionLines;
+
   return (
     <div className="space-y-2 text-xs leading-5">
-      {task.description.split('\n').map((rawLine, index) => {
+      {bodyLines.map((rawLine, index) => {
         const line = rawLine.trim();
         const image = line.match(imagePattern);
         if (image) {
@@ -115,6 +131,7 @@ export const TaskBook: React.FC<TaskBookProps> = ({
   ]);
   const openSimulator = useSimulatorWindow((state) => state.open);
   const [selectedTaskId, setSelectedTaskId] = useState<string>();
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
     if (selectedTaskId && !catalog.tasks.some((task) => task.id === selectedTaskId)) {
@@ -123,6 +140,7 @@ export const TaskBook: React.FC<TaskBookProps> = ({
   }, [catalog.tasks, selectedTaskId]);
 
   const selectedTask = catalog.tasks.find((task) => task.id === selectedTaskId);
+  const filteredTasks = useMemo(() => filterTasks(catalog.tasks, search), [catalog.tasks, search]);
   const hasResults = useMemo(
     () =>
       submissionResult !== undefined ||
@@ -165,58 +183,61 @@ export const TaskBook: React.FC<TaskBookProps> = ({
       )}
     >
       <div
-        className={twMerge(
-          'flex items-center justify-between border-b border-border-primary',
-          isCollapsed ? 'pb-1' : 'mb-3 mt-2 pb-2'
-        )}
+        className={twMerge('flex items-center justify-between', isCollapsed ? 'pb-1' : 'mb-3 mt-2')}
       >
         {canCollapse ? (
           <button
             type="button"
-            className={twMerge('flex h-11', isCollapsed ? 'items-center' : 'items-start')}
+            className="flex h-11 items-center"
             aria-label={isCollapsed ? 'Развернуть задачник' : 'Свернуть задачник'}
             onClick={onToggleCollapse}
           >
             <ArrowIcon
               className={twMerge(
                 'size-3 rotate-0 transition-transform',
-                !isCollapsed && 'mt-1.5',
                 isCollapsed && '-rotate-90'
               )}
             />
-            <div className="ml-1 text-left">
-              <h1 className="h2-header">Задачник</h1>
-              {!isCollapsed && (
-                <p className="text-xs text-text-inactive">Локальные задачи по машинам состояний</p>
-              )}
-            </div>
+            <h1 className="h2-header ml-1 text-left">Задачник</h1>
           </button>
         ) : (
-          <div className="text-left">
-            <h1 className="h2-header">Задачник</h1>
-            <p className="text-xs text-text-inactive">Локальные задачи по машинам состояний</p>
-          </div>
+          <h1 className="h2-header text-left">Задачник</h1>
         )}
         {!isCollapsed && <CloseButton aria-label="Закрыть задачник" onClick={onClose} />}
       </div>
 
       {!isCollapsed && (
         <>
+          <Filter
+            className="mb-3 pb-0"
+            search={search}
+            onChangeSearch={setSearch}
+            disabled={!catalogLoaded}
+            fullWidth
+          />
+
           {!catalogLoaded && <p className="text-xs text-text-inactive">Загрузка задач...</p>}
           {catalogLoaded && catalog.tasks.length === 0 && (
             <p className="text-xs text-text-inactive">В resources/tasks нет доступных задач.</p>
           )}
+          {catalogLoaded && catalog.tasks.length > 0 && filteredTasks.length === 0 && (
+            <p className="text-xs text-text-inactive">Задачи не найдены</p>
+          )}
 
           <div className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-1">
-            {catalog.tasks.map((task) => {
+            {filteredTasks.map((task) => {
               const isSelected = selectedTaskId === task.id;
+              const isActive = activeTask?.id === task.id;
+              const isHighlighted = isSelected || isActive;
+              const PlatformIcon = platformIcons[task.platformId];
 
               return (
                 <article
                   key={task.id}
-                  className={`rounded border ${
-                    isSelected ? 'border-primary bg-bg-hover' : 'border-border-primary'
-                  }`}
+                  className={twMerge(
+                    'rounded-lg border border-border-primary',
+                    isHighlighted && 'border-icon-hover'
+                  )}
                 >
                   <button
                     type="button"
@@ -224,58 +245,51 @@ export const TaskBook: React.FC<TaskBookProps> = ({
                     aria-expanded={isSelected}
                     onClick={() => setSelectedTaskId(isSelected ? undefined : task.id)}
                   >
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="font-medium">{task.title}</span>
-                      {activeTask?.id === task.id && (
-                        <span className="text-xs text-primary">решается</span>
-                      )}
+                    <div className="flex items-center gap-2">
+                      <PlatformIcon
+                        className={twMerge(
+                          'size-5 shrink-0',
+                          isHighlighted &&
+                            (task.platformId === 'junior-gardener'
+                              ? '[&_circle]:stroke-icon-hover [&_path]:fill-icon-hover'
+                              : '[&_path]:fill-icon-hover [&_path]:stroke-icon-hover')
+                        )}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-medium">{task.title}</span>
+                          {isActive && <span className="text-xs text-primary">решается</span>}
+                        </div>
+                        <p className="mt-1 text-xs text-text-inactive">{task.summary}</p>
+                      </div>
                     </div>
-                    <p className="mt-1 text-xs text-text-inactive">{task.summary}</p>
                   </button>
 
-                  {isSelected && (
-                    <div className="border-t border-border-primary p-3">
-                      <div className="mb-3 flex items-start justify-between gap-2">
-                        <div className="flex flex-wrap items-center gap-2 text-xs">
-                          <span className="rounded bg-bg-primary px-2 py-1">
-                            {platformNames[task.platformId]}
-                          </span>
-                          <span>Версия {task.version}</span>
-                          <span>{task.tests.length} теста(ов)</span>
-                        </div>
-                        <button
-                          type="button"
-                          className="shrink-0 rounded-full p-2 hover:bg-bg-primary"
-                          aria-label="Закрыть задачу"
-                          title="Закрыть задачу"
-                          onClick={() => setSelectedTaskId(undefined)}
-                        >
-                          <Close width="0.875rem" height="0.875rem" />
-                        </button>
-                      </div>
-                      <MarkdownDescription task={task} assetRootUrl={catalog.assetRootUrl} />
-                      <div className="mt-4 flex gap-2">
-                        <button
-                          type="button"
-                          className="btn-primary"
-                          disabled={submissionActive}
-                          onClick={solve}
-                        >
-                          {activeTask?.id === task.id ? 'Продолжить решение' : 'Решать задачу'}
-                        </button>
-                        {activeTask?.id === task.id && (
+                  <div
+                    className={twMerge(
+                      'grid transition-[grid-template-rows] duration-200 ease-out',
+                      isSelected ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+                    )}
+                    aria-hidden={!isSelected}
+                  >
+                    <div className="min-h-0 overflow-hidden">
+                      <div className="mx-3 border-t border-border-primary" />
+                      <div className="p-3">
+                        <MarkdownDescription task={task} assetRootUrl={catalog.assetRootUrl} />
+                        <div className="mt-4 flex gap-2">
                           <button
                             type="button"
-                            className="btn-secondary"
+                            className="btn-primary"
                             disabled={submissionActive}
-                            onClick={finishTask}
+                            tabIndex={isSelected ? undefined : -1}
+                            onClick={isActive ? finishTask : solve}
                           >
-                            Завершить задачу
+                            {isActive ? 'Завершить задачу' : 'Решать задачу'}
                           </button>
-                        )}
+                        </div>
                       </div>
                     </div>
-                  )}
+                  </div>
                 </article>
               );
             })}

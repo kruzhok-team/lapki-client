@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
+
+import { twMerge } from 'tailwind-merge';
 
 import { useFetch } from '@renderer/hooks';
 
@@ -10,11 +12,16 @@ interface ShowProps {
 
 const ShowHtml: React.FC<ShowProps> = ({ item }) => {
   const { url, path } = item;
+  const [isFrameReady, setIsFrameReady] = useState(false);
 
   const { data, isLoading, error, refetch } = useFetch<string>(url, 'text');
 
   if (isLoading) {
-    return <div>Загрузка...</div>;
+    return (
+      <div className="flex h-[calc(100%-49.6px-41.6px)] items-center justify-center">
+        Загрузка...
+      </div>
+    );
   }
 
   if (error || !data) {
@@ -28,11 +35,23 @@ const ShowHtml: React.FC<ShowProps> = ({ item }) => {
     );
   }
 
+  const typographyOverride = '<style>html, body, body * { font-size: 12px !important; }</style>';
+
   return (
-    <iframe
-      className="h-full max-h-[calc(100%-49.6px-41.6px)] w-full overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
-      srcDoc={`<base href="${url}${path}" />` + data}
-    ></iframe>
+    <div className="relative h-[calc(100%-49.6px-41.6px)] w-full">
+      {!isFrameReady && (
+        <div className="absolute inset-0 flex items-center justify-center">Загрузка...</div>
+      )}
+      <iframe
+        title={path}
+        className={twMerge(
+          'h-full w-full overflow-y-auto opacity-0 scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb',
+          isFrameReady && 'opacity-100'
+        )}
+        srcDoc={`<base href="${url}${path}" />${typographyOverride}${data}`}
+        onLoad={() => setIsFrameReady(true)}
+      />
+    </div>
   );
 };
 

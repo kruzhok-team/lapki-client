@@ -63,27 +63,44 @@
   }
 
   .btn-primary {
-    @apply btn border-primary bg-primary text-text-secondary enabled:hover:opacity-90 enabled:active:opacity-80;
+    @apply btn border-primary bg-primary text-text-secondary;
   }
 
   .btn-secondary {
-    @apply btn border border-text-primary enabled:hover:opacity-80 enabled:active:opacity-60;
-  }
-
-  .btn-error {
-    @apply btn border-[#7a7a7a] bg-[#7a7a7a] text-text-secondary enabled:hover:opacity-90 enabled:active:opacity-80;
+    @apply btn border border-primary font-medium text-primary enabled:active:opacity-60;
   }
 
   .danger {
-    @apply text-red-500;
+    @apply text-danger;
   }
 
   .dropdown-menu {
     @apply rounded-lg bg-white text-text-primary shadow-[0_2px_14px_rgba(0,0,0,0.25)];
   }
 
+  .dropdown-menu-item,
+  .context-menu-item {
+    @apply flex w-full items-center rounded-lg px-3 py-1.5 text-left text-xs outline-none transition-colors;
+  }
+
   .dropdown-menu-item {
-    @apply flex w-full items-center rounded-lg px-3 py-1.5 text-left text-xs outline-none transition-colors focus-visible:bg-[#e6f4ff] enabled:hover:bg-[#e6f4ff] enabled:active:bg-bg-active disabled:cursor-not-allowed disabled:text-text-disabled disabled:opacity-50;
+    @apply focus-visible:bg-[#e6f4ff] enabled:hover:bg-[#e6f4ff] enabled:active:bg-bg-active disabled:cursor-not-allowed disabled:text-text-disabled disabled:opacity-50;
+  }
+
+  .context-menu-item {
+    @apply cursor-pointer hover:bg-[#e6f4ff] active:bg-bg-active;
+  }
+
+  .context-menu-item > svg {
+    @apply text-icon-secondary;
+  }
+
+  .context-menu-item.danger > svg {
+    @apply text-danger;
+  }
+
+  .context-menu-item > .context-menu-arrow {
+    @apply text-black;
   }
 
   .dropdown-submenu {

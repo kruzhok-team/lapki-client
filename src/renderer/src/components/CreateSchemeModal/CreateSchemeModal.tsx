@@ -81,6 +81,7 @@ export const CreateSchemeModal: React.FC<CreateSchemeModalProps> = ({
     <Modal
       {...props}
       hideCancelButton
+      className="w-fit"
       onRequestClose={handleCLose}
       onSubmit={handleSubmit}
       submitDisabled={submitDisabled}

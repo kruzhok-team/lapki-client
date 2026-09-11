@@ -31,7 +31,8 @@ export const Explorer: React.FC = () => {
   const [, forceUpdate] = useReducer((p) => p + 1, 0);
 
   const [selectedSm, setSmSelected] = useState<string | null>(null);
-  const activeSm =
+  const activeSm = stateMachinesIds[0];
+  const displayedSm =
     selectedSm && stateMachinesIds.includes(selectedSm) ? selectedSm : stateMachinesIds[0];
 
   const togglePanel = (panelRef: RefObject<ImperativePanelHandle>) => {
@@ -64,10 +65,11 @@ export const Explorer: React.FC = () => {
             defaultSize={25.5}
             onCollapse={forceUpdate}
             onExpand={forceUpdate}
-            className="px-[11px]"
+            className="min-h-0 overflow-hidden px-[12px]"
           >
             <StateMachinesList
-              selectedSm={activeSm ?? null}
+              activeSm={activeSm ?? null}
+              selectedSm={selectedSm}
               setSmSelected={setSmSelected}
               isCollapsed={() => stateMachinesPanelRef.current?.isCollapsed() ?? false}
               togglePanel={() => togglePanel(stateMachinesPanelRef)}
@@ -87,10 +89,10 @@ export const Explorer: React.FC = () => {
             defaultSize={38.2}
             onCollapse={forceUpdate}
             onExpand={forceUpdate}
-            className="px-[11px]"
+            className="min-h-0 overflow-hidden px-[12px]"
           >
             <StateMachineComponentList
-              smId={activeSm ?? ''}
+              smId={displayedSm ?? ''}
               isCollapsed={() => componentPanelRef.current?.isCollapsed() ?? false}
               togglePanel={() => togglePanel(componentPanelRef)}
             />
@@ -109,7 +111,7 @@ export const Explorer: React.FC = () => {
             defaultSize={36.3}
             onCollapse={forceUpdate}
             onExpand={forceUpdate}
-            className="px-[11px]"
+            className="min-h-0 overflow-hidden px-[12px]"
           >
             {isInitialized ? (
               <StateMachinesHierarchy

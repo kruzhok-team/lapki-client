@@ -6,7 +6,7 @@ import { twMerge } from 'tailwind-merge';
 import { useSettings } from '@renderer/hooks';
 import { getPlatform } from '@renderer/lib/data/PlatformLoader';
 
-import { Modal } from './UI';
+import { Modal, ScrollArea } from './UI';
 
 interface OpenRecentModalProps {
   isOpen: boolean;
@@ -62,15 +62,15 @@ export const OpenRecentModal: React.FC<OpenRecentModalProps> = ({
     if (!selectedFile) return null;
 
     return (
-      <div className="max-h-[190px] overflow-y-auto break-words pr-1 leading-[15px] scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
+      <div className="max-h-[190px] overflow-y-auto break-words pr-1 leading-[15px]">
         <p>
-          <b>Путь:</b>
+          <span className="font-medium">Путь: </span>
         </p>
         <p>{selectedFile.path}</p>
 
         <div className="mt-3">
           <p>
-            <b>Машины состояний</b>
+            <span className="font-medium">Машины состояний</span>
           </p>
           {selectedFile.stateMachines.map((stateMachine, idx) => {
             if (stateMachine.name === '') return null;
@@ -84,10 +84,11 @@ export const OpenRecentModal: React.FC<OpenRecentModalProps> = ({
                 key={`${selectedFile.path}-${stateMachine.name}-${stateMachine.platformIdx}`}
               >
                 <p>
-                  <b>Название:</b> {stateMachine.name}
+                  <span className="font-medium">Название: </span> {stateMachine.name}
                 </p>
                 <p>
-                  <b>Платформа:</b> {platform.name ?? 'Неизвестная платформа'}
+                  <span className="font-medium">Платформа: </span>
+                  {platform.name ?? 'Неизвестная платформа'}
                 </p>
               </div>
             );
@@ -99,7 +100,10 @@ export const OpenRecentModal: React.FC<OpenRecentModalProps> = ({
 
   const renderFileList = () => (
     <div className="grid grid-cols-[274px_minmax(0,1fr)] gap-6">
-      <div className="h-[190px] overflow-y-auto rounded-lg border border-border-primary p-1.5 scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
+      <ScrollArea
+        className="h-[190px] rounded-lg border border-border-primary"
+        viewportClassName="p-1.5"
+      >
         {recentFiles.map((file, idx) => (
           <button
             type="button"
@@ -114,7 +118,7 @@ export const OpenRecentModal: React.FC<OpenRecentModalProps> = ({
             {file.name}
           </button>
         ))}
-      </div>
+      </ScrollArea>
 
       <div>{renderDescription()}</div>
     </div>
@@ -123,15 +127,6 @@ export const OpenRecentModal: React.FC<OpenRecentModalProps> = ({
   return (
     <Modal
       {...props}
-      className="top-[18px] box-border flex h-[356px] max-h-[calc(100vh-36px)] w-[calc(100%-40px)] max-w-[667px] flex-col bg-bg-primary p-6"
-      headerClassName="mb-[23px] min-h-[39px] pb-3"
-      titleClassName="text-xs font-normal"
-      closeClassName="p-2"
-      closeIconClassName="h-2.5 w-2.5"
-      formClassName="flex min-h-0 flex-1 flex-col"
-      contentClassName="mb-0 min-h-0 flex-1"
-      actionsClassName="mt-auto"
-      submitClassName="btn-primary h-8 min-w-[77px] px-3 py-2 disabled:border-border-primary disabled:bg-border-primary disabled:text-text-secondary disabled:opacity-100"
       hideCancelButton
       isOpen={isOpen}
       onRequestClose={handleClose}

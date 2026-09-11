@@ -27,14 +27,26 @@ describe('useDoc', () => {
     });
   });
 
-  it('leaves an open empty sidebar after its last section is closed', () => {
+  it('collapses the sidebar after its last visible section is closed', () => {
     useDoc.getState().onDocumentationToggle();
     useDoc.getState().closeView('documentation');
 
     expect(useDoc.getState()).toMatchObject({
-      isOpen: true,
+      isOpen: false,
       visibleViews: { documentation: false, tasks: false },
       mountedViews: { documentation: true, tasks: false },
+    });
+  });
+
+  it('keeps the sidebar open while another section remains visible', () => {
+    useDoc.getState().onDocumentationToggle();
+    useDoc.getState().onTasksToggle();
+    useDoc.getState().closeView('documentation');
+
+    expect(useDoc.getState()).toMatchObject({
+      isOpen: true,
+      visibleViews: { documentation: false, tasks: true },
+      mountedViews: { documentation: true, tasks: true },
     });
   });
 

@@ -3,6 +3,7 @@
   "primaryHover": "#225EF9",
   "primaryActive": "#2A62F4",
   "error": "red",
+  "danger": "#FF4848",
   "success": "lime",
 
   "bg-primary": "#262626",

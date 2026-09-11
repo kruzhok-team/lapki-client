@@ -349,7 +349,10 @@ export const Window = ({
         `react-window-manager window ${activeWindowId === id ? 'active' : ''}`,
         className
       )}
-      style={{ display: isOpen ? 'flex' : 'none' }}
+      style={{
+        display: isOpen ? 'flex' : 'none',
+        boxShadow: '0 2px 12.8px rgba(0, 0, 0, 0.25)',
+      }}
       onMouseDown={handleWindowActivation}
       data-window-id={id}
     >

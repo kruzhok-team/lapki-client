@@ -99,13 +99,13 @@ const DocumentationSection: React.FC<DocumentationSectionProps> = ({
   return (
     <section
       className={twMerge(
-        'flex h-full select-none flex-col bg-bg-primary px-2 text-xs',
+        'flex h-full select-none flex-col bg-bg-primary px-3 text-xs',
         !isCollapsed && 'pt-4'
       )}
     >
       <div
         className={twMerge(
-          'relative flex items-center justify-between border-b border-border-primary pb-1',
+          'relative flex items-center justify-between pb-1',
           !isCollapsed && 'mb-3 mt-2'
         )}
       >
@@ -131,11 +131,11 @@ const DocumentationSection: React.FC<DocumentationSectionProps> = ({
       </div>
       {!isCollapsed && (
         <>
-          <div className="grid grid-cols-3 gap-1 pb-2">
+          <div className="grid grid-cols-3 gap-3">
             <button
               className={twMerge(
-                'rounded border border-primary p-2',
-                activeTab === -1 && 'bg-primary text-text-secondary'
+                'rounded-lg bg-[#F1F1F1] px-3 py-[5px]',
+                activeTab === -1 && 'bg-[#E6F4FF] font-medium'
               )}
               onClick={() => setActiveTab(-1)}
             >
@@ -143,8 +143,8 @@ const DocumentationSection: React.FC<DocumentationSectionProps> = ({
             </button>
             <button
               className={twMerge(
-                'rounded border border-primary p-2',
-                activeTab === 0 && 'bg-primary text-text-secondary'
+                'rounded-lg bg-[#F1F1F1] px-3 py-[5px]',
+                activeTab === 0 && 'bg-[#E6F4FF] font-medium'
               )}
               onClick={() => setActiveTab(0)}
             >
@@ -152,8 +152,8 @@ const DocumentationSection: React.FC<DocumentationSectionProps> = ({
             </button>
             <button
               className={twMerge(
-                'rounded border border-primary p-2 disabled:cursor-not-allowed disabled:opacity-30',
-                activeTab === 1 && 'bg-primary text-text-secondary'
+                'rounded-lg bg-[#F1F1F1] px-3 py-[5px] disabled:cursor-not-allowed',
+                activeTab === 1 && 'bg-[#E6F4FF] font-medium'
               )}
               onClick={() => setActiveTab(1)}
               disabled={!currentItem}
@@ -161,17 +161,17 @@ const DocumentationSection: React.FC<DocumentationSectionProps> = ({
               Просмотр
             </button>
           </div>
-          <div className="h-full overflow-y-hidden">
+          <div className="h-full overflow-y-hidden pt-3">
             <div className={twMerge('h-full', activeTab !== -1 && 'hidden')}>
               <ReferencePanel />
             </div>
             <div className={twMerge('h-full', activeTab !== 0 && 'hidden')}>
-              <Tree root={data.body} borderWidth={0} onItemClick={onItemClick} />
+              <Tree root={data.body} onItemClick={onItemClick} />
             </div>
             <div className={twMerge('h-full', activeTab !== 1 && 'hidden')}>
               {currentItem && (
                 <>
-                  <Show item={currentItem} />
+                  <Show key={currentItem.url} item={currentItem} />
                   <Navigation
                     data={data}
                     onItemClick={onItemClick}

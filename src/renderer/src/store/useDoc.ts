@@ -30,6 +30,14 @@ export const useDoc = create<DocState>((set) => ({
   mountedViews: { documentation: false, tasks: false },
   onDocumentationToggle: () => set(toggleView('documentation')),
   onTasksToggle: () => set(toggleView('tasks')),
-  closeView: (view) => set((state) => ({ visibleViews: { ...state.visibleViews, [view]: false } })),
+  closeView: (view) =>
+    set((state) => {
+      const visibleViews = { ...state.visibleViews, [view]: false };
+
+      return {
+        isOpen: Object.values(visibleViews).some(Boolean),
+        visibleViews,
+      };
+    }),
   toggleOpen: () => set(({ isOpen }) => ({ isOpen: !isOpen })),
 }));

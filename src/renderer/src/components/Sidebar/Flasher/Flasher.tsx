@@ -8,17 +8,14 @@ import { toast } from 'sonner';
 
 import { ReactComponent as DeleteIcon } from '@renderer/assets/icons/delete.svg';
 import { AvrdudeGuideModal } from '@renderer/components/AvrdudeGuide';
-import { ErrorModal, ErrorModalData } from '@renderer/components/ErrorModal';
 import { Device, MSDevice } from '@renderer/components/Modules/Device';
 import { Flasher } from '@renderer/components/Modules/Flasher';
 import { ClientStatus } from '@renderer/components/Modules/Websocket/ClientStatus';
 import { useAddressBook } from '@renderer/hooks/useAddressBook';
 import { useModal } from '@renderer/hooks/useModal';
 import { useSettings } from '@renderer/hooks/useSettings';
-import { useModelContext } from '@renderer/store/ModelContext';
 import { useFlasher } from '@renderer/store/useFlasher';
 import { useManagerMS } from '@renderer/store/useManagerMS';
-import { useTabs } from '@renderer/store/useTabs';
 import {
   AddressData,
   FirmwareTargetType,
@@ -34,6 +31,7 @@ import {
 import { AddressBookModal } from './AddressBook';
 import { AddressEntryEditModal, AddressEntryForm } from './AddressEntryModal';
 import { DeviceList } from './DeviceList';
+import { FailureActions } from './FailureActions';
 import { FlasherTable } from './FlasherTable';
 import { MsGetAddressModal } from './MsGetAddressModal';
 
@@ -45,7 +43,8 @@ export const FlasherStatus: React.FC = () => {
 
   return (
     <span className="font-normal">
-      Статус: <span className="text-primary">{connectionStatus}</span>
+      <span className="font-medium">Статус: </span>
+      <span className="text-primary">{connectionStatus}</span>
       {secondsUntilReconnect !== null && (
         <span> (до повторного подключения: {secondsUntilReconnect} сек.)</span>
       )}
@@ -54,7 +53,6 @@ export const FlasherStatus: React.FC = () => {
 };
 
 export const FlasherTab: React.FC = () => {
-  const modelController = useModelContext();
   const [flasherSetting] = useSettings('flasher');
   const {
     device: deviceMs,
@@ -65,16 +63,8 @@ export const FlasherTab: React.FC = () => {
     addressAndMeta,
     setAddressAndMeta,
   } = useManagerMS();
-  const {
-    addressBookSetting,
-    onEdit,
-    getID,
-    getEntryById,
-    onAdd,
-    onRemove,
-    onSwapEntries,
-    idCounter,
-  } = useAddressBook();
+  const { addressBookSetting, onEdit, getID, getEntryById, onAdd, onRemove, idCounter } =
+    useAddressBook();
   const {
     connectionStatus,
     flashResult,
@@ -88,9 +78,6 @@ export const FlasherTab: React.FC = () => {
 
   const [managerMSSetting, setManagerMSSetting] = useSettings('managerMS');
 
-  const openTab = useTabs((state) => state.openTab);
-  const closeTab = useTabs((state) => state.closeTab);
-
   const [isAddressBookOpen, openAddressBook, closeAddressBook] = useModal(false);
   const [isMsGetAddressOpen, openMsGetAddressModal, closeMsGetAddressModal] = useModal(false);
   const [isDeviceListOpen, openDeviceList, closeDeviceList] = useModal(false);
@@ -102,15 +89,8 @@ export const FlasherTab: React.FC = () => {
   const [isAddressEnrtyAddOpen, openAddressEnrtyAdd, closeAddressEnrtyAdd] = useModal(false); // для добавления новых записей в адресную книгу
   const addressEntryAddForm = useForm<AddressEntryForm>();
 
-  const [msgModalData, setMsgModalData] = useState<ErrorModalData>();
-  const [isMsgModalOpen, setIsMsgModalOpen] = useState(false);
   const [isActionsMenuOpen, setIsActionsMenuOpen] = useState(false);
   const actionsMenuRef = useRef<HTMLDivElement>(null);
-  const closeMsgModal = () => setIsMsgModalOpen(false);
-  const openMsgModal = (data: ErrorModalData) => {
-    setMsgModalData(data);
-    setIsMsgModalOpen(true);
-  };
 
   useEffect(() => {
     if (!isActionsMenuOpen) return;
@@ -168,7 +148,6 @@ export const FlasherTab: React.FC = () => {
         }}
         submitLabel="Выбрать"
         devices={devs}
-        listExtraLabel={`Выбранное устройство: ${deviceMs ? deviceMs.displayName() : 'не указано'}`}
       />
     );
   };
@@ -586,19 +565,6 @@ export const FlasherTab: React.FC = () => {
     openAddressEnrtyEdit();
   };
 
-  // добавление вкладки с сообщением от программы загрузки прошивки (например от avrdude)
-  const handleAddFlashResultTab = () => {
-    flashResult.forEach((result, key) => {
-      closeTab(key, modelController);
-      openTab(modelController, {
-        type: 'code',
-        name: key,
-        code: result.report() ?? '',
-        language: 'txt',
-      });
-    });
-  };
-
   const handleAddDevice = (deviceIds: string[]) => {
     for (const devId of deviceIds) {
       const dev = devices.get(devId);
@@ -650,33 +616,14 @@ export const FlasherTab: React.FC = () => {
     );
   };
 
-  const failureButtons = () => {
-    if (!errorMessage) return;
-    return (
-      <>
-        <button
-          className="btn-primary mr-2 p-0 px-2"
-          onClick={handleReconnect}
-          disabled={
-            flasherSetting?.type === 'local' && connectionStatus === ClientStatus.CONNECTING
-          }
-        >
-          {displayReconnect()}
-        </button>
-        <button
-          className="btn-primary mr-2 border-warning bg-warning p-0 px-2"
-          onClick={handleErrorMessageDisplay}
-        >
-          Описание ошибки
-        </button>
-      </>
-    );
-  };
-
   const operationButtons = () => {
     const runMenuAction = (action: () => void) => {
       setIsActionsMenuOpen(false);
       action();
+    };
+
+    const showUploadLog = () => {
+      flashResult.forEach((result) => ManagerMS.addLog(result.report()));
     };
 
     return (
@@ -701,10 +648,10 @@ export const FlasherTab: React.FC = () => {
             …
           </button>
           {isActionsMenuOpen && (
-            <DropdownMenu className="absolute left-0 top-[36px] z-30 w-[212px] p-1">
+            <DropdownMenu className="absolute left-0 top-[36px] z-30 w-[212px]">
               <DropdownMenuItem
                 disabled={flashResult.size === 0}
-                onClick={() => runMenuAction(handleAddFlashResultTab)}
+                onClick={() => runMenuAction(showUploadLog)}
               >
                 Журнал загрузки
               </DropdownMenuItem>
@@ -753,74 +700,49 @@ export const FlasherTab: React.FC = () => {
 
   const handleErrorMessageDisplay = async () => {
     if (!flasherSetting) return;
-    // выводимое для пользователя сообщение
-    let errorMsg: JSX.Element = <p>`Неизвестный тип ошибки`</p>;
+
+    let description = 'Неизвестный тип ошибки.';
     if (flasherSetting.type === 'local') {
-      await window.electron.ipcRenderer
-        .invoke('Module:getStatus', 'lapki-flasher')
-        .then(function (obj) {
-          const errorDetails = obj.details;
-          switch (obj.code) {
-            // код 0 означает, что не было попытки запустить загрузчик, по-идее такая ошибка не может возникнуть, если только нет какой-то ошибки в коде.
-            case 0:
-              errorMsg = <p>{'Загрузчик не был запущен по неизвестной причине.'}</p>;
-              break;
-            // код 1 означает, что загрузчик работает, но соединение с ним не установлено.
-            case 1:
-              switch (connectionStatus) {
-                case ClientStatus.CONNECTION_ERROR:
-                  errorMsg = (
-                    <p>
-                      {`Локальный загрузчик работает, но он не может подключиться к IDE из-за ошибки.`}
-                      <br></br>
-                      {errorMessage}
-                    </p>
-                  );
-                  break;
-                default:
-                  errorMsg = (
-                    <p>
-                      {`Локальный загрузчик работает, но IDE не может установить с ним соединение.`}
-                    </p>
-                  );
-                  break;
-              }
-              break;
-            case 2:
-              errorMsg = (
-                <p>
-                  {`Локальный загрузчик не смог запуститься из-за ошибки.`}
-                  <br></br>
-                  {errorDetails}
-                </p>
-              );
-              break;
-            case 3:
-              errorMsg = <p>{`Прервана работа локального загрузчика.`}</p>;
-              break;
-            case 4:
-              errorMsg = <p>{`Платформа ${errorDetails} не поддерживается.`}</p>;
-              break;
-          }
-        });
-    } else {
-      if (connectionStatus == ClientStatus.CONNECTION_ERROR) {
-        errorMsg = (
-          <p>
-            {`Ошибка соединения.`}
-            <br></br>
-            {errorMessage}
-          </p>
+      try {
+        const status = await window.electron.ipcRenderer.invoke(
+          'Module:getStatus',
+          'lapki-flasher'
         );
-      } else {
-        errorMsg = <p>{errorMessage}</p>;
+        const errorDetails = status.details;
+
+        switch (status.code) {
+          // код 0 означает, что не было попытки запустить загрузчик, по-идее такая ошибка не может возникнуть, если только нет какой-то ошибки в коде.
+          case 0:
+            description = 'Загрузчик не был запущен по неизвестной причине.';
+            break;
+          // код 1 означает, что загрузчик работает, но соединение с ним не установлено.
+          case 1:
+            description =
+              connectionStatus === ClientStatus.CONNECTION_ERROR
+                ? `Локальный загрузчик работает, но он не может подключиться к IDE из-за ошибки.\n${errorMessage}`
+                : 'Локальный загрузчик работает, но IDE не может установить с ним соединение.';
+            break;
+          case 2:
+            description = `Локальный загрузчик не смог запуститься из-за ошибки.\n${errorDetails}`;
+            break;
+          case 3:
+            description = 'Прервана работа локального загрузчика.';
+            break;
+          case 4:
+            description = `Платформа ${errorDetails} не поддерживается.`;
+            break;
+        }
+      } catch (error) {
+        description = `Не удалось получить описание ошибки.\n${String(error)}`;
       }
+    } else {
+      description =
+        connectionStatus === ClientStatus.CONNECTION_ERROR
+          ? `Ошибка соединения.\n${errorMessage}`
+          : errorMessage ?? 'Описание ошибки отсутствует.';
     }
-    const msg: ErrorModalData = {
-      text: errorMsg,
-      caption: 'Ошибка',
-    };
-    openMsgModal(msg);
+
+    ManagerMS.addLog(description);
   };
 
   const handleReconnect = async () => {
@@ -916,7 +838,16 @@ export const FlasherTab: React.FC = () => {
     <section className="flex h-full min-h-0 flex-col overflow-hidden bg-bg-primary">
       {(errorMessage || needAvrdude) && (
         <div className="mb-3 flex items-center">
-          {failureButtons()}
+          {errorMessage && (
+            <FailureActions
+              reconnectLabel={displayReconnect()}
+              reconnectDisabled={
+                flasherSetting?.type === 'local' && connectionStatus === ClientStatus.CONNECTING
+              }
+              onReconnect={handleReconnect}
+              onShowErrorDescription={handleErrorMessageDisplay}
+            />
+          )}
           {avrdudeCheck()}
         </div>
       )}
@@ -940,7 +871,7 @@ export const FlasherTab: React.FC = () => {
         </button>
         <button
           type="button"
-          className="min-w-0 whitespace-nowrap px-0 py-1.5 text-primary transition-opacity hover:opacity-75"
+          className="min-w-0 whitespace-nowrap px-0 py-1.5 text-primary transition-opacity"
           onClick={handleOpenAddressBook}
         >
           Адресная книга
@@ -950,7 +881,6 @@ export const FlasherTab: React.FC = () => {
         <p className="h2-header mb-3">Устройства на прошивку</p>
         <div className="mb-5 flex h-4 items-center gap-3">
           <Checkbox
-            className="h-4 min-h-4 w-4 min-w-4 rounded-sm"
             checked={allDevicesSelected}
             disabled={flashTableData.length === 0}
             aria-label="Выбрать все устройства"
@@ -962,7 +892,7 @@ export const FlasherTab: React.FC = () => {
           />
           <button
             type="button"
-            className="danger transition-opacity enabled:hover:opacity-70 disabled:opacity-30"
+            className="danger transition-opacity disabled:opacity-30"
             disabled={selectedDevicesCount === 0}
             aria-label="Удалить выбранные устройства"
             onClick={handleRemoveDevs}
@@ -973,7 +903,7 @@ export const FlasherTab: React.FC = () => {
         <FlasherTable addressEnrtyEdit={addressEnrtyEdit} getEntryById={getEntryById} />
       </div>
       <div className="mt-5 shrink-0">{operationButtons()}</div>
-      <div className="h2-header mb-3 mt-6 shrink-0">Журнал действий</div>
+      <h2 className="mb-3 mt-6 shrink-0 font-medium text-black">Журнал действий</h2>
       <ScrollArea
         className="min-h-20 flex-1 rounded-lg border border-border-primary bg-bg-primary"
         viewportClassName="whitespace-break-spaces px-3 py-[7px]"
@@ -1011,7 +941,6 @@ export const FlasherTab: React.FC = () => {
           }
           onRemove(index);
         }}
-        onSwapEntries={onSwapEntries}
         addressEnrtyEdit={addressEnrtyEdit}
         openAddressEnrtyAdd={openAddressEnrtyAdd}
       />
@@ -1056,7 +985,6 @@ export const FlasherTab: React.FC = () => {
       />
       {deviceMsList()}
       <AvrdudeGuideModal isOpen={isAvrdudeGuideModalOpen} onClose={closeAvrdudeGuideModal} />
-      <ErrorModal isOpen={isMsgModalOpen} data={msgModalData} onClose={closeMsgModal} />
     </section>
   );
 };

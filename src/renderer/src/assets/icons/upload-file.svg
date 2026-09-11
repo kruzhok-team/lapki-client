@@ -1,10 +1,5 @@
-<!-- icon666.com - MILLIONS OF FREE VECTOR ICONS -->
-<svg 
-  id="Layer_1" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" data-name="Layer 1">
-    <path 
-        fill="currentColor" d="m26.707 9.293-7-7a1 1 0 0 0 -.707-.293h-11a3 3 0 0 0 -3 3v22a3 3 0 0 0 3 3h16a3 3 0 0 0 3-3v-17a1 1 0 0 0 -.293-.707zm-6.707-3.879 3.586 3.586h-2.586a1 1 0 0 1 -1-1zm4 22.586h-16a1 1 0 0 1 -1-1v-22a1 1 0 0 1 1-1h10v4a3 3 0 0 0 3 3h4v16a1 1 0 0 1 -1 1z">
-    </path>
-    <path 
-        fill="currentColor" d="m22 18h-9.586l1.293-1.293a1 1 0 0 0 -1.414-1.414l-3 3a1 1 0 0 0 0 1.414l3 3a1 1 0 0 0 1.414-1.414l-1.293-1.293h9.586a1 1 0 0 0 0-2z">
-    </path>
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M5.99609 3.5H13.5264C13.6633 3.5 13.7945 3.55781 13.8887 3.66016L18.3066 8.46191C18.3919 8.55456 18.4404 8.67721 18.4404 8.80469V20.0381C18.4403 20.3184 18.215 20.54 17.9443 20.54H5.99609C5.72547 20.54 5.50015 20.3184 5.5 20.0381V4.00195C5.50015 3.72164 5.72547 3.5 5.99609 3.5Z" stroke="#186AA9" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M18.334 8.49028L14.4123 8.49028C13.9791 8.49028 13.6279 8.13911 13.6279 7.70593L13.6279 3.78418" stroke="#186AA9" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M12.0001 10.6665V17.3332M8.66675 13.9998H15.3334" stroke="#186AA9" stroke-linecap="round"/>
 </svg>

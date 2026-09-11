@@ -1,17 +1,15 @@
-import React, { Dispatch, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { toast } from 'sonner';
 
 import { useSettings } from '@renderer/hooks';
-import { useFileMenu } from '@renderer/hooks/useFileMenu';
+import type { FileMenuItem } from '@renderer/hooks/useFileMenu';
 import { useFlasherHooks } from '@renderer/hooks/useFlasherHooks';
 import { useModal } from '@renderer/hooks/useModal';
 import { useWindowManagerStore } from '@renderer/hooks/useWindowManagerStore';
 import { useDoc } from '@renderer/store/useDoc';
-import { useManagerMS } from '@renderer/store/useManagerMS';
 import { useSimulatorWindow } from '@renderer/store/useSimulatorWindow';
 import { useTasks } from '@renderer/store/useTasks';
-import { Elements } from '@renderer/types/diagram';
 
 import {
   AboutTheProgramModal,
@@ -21,50 +19,25 @@ import {
   FlasherSelectModal,
   FlasherSelectModalFormValues,
   History,
-  MenuDropdown,
   ResetSettingsModal,
   Setting,
 } from './components';
 
-import { CompilerConnection } from '../Modules/CompilerConnection';
+import { FileMenu } from '../FileMenu';
 import { Flasher } from '../Modules/Flasher';
 import { Simulator } from '../Simulator';
 import { MovingModal } from '../UI/Modal/MovingModal';
 
-export interface HeaderCallbacks {
-  onRequestNewFile: () => void;
-  onRequestOpenFile: () => void;
-  onRequestSaveFile: () => void;
-  onRequestSaveAsFile: () => void;
-  onRequestImportFile: (
-    setOpenData: Dispatch<[boolean, string | null, string | null, string]>
-  ) => void;
-}
+import './style.css';
 
 interface HeaderProps {
-  callbacks: HeaderCallbacks;
-  onCompilerImportData: (
-    importData: Elements,
-    openData: [boolean, string | null, string | null, string]
-  ) => void;
-  renderStartScreen?: (fileMenu: React.ReactNode) => React.ReactNode;
+  fileMenuItems: FileMenuItem[];
   initialSimulationSmId?: string;
 }
 
 type HeaderMenu = 'files' | 'settings' | 'history' | null;
 
-export const Header: React.FC<HeaderProps> = ({
-  callbacks: {
-    onRequestNewFile,
-    onRequestOpenFile,
-    onRequestSaveFile,
-    onRequestSaveAsFile,
-    onRequestImportFile,
-  },
-  onCompilerImportData,
-  renderStartScreen,
-  initialSimulationSmId,
-}) => {
+export const Header: React.FC<HeaderProps> = ({ fileMenuItems, initialSimulationSmId }) => {
   const rootRef = useRef<HTMLElement>(null);
   const [openMenu, setOpenMenu] = useState<HeaderMenu>(null);
   const [simulatorStatus, setSimulatorStatus] = useState('Идет подключение...');
@@ -87,26 +60,12 @@ export const Header: React.FC<HeaderProps> = ({
   ]);
   const [flasherSetting, setFlasherSetting] = useSettings('flasher');
   const [isFlasherSettingsOpen, openFlasherSettings, closeFlasherSettings] = useModal(false);
-  const [openData, setOpenData] = useState<
-    [boolean, string | null, string | null, string] | undefined
-  >(undefined);
-  const compilerStatus = useManagerMS((state) => state.compilerStatus);
   const [openDocumentation, openTasks, isDocOpen, visibleDocViews] = useDoc((state) => [
     state.onDocumentationToggle,
     state.onTasksToggle,
     state.isOpen,
     state.visibleViews,
   ]);
-  const { items: fileMenuItems, modals: fileMenuModals } = useFileMenu({
-    onRequestNewFile,
-    onRequestOpenFile,
-    onRequestSaveFile,
-    onRequestSaveAsFile,
-    onRequestImport: onRequestImportFile,
-    compilerStatus,
-    setOpenData,
-  });
-
   useFlasherHooks();
 
   useEffect(() => {
@@ -166,16 +125,6 @@ export const Header: React.FC<HeaderProps> = ({
     removeWindow('simulator');
   };
 
-  const menuButtonClass =
-    'h-full rounded-lg px-3 text-xs text-text-primary transition-colors hover:bg-bg-hover focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary';
-  const popoverClass =
-    'absolute left-0 top-full z-[110] max-h-[calc(100vh-25px)] min-w-[260px] overflow-y-auto border border-border-primary bg-bg-secondary shadow-[0_2px_4px_rgba(0,0,0,0.2)]';
-  const settingsPopoverClass = 'absolute left-[11px] top-full z-[110] w-[160px] overflow-visible';
-  const filePopoverClass = 'absolute left-[11px] top-full z-[110] w-[144px]';
-  const fileMenu = (variant: 'popover' | 'start-screen' = 'popover', onItemSelect?: () => void) => (
-    <MenuDropdown variant={variant} onItemSelect={onItemSelect} items={fileMenuItems} />
-  );
-
   return (
     <>
       <header
@@ -185,28 +134,32 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="relative h-full">
           <button
             type="button"
-            className={menuButtonClass}
+            className="header-menu-button"
             aria-expanded={openMenu === 'files'}
             onClick={() => toggleMenu('files')}
           >
             Файл
           </button>
-          <div className={`${filePopoverClass} ${openMenu !== 'files' ? 'hidden' : ''}`}>
-            {fileMenu('popover', () => setOpenMenu(null))}
+          <div className={`header-file-popover ${openMenu !== 'files' ? 'hidden' : ''}`}>
+            <FileMenu
+              items={fileMenuItems}
+              variant="dropdown"
+              onItemSelect={() => setOpenMenu(null)}
+            />
           </div>
         </div>
 
         <div className="relative h-full">
           <button
             type="button"
-            className={menuButtonClass}
+            className="header-menu-button"
             aria-expanded={openMenu === 'settings'}
             onClick={() => toggleMenu('settings')}
           >
             Настройки
           </button>
           {openMenu === 'settings' && (
-            <div className={settingsPopoverClass}>
+            <div className="header-settings-popover">
               <Setting
                 openCompilerSettings={openCompilerSettings}
                 openAboutModal={openAboutModal}
@@ -222,7 +175,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         <button
           type="button"
-          className={`${menuButtonClass} ${
+          className={`header-menu-button ${
             isDocOpen && visibleDocViews.documentation ? 'bg-bg-hover' : ''
           }`}
           aria-pressed={isDocOpen && visibleDocViews.documentation}
@@ -233,7 +186,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         <button
           type="button"
-          className={`${menuButtonClass} ${
+          className={`header-menu-button ${
             isDocOpen && visibleDocViews.tasks ? 'bg-bg-hover' : ''
           }`}
           aria-pressed={isDocOpen && visibleDocViews.tasks}
@@ -244,7 +197,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         <button
           type="button"
-          className={`${menuButtonClass} ${isSimulatorOpen ? 'bg-bg-hover' : ''}`}
+          className={`header-menu-button ${isSimulatorOpen ? 'bg-bg-hover' : ''}`}
           aria-pressed={isSimulatorOpen}
           onClick={openSimulatorWindow}
         >
@@ -254,7 +207,7 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="relative h-full">
           <button
             type="button"
-            className={menuButtonClass}
+            className="header-menu-button"
             aria-expanded={openMenu === 'history'}
             disabled={submissionActive}
             onClick={() => toggleMenu('history')}
@@ -262,14 +215,12 @@ export const Header: React.FC<HeaderProps> = ({
             История изменений
           </button>
           {openMenu === 'history' && (
-            <div className={`${popoverClass} w-[340px] rounded-lg`}>
+            <div className="header-popover w-[340px] rounded-lg">
               <History />
             </div>
           )}
         </div>
       </header>
-
-      {renderStartScreen?.(fileMenu('start-screen'))}
 
       <MovingModal
         id="simulator"
@@ -277,7 +228,8 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="flex items-center gap-11">
             <span>Симулятор</span>
             <span className="font-normal">
-              Статус: <span className="text-primary">{simulatorStatus}</span>
+              <span className="font-medium">Статус: </span>
+              <span className="text-primary">{simulatorStatus}</span>
             </span>
           </div>
         }
@@ -296,9 +248,6 @@ export const Header: React.FC<HeaderProps> = ({
         />
       </MovingModal>
 
-      {fileMenuModals}
-
-      <CompilerConnection openData={openData} onImportData={onCompilerImportData} />
       <FlasherSelectModal
         isOpen={isFlasherSettingsOpen}
         onSubmit={handleFlasherModalSubmit}

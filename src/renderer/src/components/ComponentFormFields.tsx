@@ -126,7 +126,7 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
               <ColorInput
                 className="h-8 w-8 rounded-lg"
                 clearable={false}
-                value={parameters['labelColor'] ?? '#FFFFFF'}
+                value={parameters['labelColor'] ?? '#7CC3E8'}
                 onChange={(value) => handleInputChange('labelColor', value)}
               />
             </div>
@@ -159,7 +159,7 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
               hint={param.description}
             >
               <ParameterSelect
-                menuWidth="75px"
+                menuWidth="content"
                 options={options}
                 value={options.find((o) => o.value === value || o.value === Number(value))}
                 onChange={(option) => handleInputChange(idx, String(option?.value ?? ''))}

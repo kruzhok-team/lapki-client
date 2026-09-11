@@ -79,7 +79,7 @@ export const CompilerSelectModal: React.FC<CompilerSelectModalProps> = ({ onClos
       hideCancelButton
       className="w-[348px]"
     >
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col">
         <Controller
           control={control}
           name="type"
@@ -91,8 +91,8 @@ export const CompilerSelectModal: React.FC<CompilerSelectModalProps> = ({ onClos
             };
 
             return (
-              <label className="flex flex-col gap-2">
-                <span>Тип</span>
+              <label className="flex flex-col gap-3">
+                <span className="h2-header">Тип</span>
                 <ParameterSelect
                   containerClassName="w-36"
                   value={options.find((opt) => opt.value === value)}
@@ -105,21 +105,21 @@ export const CompilerSelectModal: React.FC<CompilerSelectModalProps> = ({ onClos
           }}
         />
 
-        <div className="text-text-inactive">{currentServerLabel}</div>
+        <div className="mb-3 mt-2 text-text-inactive">{currentServerLabel}</div>
 
         <div className="flex gap-3">
           <TextField
             maxLength={80}
-            containerClassName="w-36 gap-2"
-            className="disabled:cursor-not-allowed disabled:bg-bg-secondary disabled:text-text-inactive disabled:opacity-70"
+            containerClassName="w-36 gap-3 h2-header"
+            className="rounded-lg font-normal disabled:cursor-not-allowed disabled:bg-inactive-input disabled:text-text-inactive"
             label="Хост"
             {...register(watch('type') === 'local' ? 'localHost' : 'remoteHost')}
             placeholder="Напишите адрес хоста"
             disabled={isSecondaryFieldsDisabled}
           />
           <TextField
-            containerClassName="w-36 gap-2"
-            className="disabled:cursor-not-allowed disabled:bg-bg-secondary disabled:text-text-inactive disabled:opacity-70"
+            containerClassName="w-36 gap-3 h2-header"
+            className="rounded-lg font-normal disabled:cursor-not-allowed disabled:bg-inactive-input disabled:text-text-inactive"
             label="Порт"
             {...register(watch('type') === 'local' ? 'localPort' : 'remotePort', {
               valueAsNumber: true,

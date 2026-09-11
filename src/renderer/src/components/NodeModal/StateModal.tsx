@@ -7,12 +7,12 @@ import { CanvasController } from '@renderer/lib/data/ModelController/CanvasContr
 import { PlatformManager } from '@renderer/lib/data/PlatformManager';
 import { State } from '@renderer/lib/drawable';
 import { useModelContext } from '@renderer/store/ModelContext';
-import { Action, Component, EventData } from '@renderer/types/diagram';
+import { Component, EventData } from '@renderer/types/diagram';
 
-import { ActionsModal, ActionsModalData } from './ActionsModal/ActionsModal';
+import { ActionsModal } from './ActionsModal/ActionsModal';
 import { EventsHierarchy } from './components/EventsHierarchy';
 import { EditEventModal } from './EditEventModal';
-import { useActionsModal, useEditEvent } from './hooks';
+import { useActionEditor, useEditEvent } from './hooks';
 import { useViewStack } from './hooks/useViewStack';
 
 import { MovingModal } from '../UI/Modal/MovingModal';
@@ -45,13 +45,44 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
   // Индекс выбранного действия в иерархии (только для подсветки, не влияет на экран)
   const [selectedActionIndex, setSelectedActionIndex] = useState<number | null>(null);
 
-  const [actionsIdx, setActionsIdx] = useState<number | null>(null);
-  const [actionsData, setActionsData] = useState<ActionsModalData | undefined>();
-
   const viewStack = useViewStack<StateView>({ view: 'editEvent', title: 'Редактор события' });
 
   const editEventProps = useEditEvent(smId, controller, state, currentEvent, currentEventIndex);
   const { handleSubmit: handleEditEventSubmit, getActions, updateActions } = editEventProps;
+
+  const actionEditor = useActionEditor(smId, controller, (data, idx, initialData) => {
+    // If this action was opened from the hierarchy, persist directly to model
+    if (
+      initialData?.persistOnSave &&
+      state &&
+      currentEventIndex !== undefined &&
+      idx !== null &&
+      idx !== undefined
+    ) {
+      modelController.changeEvent({
+        smId,
+        stateId: state.id,
+        event: { eventIdx: currentEventIndex, actionIdx: idx },
+        newValue: data,
+      });
+
+      // Update currentEvent locally to reflect saved action and open event view
+      const ev = state.data.events[currentEventIndex];
+      const evActions = Array.isArray(ev.do) ? [...ev.do] : [];
+      evActions[idx] = data;
+      setCurrentEvent({ ...ev, do: evActions });
+      setCurrentEventIndex(currentEventIndex);
+      toast.success('Действие сохранено!');
+      setSelectedActionIndex(null);
+      viewStack.reset({ view: 'editEvent', title: 'Редактор события' });
+      return;
+    }
+
+    // Otherwise update the edit-event buffer
+    updateActions(data, idx ?? 0);
+    setSelectedActionIndex(null);
+    viewStack.pop();
+  });
 
   const stateName = state?.data.name ?? '';
 
@@ -99,8 +130,12 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
         if (typeof eventSelection?.actionIdx === 'number') {
           const aIdx = eventSelection.actionIdx;
           setSelectedActionIndex(aIdx);
-          setActionsIdx(aIdx);
-          setActionsData({ smId, action: ev, isEditingEvent, persistOnSave: true });
+          actionEditor.open({
+            index: aIdx,
+            action: ev,
+            isEditingEvent,
+            persistOnSave: true,
+          });
           viewStack.reset({ view: 'actions', title: 'Выберите действие' });
         } else {
           setSelectedActionIndex(null);
@@ -131,6 +166,7 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
     setCurrentEvent(null);
     setCurrentEventIndex(undefined);
     setSelectedActionIndex(null);
+    actionEditor.reset();
     viewStack.reset({ view: 'editEvent', title: 'Редактор события' });
     close();
   };
@@ -151,29 +187,42 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
     ): [number, EventData] | [undefined, null] => {
       if (currentEventIndex === undefined) return [undefined, null];
 
-      const isZero = currentEventIndex === 0;
-      const emptyEvents = events.length === 1;
+      if (events.length === 1) return [undefined, null];
+      if (currentEventIndex < events.length - 1) {
+        return [currentEventIndex, events[currentEventIndex + 1]];
+      }
 
-      if (isZero && emptyEvents) return [undefined, null];
-      if (isZero && !emptyEvents) return [1, events[1]];
-      if (!isZero) return [currentEventIndex - 1, events[currentEventIndex - 1]];
-
-      return [undefined, null];
+      return [currentEventIndex - 1, events[currentEventIndex - 1]];
     },
     []
   );
 
-  const removeEvent = () => {
+  const removeSelected = () => {
     if (!state || currentEventIndex === undefined) return;
+
+    if (selectedActionIndex !== null) {
+      const isDeleted = modelController.deleteEvent({
+        smId,
+        stateId: state.id,
+        event: { eventIdx: currentEventIndex, actionIdx: selectedActionIndex },
+      });
+      if (!isDeleted) return;
+
+      setCurrentEvent(state.data.events[currentEventIndex]);
+      setSelectedActionIndex(null);
+      actionEditor.reset();
+      viewStack.reset({ view: 'editEvent', title: 'Редактор события' });
+      return;
+    }
+
     const [newIndex, newEvent] = nextEvent(currentEventIndex, state.data.events);
-    const events =
-      state.data.events.length === 1
-        ? []
-        : [
-            ...state.data.events.slice(0, currentEventIndex),
-            ...state.data.events.slice(currentEventIndex + 1),
-          ];
-    modelController.changeState({ smId, id: state.id, events }, true);
+    const isDeleted = modelController.deleteEvent({
+      smId,
+      stateId: state.id,
+      event: { eventIdx: currentEventIndex, actionIdx: null },
+    });
+    if (!isDeleted) return;
+
     // Выбираем соседнее событие после удаления
     setCurrentEvent(newEvent);
     setCurrentEventIndex(newIndex);
@@ -210,76 +259,29 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
     const actions = state.data.events[eventIndex].do;
     const action = Array.isArray(actions) ? actions[actionIndex] : undefined;
     console.log(action);
-    setActionsIdx(actionIndex);
     // Opened from hierarchy — persist on save
-    setActionsData(
-      action ? { smId, action, isEditingEvent: false, persistOnSave: true } : undefined
-    );
+    actionEditor.open({ index: actionIndex, action, persistOnSave: true });
     viewStack.push({ view: 'actions', title: 'Выберите действие' });
   };
 
   // Переход на экран actions из EditEventContent
   const handleOpenActionsView = (actionIndex: number | null) => {
     const currentActions = getActions();
-    setActionsIdx(actionIndex ?? currentActions.length);
-    setSelectedActionIndex(actionIndex ?? currentActions.length);
-    setActionsData(
-      actionIndex !== null && currentActions[actionIndex]
-        ? { smId, action: currentActions[actionIndex], isEditingEvent: false, persistOnSave: false }
-        : undefined
-    );
+    const index = actionIndex ?? currentActions.length;
+    setSelectedActionIndex(index);
+    actionEditor.open({
+      index,
+      action: actionIndex === null ? undefined : currentActions[actionIndex],
+    });
     viewStack.push({ view: 'actions', title: 'Выберите действие' });
   };
-
-  const handleActionsSubmit = (data: Action, idx: number | null | undefined) => {
-    // If this action was opened from the hierarchy, persist directly to model
-    if (
-      actionsData?.persistOnSave &&
-      state &&
-      currentEventIndex !== undefined &&
-      idx !== null &&
-      idx !== undefined
-    ) {
-      modelController.changeEvent({
-        smId,
-        stateId: state.id,
-        event: { eventIdx: currentEventIndex, actionIdx: idx },
-        newValue: data,
-      });
-
-      // Update currentEvent locally to reflect saved action and open event view
-      const ev = state.data.events[currentEventIndex];
-      const evActions = Array.isArray(ev.do) ? [...ev.do] : [];
-      evActions[idx] = data;
-      setCurrentEvent({ ...ev, do: evActions });
-      setCurrentEventIndex(currentEventIndex);
-      toast.success('Действие сохранено!');
-      setSelectedActionIndex(null);
-      viewStack.reset({ view: 'editEvent', title: 'Редактор события' });
-      return;
-    }
-
-    // Otherwise update the edit-event buffer
-    updateActions(data, idx ?? 0);
-    setSelectedActionIndex(null);
-    viewStack.pop();
-  };
-
-  const actionsModalProps = useActionsModal(
-    smId,
-    controller,
-    actionsIdx,
-    handleActionsSubmit,
-    actionsData
-  );
-  const { handleSubmit: handleEditActionSubmit } = actionsModalProps;
 
   const handleModalSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (viewStack.currentView === 'editEvent') {
       handleEditEventSubmit();
     }
-    if (viewStack.currentView === 'actions') handleEditActionSubmit();
+    if (viewStack.currentView === 'actions') actionEditor.handleSubmit();
   };
 
   return (
@@ -315,7 +317,7 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
             onSelectEvent={handleSelectEvent}
             onSelectAction={handleSelectAction}
             onAddEvent={addEvent}
-            onRemoveEvent={removeEvent}
+            onRemoveSelected={removeSelected}
           />
         </div>
 
@@ -332,7 +334,7 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
               </div>
 
               <div className="h-full min-h-0" hidden={viewStack.currentView !== 'actions'}>
-                <ActionsModal {...actionsModalProps} />
+                <ActionsModal {...actionEditor.modalProps} />
               </div>
             </div>
           )}

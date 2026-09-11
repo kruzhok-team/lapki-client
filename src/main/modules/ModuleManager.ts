@@ -10,6 +10,7 @@ import http from 'http';
 import path from 'path';
 
 import { findFreePort, getUsedPorts } from './freePortFinder';
+import { terminateProcessTree } from './processTree';
 
 import { defaultSettings } from '../settings';
 import { basePath } from '../utils';
@@ -44,6 +45,7 @@ export class ModuleStatus {
 export class ModuleManager {
   static localProccesses: Map<string, ChildProcessWithoutNullStreams> = new Map();
   static moduleStatus: Map<string, ModuleStatus> = new Map();
+  static stoppingModules: Map<string, Promise<void>> = new Map();
   static async startLocalModule(module: ModuleName) {
     const usedPorts = getUsedPorts();
     this.moduleStatus.set(module, new ModuleStatus());
@@ -174,30 +176,64 @@ export class ModuleManager {
   }
 
   private static async sendKillRequest(port: number): Promise<void> {
-    return new Promise((resolve, _) => {
+    return new Promise((resolve) => {
+      let settled = false;
+      const finish = () => {
+        if (settled) return;
+        settled = true;
+        resolve();
+      };
       const req = http.get(`http://localhost:${port}/kill`, (res) => {
-        res.on('end', () => resolve());
+        res.resume();
+        res.on('end', finish);
+        res.on('error', finish);
       });
       req.on('error', (err) => {
         // Ignore errors since we're shutting down anyway
         console.log(err);
-        resolve();
+        finish();
       });
-      req.end();
+      req.setTimeout(1_000, () => {
+        req.destroy();
+        finish();
+      });
     });
   }
 
-  static async stopModule(module: ModuleName) {
-    if (this.localProccesses.has(module)) {
+  static async stopModule(module: ModuleName): Promise<void> {
+    const pendingStop = this.stoppingModules.get(module);
+    if (pendingStop) return pendingStop;
+
+    const child = this.localProccesses.get(module);
+    if (!child) return;
+
+    const stop = (async () => {
       if (module === 'lapki-compiler') {
         const port = Number(await settings.get('compiler.localPort'));
         await this.sendKillRequest(port);
-        this.localProccesses.get(module)?.kill();
-      } else {
-        this.localProccesses.get(module)!.kill();
       }
-      this.localProccesses.delete(module);
+
+      await terminateProcessTree(child);
+
+      if (this.localProccesses.get(module) === child) {
+        this.localProccesses.delete(module);
+      }
+    })();
+
+    this.stoppingModules.set(module, stop);
+    try {
+      await stop;
+    } finally {
+      this.stoppingModules.delete(module);
     }
+  }
+
+  static async stopAllModules(): Promise<void> {
+    await Promise.all(
+      (['lapki-flasher', 'lapki-compiler', 'sm-interpreter'] as const).map((module) =>
+        this.stopModule(module)
+      )
+    );
   }
 
   static getLocalStatus(module: ModuleName): ModuleStatus {

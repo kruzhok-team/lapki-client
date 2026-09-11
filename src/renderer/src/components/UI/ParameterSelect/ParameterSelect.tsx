@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 
 import { mergeRefs } from 'react-merge-refs';
 import ReactSelect, {
@@ -10,6 +10,9 @@ import ReactSelect, {
   SingleValueProps,
 } from 'react-select';
 import { twMerge } from 'tailwind-merge';
+
+import { ReactComponent as ArrowIcon } from '@renderer/assets/icons/arrow-down.svg';
+import { usePortalZIndex } from '@renderer/hooks';
 
 import { ScrollArea } from '../ScrollArea';
 import { WithHint } from '../WithHint';
@@ -74,7 +77,7 @@ const ParameterMenuList = <
     <ScrollArea
       {...otherInnerProps}
       ref={innerRef}
-      className="ParameterSelect__menu-list"
+      className="ParameterSelect__menu-list py-0"
       viewportClassName="mr-0"
       style={{ ...style, maxHeight }}
     >
@@ -89,7 +92,8 @@ type ParameterSelectProps<
 > = Omit<Props<Option, false, Group>, 'isMulti'> & {
   error?: string;
   containerClassName?: string;
-  menuWidth?: string | number;
+  indicatorClassName?: string;
+  menuWidth?: 'content' | 'full';
 };
 
 /** Compact select used for parameters with a fixed set of allowed values. */
@@ -100,12 +104,16 @@ export function ParameterSelect<
   error,
   containerClassName,
   className,
-  menuWidth,
+  indicatorClassName = 'text-black',
+  menuWidth = 'full',
   components: customComponents,
   ...props
 }: ParameterSelectProps<Option, Group>) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const zIndex = usePortalZIndex(containerRef);
+
   return (
-    <div className={twMerge('w-full', containerClassName)}>
+    <div ref={containerRef} className={twMerge('w-full', containerClassName)}>
       <ReactSelect
         placeholder="Выберите..."
         isClearable={false}
@@ -114,14 +122,25 @@ export function ParameterSelect<
         menuPortalTarget={document.body}
         menuPosition="fixed"
         styles={{
-          menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+          menuPortal: (base) => ({ ...base, zIndex }),
           menu: (base) =>
-            menuWidth === undefined
-              ? base
-              : { ...base, right: 0, left: 'auto', width: menuWidth },
+            menuWidth === 'content'
+              ? { ...base, right: 0, left: 'auto', width: 'max-content' }
+              : base,
           control: (base) => ({ ...base, minHeight: '32px', height: '32px' }),
         }}
         components={{
+          DropdownIndicator: (indicatorProps) => (
+            <components.DropdownIndicator {...indicatorProps}>
+              <ArrowIcon
+                className={twMerge(
+                  indicatorClassName,
+                  indicatorProps.isDisabled && 'text-text-inactive'
+                )}
+              />
+            </components.DropdownIndicator>
+          ),
+          IndicatorSeparator: null,
           MenuList: ParameterMenuList,
           Option: ParameterOption as any,
           SingleValue: ParameterSingleValue as any,
@@ -130,7 +149,7 @@ export function ParameterSelect<
         className={twMerge('w-full', className, error && 'error')}
         classNamePrefix="ParameterSelect"
       />
-      <p className={twMerge('text-sm text-error', error && 'mt-1')}>{error}</p>
+      <p className={twMerge('text-xs text-error', error && 'mt-1')}>{error}</p>
     </div>
   );
 }

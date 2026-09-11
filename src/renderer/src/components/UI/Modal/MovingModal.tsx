@@ -76,8 +76,8 @@ export const MovingModal: React.FC<ModalProps> = ({
         className
       )}
       header={
-        <div className="relative mb-6 flex w-full items-center justify-between border-b border-border-primary pb-3">
-          <h1 className="text-sm font-medium">{title}</h1>
+        <div className="relative mb-6 flex w-full items-center justify-between border-b border-border-primary pb-6">
+          <h1 className="text-[12px] font-medium">{title}</h1>
           <CloseButton onClick={props.onRequestClose} />
         </div>
       }
@@ -86,7 +86,7 @@ export const MovingModal: React.FC<ModalProps> = ({
         <div className="min-h-0 flex-1">{children}</div>
 
         {hasFooter && (
-          <div className="flex items-center justify-end gap-2 pt-3">
+          <div className="flex items-center justify-end gap-2 pt-6">
             <button
               type="button"
               className={
@@ -99,7 +99,7 @@ export const MovingModal: React.FC<ModalProps> = ({
             </button>
             <button
               type="button"
-              className={middleClassName ?? 'btn-secondary'}
+              className={middleClassName ?? 'btn-secondary font-medium'}
               onClick={onMiddle}
               hidden={!middleLabel}
             >
@@ -108,7 +108,7 @@ export const MovingModal: React.FC<ModalProps> = ({
             <div className="flex-grow"></div>
             <button
               type="button"
-              className={cancelClassName ?? 'btn-secondary'}
+              className={cancelClassName ?? 'btn-secondary font-medium'}
               onClick={handleCancel}
               hidden={hideCancelButton}
             >

@@ -175,7 +175,7 @@ export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (prop
                 <ComponentFormFieldLabel label={label} hint={hint} as="div">
                   <ParameterSelect
                     containerClassName="w-full"
-                    menuWidth="280px"
+                    menuWidth="content"
                     placeholder={'Выберите тип платы'}
                     onChange={(v) => onChange(v?.value ?? '')}
                     options={typeOptions}

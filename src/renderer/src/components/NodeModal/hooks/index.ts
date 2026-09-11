@@ -4,3 +4,4 @@ export * from './useActions';
 export * from './useViewStack';
 export * from './useEditEvent';
 export * from './useActionModal';
+export * from './useActionEditor';

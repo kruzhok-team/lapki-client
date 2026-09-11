@@ -43,7 +43,7 @@ export class Canvas extends EventEmitter<CanvasEvents> {
 
     context.beginPath();
     context.rect(0, 0, width, height);
-    context.fillStyle = getColor('bg-primary');
+    context.fillStyle = getColor('bg-canvas');
     context.fill();
     context.closePath();
   }

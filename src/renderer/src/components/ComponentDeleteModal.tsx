@@ -38,9 +38,9 @@ export const ComponentDeleteModal: React.FC<ComponentDeleteModalProps> = ({
     onClose();
   };
 
-  const type = data.type;
+  const type = proto.name ?? data.type;
 
-  const compoLabel = type && !proto.singletone ? `${type} ${id}` : id;
+  const compoLabel = type && !proto.singletone ? `${id} (тип ${type})` : id;
 
   return (
     <Modal
@@ -50,14 +50,18 @@ export const ComponentDeleteModal: React.FC<ComponentDeleteModalProps> = ({
       title="Удаление компонента"
       submitLabel="Удалить"
       onSubmit={handleSubmit}
-      submitClassName="btn-secondary border-red-500 danger"
+      submitClassName="btn-secondary border-danger danger"
+      cancelClassName="hidden"
     >
       <p>
-        Вы действительно хотите удалить компонент{' '}
-        <span className="px-1 font-bold">{compoLabel}</span>?
+        Вы действительно хотите удалить компонент
+        <span className="px-1 font-medium">
+          {compoLabel}
+          <span className="font-normal">?</span>
+        </span>
       </p>
       <br />
-      <p className="italic">
+      <p className="text-text-inactive">
         Удаление не затрагивает переходы, события и действия, их содержимое будет заменено
         характерными значками. Вам необходимо удалить эти элементы вручную.
       </p>

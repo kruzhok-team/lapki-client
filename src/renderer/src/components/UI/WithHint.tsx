@@ -14,6 +14,7 @@ import {
 } from '@floating-ui/react';
 import { createPortal } from 'react-dom';
 
+import { usePortalZIndex } from '@renderer/hooks';
 import { getColor } from '@renderer/theme';
 
 interface WithHintProps {
@@ -53,6 +54,7 @@ export const WithHint: React.FC<WithHintProps> = ({
     delay,
   });
   const { getReferenceProps, getFloatingProps } = useInteractions([hover]);
+  const zIndex = usePortalZIndex(refs.reference, isOpen);
 
   const childNode = children({
     ref: refs.setReference,
@@ -94,9 +96,9 @@ export const WithHint: React.FC<WithHintProps> = ({
         hint &&
         createPortal(
           <div
-            className="z-[100] max-w-sm whitespace-pre-wrap rounded-sm border border-border-primary bg-bg-secondary px-2 py-1 shadow-xl transition-opacity"
+            className="max-w-sm whitespace-pre-wrap rounded-sm border border-border-primary bg-bg-secondary px-2 py-1 shadow-xl transition-opacity"
             ref={refs.setFloating}
-            style={floatingStyles}
+            style={{ ...floatingStyles, zIndex }}
             {...getFloatingProps()}
           >
             <FloatingArrow

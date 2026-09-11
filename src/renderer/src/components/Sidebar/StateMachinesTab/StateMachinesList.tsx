@@ -2,10 +2,9 @@ import { useEffect } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
-import { ReactComponent as ArrowIcon } from '@renderer/assets/icons/arrow-down.svg';
 import { ReactComponent as StateMachineIcon } from '@renderer/assets/icons/state_machine.svg';
 import { StateMachineEditModal } from '@renderer/components/StateMachineEditModal';
-import { AddButton } from '@renderer/components/UI/AddButton';
+import { PanelHeader, ScrollArea } from '@renderer/components/UI';
 import { useStateMachines } from '@renderer/hooks';
 import { getAvailablePlatforms } from '@renderer/lib/data/PlatformLoader';
 import { useModelContext } from '@renderer/store/ModelContext';
@@ -16,6 +15,7 @@ import { StateMachineDeleteModal } from './StateMachineDeleteModal';
 import { Component } from '../Explorer/Component';
 
 interface StateMachinesListProps {
+  activeSm: string | null;
   selectedSm: string | null;
   setSmSelected: (newSmId: string | null) => void;
   isCollapsed: () => boolean;
@@ -23,6 +23,7 @@ interface StateMachinesListProps {
 }
 
 export const StateMachinesList: React.FC<StateMachinesListProps> = ({
+  activeSm,
   selectedSm,
   setSmSelected,
   isCollapsed,
@@ -64,69 +65,59 @@ export const StateMachinesList: React.FC<StateMachinesListProps> = ({
   });
 
   const isDisabled = !isInitialized;
+  const collapsed = isCollapsed();
 
   useEffect(() => {
     if (isCollapsed()) togglePanel();
   }, [elements]);
 
-  const header = () => {
-    return (
-      <div className="flex h-11 items-center">
-        <button className="flex items-center" onClick={() => togglePanel()}>
-          <ArrowIcon
-            className={twMerge(
-              'size-3 rotate-0 transition-transform',
-              isCollapsed() && '-rotate-90'
-            )}
-          />
-          <h3 className="ml-1 text-xs font-medium">Машины состояний</h3>
-        </button>
-        <AddButton disabled={isDisabled} onClick={onRequestAddStateMachine} />
-      </div>
-    );
-  };
   // TODO (L140-beep): Необходимо доделать
   return (
-    <section className="flex h-full flex-col">
-      {header()}
-      {isInitialized ? (
-        <div className="space-y-2 overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
-          {Object.keys(elements).length === 1 ? (
-            <p className="text-text-inactive">
-              <i>Нет машин состояний</i>
-            </p>
-          ) : (
-            [...Object.entries(elements)].map(
-              ([id, sm]) =>
-                id !== '' && (
-                  <Component
-                    key={id}
-                    name={sm.name || id}
-                    isSelected={id === selectedSm}
-                    icon={
-                      <StateMachineIcon
-                        className={twMerge(
-                          'size-6 [&_*]:stroke-[#6b6b6b]',
-                          id === selectedSm && '[&_*]:stroke-icon-hover'
-                        )}
-                      />
-                    }
-                    onSelect={() => setSmSelected(id)}
-                    onEdit={() => openStateMachine(id)}
-                    onDelete={() => undefined}
-                    onCallContextMenu={() => onRequestEditStateMachine(id)}
-                    // TODO (L140-beep): Доделать свап машин состояний
-                    onDragStart={() => console.log('setDragState')}
-                    onDrop={() => console.log('onDrop')}
-                    isDragging={id === ''}
-                  />
-                )
-            )
-          )}
-        </div>
-      ) : (
-        <div className="px-4">Недоступно до открытия документа</div>
-      )}
+    <section className="flex h-full min-h-0 flex-col">
+      <PanelHeader
+        title="Машины состояний"
+        isCollapsed={isCollapsed}
+        togglePanel={togglePanel}
+        requestAddAction={onRequestAddStateMachine}
+        isAddDisabled={isDisabled}
+      />
+      {!collapsed &&
+        (isInitialized ? (
+          <ScrollArea className="mb-2 flex-1" viewportClassName="select-none">
+            {Object.keys(elements).length === 1 ? (
+              <p className="pl-[19px] text-text-inactive">Нет машин состояний</p>
+            ) : (
+              [...Object.entries(elements)].map(
+                ([id, sm]) =>
+                  id !== '' && (
+                    <Component
+                      key={id}
+                      name={sm.name || id}
+                      isSelected={id === activeSm || id === selectedSm}
+                      icon={
+                        <StateMachineIcon
+                          className={twMerge(
+                            'size-6 [&_*]:stroke-[#6b6b6b]',
+                            (id === activeSm || id === selectedSm) && '[&_*]:stroke-icon-hover'
+                          )}
+                        />
+                      }
+                      onSelect={() => setSmSelected(id)}
+                      onEdit={() => openStateMachine(id)}
+                      onDelete={() => undefined}
+                      onCallContextMenu={() => onRequestEditStateMachine(id)}
+                      // TODO (L140-beep): Доделать свап машин состояний
+                      onDragStart={() => console.log('setDragState')}
+                      onDrop={() => console.log('onDrop')}
+                      isDragging={id === ''}
+                    />
+                  )
+              )
+            )}
+          </ScrollArea>
+        ) : (
+          <div className="px-4">Недоступно до открытия документа</div>
+        ))}
 
       <StateMachineEditModal
         variant="edit"
@@ -155,7 +146,7 @@ export const StateMachinesList: React.FC<StateMachinesListProps> = ({
         isDuplicateName={isDuplicateName}
         selectPlatformDisabled={false}
       />
-      <StateMachineDeleteModal {...{ ...deleteProps, idx: selectedSm ?? undefined }} />
+      <StateMachineDeleteModal {...deleteProps} />
     </section>
   );
 };

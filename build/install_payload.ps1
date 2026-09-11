@@ -110,6 +110,8 @@ $requiredItems = @(
     @{ Path = "lapki-compiler\library"; Type = "Container" }
     @{ Path = "lapki-compiler\platforms"; Type = "Container" }
     @{ Path = "lapki-compiler\fullgraphmlparser\templates"; Type = "Container" }
+    @{ Path = "arduino-cli-libs.zip"; Type = "Leaf" }
+    @{ Path = "library_indexes.zip"; Type = "Leaf" }
 )
 
 
@@ -119,7 +121,6 @@ $missing = @()
 
 # Проверяем наличие всех обязательных директорий
 foreach ($item in $requiredItems) {
-
     # Формируем полный путь
     $fullPath = Join-Path $SetupDataDir $item.Path
 
@@ -133,6 +134,9 @@ foreach ($item in $requiredItems) {
 if ($missing.Count -gt 0) {
     $message = "Missing setup_data items:`n - " + ($missing -join "`n - ")
     Write-Error $message
+
+    # Ожидание Enter от пользователя
+    Read-Host "Press Enter to exit"
     exit 2
 }
 
@@ -142,8 +146,13 @@ $tempDir = Join-Path $env:TEMP "lapki_setup_tmp"
 $gccTempDir = Join-Path $tempDir "gcc-arm-none-eabi"
 # путь до gcc
 $gccArchive = Join-Path $SetupDataDir "gcc-arm-none-eabi.zip"
-
+$arduinoCliLibs = Join-Path $tempDir "arduino-cli-libs"
+$arduinoCliLibsArchive = Join-Path $SetupDataDir "arduino-cli-libs.zip"
+$libraryIndexes = Join-Path $tempDir "library_indexes"
+$libraryIndexesArchive = Join-Path $SetupDataDir "library_indexes.zip"
 Expand-ArchivePayload $gccArchive $gccTempDir
+Expand-ArchivePayload $arduinoCliLibsArchive $arduinoCliLibs
+Expand-ArchivePayload $libraryIndexesArchive $libraryIndexes
 
 # Корневая папка compiler-модуля внутри установленного приложения
 $compilerRoot = Join-Path $InstallDir "resources\app.asar.unpacked\resources\modules\win32\lapki-compiler"
@@ -185,11 +194,6 @@ foreach ($step in $copyPlan) {
         -Destination $step.Destination
 }
 
-# Очистка временной распаковки (пока только gcc)
-if (Test-Path -LiteralPath $tempDir) {
-    Remove-Item -LiteralPath $tempDir -Recurse -Force
-}
-
 # Путь к вспомогательному скрипту установки зависимостей в PATH
 $installCompilerDepsScript =
     Join-Path (Split-Path -Parent $MyInvocation.MyCommand.Path) "install_compiler_deps.ps1"
@@ -209,18 +213,18 @@ if ($LASTEXITCODE -ne 0) {
     throw "install_compiler_deps.ps1 failed with exit code $LASTEXITCODE"
 }
 
-# Путь к arduino-cli
-$arduinoCliPath =
-    Join-Path $InstallDir "resources\app.asar.unpacked\resources\modules\win32\arduino-cli\arduino-cli.exe"
+$installArduinoCliLibsScript =
+    Join-Path (Split-Path -Parent $MyInvocation.MyCommand.Path) "install_arduino_cli_libs.ps1"
+$packagesPath = Join-Path $arduinoCliLibs "packages"
 
-# Проверяем наличие arduino-cli.exe
-Assert-PathExists -Path $arduinoCliPath -Type Leaf
+& powershell.exe `
+    -NoProfile `
+    -ExecutionPolicy Bypass `
+    -File $installArduinoCliLibsScript `
+    $packagesPath `
+    $libraryIndexes
 
-# Устанавливаем Arduino AVR core
-# (например, поддержку Arduino Uno/Nano/Mega)
-& $arduinoCliPath core install arduino:avr
-
-# Проверяем успешность установки
-if ($LASTEXITCODE -ne 0) {
-    throw "arduino-cli core install arduino:avr failed with exit code $LASTEXITCODE"
+# Очистка временной распаковки только после использования unpacked библиотек и индексов
+if (Test-Path -LiteralPath $tempDir) {
+    Remove-Item -LiteralPath $tempDir -Recurse -Force
 }

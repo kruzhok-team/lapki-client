@@ -47,17 +47,17 @@ const task: CatalogTask = {
   ],
 };
 
-const renderTaskMode = () =>
+const renderTaskMode = (taskToRender = task) =>
   renderToStaticMarkup(
-    <TaskMode
-      task={task}
-      ready
-      active={false}
-      hasSolution
-      onRunTest={vi.fn()}
-      onCancel={vi.fn()}
-      onSubmit={vi.fn()}
-    />
+    createElement(TaskMode, {
+      task: taskToRender,
+      ready: true,
+      active: false,
+      hasSolution: true,
+      onRunTest: vi.fn(),
+      onCancel: vi.fn(),
+      onSubmit: vi.fn(),
+    })
   );
 
 const readerTask: CatalogTask = {
@@ -76,15 +76,15 @@ const readerTask: CatalogTask = {
 
 const renderReaderTaskMode = () =>
   renderToStaticMarkup(
-    <TaskMode
-      task={readerTask}
-      ready
-      active={false}
-      hasSolution
-      onRunTest={vi.fn()}
-      onCancel={vi.fn()}
-      onSubmit={vi.fn()}
-    />
+    createElement(TaskMode, {
+      task: readerTask,
+      ready: true,
+      active: false,
+      hasSolution: true,
+      onRunTest: vi.fn(),
+      onCancel: vi.fn(),
+      onSubmit: vi.fn(),
+    })
   );
 
 describe('TaskMode Gardener result', () => {
@@ -136,6 +136,45 @@ describe('TaskMode Gardener result', () => {
     expect(html).toContain('Итог');
     expect(html).not.toContain('Нет запуска');
     expect(html).toContain('Пройден');
+  });
+
+  it('keeps hidden cell contents masked in the input and execution fields', () => {
+    const maskedTask: CatalogTask = {
+      ...task,
+      tests: [
+        {
+          ...task.tests[0],
+          input: {
+            width: 2,
+            height: 1,
+            field: [[0, 1]],
+            position: { x: 0, y: 0 },
+            orientation: 'EAST',
+          },
+          checks: [{ type: 'gardener.field.equals', expected: [[0, 1]] }],
+          hiddenCells: [[false, true]],
+        },
+      ],
+    };
+    taskState.detailedResult = {
+      testId: 'first',
+      execution: {
+        status: 'success',
+        steps: [
+          {
+            field: [[0, 1]],
+            position: { x: 1, y: 0 },
+            orientation: 'east',
+          },
+        ],
+      },
+    };
+
+    const html = renderTaskMode(maskedTask);
+
+    expect(html.match(/Скрытая клетка \(1, 0\)/g)).toHaveLength(4);
+    expect(html).toContain('здесь Садовник');
+    expect(html).not.toContain('bg-[#e87373]');
   });
 });
 

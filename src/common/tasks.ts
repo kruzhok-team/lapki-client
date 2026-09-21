@@ -42,6 +42,7 @@ export interface VerificationTest {
   timeoutSeconds?: number;
   input: GardenerTaskInput | ReaderTaskInput;
   checks: VerificationCheck[];
+  hiddenCells?: boolean[][];
 }
 
 export interface ProgrammingTask {
@@ -136,6 +137,33 @@ const assertField = (
       return cell as GardenerCell;
     });
   });
+};
+
+const assertHiddenCells = (
+  value: unknown,
+  path: string,
+  width: number,
+  height: number,
+  position: { x: number; y: number }
+): boolean[][] => {
+  if (!Array.isArray(value) || value.length !== height) {
+    throw new Error(`${path} должно содержать ${height} строк`);
+  }
+  const hiddenCells = value.map((row, y) => {
+    if (!Array.isArray(row) || row.length !== width) {
+      throw new Error(`${path}[${y}] должно содержать ${width} клеток`);
+    }
+    return row.map((hidden, x) => {
+      if (typeof hidden !== 'boolean') {
+        throw new Error(`${path}[${y}][${x}] должно быть логическим значением`);
+      }
+      return hidden;
+    });
+  });
+  if (hiddenCells[position.y][position.x]) {
+    throw new Error(`${path} не может скрывать стартовую клетку`);
+  }
+  return hiddenCells;
 };
 
 const parseGardenerTest = (
@@ -242,7 +270,12 @@ export const parseProgrammingTask = (value: unknown): ProgrammingTask => {
   const tests = task.tests.map((rawTest, index): VerificationTest => {
     const path = `task.tests[${index}]`;
     const test = assertObject(rawTest, path);
-    assertExactKeys(test, ['id', 'title', 'input', 'checks'], ['timeoutSeconds'], path);
+    assertExactKeys(
+      test,
+      ['id', 'title', 'input', 'checks'],
+      ['timeoutSeconds', 'hiddenCells'],
+      path
+    );
     const id = assertString(test.id, `${path}.id`, 128);
     if (testIds.has(id)) throw new Error(`${path}.id повторяет идентификатор ${id}`);
     testIds.add(id);
@@ -258,11 +291,25 @@ export const parseProgrammingTask = (value: unknown): ProgrammingTask => {
       platformId === 'junior-gardener'
         ? parseGardenerTest(test.input, test.checks, path)
         : parseReaderTest(test.input, test.checks, path);
+    if (platformId === 'junior-reader' && test.hiddenCells !== undefined) {
+      throw new Error(`${path}.hiddenCells не поддерживается платформой junior-reader`);
+    }
+    const hiddenCells =
+      test.hiddenCells === undefined
+        ? undefined
+        : assertHiddenCells(
+            test.hiddenCells,
+            `${path}.hiddenCells`,
+            (parsed.input as GardenerTaskInput).width,
+            (parsed.input as GardenerTaskInput).height,
+            (parsed.input as GardenerTaskInput).position
+          );
     return {
       id,
       title: assertString(test.title, `${path}.title`, 200),
       ...(timeoutSeconds === undefined ? {} : { timeoutSeconds }),
       ...parsed,
+      ...(hiddenCells === undefined ? {} : { hiddenCells }),
     };
   });
   if (totalTimeout > MAX_TASK_TOTAL_TIMEOUT_SECONDS) {

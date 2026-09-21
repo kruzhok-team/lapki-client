@@ -77,7 +77,11 @@ describe('parseProgrammingTask', () => {
     expect(task.id).toBe('gardener-letter-b');
     expect(
       task.tests.map((test) => {
-        const input = test.input as { width: number; height: number; position: { x: number; y: number } };
+        const input = test.input as {
+          width: number;
+          height: number;
+          position: { x: number; y: number };
+        };
         return [input.width, input.height, input.position.x, input.position.y];
       })
     ).toEqual([
@@ -94,6 +98,63 @@ describe('parseProgrammingTask', () => {
 
     expect(task.id).toBe('gardener-hello');
     expect(task.tests).toHaveLength(1);
+  });
+
+  it('accepts a Gardener visibility mask without changing the field', () => {
+    const raw = JSON.parse(
+      readFileSync('resources/tasks/gardener-cornflower-path.task.json', 'utf8')
+    );
+    raw.tests[0].hiddenCells = Array.from({ length: 7 }, (_, y) =>
+      Array.from({ length: 7 }, (_, x) => y === 3 && x > 0)
+    );
+
+    const task = parseProgrammingTask(raw);
+
+    expect(task.tests[0].hiddenCells?.[3][1]).toBe(true);
+    expect((task.tests[0].input as { field: number[][] }).field[3][1]).toBe(0);
+  });
+
+  it('rejects a visibility mask that hides the Gardener starting cell', () => {
+    const raw = JSON.parse(
+      readFileSync('resources/tasks/gardener-cornflower-path.task.json', 'utf8')
+    );
+    raw.tests[0].hiddenCells = Array.from({ length: 7 }, () => Array(7).fill(false));
+    raw.tests[0].hiddenCells[0][0] = true;
+
+    expect(() => parseProgrammingTask(raw)).toThrow('не может скрывать стартовую клетку');
+  });
+
+  it('rejects a visibility mask for Reader', () => {
+    const raw = validTask();
+    const test = { ...raw.tests[0], hiddenCells: [[false]] };
+
+    expect(() => parseProgrammingTask({ ...raw, tests: [test] })).toThrow(
+      'не поддерживается платформой junior-reader'
+    );
+  });
+
+  it('validates the bundled Gardener in fog puzzle', () => {
+    const task = parseProgrammingTask(
+      JSON.parse(readFileSync('resources/tasks/gardener-in-fog/gardener-in-fog.task.json', 'utf8'))
+    );
+    const test = task.tests[0];
+    const input = test.input as {
+      width: number;
+      height: number;
+      field: number[][];
+      position: { x: number; y: number };
+    };
+
+    expect(input.position).toEqual({ x: 2, y: 4 });
+    expect(test.checks).toEqual([{ type: 'gardener.position.equals', expected: { x: 7, y: 4 } }]);
+    expect(
+      input.field.every((row) => row.every((cell, x) => cell === row[input.width - 1 - x]))
+    ).toBe(true);
+    expect(test.hiddenCells).toEqual(
+      Array.from({ length: input.height }, () =>
+        Array.from({ length: input.width }, (_, x) => x >= input.width / 2)
+      )
+    );
   });
 
   it('validates the bundled Gardener mint abundance task', () => {

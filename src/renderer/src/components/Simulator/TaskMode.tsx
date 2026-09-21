@@ -112,7 +112,7 @@ const FieldView: React.FC<{
               {hidden && (
                 <span
                   aria-hidden="true"
-                  className="absolute left-1 top-0.5 text-xs text-text-inactive"
+                  className="absolute inset-0 flex items-center justify-center text-xs leading-none text-text-inactive"
                 >
                   ?
                 </span>

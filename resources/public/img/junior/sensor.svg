@@ -1,8 +1,30 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-     width="48" height="48" fill="none" stroke="#fefffe"
-     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <!-- Линза -->
-  <circle cx="11" cy="11" r="7" fill="#2babe9" stroke="#fefffe"/>
-  <!-- Ручка -->
-  <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Creator: CorelDRAW -->
+<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="20.0003mm" height="13.6675mm" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd"
+viewBox="0 0 4686.3 3202.5"
+ xmlns:xlink="http://www.w3.org/1999/xlink"
+ xmlns:xodm="http://www.corel.com/coreldraw/odm/2003">
+ <defs>
+  <style type="text/css">
+   <![CDATA[
+    .str1 {stroke:#DE3B35;stroke-width:351.5;stroke-linecap:round;stroke-miterlimit:22.9256}
+    .str0 {stroke:#F26661;stroke-width:351.5;stroke-linecap:round;stroke-miterlimit:22.9256}
+    .fil2 {fill:none}
+    .fil0 {fill:#F9BFBF}
+    .fil3 {fill:#DE3B35}
+    .fil1 {fill:#DB2D28;fill-rule:nonzero}
+   ]]>
+  </style>
+ </defs>
+ <g id="Слой_x0020_1">
+  <metadata id="CorelCorpID_0Corel-Layer"/>
+  <g id="_1974926152400">
+   <path class="fil0" d="M2337.4 2400.5l-2161.7 -623.5c218.5,-757.6 817.7,-1345.5 1579.4,-1549.6 1200.2,-321.6 2433.8,390.6 2755.4,1590.8l-2173.1 582.3z"/>
+   <circle class="fil1" cx="2338.2" cy="2400.5" r="478.9"/>
+   <path class="fil2 str0" d="M175.8 1777c651,-2107.3 3649.2,-2176.5 4334.8,41.2"/>
+   <path class="fil2 str1" d="M1057.7 2044.2c386.1,-1249.8 2164.3,-1290.9 2570.9,24.4"/>
+   <path class="fil3" d="M1434.4 2340.2l327.2 0c-2.1,19.8 -3.1,40 -3.1,60.3 0,320.2 259.6,579.8 579.7,579.8 320.2,0 579.8,-259.6 579.8,-579.8 0,-20.4 -1,-40.5 -3.1,-60.3l337 0 0 408.9c0,249.4 -204.1,453.5 -453.5,453.5l-910.6 0c-249.4,0 -453.5,-204.1 -453.5,-453.5l0 -408.9z"/>
+  </g>
+ </g>
 </svg>

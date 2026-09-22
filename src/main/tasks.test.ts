@@ -60,4 +60,14 @@ describe('loadTaskCatalog', () => {
     expect(catalog.tasks).toHaveLength(1);
     expect(catalog.diagnostics[0].file).toBe('invalid.task.json');
   });
+
+  it('loads cosmic delivery with its local illustration', () => {
+    const catalog = loadTaskCatalog(path.resolve('resources/tasks'));
+    const task = catalog.tasks.find((entry) => entry.id === 'gardener-cosmic-delivery');
+
+    expect(catalog.diagnostics).toEqual([]);
+    expect(task?.tests).toHaveLength(6);
+    expect(task?.description).toContain('![Схема космической станции](cosmic-delivery.png)');
+    expect(task?.assetBaseUrl).toContain('/gardener-cosmic-delivery/');
+  });
 });

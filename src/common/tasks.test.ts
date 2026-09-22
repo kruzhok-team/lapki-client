@@ -175,6 +175,82 @@ describe('parseProgrammingTask', () => {
     ]);
   });
 
+  it('covers every beacon order in cosmic delivery with the correct cargo and finish', () => {
+    const task = parseProgrammingTask(
+      JSON.parse(
+        readFileSync(
+          'resources/tasks/gardener-cosmic-delivery/gardener-cosmic-delivery.task.json',
+          'utf8'
+        )
+      )
+    );
+    const beacons = [
+      [0, 3],
+      [2, 2],
+      [4, 1],
+    ];
+    const walls = [
+      [1, 0],
+      [1, 1],
+      [3, 1],
+      [1, 3],
+      [3, 3],
+      [5, 4],
+      [3, 5],
+    ];
+    const cargoByBeacon = new Map([
+      [1, 2], // A rose beacon receives mint.
+      [2, 3], // A mint beacon receives cornflower.
+      [3, 1], // A cornflower beacon receives rose.
+    ]);
+
+    expect(task.id).toBe('gardener-cosmic-delivery');
+    expect(task.tests).toHaveLength(6);
+    expect(
+      new Set(
+        task.tests.map((test) => {
+          const input = test.input as { field: number[][] };
+          return beacons.map(([x, y]) => input.field[y][x]).join(',');
+        })
+      ).size
+    ).toBe(6);
+
+    for (const test of task.tests) {
+      const input = test.input as {
+        width: number;
+        height: number;
+        field: number[][];
+        position: { x: number; y: number };
+        orientation: string;
+      };
+      const expected = test.checks.find((check) => check.type === 'gardener.field.equals');
+
+      expect([input.width, input.height, input.position, input.orientation]).toEqual([
+        6,
+        6,
+        { x: 0, y: 5 },
+        'NORTH',
+      ]);
+      expect(
+        input.field.flatMap((row, y) => row.flatMap((cell, x) => (cell === -1 ? [[x, y]] : [])))
+      ).toEqual(walls);
+      expect(expected?.type).toBe('gardener.field.equals');
+      if (expected?.type !== 'gardener.field.equals') continue;
+
+      const planted = input.field.map((row) => [...row]);
+      for (const [x, y] of beacons) {
+        expect([1, 2, 3]).toContain(input.field[y][x]);
+        expect(input.field[y - 1][x]).toBe(0);
+        planted[y - 1][x] = cargoByBeacon.get(input.field[y][x])!;
+      }
+      expect(expected.expected).toEqual(planted);
+      expect(test.checks).toContainEqual({
+        type: 'gardener.position.equals',
+        expected: { x: 4, y: 0 },
+      });
+    }
+  });
+
   it('validates the bundled Reader digits groups task', () => {
     const task = parseProgrammingTask(
       JSON.parse(readFileSync('resources/tasks/reader-digits-groups-over-33.task.json', 'utf8'))

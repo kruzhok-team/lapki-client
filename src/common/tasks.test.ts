@@ -251,6 +251,69 @@ describe('parseProgrammingTask', () => {
     }
   });
 
+  it('keeps the wall-turn route valid across cartographer map sizes', () => {
+    const task = parseProgrammingTask(
+      JSON.parse(
+        readFileSync(
+          'resources/tasks/gardener-uncounting-cartographer/gardener-uncounting-cartographer.task.json',
+          'utf8'
+        )
+      )
+    );
+    const lengths: number[][] = [];
+
+    expect(task.tests).toHaveLength(5);
+    for (const test of task.tests) {
+      const input = test.input as {
+        width: number;
+        height: number;
+        field: number[][];
+        position: { x: number; y: number };
+        orientation: string;
+      };
+      const position = { ...input.position };
+      const segments: number[] = [];
+
+      expect(input.orientation).toBe('NORTH');
+      for (const [dx, dy] of [
+        [0, -1],
+        [1, 0],
+        [0, -1],
+        [1, 0],
+      ]) {
+        let steps = 0;
+        while (
+          position.x + dx >= 0 &&
+          position.x + dx < input.width &&
+          position.y + dy >= 0 &&
+          position.y + dy < input.height &&
+          input.field[position.y + dy][position.x + dx] !== -1 &&
+          input.field[position.y][position.x] !== 3
+        ) {
+          position.x += dx;
+          position.y += dy;
+          steps++;
+        }
+        segments.push(steps);
+      }
+      lengths.push(segments);
+
+      expect(position).toEqual({ x: input.width - 1, y: 0 });
+      expect(input.field[position.y][position.x]).toBe(3);
+      expect(test.checks).toEqual([
+        { type: 'gardener.field.equals', expected: input.field },
+        { type: 'gardener.position.equals', expected: position },
+      ]);
+    }
+    expect(lengths).toEqual([
+      [2, 3, 4, 3],
+      [1, 2, 3, 2],
+      [1, 4, 4, 4],
+      [3, 2, 6, 2],
+      [2, 3, 4, 5],
+    ]);
+  });
+
   it('validates the bundled Reader digits groups task', () => {
     const task = parseProgrammingTask(
       JSON.parse(readFileSync('resources/tasks/reader-digits-groups-over-33.task.json', 'utf8'))

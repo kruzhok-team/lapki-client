@@ -61,13 +61,21 @@ describe('loadTaskCatalog', () => {
     expect(catalog.diagnostics[0].file).toBe('invalid.task.json');
   });
 
-  it('loads cosmic delivery with its local illustration', () => {
+  it('loads illustrated Gardener tasks from the bundled catalog', () => {
     const catalog = loadTaskCatalog(path.resolve('resources/tasks'));
     const task = catalog.tasks.find((entry) => entry.id === 'gardener-cosmic-delivery');
+    const cartographer = catalog.tasks.find(
+      (entry) => entry.id === 'gardener-uncounting-cartographer'
+    );
 
     expect(catalog.diagnostics).toEqual([]);
     expect(task?.tests).toHaveLength(6);
     expect(task?.description).toContain('![Схема космической станции](cosmic-delivery.png)');
     expect(task?.assetBaseUrl).toContain('/gardener-cosmic-delivery/');
+    expect(cartographer?.tests).toHaveLength(5);
+    expect(cartographer?.description).toContain(
+      '![Неточная карта сада](uncounting-cartographer.png)'
+    );
+    expect(cartographer?.assetBaseUrl).toContain('/gardener-uncounting-cartographer/');
   });
 });

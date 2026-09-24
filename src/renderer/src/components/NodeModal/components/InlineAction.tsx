@@ -53,9 +53,17 @@ export const InlineAction = forwardRef<InlineActionHandle, InlineActionProps>(
 
     return (
       <div className={twMerge('rounded-lg px-3 py-2', !expanded && 'hover:bg-bg-hover')}>
-        <div className="grid min-w-0 grid-cols-[10px_minmax(0,1fr)_max-content] items-start">
+        <div
+          className={twMerge(
+            'grid min-w-0 grid-cols-[10px_minmax(0,1fr)_max-content]',
+            expanded ? 'items-start' : 'items-center'
+          )}
+        >
           <button
-            className="mt-[11px] flex h-[10px] w-[10px] items-center justify-center self-start"
+            className={twMerge(
+              'flex h-[10px] w-[10px] items-center justify-center',
+              expanded && 'mt-[11px] self-start'
+            )}
             type="button"
             onClick={onToggle}
             aria-label={expanded ? 'Свернуть действие' : 'Развернуть действие'}
@@ -163,7 +171,7 @@ export const InlineAction = forwardRef<InlineActionHandle, InlineActionProps>(
             )}
           </div>
 
-          <div className="ml-2 self-start">
+          <div className={twMerge('ml-2', expanded && 'self-start')}>
             <DeleteButton
               onClick={onDelete}
               className="shrink-0 p-2"

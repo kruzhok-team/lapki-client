@@ -156,7 +156,7 @@ describe('events hierarchy model', () => {
       'Общие.Вход'
     );
     expect(getConditionText(condition, platform, components)).toBe(
-      'Датчик в комнате.Температура > 10'
+      '[Датчик в комнате.Температура > 10]'
     );
     expect(getActionText({ component: 'sensor1', method: 'enable' }, platform, components)).toBe(
       'Датчик в комнате.Включить'
@@ -164,5 +164,10 @@ describe('events hierarchy model', () => {
     expect(getActionText({ component: 'missing', method: 'run' }, platform, components)).toBe(
       'missing.run'
     );
+  });
+
+  it('wraps hierarchy conditions in square brackets', () => {
+    expect(getConditionText(undefined, platform, components)).toBe('[Без условия]');
+    expect(getConditionText(' value > 1 ', platform, components)).toBe('[value > 1]');
   });
 });

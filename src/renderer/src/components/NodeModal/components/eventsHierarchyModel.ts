@@ -212,10 +212,10 @@ export const getConditionText = (
   humanReadable = true
 ) => {
   if (!condition || (typeof condition === 'string' && !normalizeText(condition))) {
-    return 'Без условия';
+    return '[Без условия]';
   }
-  if (typeof condition === 'string') return normalizeText(condition);
-  return getConditionPartText(condition, platform, components, humanReadable);
+  if (typeof condition === 'string') return `[${normalizeText(condition)}]`;
+  return `[${getConditionPartText(condition, platform, components, humanReadable)}]`;
 };
 
 export const getActionText = (

@@ -222,12 +222,12 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
   const handleModalSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (editEventProps.actions.tabValue === 1) {
-      handleEditEventSubmit();
+      if (handleEditEventSubmit()) actionsRef.current?.collapseAll();
       return;
     }
     const validatedActions = actionsRef.current?.validate();
     if (!validatedActions) return;
-    handleEditEventSubmit(validatedActions);
+    if (handleEditEventSubmit(validatedActions)) actionsRef.current?.collapseAll();
   };
 
   return (

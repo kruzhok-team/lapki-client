@@ -83,7 +83,7 @@ export const useEditEvent = (
   };
 
   const handleSubmit = (actionsOverride?: Action[]) => {
-    if (!state) return;
+    if (!state) return false;
 
     const triggerText = trigger.text.trim();
 
@@ -92,20 +92,20 @@ export const useEditEvent = (
       (trigger.tabValue === 1 && !triggerText)
     ) {
       setError(`Необходимо выбрать триггер ("Когда")!`);
-      return;
+      return false;
     }
 
     const conflict = validateEventConflict();
     if (conflict?.type === 'error') {
       setError(conflict.message);
-      return;
+      return false;
     }
 
     //Проверка на наличие пустых блоков условия, если же они пустые, то форма не отправляется
     if (showCondition && show && !isElse) {
       const errors = condition.checkForErrors();
       for (const key in errors) {
-        if (errors[key]) return;
+        if (errors[key]) return false;
       }
     }
 
@@ -129,6 +129,7 @@ export const useEditEvent = (
 
     modelController.changeState({ smId, id: state.id, events: getEvents() });
     toast.success('Событие сохранено!');
+    return true;
   };
 
   const {

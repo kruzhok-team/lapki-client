@@ -24,6 +24,7 @@ type ActionsProps = ReturnType<typeof useActions> & {
 
 export interface ActionsHandle {
   validate: () => ActionData[] | null;
+  collapseAll: () => void;
 }
 
 interface InlineActionRow {
@@ -212,7 +213,10 @@ export const Actions = forwardRef<ActionsHandle, ActionsProps>((props, ref) => {
     return validatedActions;
   };
 
-  useImperativeHandle(ref, () => ({ validate: validateInlineActions }));
+  useImperativeHandle(ref, () => ({
+    validate: validateInlineActions,
+    collapseAll: () => setExpandedRowIds(new Set()),
+  }));
 
   return (
     <div className="flex h-[290px] min-h-0 grow flex-col">

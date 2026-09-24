@@ -82,7 +82,7 @@ export const useEditEvent = (
     return undefined;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = (actionsOverride?: Action[]) => {
     if (!state) return;
 
     const triggerText = trigger.text.trim();
@@ -109,7 +109,8 @@ export const useEditEvent = (
       }
     }
 
-    const getActions = () => (actions.tabValue === 0 ? actions.actions : actions.text.trim());
+    const getActions = () =>
+      actionsOverride ?? (actions.tabValue === 0 ? actions.actions : actions.text.trim());
 
     const getEvents = () => {
       const currentEvent = {

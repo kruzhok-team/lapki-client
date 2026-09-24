@@ -1,0 +1,175 @@
+import { forwardRef, useImperativeHandle, useMemo } from 'react';
+
+import { ReactComponent as ArrowIcon } from '@renderer/assets/icons/arrow-down.svg';
+import { ParameterSelect } from '@renderer/components/UI';
+import { DeleteButton } from '@renderer/components/UI/DeleteButton';
+import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
+import { Action as ActionData } from '@renderer/types/diagram';
+
+import { ActionSummary } from './Action';
+
+import { ActionsModalParameters } from '../ActionsModal/ActionsModalParameters';
+import { useActionsModal } from '../hooks/useActionModal';
+
+export interface InlineActionHandle {
+  validate: () => ActionData | undefined;
+}
+
+interface InlineActionProps {
+  smId: string;
+  controller: CanvasController;
+  action?: ActionData;
+  componentName: (component: string) => string;
+  expanded: boolean;
+  onToggle: () => void;
+  onDelete: () => void;
+  onDragStart: () => void;
+  onDrop: () => void;
+}
+
+export const InlineAction = forwardRef<InlineActionHandle, InlineActionProps>(
+  (
+    { smId, controller, action, componentName, expanded, onToggle, onDelete, onDragStart, onDrop },
+    ref
+  ) => {
+    const initialData = useMemo(
+      () => (action ? { smId, action, isEditingEvent: false } : undefined),
+      [action, smId]
+    );
+    const editor = useActionsModal(smId, controller, undefined, undefined, initialData);
+
+    useImperativeHandle(ref, () => ({ validate: editor.validate }), [editor.validate]);
+
+    const currentAction =
+      editor.selectedComponent && editor.selectedMethod
+        ? {
+            component: editor.selectedComponent,
+            method: editor.selectedMethod,
+            args: editor.parameters,
+          }
+        : undefined;
+
+    return (
+      <div className="rounded-lg px-3 py-2 hover:bg-bg-hover">
+        <div className="flex min-w-0 items-start">
+          <button
+            className="mt-[11px] flex h-[10px] w-[10px] shrink-0 items-center justify-center"
+            type="button"
+            onClick={onToggle}
+            aria-label={expanded ? 'Свернуть действие' : 'Развернуть действие'}
+            aria-expanded={expanded}
+          >
+            <ArrowIcon
+              className={
+                expanded ? 'rotate-0 transition-transform' : '-rotate-90 transition-transform'
+              }
+            />
+          </button>
+
+          <div className="ml-3 min-w-0 flex-1">
+            {expanded ? (
+              <div className="min-w-0">
+                <div className="grid min-w-0 grid-cols-2 items-start gap-3">
+                  <div className="min-w-0">
+                    <ParameterSelect
+                      className="w-full"
+                      options={editor.componentOptions}
+                      value={
+                        editor.componentOptions.find(
+                          (option) => option.value === editor.selectedComponent
+                        ) ?? null
+                      }
+                      onChange={editor.handleComponentChange}
+                      placeholder="Выберите компонент..."
+                      isClearable={false}
+                      isSearchable={false}
+                      noOptionsMessage={() => <div>Отсутствуют подходящие компоненты</div>}
+                    />
+                    {editor.selectionErrors.component && (
+                      <div className="mt-1 text-xs text-error">
+                        {editor.selectionErrors.component}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="min-w-0">
+                    <ParameterSelect
+                      className="w-full"
+                      options={editor.methodOptions}
+                      value={
+                        editor.methodOptions.find(
+                          (option) => option.value === editor.selectedMethod
+                        ) ?? null
+                      }
+                      onChange={editor.handleMethodChange}
+                      placeholder="Выберите действие..."
+                      isClearable={false}
+                      isSearchable={false}
+                      noOptionsMessage={() => (
+                        <div>
+                          У компонента отсутствуют действия <br /> Выберите другой компонент
+                        </div>
+                      )}
+                    />
+                    {editor.selectionErrors.method && (
+                      <div className="mt-1 text-xs text-error">{editor.selectionErrors.method}</div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="mt-3">
+                  <ActionsModalParameters
+                    protoParameters={editor.protoParameters}
+                    parameters={editor.parameters}
+                    setParameters={editor.setParameters}
+                    errors={editor.errors}
+                    setErrors={editor.setErrors}
+                    componentOptions={editor.componentWithVariablesOptions}
+                    controller={controller}
+                    smId={smId}
+                    attributeOptionsSearch={editor.attributeOptionsSearch}
+                    scrollable={false}
+                  />
+                </div>
+              </div>
+            ) : currentAction ? (
+              <div
+                className="flex min-w-0 cursor-grab items-center gap-2 overflow-hidden py-1"
+                draggable
+                onDragOver={(event) => event.preventDefault()}
+                onDragStart={onDragStart}
+                onDrop={onDrop}
+              >
+                <ActionSummary
+                  smId={smId}
+                  data={{
+                    ...currentAction,
+                    componentName: componentName(currentAction.component),
+                  }}
+                />
+              </div>
+            ) : (
+              <div
+                className="cursor-grab py-1 text-text-inactive"
+                draggable
+                onDragOver={(event) => event.preventDefault()}
+                onDragStart={onDragStart}
+                onDrop={onDrop}
+              >
+                Действие не заполнено
+              </div>
+            )}
+          </div>
+
+          <DeleteButton
+            onClick={onDelete}
+            className="ml-2 shrink-0 p-2"
+            aria-label="Удалить действие"
+          />
+        </div>
+      </div>
+    );
+  }
+);
+
+InlineAction.displayName = 'InlineAction';

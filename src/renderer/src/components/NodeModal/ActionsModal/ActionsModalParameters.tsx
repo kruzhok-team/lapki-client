@@ -31,6 +31,7 @@ interface ActionsModalParametersProps {
 
   smId: string;
   controller: CanvasController;
+  scrollable?: boolean;
 }
 
 export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
@@ -43,6 +44,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
   attributeOptionsSearch,
   smId,
   controller,
+  scrollable = true,
 }) => {
   const handleInputChange = (name: string, order: number, value: string | Variable) => {
     setErrors((p) => ({ ...p, [name]: '' }));
@@ -119,8 +121,10 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
     // return <div className="flex text-text-inactive">Параметров нет</div>;
   }
 
+  const Container = scrollable ? ScrollArea : 'div';
+
   return (
-    <ScrollArea className="min-h-0 flex-1">
+    <Container className="min-h-0 flex-1">
       <div className="grid min-w-0 grid-cols-[max-content,minmax(0,1fr)] gap-x-2 gap-y-2">
         <h3 className="col-span-2 mb-1 text-xs font-medium">Параметры</h3>
         {protoParameters.map((proto, idx) => {
@@ -304,6 +308,6 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
           );
         })}
       </div>
-    </ScrollArea>
+    </Container>
   );
 };

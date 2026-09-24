@@ -52,7 +52,7 @@ export interface ProgrammingTask {
   title: string;
   summary: string;
   description: string;
-  codeWord?: string;
+  codeWord: string;
   platformId: TaskPlatformId;
   tests: VerificationTest[];
 }
@@ -248,8 +248,18 @@ export const parseProgrammingTask = (value: unknown): ProgrammingTask => {
   const task = assertObject(value, 'task');
   assertExactKeys(
     task,
-    ['schemaVersion', 'id', 'version', 'title', 'summary', 'description', 'platformId', 'tests'],
-    ['codeWord'],
+    [
+      'schemaVersion',
+      'id',
+      'version',
+      'title',
+      'summary',
+      'description',
+      'codeWord',
+      'platformId',
+      'tests',
+    ],
+    [],
     'task'
   );
   if (task.schemaVersion !== TASK_SCHEMA_VERSION) {
@@ -324,9 +334,7 @@ export const parseProgrammingTask = (value: unknown): ProgrammingTask => {
     title: assertString(task.title, 'task.title', 200),
     summary: assertString(task.summary, 'task.summary', 1000),
     description: assertString(task.description, 'task.description', 100_000),
-    ...(task.codeWord === undefined
-      ? {}
-      : { codeWord: assertString(task.codeWord, 'task.codeWord', 100) }),
+    codeWord: assertString(task.codeWord, 'task.codeWord', 100),
     platformId,
     tests,
   };

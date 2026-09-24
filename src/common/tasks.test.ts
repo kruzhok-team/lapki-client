@@ -42,6 +42,12 @@ describe('parseProgrammingTask', () => {
     );
   });
 
+  it('requires a code word', () => {
+    const { codeWord: _codeWord, ...taskWithoutCodeWord } = validTask();
+
+    expect(() => parseProgrammingTask(taskWithoutCodeWord)).toThrow('task.codeWord обязательно');
+  });
+
   it('rejects unknown schema fields', () => {
     expect(() => parseProgrammingTask({ ...validTask(), typo: true })).toThrow(
       'не поддерживается schemaVersion 1'

@@ -7,6 +7,7 @@ export const taskForProtocol = (task: CatalogTask): ProgrammingTask => ({
   title: task.title,
   summary: task.summary,
   description: task.description,
+  codeWord: task.codeWord,
   platformId: task.platformId,
   tests: task.tests.map((test) => ({
     id: test.id,

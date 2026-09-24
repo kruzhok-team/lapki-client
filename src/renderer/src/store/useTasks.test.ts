@@ -9,6 +9,7 @@ const task = {
   title: 'Task',
   summary: 'Summary',
   description: 'Description',
+  codeWord: 'ТЕСТ',
   platformId: 'junior-reader' as const,
   assetBaseUrl: 'file:///tasks/',
   tests: [

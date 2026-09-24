@@ -13,7 +13,6 @@ describe('taskForProtocol', () => {
       title: 'Masked Gardener',
       summary: 'Summary',
       description: 'Description',
-      codeWord: 'МАСКА',
       platformId: 'junior-gardener',
       assetBaseUrl: 'file:///tasks/',
       tests: [
@@ -36,7 +35,6 @@ describe('taskForProtocol', () => {
     const protocolTask = taskForProtocol(task);
 
     expect(protocolTask.tests[0]).not.toHaveProperty('hiddenCells');
-    expect(protocolTask.codeWord).toBe('МАСКА');
     expect(protocolTask.tests[0].input).toEqual(task.tests[0].input);
     expect(task.tests[0].hiddenCells).toEqual([[false, true]]);
   });

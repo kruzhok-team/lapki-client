@@ -15,6 +15,7 @@ const validTask = () => ({
   title: 'Reader',
   summary: 'Summary',
   description: 'Description',
+  codeWord: 'ЭХО',
   platformId: 'junior-reader',
   tests: [
     {
@@ -31,7 +32,14 @@ describe('parseProgrammingTask', () => {
     const task = parseProgrammingTask(validTask());
 
     expect(task.tests[0].timeoutSeconds).toBeUndefined();
+    expect(task.codeWord).toBe('ЭХО');
     expect(DEFAULT_TEST_TIMEOUT_SECONDS).toBe(10);
+  });
+
+  it('rejects an empty code word', () => {
+    expect(() => parseProgrammingTask({ ...validTask(), codeWord: '  ' })).toThrow(
+      'task.codeWord должно быть непустой строкой'
+    );
   });
 
   it('rejects unknown schema fields', () => {

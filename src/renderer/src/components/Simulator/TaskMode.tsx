@@ -315,6 +315,7 @@ export const TaskMode: React.FC<TaskModeProps> = ({
       ? `Решение принято: ${submissionResult.passed} из ${submissionResult.total}`
       : `Решение не принято: ${submissionResult.passed} из ${submissionResult.total}`;
   }, [submissionResult]);
+  const solved = submissionResult?.status === 'accepted';
   const selectedPhase = selectedState?.phase ?? 'idle';
   const selectedPhaseStyle = phaseStyles[selectedPhase];
   const completedTests = task.tests.filter((test) => {
@@ -431,7 +432,17 @@ export const TaskMode: React.FC<TaskModeProps> = ({
                   : 'bg-error/5 text-error'
               }`}
             >
-              {summary}
+              <p>{summary}</p>
+              {solved && task.codeWord && (
+                <div className="mt-2 rounded-md border border-emerald-500/25 bg-bg-primary px-3 py-2 text-center">
+                  <p className="text-[10px] font-normal uppercase tracking-[0.16em] text-text-inactive">
+                    Кодовое слово
+                  </p>
+                  <p className="mt-0.5 font-Fira-Mono text-sm font-medium tracking-[0.12em] text-emerald-600">
+                    {task.codeWord}
+                  </p>
+                </div>
+              )}
             </div>
           )}
           {error && (

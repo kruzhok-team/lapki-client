@@ -29,6 +29,7 @@ const task: CatalogTask = {
   title: 'Gardener task',
   summary: 'Summary',
   description: 'Description',
+  codeWord: 'РОСТОК',
   platformId: 'junior-gardener',
   assetBaseUrl: 'file:///tasks/',
   tests: [
@@ -136,6 +137,17 @@ describe('TaskMode Gardener result', () => {
     expect(html).toContain('Итог');
     expect(html).not.toContain('Нет запуска');
     expect(html).toContain('Пройден');
+  });
+
+  it('reveals the code word only after the solution is accepted', () => {
+    expect(renderTaskMode()).not.toContain('Кодовое слово');
+    expect(renderTaskMode()).not.toContain('РОСТОК');
+
+    taskState.submissionResult = { status: 'accepted', passed: 1, total: 1 };
+    const html = renderTaskMode();
+
+    expect(html).toContain('Кодовое слово');
+    expect(html).toContain('РОСТОК');
   });
 
   it('keeps hidden cell contents masked in the input and execution fields', () => {

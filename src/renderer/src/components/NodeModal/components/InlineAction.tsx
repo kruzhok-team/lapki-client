@@ -1,5 +1,7 @@
 import { forwardRef, useImperativeHandle, useMemo } from 'react';
 
+import { twMerge } from 'tailwind-merge';
+
 import { ReactComponent as ArrowIcon } from '@renderer/assets/icons/arrow-down.svg';
 import { ParameterSelect } from '@renderer/components/UI';
 import { DeleteButton } from '@renderer/components/UI/DeleteButton';
@@ -50,10 +52,10 @@ export const InlineAction = forwardRef<InlineActionHandle, InlineActionProps>(
         : undefined;
 
     return (
-      <div className="rounded-lg px-3 py-2 hover:bg-bg-hover">
-        <div className="flex min-w-0 items-start">
+      <div className={twMerge('rounded-lg px-3 py-2', !expanded && 'hover:bg-bg-hover')}>
+        <div className="grid min-w-0 grid-cols-[10px_minmax(0,1fr)_max-content] items-start">
           <button
-            className="mt-[11px] flex h-[10px] w-[10px] shrink-0 items-center justify-center"
+            className="mt-[11px] flex h-[10px] w-[10px] items-center justify-center self-start"
             type="button"
             onClick={onToggle}
             aria-label={expanded ? 'Свернуть действие' : 'Развернуть действие'}
@@ -66,7 +68,7 @@ export const InlineAction = forwardRef<InlineActionHandle, InlineActionProps>(
             />
           </button>
 
-          <div className="ml-3 min-w-0 flex-1">
+          <div className="ml-3 min-w-0">
             {expanded ? (
               <div className="min-w-0">
                 <div className="grid min-w-0 grid-cols-2 items-start gap-3">
@@ -161,11 +163,13 @@ export const InlineAction = forwardRef<InlineActionHandle, InlineActionProps>(
             )}
           </div>
 
-          <DeleteButton
-            onClick={onDelete}
-            className="ml-2 shrink-0 p-2"
-            aria-label="Удалить действие"
-          />
+          <div className="ml-2 self-start">
+            <DeleteButton
+              onClick={onDelete}
+              className="shrink-0 p-2"
+              aria-label="Удалить действие"
+            />
+          </div>
         </div>
       </div>
     );

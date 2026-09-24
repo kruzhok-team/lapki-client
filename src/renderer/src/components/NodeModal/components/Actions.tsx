@@ -2,7 +2,6 @@ import { forwardRef, useImperativeHandle, useLayoutEffect, useMemo, useRef, useS
 
 import CodeMirror, { Transaction, EditorState, ReactCodeMirrorRef } from '@uiw/react-codemirror';
 import throttle from 'lodash.throttle';
-import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/add.svg';
 import { ScrollArea, TabPanel, Tabs } from '@renderer/components/UI';
@@ -221,10 +220,11 @@ export const Actions = forwardRef<ActionsHandle, ActionsProps>((props, ref) => {
 
   return (
     <div
-      className={twMerge(
-        'flex min-h-0 grow flex-col',
-        inlineEditing && expandedRowIds.size > 0 ? 'h-[580px]' : 'h-[290px]'
-      )}
+      className={
+        inlineEditing
+          ? 'flex max-h-[580px] min-h-[290px] grow flex-col'
+          : 'flex h-[290px] min-h-0 grow flex-col'
+      }
     >
       <div className="mb-2 flex items-end gap-2">
         <p className="font-medium">Делай</p>

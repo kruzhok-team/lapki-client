@@ -1,8 +1,11 @@
 import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 
-import { isEqual } from 'lodash';
 import { toast } from 'sonner';
 
+import {
+  getEventConflict,
+  getUsedSystemMethods,
+} from '@renderer/components/NodeModal/components/eventsHierarchyModel';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { systemComponent } from '@renderer/lib/data/PlatformManager';
 import { State } from '@renderer/lib/drawable';
@@ -22,66 +25,59 @@ export const useEditEvent = (
 ) => {
   const modelController = useModelContext();
 
-  const trigger = useTrigger(smId, controller, true, event?.trigger);
+  const unavailableSystemMethods = getUsedSystemMethods(
+    state?.data.events ?? [],
+    currentEventIndex
+  );
+  const trigger = useTrigger(smId, controller, true, event?.trigger, unavailableSystemMethods);
   const condition = useCondition(smId, controller, event?.condition);
   const actions = useActions(smId, controller, event?.do ?? null);
 
   const [error, setError] = useState<string | undefined>(undefined);
-  const [warning, setWarning] = useState<string | undefined>(undefined);
 
   const { selectedComponent, selectedMethod } = trigger;
 
+  const getTrigger = (): Event | string | undefined => {
+    if (trigger.tabValue === 1) return trigger.text.trim() || undefined;
+    if (!selectedComponent || !selectedMethod) return undefined;
+
+    const currentTrigger = event?.trigger;
+    const args =
+      currentTrigger &&
+      typeof currentTrigger !== 'string' &&
+      currentTrigger.component === selectedComponent &&
+      currentTrigger.method === selectedMethod
+        ? currentTrigger.args
+        : undefined;
+    return { component: selectedComponent, method: selectedMethod, ...(args ? { args } : {}) };
+  };
+
   // Проверка событий на конфликты
-  const validateEventConflict = (): { type: 'error' | 'warning'; message: string } | undefined => {
+  const validateEventConflict = (): { type: 'error'; message: string } | undefined => {
     if (!state) return undefined;
-    if (trigger.tabValue !== 0 || !selectedComponent || !selectedMethod) return undefined;
+    const newTrigger = getTrigger();
+    if (!newTrigger) return undefined;
 
-    if (selectedComponent === 'System') {
-      const duplicated = state.data.events.findIndex(
-        (val) =>
-          (val.trigger as unknown as Event).component === 'System' &&
-          (val.trigger as unknown as Event).method === selectedMethod
-      );
-      if (duplicated !== -1 && currentEventIndex !== duplicated) {
-        const signalName = systemComponent.signals[selectedMethod]?.alias ?? selectedMethod;
-        return {
-          type: 'error',
-          message: `Cистемное событие «${signalName}» уже создано! Второй раз его создать нельзя.`,
-        };
-      }
-      return undefined;
+    const conflict = getEventConflict(state.data.events, currentEventIndex, {
+      trigger: newTrigger,
+      condition: getCondition(),
+    });
+    if (conflict === 'duplicate-system-trigger') {
+      const method = typeof newTrigger === 'string' ? newTrigger : newTrigger.method;
+      const signalName = systemComponent.signals[method]?.alias ?? method;
+      return {
+        type: 'error',
+        message: `Системное событие «${signalName}» уже создано! Второй раз его создать нельзя.`,
+      };
     }
-
-    const newCondition = getCondition();
-    for (const eventIdx in state.data.events) {
-      if (currentEventIndex === Number(eventIdx)) continue;
-      const ev = state.data.events[eventIdx];
-      const trig = ev.trigger;
-      if (
-        typeof trig === 'string' ||
-        trig.component !== selectedComponent ||
-        trig.method !== selectedMethod
-      ) {
-        continue;
-      }
-
-      if (isEqual(ev.condition, newCondition)) {
-        return {
-          type: 'error',
-          message: `Событие ${selectedComponent}.${selectedMethod} с таким условием уже существует!`,
-        };
-      }
-
-      const otherHasCondition = ev.condition !== undefined;
-      const thisHasCondition = newCondition !== undefined;
-      if (otherHasCondition !== thisHasCondition) {
-        return {
-          type: 'warning',
-          message: `Событие ${selectedComponent}.${selectedMethod} уже существует ${
-            otherHasCondition ? 'с условием' : 'без условия'
-          }. Одновременное наличие события с условием и без условия может работать некорректно.`,
-        };
-      }
+    if (conflict === 'duplicate-condition') {
+      return { type: 'error', message: 'У этого триггера уже есть такое условие.' };
+    }
+    if (conflict === 'mixed-condition') {
+      return {
+        type: 'error',
+        message: 'У одного триггера не может быть одновременно условной и безусловной ветки.',
+      };
     }
     return undefined;
   };
@@ -113,16 +109,14 @@ export const useEditEvent = (
       }
     }
 
-    const getTrigger = () => {
-      if (trigger.tabValue === 0)
-        return { component: selectedComponent as string, method: selectedMethod as string };
-      return triggerText;
-    };
-
     const getActions = () => (actions.tabValue === 0 ? actions.actions : actions.text.trim());
 
     const getEvents = () => {
-      const currentEvent = { trigger: getTrigger(), condition: getCondition(), do: getActions() };
+      const currentEvent = {
+        trigger: getTrigger() as Event | string,
+        condition: getCondition(),
+        do: getActions(),
+      };
       if (currentEventIndex !== undefined && currentEventIndex >= state.data.events.length) {
         return [...state.data.events, currentEvent];
       }
@@ -195,15 +189,13 @@ export const useEditEvent = (
     condition.parse(event?.condition);
     actions.parse(smId, event?.do ?? undefined);
     setError(undefined);
-    setWarning(undefined);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [event]);
 
   // Динамическая проверка конфликтов без нажатия кнопки сохранения
   useLayoutEffect(() => {
     const conflict = validateEventConflict();
-    setError(conflict?.type === 'error' ? conflict.message : undefined);
-    setWarning(conflict?.type === 'warning' ? conflict.message : undefined);
+    setError(conflict?.message);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     selectedComponent,
@@ -221,6 +213,8 @@ export const useEditEvent = (
     conditionOperator,
     condition.tabValue,
     condition.text,
+    trigger.tabValue,
+    trigger.text,
   ]);
 
   const updateActions = (action: Action, idx: number | null) => {
@@ -245,8 +239,6 @@ export const useEditEvent = (
     actions,
     error,
     setError,
-    warning,
-    setWarning,
     validateEventConflict,
     handleSubmit,
     updateActions,

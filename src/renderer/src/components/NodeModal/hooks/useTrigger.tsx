@@ -18,7 +18,8 @@ export const useTrigger = (
   smId: string,
   controller: CanvasController,
   addSystemComponents: boolean,
-  event: string | Event | null | undefined
+  event: string | Event | null | undefined,
+  unavailableSystemMethods: string[] = []
 ) => {
   const modelController = useModelContext();
   const componentsData = modelController.model.useData(smId, 'elements.components') as {
@@ -73,7 +74,10 @@ export const useTrigger = (
     };
 
     const result = getFilteredOptions(getComponentOption, componentsData);
-    if (addSystemComponents) {
+    const hasAvailableSystemMethod = Object.keys(systemComponent.signals).some(
+      (method) => !unavailableSystemMethods.includes(method)
+    );
+    if (addSystemComponents && hasAvailableSystemMethod) {
       const system = getComponentOption('System');
       if (system) {
         result.unshift(system);
@@ -81,7 +85,15 @@ export const useTrigger = (
     }
 
     return result;
-  }, [smId, controller, componentsData, addSystemComponents, controller.platform, visual]);
+  }, [
+    smId,
+    controller,
+    componentsData,
+    addSystemComponents,
+    controller.platform,
+    visual,
+    unavailableSystemMethods,
+  ]);
 
   const methodOptions: ParameterSelectOption[] = useMemo(() => {
     if (!selectedComponent || !controller.platform[smId]) return [];
@@ -91,6 +103,9 @@ export const useTrigger = (
     // Тут call потому что контекст теряется
     return getAll
       .call(controller.platform[smId], selectedComponent)
+      .filter(
+        ({ name }) => selectedComponent !== 'System' || !unavailableSystemMethods.includes(name)
+      )
       .map(({ name, description, alias }) => {
         return {
           value: name,
@@ -104,7 +119,7 @@ export const useTrigger = (
           ),
         };
       });
-  }, [smId, controller, selectedComponent]);
+  }, [smId, controller, selectedComponent, unavailableSystemMethods]);
 
   const handleComponentChange = useCallback((value: SingleValue<ParameterSelectOption>) => {
     setSelectedComponent(value?.value ?? null);

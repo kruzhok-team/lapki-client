@@ -174,8 +174,19 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
   const addEvent = () => {
     if (!state) return;
     const newIndex = state.data.events.length;
+    const hasSystemOnEnter = state.data.events.some(
+      (event) =>
+        typeof event.trigger !== 'string' &&
+        event.trigger.component === 'System' &&
+        event.trigger.method === 'onEnter'
+    );
     setCurrentEventIndex(newIndex);
-    setCurrentEvent({ trigger: { component: 'System', method: 'onEnter' }, do: [] });
+    setCurrentEvent({
+      trigger: hasSystemOnEnter
+        ? { component: '', method: '' }
+        : { component: 'System', method: 'onEnter' },
+      do: [],
+    });
     setSelectedActionIndex(null);
     viewStack.reset({ view: 'editEvent', title: 'Редактор события' });
   };
@@ -308,7 +319,6 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
         {/* Левая панель: иерархия событий */}
         <div className="w-[284px] flex-shrink-0">
           <EventsHierarchy
-            smId={smId}
             platform={platform}
             events={state?.data.events ?? []}
             components={components}

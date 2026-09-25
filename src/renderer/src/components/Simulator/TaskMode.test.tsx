@@ -100,7 +100,7 @@ describe('TaskMode Gardener result', () => {
 
     expect(html).toContain('Нет запуска');
     expect(html.match(/mb-4 flex h-4 items-center/g)).toHaveLength(2);
-    expect(html).toContain('px-1.5 text-[10px] leading-4');
+    expect(html).toContain('px-1.5 text-[14px] leading-4');
     expect(html).not.toContain('items-start justify-between');
     expect(html).not.toContain('Исходные данные');
     expect(html).not.toContain('>Результат<');

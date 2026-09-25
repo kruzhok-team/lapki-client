@@ -90,7 +90,7 @@ export const Modal: React.FC<ModalProps> = ({
           headerClassName
         )}
       >
-        <h1 className={twMerge('text-[12px] font-medium', titleClassName)}>{title}</h1>
+        <h1 className={twMerge('text-[14px] font-medium', titleClassName)}>{title}</h1>
         <CloseButton
           className={closeClassName}
           iconClassName={closeIconClassName}

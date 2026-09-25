@@ -43,7 +43,7 @@ export const AddressBookRow: React.FC<AddressBookRowProps> = (props) => {
       >
         {data.name || 'Без названия'}
       </td>
-      <td className={twMerge(cellClassName, 'font-Fira-Mono')} title={data.address}>
+      <td className={twMerge(cellClassName, 'font-Inter')} title={data.address}>
         {data.address}
       </td>
       <td

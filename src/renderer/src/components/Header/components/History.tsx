@@ -169,7 +169,7 @@ const HistoryWithEditor: React.FC = () => {
             {label}
             <span
               className={twMerge(
-                'min-w-5 rounded-full bg-bg-hover px-1.5 py-0.5 text-[10px] leading-none text-text-inactive',
+                'min-w-5 rounded-full bg-bg-hover px-1.5 py-0.5 text-[14px] leading-none text-text-inactive',
                 activeSection === section && 'bg-primary text-text-secondary'
               )}
             >

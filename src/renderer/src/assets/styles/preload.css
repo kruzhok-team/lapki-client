@@ -28,7 +28,7 @@
 }
 
 .loading-spinner span {
-  font-size: 2rem;
+  font-size: 14px;
   animation: loadingFade 1s linear 0s alternate infinite;
   padding-right: 1rem;
 }
@@ -50,10 +50,12 @@
 }
 
 @keyframes loadingBigger {
-  0%, 75% {
+  0%,
+  75% {
     transform: scale(1);
   }
-  25%, 50% {
+  25%,
+  50% {
     transform: scale(1.5);
   }
 }

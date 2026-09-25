@@ -10,10 +10,26 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        Fira: ['Fira Sans', 'sans-serif'],
-        'Fira-Mono': ['Fira Mono', 'monospace'],
+        sans: ['Inter', 'sans-serif'],
+        mono: ['Inter', 'sans-serif'],
+        Inter: ['Inter', 'sans-serif'],
       },
       colors,
+    },
+    fontSize: {
+      xs: ['14px', '20px'],
+      sm: ['14px', '20px'],
+      base: ['14px', '20px'],
+      lg: ['14px', '20px'],
+      xl: ['14px', '20px'],
+      '2xl': ['14px', '20px'],
+      '3xl': ['14px', '20px'],
+      '4xl': ['14px', '20px'],
+      '5xl': ['14px', '20px'],
+      '6xl': ['14px', '20px'],
+      '7xl': ['14px', '20px'],
+      '8xl': ['14px', '20px'],
+      '9xl': ['14px', '20px'],
     },
   },
   plugins: [

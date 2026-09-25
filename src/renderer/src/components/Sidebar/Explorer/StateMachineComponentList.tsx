@@ -106,7 +106,7 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
                       platform[smId] !== undefined
                         ? platform[smId].getFullComponentIcon(
                             id,
-                            'size-[26px] [&>p]:bottom-0 [&>p]:right-0 [&>p]:text-[8px] [&>p]:leading-[9px]'
+                            'size-[26px] [&>p]:bottom-0 [&>p]:right-0 [&>p]:text-[14px] [&>p]:leading-[14px]'
                           )
                         : undefined
                     }

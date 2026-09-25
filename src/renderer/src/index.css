@@ -8,8 +8,7 @@
   }
 
   body {
-    @apply bg-bg-primary font-Inter text-text-primary;
-    font-size: 14px;
+    @apply bg-bg-primary font-Fira text-xs text-text-primary;
   }
   #canvas {
     @apply absolute outline-none focus:outline-none;
@@ -56,7 +55,7 @@
 
 @layer components {
   .h2-header {
-    @apply text-[14px] font-medium;
+    @apply text-[12px] font-medium;
   }
 
   .btn {

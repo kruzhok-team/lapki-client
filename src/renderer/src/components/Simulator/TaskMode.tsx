@@ -176,7 +176,7 @@ const GardenerDetails: React.FC<{
           <div>
             <h3 className="h2-header">Фактическое поле</h3>
           </div>
-          <span className="shrink-0 rounded-full bg-bg-secondary px-1.5 text-[14px] leading-4 text-text-inactive">
+          <span className="shrink-0 rounded-full bg-bg-secondary px-1.5 text-[10px] leading-4 text-text-inactive">
             {steps.length > 0
               ? `${stepIndex + 1} / ${steps.length}`
               : execution
@@ -435,10 +435,10 @@ export const TaskMode: React.FC<TaskModeProps> = ({
               <p>{summary}</p>
               {solved && task.codeWord && (
                 <div className="mt-2 rounded-md border border-emerald-500/25 bg-bg-primary px-3 py-2 text-center">
-                  <p className="text-[14px] font-normal uppercase tracking-[0.16em] text-text-inactive">
+                  <p className="text-[10px] font-normal uppercase tracking-[0.16em] text-text-inactive">
                     Кодовое слово
                   </p>
-                  <p className="mt-0.5 font-Inter text-sm font-medium tracking-[0.12em] text-emerald-600">
+                  <p className="mt-0.5 font-Fira-Mono text-sm font-medium tracking-[0.12em] text-emerald-600">
                     {task.codeWord}
                   </p>
                 </div>

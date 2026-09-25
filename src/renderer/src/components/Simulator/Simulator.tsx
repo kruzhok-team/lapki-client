@@ -538,7 +538,7 @@ const ReaderSimulator: React.FC<ReaderRuntimeProps> = ({
             aria-label="Входная строка"
             className={twMerge(
               controlClassName,
-              'h-32 min-h-32 max-w-none resize-y py-2 font-Inter leading-4'
+              'h-32 min-h-32 max-w-none resize-y py-2 font-Fira-Mono leading-4'
             )}
             value={message}
             placeholder="Введите строку"

@@ -35,8 +35,7 @@ const ShowHtml: React.FC<ShowProps> = ({ item }) => {
     );
   }
 
-  const typographyOverride =
-    '<style>html, body, body * { font-family: Inter, sans-serif !important; font-size: 14px !important; }</style>';
+  const typographyOverride = '<style>html, body, body * { font-size: 12px !important; }</style>';
 
   return (
     <div className="relative h-[calc(100%-49.6px-41.6px)] w-full">

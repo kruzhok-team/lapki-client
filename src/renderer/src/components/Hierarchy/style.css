@@ -28,7 +28,7 @@
 }
 
 .rct-tree-root {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Fira Sans';
   background-color: var(--rct-color-tree-bg);
   padding: 4px 0;
 }

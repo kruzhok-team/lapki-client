@@ -131,7 +131,7 @@ export const ComponentInfo: React.FC<ComponentInfoProps> = ({
                   />
                   {!props.noTypeIcons && (
                     <span
-                      className="mr-1 inline-flex size-5 cursor-help items-center justify-center text-[14px] leading-5"
+                      className="mr-1 inline-flex size-5 cursor-help items-center justify-center text-[20px] leading-5"
                       title="атрибут"
                     >
                       🔢
@@ -159,7 +159,7 @@ export const ComponentInfo: React.FC<ComponentInfoProps> = ({
                   />
                   {!props.noTypeIcons && (
                     <span
-                      className="mr-1 inline-flex size-5 cursor-help items-center justify-center text-[14px] leading-5"
+                      className="mr-1 inline-flex size-5 cursor-help items-center justify-center text-[20px] leading-5"
                       title="событие"
                     >
                       🚩
@@ -187,7 +187,7 @@ export const ComponentInfo: React.FC<ComponentInfoProps> = ({
                   />
                   {!props.noTypeIcons && (
                     <span
-                      className="mr-1 inline-flex size-5 cursor-help items-center justify-center text-[14px] leading-5"
+                      className="mr-1 inline-flex size-5 cursor-help items-center justify-center text-[20px] leading-5"
                       title="действие"
                     >
                       ⚙️

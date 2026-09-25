@@ -197,7 +197,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                       style: {
                         ledHeight: 8,
                         ledWidth: 8,
-                        margin: 1 / 3,
+                        margin: 0.25,
                         border: 2,
                         isRounded: true,
                       },

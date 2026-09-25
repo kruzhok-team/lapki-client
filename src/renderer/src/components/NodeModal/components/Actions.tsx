@@ -1,4 +1,12 @@
-import { forwardRef, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import {
+  forwardRef,
+  useCallback,
+  useImperativeHandle,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 import CodeMirror, { Transaction, EditorState, ReactCodeMirrorRef } from '@uiw/react-codemirror';
 import throttle from 'lodash.throttle';
@@ -63,6 +71,7 @@ export const Actions = forwardRef<ActionsHandle, ActionsProps>((props, ref) => {
   const nextInlineActionId = useRef(0);
   const [inlineRows, setInlineRows] = useState<InlineActionRow[]>([]);
   const [expandedRowIds, setExpandedRowIds] = useState<Set<number>>(new Set());
+  const [matrixRowIds, setMatrixRowIds] = useState<Set<number>>(new Set());
   const inlineActionRefs = useRef(new Map<number, InlineActionHandle>());
   const inlineRowElements = useRef(new Map<number, HTMLDivElement>());
   const handledActionRequestId = useRef<number | null>(null);
@@ -141,6 +150,16 @@ export const Actions = forwardRef<ActionsHandle, ActionsProps>((props, ref) => {
 
   const handleChangeText = useMemo(() => throttle(onChangeText, 500), [onChangeText]);
 
+  const handleMatrixParameterChange = useCallback((rowId: number, hasMatrix: boolean) => {
+    setMatrixRowIds((current) => {
+      if (current.has(rowId) === hasMatrix) return current;
+      const next = new Set(current);
+      if (hasMatrix) next.add(rowId);
+      else next.delete(rowId);
+      return next;
+    });
+  }, []);
+
   const handleDrag = (index: number) => setDragIndex(index);
 
   const handleDrop = (index: number) => {
@@ -218,11 +237,15 @@ export const Actions = forwardRef<ActionsHandle, ActionsProps>((props, ref) => {
     collapseAll: () => setExpandedRowIds(new Set()),
   }));
 
+  const hasExpandedMatrixAction = [...expandedRowIds].some((rowId) => matrixRowIds.has(rowId));
+
   return (
     <div
       className={
         inlineEditing
-          ? 'flex max-h-[580px] min-h-[290px] grow flex-col'
+          ? `flex min-h-[290px] ${
+              hasExpandedMatrixAction ? 'max-h-[580px]' : 'max-h-[290px]'
+            } grow flex-col`
           : 'flex h-[290px] min-h-0 grow flex-col'
       }
     >
@@ -277,6 +300,7 @@ export const Actions = forwardRef<ActionsHandle, ActionsProps>((props, ref) => {
                               if (handle) inlineActionRefs.current.set(row.id, handle);
                               else inlineActionRefs.current.delete(row.id);
                             }}
+                            rowId={row.id}
                             smId={smId}
                             controller={controller}
                             action={row.action}
@@ -295,6 +319,7 @@ export const Actions = forwardRef<ActionsHandle, ActionsProps>((props, ref) => {
                             onDelete={() => handleClickDelete(i)}
                             onDragStart={() => handleDrag(i)}
                             onDrop={() => handleDrop(i)}
+                            onMatrixParameterChange={handleMatrixParameterChange}
                           />
                         </div>
                       ))

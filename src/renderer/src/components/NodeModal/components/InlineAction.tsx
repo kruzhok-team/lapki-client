@@ -1,4 +1,4 @@
-import { forwardRef, useImperativeHandle, useMemo } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useMemo } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
@@ -7,6 +7,7 @@ import { ParameterSelect } from '@renderer/components/UI';
 import { DeleteButton } from '@renderer/components/UI/DeleteButton';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { Action as ActionData } from '@renderer/types/diagram';
+import { isMatrix } from '@renderer/utils';
 
 import { ActionSummary } from './Action';
 
@@ -18,6 +19,7 @@ export interface InlineActionHandle {
 }
 
 interface InlineActionProps {
+  rowId: number;
   smId: string;
   controller: CanvasController;
   action?: ActionData;
@@ -27,11 +29,24 @@ interface InlineActionProps {
   onDelete: () => void;
   onDragStart: () => void;
   onDrop: () => void;
+  onMatrixParameterChange: (rowId: number, hasMatrix: boolean) => void;
 }
 
 export const InlineAction = forwardRef<InlineActionHandle, InlineActionProps>(
   (
-    { smId, controller, action, componentName, expanded, onToggle, onDelete, onDragStart, onDrop },
+    {
+      smId,
+      rowId,
+      controller,
+      action,
+      componentName,
+      expanded,
+      onToggle,
+      onDelete,
+      onDragStart,
+      onDrop,
+      onMatrixParameterChange,
+    },
     ref
   ) => {
     const initialData = useMemo(
@@ -39,6 +54,14 @@ export const InlineAction = forwardRef<InlineActionHandle, InlineActionProps>(
       [action, smId]
     );
     const editor = useActionsModal(smId, controller, undefined, undefined, initialData);
+    const hasMatrixParameter = editor.protoParameters.some(
+      ({ type }) => typeof type === 'string' && isMatrix(type)
+    );
+
+    useEffect(() => {
+      onMatrixParameterChange(rowId, hasMatrixParameter);
+      return () => onMatrixParameterChange(rowId, false);
+    }, [hasMatrixParameter, onMatrixParameterChange, rowId]);
 
     useImperativeHandle(ref, () => ({ validate: editor.validate }), [editor.validate]);
 

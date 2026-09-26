@@ -23,6 +23,7 @@ services:
       RELEASE_ARTIFACTS_DIST_DIR: /host-release-dist
       RELEASE_ARTIFACTS_OUTPUTS_DIR: /host-release-outputs
       RELEASE_LINUX_TARGETS: "${RELEASE_LINUX_TARGETS:-AppImage snap deb}"
+      RELEASE_SEAFILE_STAGING: "${RELEASE_SEAFILE_STAGING:-0}"
       RELEASE_SKIP_LINUX: "${RELEASE_SKIP_LINUX:-0}"
       RELEASE_SKIP_WINDOWS: "${RELEASE_SKIP_WINDOWS:-0}"
       ARDUINO_PACKAGE_INDEX_URL: "${ARDUINO_PACKAGE_INDEX_URL:-https://arduino-downloads.amperka.ru/p/packages/package_index.json}"

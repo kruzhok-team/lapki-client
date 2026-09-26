@@ -79,11 +79,13 @@ const FieldView: React.FC<{
   field?: GardenerTaskInput['field'];
   position?: GardenerTaskInput['position'];
   orientation?: GardenerFieldOrientation;
+  hiddenCells?: boolean[][];
 }> = ({
   input,
   field = input.field,
   position = input.position,
   orientation = input.orientation,
+  hiddenCells,
 }) => (
   <div className="overflow-auto rounded-lg bg-bg-secondary p-3">
     <div
@@ -93,12 +95,28 @@ const FieldView: React.FC<{
       {field.flatMap((row, y) =>
         row.map((cell, x) => {
           const hasGardener = position.x === x && position.y === y;
+          const hidden = hiddenCells?.[y]?.[x] ?? false;
           return (
             <div
               key={`${x}-${y}`}
-              className={`relative size-8 rounded-lg ${gardenerCellStyles[cell]}`}
-              title={`(${x}, ${y})`}
+              className={`relative size-8 rounded-lg ${
+                hidden ? 'bg-bg-active' : gardenerCellStyles[cell]
+              }`}
+              title={hidden ? `Скрытая клетка (${x}, ${y})` : `(${x}, ${y})`}
+              aria-label={
+                hidden
+                  ? `Скрытая клетка (${x}, ${y})${hasGardener ? ', здесь Садовник' : ''}`
+                  : undefined
+              }
             >
+              {hidden && (
+                <span
+                  aria-hidden="true"
+                  className="absolute inset-0 flex items-center justify-center text-xs leading-none text-text-inactive"
+                >
+                  ?
+                </span>
+              )}
               {hasGardener && <GardenerMarker orientation={orientation} />}
             </div>
           );
@@ -149,7 +167,7 @@ const GardenerDetails: React.FC<{
           <h3 className="h2-header">Входное поле</h3>
         </div>
         <div className="flex justify-center">
-          <FieldView input={input} />
+          <FieldView input={input} hiddenCells={test.hiddenCells} />
         </div>
       </section>
 
@@ -174,11 +192,17 @@ const GardenerDetails: React.FC<{
               field={visible.field}
               position={visible.position}
               orientation={visible.orientation}
+              hiddenCells={test.hiddenCells}
             />
           ) : (
             <div className="relative flex w-full justify-center">
               <div className="flex w-full justify-center opacity-25">
-                <FieldView input={input} field={emptyField} position={{ x: -1, y: -1 }} />
+                <FieldView
+                  input={input}
+                  field={emptyField}
+                  position={{ x: -1, y: -1 }}
+                  hiddenCells={test.hiddenCells}
+                />
               </div>
               <p className="absolute inset-0 flex items-center justify-center px-4 text-center text-xs text-text-inactive">
                 Запустите тест, чтобы увидеть результат
@@ -291,6 +315,7 @@ export const TaskMode: React.FC<TaskModeProps> = ({
       ? `Решение принято: ${submissionResult.passed} из ${submissionResult.total}`
       : `Решение не принято: ${submissionResult.passed} из ${submissionResult.total}`;
   }, [submissionResult]);
+  const solved = submissionResult?.status === 'accepted';
   const selectedPhase = selectedState?.phase ?? 'idle';
   const selectedPhaseStyle = phaseStyles[selectedPhase];
   const completedTests = task.tests.filter((test) => {
@@ -407,7 +432,7 @@ export const TaskMode: React.FC<TaskModeProps> = ({
                   : 'bg-error/5 text-error'
               }`}
             >
-              {summary}
+              <p>{summary}</p>
             </div>
           )}
           {error && (
@@ -429,6 +454,16 @@ export const TaskMode: React.FC<TaskModeProps> = ({
           >
             Отправить решение
           </button>
+          {solved && task.codeWord && (
+            <div className="mt-3 rounded-md border border-emerald-500/25 bg-emerald-500/10 px-3 py-2 text-center">
+              <p className="text-[14px] font-normal uppercase tracking-[0.16em] text-text-inactive">
+                Кодовое слово
+              </p>
+              <p className="font-Inter mt-0.5 text-sm font-medium tracking-[0.12em] text-emerald-600">
+                {task.codeWord}
+              </p>
+            </div>
+          )}
           {!submissionResult && completedTests > 0 && (
             <p className="mt-2 text-center text-xs text-text-inactive">
               Пройдено тестов: {passedTests} из {task.tests.length}

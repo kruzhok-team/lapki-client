@@ -36,6 +36,10 @@ export const useActionsModal = (
   const [protoParameters, setProtoParameters] = useState<ArgumentProto[]>([]);
   const [parameters, setParameters] = useState<ArgList>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [selectionErrors, setSelectionErrors] = useState<{
+    component?: string;
+    method?: string;
+  }>({});
 
   const { getComponentOptions, getPropertyOptions } = useActions(smId, controller, null);
 
@@ -95,10 +99,12 @@ export const useActionsModal = (
     setProtoParameters([]);
     setParameters({});
     setErrors({});
+    setSelectionErrors({});
   };
 
   const handleMethodChange = (value: SingleValue<ParameterSelectOption>) => {
     setSelectedMethod(value?.value ?? null);
+    setSelectionErrors((current) => ({ ...current, method: undefined }));
 
     updateParameters(selectedComponent, value?.value ?? null);
   };
@@ -109,10 +115,16 @@ export const useActionsModal = (
     setProtoParameters([]);
     setParameters({});
     setErrors({});
+    setSelectionErrors({});
   }, []);
 
-  const handleSubmit = (e?: React.FormEvent) => {
-    e?.preventDefault();
+  const validate = (): Action | undefined => {
+    const nextSelectionErrors = {
+      component: selectedComponent ? undefined : 'Выберите компонент',
+      method: selectedMethod ? undefined : 'Выберите действие',
+    };
+    setSelectionErrors(nextSelectionErrors);
+    if (!selectedComponent || !selectedMethod) return undefined;
 
     const platform = controller.platform[smId];
     if (
@@ -162,10 +174,17 @@ export const useActionsModal = (
         })
         .some((value) => !value)
     ) {
-      return;
+      return undefined;
     }
-    if (!selectedComponent || !selectedMethod) return;
-    onSubmit?.({ component: selectedComponent, method: selectedMethod, args: parameters }, idx);
+    return { component: selectedComponent, method: selectedMethod, args: parameters };
+  };
+
+  const handleSubmit = (e?: React.FormEvent) => {
+    e?.preventDefault();
+
+    const action = validate();
+    if (!action) return;
+    onSubmit?.(action, idx);
     reset();
   };
 
@@ -219,6 +238,8 @@ export const useActionsModal = (
     controller,
     smId,
     attributeOptionsSearch,
+    selectionErrors,
+    validate,
     reset,
   };
 };

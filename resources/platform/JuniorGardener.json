@@ -97,6 +97,45 @@
       "singletone": false,
       "variables": {}
     },
+    "Timer": {
+      "name": "Таймер",
+      "description": "Однократно вызывает событие после заданного интервала. Для нового срабатывания запустите таймер снова.",
+      "img": "arduino/timer.svg",
+      "signals": {
+        "timeout": {
+          "alias": "Время вышло",
+          "img": "arduino/timeout.svg",
+          "description": "Заданный интервал истёк. После этого таймер остановлен."
+        }
+      },
+      "methods": {
+        "start": {
+          "alias": "Запустить",
+          "img": "arduino/start.svg",
+          "description": "Запустить однократный отсчёт. Повторный запуск заменяет интервал и начинает отсчёт заново.",
+          "parameters": [
+            {
+              "name": "Интервал",
+              "type": "int",
+              "description": "Время до срабатывания в миллисекундах: целое число больше нуля."
+            }
+          ]
+        },
+        "stop": {
+          "alias": "Остановить",
+          "img": "arduino/timer-stop.svg",
+          "description": "Отменить текущий отсчёт. Уже наступившее событие остаётся в очереди."
+        },
+        "reset": {
+          "alias": "Сбросить отсчёт",
+          "img": "arduino/reset.svg",
+          "description": "Начать текущий интервал заново, если таймер работает. Остановленный таймер не запускается."
+        }
+      },
+      "variables": {},
+      "constructorParameters": {},
+      "singletone": false
+    },
     "Counter": {
       "name": "Счетчик",
       "description": "Переменная-счетчик.",

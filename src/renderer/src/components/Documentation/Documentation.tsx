@@ -20,6 +20,7 @@ import { File } from '@renderer/types/documentation';
 import { Navigation } from './components/Navigation';
 import { Show } from './components/Show';
 import { Tree } from './components/Tree';
+import { RIGHT_SIDEBAR_CLOSED_WIDTH, RIGHT_SIDEBAR_DEFAULT_WIDTH } from './rightSidebarLayout';
 
 import ReferencePanel from '../ReferenceModal/Reference';
 import { TaskBook } from '../Tasks';
@@ -198,8 +199,8 @@ export const Documentation: React.FC<DocumentationProps> = ({ width, onWidthChan
       state.onDocumentationToggle,
     ]
   );
-  const [minWidth, setMinWidth] = useState(5);
-  const [maxWidth, setMaxWidth] = useState('60vw');
+  const minWidth = isOpen ? RIGHT_SIDEBAR_DEFAULT_WIDTH : RIGHT_SIDEBAR_CLOSED_WIDTH;
+  const maxWidth = isOpen ? '60vw' : `${RIGHT_SIDEBAR_CLOSED_WIDTH}px`;
   const panelGroupRef = useRef<ImperativePanelGroupHandle>(null);
   const documentationPanelRef = useRef<ImperativePanelHandle>(null);
   const tasksPanelRef = useRef<ImperativePanelHandle>(null);
@@ -215,16 +216,6 @@ export const Documentation: React.FC<DocumentationProps> = ({ width, onWidthChan
     if (event.pageX >= 0.95 * window.innerWidth && isOpen) toggleOpen();
     onWidthChange(parseInt(ref.style.width));
   };
-
-  useEffect(() => {
-    if (!isOpen) {
-      setMaxWidth('5px');
-      setMinWidth(5);
-    } else {
-      setMaxWidth('60vw');
-      setMinWidth(420);
-    }
-  }, [isOpen]);
 
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {

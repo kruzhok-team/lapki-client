@@ -148,6 +148,7 @@ describe('TaskMode Gardener result', () => {
 
     expect(html).toContain('Кодовое слово');
     expect(html).toContain('РОСТОК');
+    expect(html.indexOf('Кодовое слово')).toBeGreaterThan(html.indexOf('Отправить решение'));
   });
 
   it('keeps hidden cell contents masked in the input and execution fields', () => {

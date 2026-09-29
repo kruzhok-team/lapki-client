@@ -55,7 +55,7 @@ export const CompilerSelectModal: React.FC<CompilerSelectModalProps> = ({ onClos
       setWarning('');
       return;
     }
-    if (userOS !== 'Windows') {
+    if (userOS !== 'Windows' && userOS !== 'Linux') {
       setWarning('Пока что ваша платформа не поддерживает локальный компилятор :(');
     }
   }, [isSecondaryFieldsDisabled, setWarning, userOS]);

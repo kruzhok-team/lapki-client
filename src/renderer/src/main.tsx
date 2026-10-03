@@ -7,9 +7,12 @@ import './assets/styles/fira-sans.css';
 import './assets/styles/fira-mono.css';
 import { App } from './App';
 import { WhoopsieScreen } from './components/WhoopsieScreen';
+import { installPerfDevtools } from './lib/perf/devtools';
 import { initAppVersion } from './version';
 
 initAppVersion();
+// Замер производительности холста: Ctrl+Shift+F и window.__perf (lib/perf/devtools.ts)
+installPerfDevtools();
 
 /*
  Для отладки мы запускаем React в строгом режиме.

@@ -3,6 +3,7 @@ import * as TWEEN from '@tweenjs/tween.js';
 import { Canvas, EditorView, Keyboard, Mouse } from '@renderer/lib/basic';
 import { Render } from '@renderer/lib/common';
 import { preloadPicto } from '@renderer/lib/drawable';
+import { frameStats } from '@renderer/lib/perf/frameStats';
 
 import { CanvasController } from './data/ModelController/CanvasController';
 
@@ -99,12 +100,14 @@ export class CanvasEditor {
       }
 
       if (!this.view.isDirty) return;
+      const drawStart = performance.now();
       this.mouse.tick();
       this.canvas.clear();
       this.canvas.draw((ctx, canvas) => {
         this.view.draw(ctx, canvas);
       });
       this.view.isDirty = false;
+      frameStats.recordDraw(drawStart, performance.now());
     });
 
     this.controller.setMountStatus(true);

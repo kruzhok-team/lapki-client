@@ -33,3 +33,4 @@ resources/modules/win32/avrdude.pdb
 # AI
 CONTEXT.md
 AGENTS.md
+perf-results/

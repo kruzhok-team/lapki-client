@@ -1,3 +1,5 @@
+import { memo } from 'react';
+
 import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as ChoiceStateIcon } from '@renderer/assets/icons/choice_state.svg';
@@ -35,7 +37,8 @@ const icons: Record<
 };
 
 /* Отрисовка заголовка ноды в иерархии состояний, можно подсвечивать подстроку (для отображения поиска) */
-export const TitleRender: React.FC<TitleRenderProps> = (props) => {
+// memo: дерево перерисовывает все элементы при любой смене выделения, а здесь тяжёлый WithHint
+export const TitleRender = memo(function TitleRender(props: TitleRenderProps) {
   const { type, title, search } = props;
 
   const Icon = icons[type];
@@ -67,4 +70,4 @@ export const TitleRender: React.FC<TitleRenderProps> = (props) => {
       </WithHint>
     </div>
   );
-};
+});

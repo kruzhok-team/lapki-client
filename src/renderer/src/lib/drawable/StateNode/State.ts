@@ -1,5 +1,6 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { Events, EdgeHandlers, icons } from '@renderer/lib/drawable';
+import { iconCache } from '@renderer/lib/drawable/IconCache';
 import { Shape } from '@renderer/lib/drawable/Shape';
 import { stateStyle } from '@renderer/lib/styles';
 import { drawText } from '@renderer/lib/utils/text';
@@ -238,7 +239,7 @@ export class State extends Shape {
     ctx.fillStyle = style.titleColor;
     ctx.strokeStyle = style.titleColor;
 
-    ctx.drawImage(icon, x + width - size - p, y + p, size, size);
+    iconCache.draw(ctx, icon, x + width - size - p, y + p, size, size);
 
     ctx.closePath();
   }

@@ -1,5 +1,6 @@
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { Shape, icons } from '@renderer/lib/drawable';
+import { iconCache } from '@renderer/lib/drawable/IconCache';
 import { Point } from '@renderer/lib/types/graphics';
 import { MyMouseEvent } from '@renderer/lib/types/mouse';
 import { isPointInRectangle } from '@renderer/lib/utils';
@@ -93,7 +94,7 @@ export class EdgeHandlers {
     ctx.beginPath();
 
     for (const { x, y } of this.position) {
-      ctx.drawImage(icon, x, y, this.size, this.size);
+      iconCache.draw(ctx, icon, x, y, this.size, this.size);
     }
 
     ctx.fillStyle = '#FFF';

@@ -339,6 +339,10 @@ export class EditorModel {
   changeStateSelection(smId: string, id: string, selection: boolean) {
     const state = this.data.elements.stateMachines[smId].states[id];
     if (!state) return false;
+    // Выделение не меняется: не уведомляем подписчиков. removeSelection снимает выделение
+    // со всех объектов схемы, и без этой проверки каждый клик давал сотни обновлений
+    // с копированием всей карты и полной перерисовкой иерархии
+    if (!!state.selection === selection) return true;
 
     state.selection = selection;
 
@@ -600,6 +604,7 @@ export class EditorModel {
     const transition = this.data.elements.stateMachines[smId].transitions[id];
     if (!transition || this.data.elements.stateMachines[smId].initialStates[transition.sourceId])
       return false;
+    if (!!transition.selection === selection) return true;
 
     transition.selection = selection;
 
@@ -738,6 +743,7 @@ export class EditorModel {
   changeComponentSelection(smId: string, name: string, selection: boolean) {
     const component = this.data.elements.stateMachines[smId].components[name];
     if (!component) return false;
+    if (!!component.selection === selection) return true;
 
     component.selection = selection;
 
@@ -938,6 +944,7 @@ export class EditorModel {
   changeVertexSelection(smId: string, id: string, selection: boolean, type: VertexFields) {
     const state = this.data.elements.stateMachines[smId][type][id];
     if (!state) return false;
+    if (!!state.selection === selection) return true;
 
     state.selection = selection;
 

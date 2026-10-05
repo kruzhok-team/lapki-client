@@ -2,6 +2,7 @@ import { Rectangle, Point, TransitionLine, VSector, HSector } from '@renderer/li
 import { Variable } from '@renderer/types/diagram';
 
 import { Transition } from '../drawable';
+import { iconCache } from '../drawable/IconCache';
 
 export * from './generateId';
 export * from './roundPoint';
@@ -16,6 +17,12 @@ export const isPointInRectangle = (rectangle: Rectangle, point: Point) => {
     point.x <= rectangle.x + rectangle.width &&
     rectangle.y <= point.y &&
     point.y <= rectangle.y + rectangle.height
+  );
+};
+
+export const isRectanglesIntersect = (a: Rectangle, b: Rectangle) => {
+  return (
+    a.x <= b.x + b.width && b.x <= a.x + a.width && a.y <= b.y + b.height && b.y <= a.y + a.height
   );
 };
 
@@ -266,7 +273,8 @@ export const drawImageFit = (
   const centerShiftX = x + (width - img.naturalWidth * ratio) / 2;
   const centerShiftY = y + (height - img.naturalHeight * ratio) / 2;
 
-  ctx.drawImage(
+  iconCache.draw(
+    ctx,
     img,
     centerShiftX,
     centerShiftY,

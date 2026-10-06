@@ -54,8 +54,28 @@
         "vendorID": "2341"
       },
       {
+        "productID": "0001",
+        "vendorID": "2341"
+      },
+      {
+        "productID": "0243",
+        "vendorID": "2341"
+      },
+      {
+        "productID": "6001",
+        "vendorID": "0403"
+      },
+      {
         "productID": "7523",
         "vendorID": "1a86"
+      },
+      {
+        "productID": "5523",
+        "vendorID": "1a86"
+      },
+      {
+        "productID": "5523",
+        "vendorID": "4348"
       }
     ],
     "type": "arduino",

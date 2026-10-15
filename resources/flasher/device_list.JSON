@@ -56,6 +56,18 @@
       {
         "productID": "7523",
         "vendorID": "1a86"
+      },
+      {
+        "productID": "0001",
+        "vendorID": "2341"
+      },
+      {
+        "productID": "0243",
+        "vendorID": "2341"
+      },
+      {
+        "productID": "006A",
+        "vendorID": "2341"
       }
     ],
     "type": "arduino",
@@ -73,6 +85,26 @@
       {
         "productID": "0042",
         "vendorID": "2a03"
+      },
+      {
+        "productID": "0010",
+        "vendorID": "2a03"
+      },
+      {
+        "productID": "0010",
+        "vendorID": "2341"
+      },
+      {
+        "productID": "0042",
+        "vendorID": "2341"
+      },
+      {
+        "productID": "0210",
+        "vendorID": "2341"
+      },
+      {
+        "productID": "0242",
+        "vendorID": "2341"
       }
     ],
     "type": "arduino",

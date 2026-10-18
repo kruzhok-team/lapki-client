@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 39.69 40.08">
+  <defs>
+    <style>.cls-1{fill:#428ab9;}.cls-2{fill:#c3c4c4;}.cls-3{fill:#2d6a93;}.cls-4{fill:#4d4d4d;}.cls-5{fill:#9bcb64;}.cls-6{fill:#8dbf55;}.cls-7{fill:none;stroke:#bde08f;stroke-linecap:round;stroke-width:6.4px;}.cls-8{fill:#e43a35;}.cls-9{fill:#fefefe;}.cls-10{fill:#b72c28;}</style>
+  </defs>
+  <g id="lcd">
+    <rect class="cls-1" x="0" y="4.04" width="39.69" height="32" rx="2.4"/>
+    <circle class="cls-2" cx="1.9" cy="5.94" r="0.93"/>
+    <circle class="cls-3" cx="1.9" cy="5.94" r="0.46"/>
+    <circle class="cls-2" cx="1.9" cy="34.14" r="0.93"/>
+    <circle class="cls-3" cx="1.9" cy="34.14" r="0.46"/>
+    <circle class="cls-2" cx="37.79" cy="5.94" r="0.93"/>
+    <circle class="cls-3" cx="37.79" cy="5.94" r="0.46"/>
+    <circle class="cls-2" cx="37.79" cy="34.14" r="0.93"/>
+    <circle class="cls-3" cx="37.79" cy="34.14" r="0.46"/>
+    <rect class="cls-4" x="3.4" y="7.44" width="32.89" height="25.2" rx="1"/>
+    <rect class="cls-5" x="4.8" y="8.84" width="30.09" height="22.4"/>
+    <path class="cls-6" d="M6,10.04h6.25v9.55h-6.25ZM13.15,10.04h6.25v9.55h-6.25ZM20.3,10.04h6.25v9.55h-6.25ZM27.44,10.04h6.25v9.55h-6.25ZM6,20.49h6.25v9.55h-6.25ZM13.15,20.49h6.25v9.55h-6.25ZM20.3,20.49h6.25v9.55h-6.25ZM27.44,20.49h6.25v9.55h-6.25Z"/>
+    <path class="cls-7" d="M8,29L20,20.6"/>
+    <polygon class="cls-8" points="16.57 25.85 30.5 16.1 35.43 23.15 21.5 32.9"/>
+    <polygon class="cls-9" points="16.57 25.85 21.49 22.41 26.42 29.46 21.5 32.9"/>
+    <polygon class="cls-10" points="21.49 22.41 22.63 21.61 27.57 28.65 26.42 29.46"/>
+  </g>
+</svg>

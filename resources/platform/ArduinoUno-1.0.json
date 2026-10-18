@@ -1515,6 +1515,84 @@
           "description": "Размер массива."
         }
       }
+    },
+    "Lcd": {
+      "name": "Lcd",
+      "description": "Компонент для работы с lcd 1602 по i2c",
+      "img": "arduino/lcd.svg",
+      "signals": {},
+      "initializationParameters": {},
+      "constructorParameters": {
+        "address": {
+          "type": "uint8_t",
+          "name": "адрес",
+          "description": "I2C адрес дисплея"
+        },
+        "cols": {
+          "type": "uint8_t",
+          "name": "число столбцов",
+          "description": ""
+        },
+        "rows": {
+          "type": "uint8_t",
+          "name": "число строк",
+          "description": ""
+        }
+      },
+      "initializationFunction": "init",
+      "methods": {
+        "print": {
+          "alias": "Вывод",
+          "img": "arduino/lcd-print.svg",
+          "description": "Вывести данные на дисплей",
+          "parameters": [
+            {
+              "name": "Сообщение",
+              "description": "Данные для вывода",
+              "type": "int | char[]"
+            }
+          ]
+        },
+        "setCursor": {
+          "alias": "Задать позицию",
+          "img": "arduino/lcd-cursor.svg",
+          "description": "Устанавливает курсор в новую позиция так, что распечатанный текст будет выводиться с этой позиции",
+          "parameters": [
+            {
+              "name": "столбец",
+              "description": "нумерация столбцов с нуля",
+              "type": "int"
+            },
+            {
+              "name": "строка",
+              "description": "нумерация строк с нуля",
+              "type": "int"
+            }
+          ]
+        },
+        "reset": {
+          "alias": "Сброс",
+          "img": "arduino/lcd-clear.svg",
+          "description": "Очистить дисплей",
+          "parameters": []
+        },
+        "backlight":{
+          "alias": "Включить подсветку",
+          "img": "arduino/lcd-backlight-on.svg",
+          "description": "Включает подсветку дисплея",
+          "parameters": []
+        },
+        "noBacklight":{
+          "alias": "Выключить подсветку",
+          "img": "arduino/lcd-backlight-off.svg",
+          "description": "Выключает подсветку дисплея",
+          "parameters": []
+        }
+      },
+      "variables": {},
+      "buildFiles": ["LCD_I2C.cpp", "Lcd.cpp", "LCD_I2C.h", "Lcd.h"],
+      "importFiles": ["LCD_I2C.h", "Lcd.h"],
+      "singletone": false
     }
   }
 }

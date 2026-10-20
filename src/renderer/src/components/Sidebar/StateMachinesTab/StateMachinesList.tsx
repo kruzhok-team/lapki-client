@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
@@ -66,6 +66,19 @@ export const StateMachinesList: React.FC<StateMachinesListProps> = ({
 
   const isDisabled = !isInitialized;
   const collapsed = isCollapsed();
+  const highlightedSm = selectedSm ?? activeSm;
+  const listRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const clearSelectionOutsideList = (event: MouseEvent) => {
+      if (event.target instanceof Node && !listRef.current?.contains(event.target)) {
+        setSmSelected(null);
+      }
+    };
+
+    document.addEventListener('mousedown', clearSelectionOutsideList);
+    return () => document.removeEventListener('mousedown', clearSelectionOutsideList);
+  }, [setSmSelected]);
 
   useEffect(() => {
     if (isCollapsed()) togglePanel();
@@ -73,7 +86,7 @@ export const StateMachinesList: React.FC<StateMachinesListProps> = ({
 
   // TODO (L140-beep): Необходимо доделать
   return (
-    <section className="flex h-full min-h-0 flex-col">
+    <section ref={listRef} className="flex h-full min-h-0 flex-col">
       <PanelHeader
         title="Машины состояний"
         isCollapsed={isCollapsed}
@@ -93,12 +106,12 @@ export const StateMachinesList: React.FC<StateMachinesListProps> = ({
                     <Component
                       key={id}
                       name={sm.name || id}
-                      isSelected={id === activeSm || id === selectedSm}
+                      isSelected={id === highlightedSm}
                       icon={
                         <StateMachineIcon
                           className={twMerge(
                             'size-6 [&_*]:stroke-[#6b6b6b]',
-                            (id === activeSm || id === selectedSm) && '[&_*]:stroke-icon-hover'
+                            id === highlightedSm && '[&_*]:stroke-icon-hover'
                           )}
                         />
                       }

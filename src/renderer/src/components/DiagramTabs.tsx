@@ -13,9 +13,12 @@ import {
   SerialMonitorStatus,
   SerialMonitorTab,
 } from '@renderer/components/Sidebar/Flasher/SerialMonitor';
+import { ConnectionIndicator } from '@renderer/components/UI/ConnectionIndicator';
 import { MovingModal } from '@renderer/components/UI/Modal/MovingModal';
 import { WithHint } from '@renderer/components/UI/WithHint';
 import { useManagerMS } from '@renderer/store/useManagerMS';
+import { useFlasher } from '@renderer/store/useFlasher';
+import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
 
 import { CompilerStatus } from './Modules/Websocket/ClientStatus';
 
@@ -29,6 +32,28 @@ const humanizeCompilerResult = (status?: string): string => {
     default:
       return status;
   }
+};
+
+const FlasherModalTitle: React.FC = () => {
+  const connectionStatus = useFlasher((state) => state.connectionStatus);
+  return (
+    <div className="flex items-center gap-2">
+      <span>Загрузчик</span>
+      <ConnectionIndicator status={connectionStatus} />
+      <span className="ml-10"><FlasherStatus /></span>
+    </div>
+  );
+};
+
+const SerialMonitorModalTitle: React.FC = () => {
+  const connectionStatus = useSerialMonitor((state) => state.connectionStatus);
+  return (
+    <div className="flex items-center gap-2">
+      <span>Монитор порта</span>
+      <ConnectionIndicator status={connectionStatus} />
+      <span className="ml-10"><SerialMonitorStatus /></span>
+    </div>
+  );
 };
 
 const tabs = {
@@ -48,21 +73,11 @@ const tabs = {
     title: 'Загрузчик',
     Icon: <FlasherIcon />,
     className: 'h-[644px] max-h-[calc(100vh-24px)] w-[1074px] max-w-[calc(100vw-24px)]',
-    modalTitle: (
-      <div className="flex items-center gap-11">
-        <span>Загрузчик</span>
-        <FlasherStatus />
-      </div>
-    ),
+    modalTitle: <FlasherModalTitle />,
   },
   serialMonitor: {
     title: 'Монитор порта',
-    modalTitle: (
-      <div className="flex items-center gap-11">
-        <span>Монитор порта</span>
-        <SerialMonitorStatus />
-      </div>
-    ),
+    modalTitle: <SerialMonitorModalTitle />,
     Icon: <SerialMonitorIcon />,
     className: 'h-[740px] max-h-[calc(100vh-24px)] w-[1074px] max-w-[calc(100vw-24px)]',
   },

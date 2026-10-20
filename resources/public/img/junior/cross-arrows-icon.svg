@@ -1,11 +1,28 @@
-<?xml version="1.0" encoding="utf-8"?>
-<svg version="1.1" xmlns="http://www.w3.org/2000/svg"
-     viewBox="0 0 122.88 122.88">
-  <g>
-    <polygon fill="#A7D5F7" points="61.44,0 37.02,25.4 52.74,25.4 52.74,52.74 25.4,52.74 25.4,37.02 
-      0,61.44 25.4,85.86 25.4,70.15 52.74,70.15 52.74,97.48 37.02,97.48 
-      61.44,122.88 85.86,97.48 70.15,97.48 70.15,70.15 97.48,70.15 
-      97.48,85.86 122.88,61.44 97.48,37.02 97.48,52.74 70.15,52.74 
-      70.15,25.4 85.86,25.4 61.44,0"/>
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Creator: CorelDRAW -->
+<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="18.4839mm" height="18.4839mm" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd"
+viewBox="0 0 3013.6 3013.6"
+ xmlns:xlink="http://www.w3.org/1999/xlink"
+ xmlns:xodm="http://www.corel.com/coreldraw/odm/2003">
+ <defs>
+  <style type="text/css">
+   <![CDATA[
+    .fil1 {fill:#FFA047}
+    .fil0 {fill:#8CD9FF;fill-rule:nonzero}
+   ]]>
+  </style>
+ </defs>
+ <g id="Слой_x0020_1">
+  <metadata id="CorelCorpID_0Corel-Layer"/>
+  <g id="_1974611825872">
+   <g>
+    <path class="fil0" d="M1506.8 3013.6l-422.6 -845.2 845.2 0 -422.6 845.2zm163 -834.1c0,90 -73,163 -163,163 -90,0 -163,-73 -163,-163l326.1 0zm0 -1345.4l0 1345.4 -326.1 0 0 -1345.4 326.1 0zm-163 -834.1l422.6 845.2 -845.2 0 422.6 -845.2zm-163 834.1c0,-90 73,-163 163,-163 90,0 163,73 163,163l-326.1 0z"/>
+   </g>
+   <g>
+    <path class="fil0" d="M-0 1506.8l845.2 -422.6 0 845.2 -845.2 -422.6zm834.1 163c-90,0 -163,-73 -163,-163 0,-90 73,-163 163,-163l0 326.1zm1345.4 0l-1345.4 0 0 -326.1 1345.4 0 0 326.1zm834.1 -163l-845.2 422.6 0 -845.2 845.2 422.6zm-834.1 -163c90,0 163,73 163,163 0,90 -73,163 -163,163l0 -326.1z"/>
+   </g>
+   <circle class="fil1" cx="1509" cy="1509.6" r="181.1"/>
   </g>
+ </g>
 </svg>

@@ -14,6 +14,6 @@ export const CloseButton: React.FC<CloseButtonProps> = ({ className, iconClassNa
     className={twMerge('rounded-[3px] transition-colors hover:bg-util-button-hover', className)}
     {...props}
   >
-    <Close className={twMerge(iconClassName)} />
+    <Close className={twMerge('size-5', iconClassName)} />
   </button>
 );

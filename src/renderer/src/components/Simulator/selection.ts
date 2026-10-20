@@ -22,6 +22,7 @@ export const selectInitialMachineId = (
 
 export const isSimulationResultStale = (
   hasResult: boolean,
-  runXml?: string,
-  currentXml?: string
-): boolean => Boolean(hasResult && runXml && currentXml && runXml !== currentXml);
+  runRevision?: unknown,
+  currentRevision?: unknown
+): boolean =>
+  Boolean(hasResult && runRevision && currentRevision && runRevision !== currentRevision);

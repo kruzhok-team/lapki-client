@@ -83,7 +83,7 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
 
   draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
     if (this.app.settings.grid) {
-      this.drawGrid(ctx, canvas);
+      this.drawGrid(ctx);
     }
 
     const drawChildren = (node: Drawable) => {
@@ -99,8 +99,8 @@ export class EditorView extends EventEmitter<EditorViewEvents> implements Drawab
     drawChildren(this);
   }
 
-  private drawGrid(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
-    const { width, height } = canvas;
+  private drawGrid(ctx: CanvasRenderingContext2D) {
+    const { width, height } = this.app.canvas;
 
     const scale = this.app.controller.scale;
     const offset = this.app.controller.model.model.data.offset;

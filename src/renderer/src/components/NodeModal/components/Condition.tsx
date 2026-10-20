@@ -55,7 +55,6 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
     onTabChange,
 
     isParamOneInput1,
-    handleParamOneInput1,
     isParamOneInput2,
     handleParamOneInput2,
 
@@ -131,9 +130,13 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
   return (
     <div>
       <div className={twMerge('flex items-center justify-between', show && 'items-end')}>
-        <p className="font-medium">Если</p>
+        <p className={twMerge('font-medium', isElse && 'opacity-50')}>Если</p>
         {!show ? (
-          <AddButton onClick={() => handleChangeConditionShow(!show)} />
+          <AddButton
+            className={twMerge(isElse && 'cursor-default disabled:opacity-50')}
+            disabled={isElse}
+            onClick={() => handleChangeConditionShow(!show)}
+          />
         ) : (
           <SubButton onClick={() => handleChangeConditionShow(!show)} />
         )}
@@ -151,72 +154,53 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
       <div className={twMerge('mt-2', !show && 'hidden')}>
         <TabPanel value={0} tabValue={tabValue}>
           <div className="flex flex-col gap-2">
-            {visual && (
-              <div className={twMerge('flex flex-row', !show && 'hidden')}>
-                <AttributeConstSwitch
-                  hint="Если не выполняются другие условия для данного триггера"
-                  checked={isElse}
-                  onCheckedChange={handleElseChange}
-                />
-                <span className="ml-2">else</span>
-              </div>
-            )}
             <div className="flex items-start">
-              <div className="mr-2 mt-[6px]">
-                <AttributeConstSwitch
-                  checked={isParamOneInput1}
-                  onCheckedChange={() => handleParamOneInput1(!isParamOneInput1)}
-                  hint={
-                    isParamOneInput1
-                      ? 'Переключиться на константу'
-                      : 'Переключиться на атрибут компонента'
-                  }
-                  isDisabled={isElse}
-                  className={twMerge(isElse && 'cursor-default opacity-50')}
-                />
+              <div className="ml-[37px]">
+                {isParamOneInput1 ? (
+                  <div className="flex gap-2">
+                    <ParameterSelect
+                      containerClassName={twMerge('w-[209px]', isElse && 'opacity-50')}
+                      options={componentOptionsParam1}
+                      onChange={handleComponentParam1Change}
+                      value={
+                        componentOptionsParam1.find((o) => o.value === selectedComponentParam1) ??
+                        null
+                      }
+                      isDisabled={isElse}
+                      isSearchable={false}
+                      error={errors.selectedComponentParam1 || ''}
+                      placeholder="Выберите компонент..."
+                      noOptionsMessage={() => 'Нет подходящих компонентов'}
+                    />
+                    <ParameterSelect
+                      containerClassName={twMerge('w-[209px]', isElse && 'opacity-50')}
+                      options={methodOptionsParam1}
+                      onChange={handleMethodParam1Change}
+                      value={
+                        methodOptionsParam1.find((o) => o.value === selectedMethodParam1) ?? null
+                      }
+                      isDisabled={isElse}
+                      isSearchable={false}
+                      error={errors.selectedMethodParam1 || ''}
+                      placeholder="Выберите атрибут..."
+                      noOptionsMessage={() => 'Нет подходящих атрибутов'}
+                    />
+                  </div>
+                ) : (
+                  // Старые условия с константой слева остаются редактируемыми без потери данных,
+                  // но переключить новый первый аргумент в константу больше нельзя.
+                  <TextField
+                    label=""
+                    containerClassName={twMerge(isElse && 'opacity-50')}
+                    disabled={isElse}
+                    placeholder="Напишите параметр"
+                    onChange={(e) => handleArgsParam1Change(e.target.value)}
+                    value={argsParam1 ?? ''}
+                    error={!!errors.argsParam1}
+                    errorMessage={errors.argsParam1 || ''}
+                  />
+                )}
               </div>
-              {isParamOneInput1 ? (
-                <div className="flex gap-2">
-                  <ParameterSelect
-                    containerClassName={twMerge('w-[209px]', isElse && 'opacity-50')}
-                    options={componentOptionsParam1}
-                    onChange={handleComponentParam1Change}
-                    value={
-                      componentOptionsParam1.find((o) => o.value === selectedComponentParam1) ??
-                      null
-                    }
-                    isDisabled={isElse}
-                    isSearchable={false}
-                    error={errors.selectedComponentParam1 || ''}
-                    placeholder="Выберите компонент..."
-                    noOptionsMessage={() => 'Нет подходящих компонентов'}
-                  />
-                  <ParameterSelect
-                    containerClassName={twMerge('w-[209px]', isElse && 'opacity-50')}
-                    options={methodOptionsParam1}
-                    onChange={handleMethodParam1Change}
-                    value={
-                      methodOptionsParam1.find((o) => o.value === selectedMethodParam1) ?? null
-                    }
-                    isDisabled={isElse}
-                    isSearchable={false}
-                    error={errors.selectedMethodParam1 || ''}
-                    placeholder="Выберите атрибут..."
-                    noOptionsMessage={() => 'Нет подходящих атрибутов'}
-                  />
-                </div>
-              ) : (
-                <TextField
-                  label=""
-                  containerClassName={twMerge(isElse && 'opacity-50')}
-                  disabled={isElse}
-                  placeholder="Напишите параметр"
-                  onChange={(e) => handleArgsParam1Change(e.target.value)}
-                  value={argsParam1 ?? ''}
-                  error={!!errors.argsParam1}
-                  errorMessage={errors.argsParam1 || ''}
-                />
-              )}
             </div>
 
             <ParameterSelect
@@ -307,6 +291,17 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
           </TabPanel>
         )}
       </div>
+
+      {visual && (
+        <div className="mt-2 flex flex-row">
+          <AttributeConstSwitch
+            hint="Если не выполняются другие условия для данного триггера"
+            checked={isElse}
+            onCheckedChange={handleElseChange}
+          />
+          <span className="ml-2">else</span>
+        </div>
+      )}
     </div>
   );
 });

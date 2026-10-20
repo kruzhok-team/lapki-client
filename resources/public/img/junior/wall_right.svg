@@ -1,1 +1,48 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 133.23 116.27"><defs><style>.cls-1{fill:#fff;}.cls-1,.cls-2{fill-rule:evenodd;}.cls-2{fill:#bf5a16;}</style></defs><g id="Слой_2" data-name="Слой 2"><g id="Layer_1" data-name="Layer 1"><polygon class="cls-1" points="27.25 13.67 40.87 37.54 54.49 61.42 34.26 61.42 34.26 101.28 20.23 101.28 20.23 61.42 0 61.42 13.62 37.54 27.25 13.67"/><path class="cls-2" d="M131.52,0a1.72,1.72,0,0,1,1.71,1.71V23.08a1.72,1.72,0,0,1-1.71,1.71H110.7A1.72,1.72,0,0,1,109,23.08V1.71A1.72,1.72,0,0,1,110.7,0Zm-.21,90.16a1.71,1.71,0,0,1,1.71,1.7v21.38a1.72,1.72,0,0,1-1.71,1.71H90.55a1.72,1.72,0,0,1-1.71-1.71V91.87a1.72,1.72,0,0,1,1.71-1.71ZM102.1,60.1a1.72,1.72,0,0,1,1.71,1.71V83.18a1.72,1.72,0,0,1-1.71,1.71H61.34a1.72,1.72,0,0,1-1.71-1.71V61.81a1.72,1.72,0,0,1,1.71-1.71Zm29.42,0a1.72,1.72,0,0,1,1.71,1.71V83.18a1.72,1.72,0,0,1-1.71,1.71H110.7A1.72,1.72,0,0,1,109,83.18V61.81a1.72,1.72,0,0,1,1.71-1.71Zm-.21-30A1.72,1.72,0,0,1,133,31.76V53.13a1.72,1.72,0,0,1-1.71,1.71H90.55a1.72,1.72,0,0,1-1.71-1.71V31.76a1.72,1.72,0,0,1,1.71-1.71ZM102.1,0a1.72,1.72,0,0,1,1.71,1.71V23.08a1.72,1.72,0,0,1-1.71,1.71H61.34a1.72,1.72,0,0,1-1.71-1.71V1.71A1.72,1.72,0,0,1,61.34,0Z"/><path class="cls-2" d="M82.2,31.37a1.72,1.72,0,0,1,1.71,1.71V54.45a1.72,1.72,0,0,1-1.71,1.71H61.38a1.72,1.72,0,0,1-1.71-1.71V33.08a1.72,1.72,0,0,1,1.71-1.71Z"/><path class="cls-2" d="M82.2,91.48a1.72,1.72,0,0,1,1.71,1.71v21.37a1.72,1.72,0,0,1-1.71,1.71H61.38a1.72,1.72,0,0,1-1.71-1.71V93.19a1.72,1.72,0,0,1,1.71-1.71Z"/></g></g></svg>
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Creator: CorelDRAW -->
+<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="14.8521mm" height="18.5mm" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd"
+viewBox="0 0 3583.7 4463.9"
+ xmlns:xlink="http://www.w3.org/1999/xlink"
+ xmlns:xodm="http://www.corel.com/coreldraw/odm/2003">
+ <defs>
+  <style type="text/css">
+   <![CDATA[
+    .str0 {stroke:#FEFEFE;stroke-width:48.3;stroke-miterlimit:22.9256}
+    .fil4 {fill:none}
+    .fil1 {fill:#A6D15C}
+    .fil3 {fill:#702F18;fill-rule:nonzero}
+    .fil2 {fill:#873D22;fill-rule:nonzero}
+    .fil0 {fill:#A6D15C;fill-rule:nonzero}
+   ]]>
+  </style>
+ </defs>
+ <g id="Слой_x0020_1">
+  <metadata id="CorelCorpID_0Corel-Layer"/>
+  <g id="_1974924940112">
+   <g>
+    <g>
+     <path class="fil0" d="M938.9 3404.7c0,133.2 -108.1,241.3 -241.3,241.3 -133.2,0 -241.3,-108.1 -241.3,-241.3l482.6 0zm0 -1806.7l0 1806.7 -482.6 0 0 -1806.7 482.6 0zm-241.3 -1234.4l625.4 1250.9 -1250.9 0 625.4 -1250.9zm-241.3 1234.4c0,-133.2 108.1,-241.3 241.3,-241.3 133.2,0 241.3,108.1 241.3,241.3l-482.6 0z"/>
+    </g>
+    <circle class="fil1" cx="697.6" cy="3404.7" r="697.6"/>
+   </g>
+   <g>
+    <polygon class="fil2" points="2036.3,0 3583.7,0 3583.7,4463.9 2036.3,4463.9 "/>
+    <polygon class="fil3" points="2036.3,0 1728.1,0 1728.1,4463.9 2036.3,4463.9 "/>
+    <g>
+     <line class="fil4 str0" x1="2036.3" y1="655.8" x2="3583.7" y2= "655.8" />
+     <line class="fil4 str0" x1="2036.3" y1="1443.9" x2="3583.7" y2= "1443.9" />
+     <line class="fil4 str0" x1="2036.3" y1="2231.9" x2="3583.7" y2= "2231.9" />
+     <line class="fil4 str0" x1="2036.3" y1="3020" x2="3583.7" y2= "3020" />
+     <line class="fil4 str0" x1="2036.3" y1="3808.1" x2="3583.7" y2= "3808.1" />
+     <line class="fil4 str0" x1="3183.8" y1="655.8" x2="3183.8" y2= "1443.9" />
+     <line class="fil4 str0" x1="2487.9" y1="1443.9" x2="2487.9" y2= "2231.9" />
+     <line class="fil4 str0" x1="2810" y1="2231.9" x2="2810" y2= "3020" />
+     <line class="fil4 str0" x1="3322.7" y1="3020" x2="3322.7" y2= "3808.1" />
+    </g>
+    <line class="fil4 str0" x1="2810" y1="0" x2="2810" y2= "655.8" />
+    <line class="fil4 str0" x1="2427.1" y1="3808.1" x2="2427.1" y2= "4463.9" />
+   </g>
+  </g>
+ </g>
+</svg>

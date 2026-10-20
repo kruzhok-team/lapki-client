@@ -49,6 +49,7 @@ export const StateMachineDeleteModal: React.FC<StateMachineDeleteModalProps> = (
       submitLabel="Удалить"
       onSubmit={handleSubmit}
       submitClassName="btn-secondary border-danger danger"
+      cancelClassName="hidden"
     >
       <p>
         Вы действительно хотите удалить машину состояний

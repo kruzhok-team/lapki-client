@@ -43,7 +43,7 @@ export const AddressBookRow: React.FC<AddressBookRowProps> = (props) => {
       >
         {data.name || 'Без названия'}
       </td>
-      <td className={twMerge(cellClassName, 'font-Fira-Mono')} title={data.address}>
+      <td className={twMerge(cellClassName, 'font-Inter break-all')} title={data.address}>
         {data.address}
       </td>
       <td
@@ -54,7 +54,7 @@ export const AddressBookRow: React.FC<AddressBookRowProps> = (props) => {
       </td>
       <td className="pl-3">
         <div
-          className="flex w-[66px] items-center gap-3"
+          className="flex w-[84px] items-center gap-3"
           onClick={(event) => event.stopPropagation()}
           onDoubleClick={(event) => event.stopPropagation()}
         >
@@ -63,11 +63,11 @@ export const AddressBookRow: React.FC<AddressBookRowProps> = (props) => {
               <button
                 {...hintProps}
                 type="button"
-                className="size-[14px] shrink-0 opacity-70 transition-opacity hover:opacity-100"
+                className="size-5 shrink-0 opacity-70 transition-opacity hover:opacity-100"
                 aria-label="Изменить запись"
                 onClick={onEdit}
               >
-                <EditIcon className="size-[14px]" />
+                <EditIcon className="size-5" />
               </button>
             )}
           </WithHint>
@@ -76,17 +76,17 @@ export const AddressBookRow: React.FC<AddressBookRowProps> = (props) => {
               <button
                 {...hintProps}
                 type="button"
-                className="size-[14px] shrink-0 opacity-70 transition-opacity hover:opacity-100"
+                className="size-5 shrink-0 opacity-70 transition-opacity hover:opacity-100"
                 aria-label="Показать метаданные"
                 onClick={onMetaData}
               >
-                <LensIcon className="size-[14px]" />
+                <LensIcon className="size-5" />
               </button>
             )}
           </WithHint>
           <WithHint hint="Удалить" placement="top">
             {(hintProps) => (
-              <span {...hintProps} className="size-[14px] shrink-0">
+              <span {...hintProps} className="flex size-5 shrink-0 items-center justify-center">
                 <DeleteButton aria-label="Удалить запись" onClick={onRemove} />
               </span>
             )}

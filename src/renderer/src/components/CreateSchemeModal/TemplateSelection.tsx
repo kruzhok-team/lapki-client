@@ -44,8 +44,9 @@ export const TemplateSelection: React.FC<TemplateSelectionProps> = ({
   return (
     <div className="grid w-[618px] grid-cols-[310px_284px] gap-x-6">
       <ScrollArea
-        className="h-[140px] rounded-lg border border-border-primary bg-bg-control"
-        viewportClassName="px-[8px]"
+        className="h-[148px] rounded-lg border border-border-primary bg-bg-control py-0"
+        viewportClassName="px-[8px] py-[8px]"
+        verticalOverflowViewportClassName="pr-0"
       >
         {Object.entries(templates).flatMap(([type, names]) =>
           names.map((name) => (
@@ -53,7 +54,7 @@ export const TemplateSelection: React.FC<TemplateSelectionProps> = ({
               key={`${type}-${name}`}
               type="button"
               className={twMerge(
-                'flex h-[25px] w-full cursor-pointer select-none items-center rounded-lg px-3 text-left leading-4 transition-colors hover:bg-bg-hover',
+                'flex w-full cursor-pointer select-none items-center rounded-lg px-3 py-[5px] text-left leading-4 transition-colors hover:bg-bg-hover',
                 isSelected(type, name) && 'bg-bg-active'
               )}
               onClick={() => setSelectedTemplate({ type, name })}

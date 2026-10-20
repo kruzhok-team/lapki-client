@@ -42,6 +42,7 @@ export const StateMachinesHierarchy: React.FC<StateMachinesHierarchyProps> = ({
             search={search}
             onChangeSearch={handleChangeSearch}
             disabled={headControllerId === ''}
+            fullWidth
           />
           <ScrollArea className="flex-1">
             {headControllerId === '' ? (

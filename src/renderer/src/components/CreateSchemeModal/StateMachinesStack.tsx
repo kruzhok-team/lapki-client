@@ -35,7 +35,7 @@ export const StateMachinesStack: React.FC<StateMachinesStackProps> = ({
           <div
             key={sm.id}
             className={twMerge(
-              'group flex cursor-pointer select-none items-center rounded-lg px-3 py-1.5 transition-colors hover:bg-bg-hover',
+              'group flex w-max min-w-full cursor-pointer select-none items-center rounded-lg px-3 py-1.5 transition-colors hover:bg-bg-hover',
               isSelected(index) && 'bg-bg-active'
             )}
             draggable

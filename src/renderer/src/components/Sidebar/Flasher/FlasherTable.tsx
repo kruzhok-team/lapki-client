@@ -341,7 +341,6 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
                 selectSmSubColumn,
                 '[&>div]:h-full [&>div>div]:!h-full [&>div>div]:!min-h-0 [&>div>div]:!rounded-none [&>div>div]:!border-0'
               )}
-              menuWidth="content"
               menuPosition="fixed"
               isSearchable={false}
               placeholder="Выберите..."

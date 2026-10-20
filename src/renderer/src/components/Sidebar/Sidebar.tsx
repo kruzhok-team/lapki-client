@@ -5,7 +5,7 @@ import { Resizable } from 're-resizable';
 import { Explorer } from './Explorer';
 
 export const Sidebar: React.FC = () => {
-  const [width, setWidth] = useState(212);
+  const [width, setWidth] = useState(232);
 
   return (
     <Resizable

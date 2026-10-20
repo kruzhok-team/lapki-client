@@ -13,23 +13,24 @@ import { Picto } from './Picto';
 
 import { MatrixWidget } from '../ActionsModal/MatrixWidget';
 
-interface ActionProps {
+interface ActionSummaryProps {
   smId: string;
+  data: ActionData & { componentName: string };
+}
+
+interface ActionProps extends ActionSummaryProps {
   isSelected: boolean;
   onSelect: () => void;
   onChange: () => void;
   onDragStart: () => void;
   onDrop: () => void;
   onDelete?: () => void;
-  data: ActionData & { componentName: string };
 }
 
 /**
  * Отображает одно действие в блоке действий
  */
-export const Action: React.FC<ActionProps> = (props) => {
-  const { smId, isSelected, onSelect, onChange, onDragStart, onDrop, data, onDelete } = props;
-
+export const ActionSummary: React.FC<ActionSummaryProps> = ({ smId, data }) => {
   const modelController = useModelContext();
   const headControllerId = modelController.model.useData('', 'headControllerId');
   const components = modelController.model.useData(smId, 'elements.components') as {
@@ -62,16 +63,99 @@ export const Action: React.FC<ActionProps> = (props) => {
     return method;
   };
 
-  const handleDoubleClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onChange();
-  };
-
   const sortedParameters = useMemo(() => {
     if (!data.args) return [];
 
     return Object.entries(data.args).sort(([, param], [, param2]) => param.order - param2.order);
   }, [data.args]);
+
+  return (
+    <>
+      <Picto
+        leftIcon={platform ? platform.getFullComponentIcon(data.component, 'h-5 w-5') : 'unknown'}
+        rightIcon={
+          platform ? platform.getActionIconUrl(data.component, data.method, true) : 'unknown'
+        }
+      />
+      <div className="flex w-full flex-row flex-nowrap items-center">
+        <div>{data.componentName}.</div>
+        <div>{getMethod(data.component, data.method)}</div>
+        <div>(</div>
+        <div className="flex items-center gap-[2px]">
+          {sortedParameters.map(([id, value], index) => {
+            const protoComponent =
+              platform.data.components[platform.resolveComponentType(data.component)];
+            if (!protoComponent) {
+              return <>{serializeParameter(index, value.value)}</>;
+            }
+            const protoMethod = protoComponent.methods[data.method];
+            const protoParameters = protoMethod.parameters;
+
+            if (!protoParameters) return <>{serializeParameter(index, value.value)}</>;
+
+            const parameter = protoParameters.find((param) => param.name === id);
+
+            if (!parameter || !parameter.type) return <>{serializeParameter(index, value.value)}</>;
+
+            if (typeof parameter.type === 'string' && isMatrix(parameter.type)) {
+              const dimensions = getMatrixDimensions(parameter.type);
+
+              if (Array.isArray(value.value) && typeof value.value[0][0] === 'number') {
+                return (
+                  <>
+                    {index !== 0 && ', '}
+                    <MatrixWidget
+                      key={`${smId}-${dimensions.width}-${dimensions.height}`}
+                      width={dimensions.width}
+                      height={dimensions.height}
+                      values={value.value}
+                      isClickable={false}
+                      onChange={() => undefined}
+                      style={{
+                        ledWidth: 2,
+                        ledHeight: 2,
+                        margin: 0,
+                        border: 1,
+                        isRounded: false,
+                      }}
+                      range={parameter.range ?? getDefaultRange()}
+                      isHalf={false}
+                    />
+                  </>
+                );
+              }
+            }
+
+            if (
+              Array.isArray(parameter.type) &&
+              Array.isArray(parameter.valueAlias) &&
+              parameter.valueAlias.length === parameter.type.length
+            ) {
+              // Где находится элемент в списке выбора
+              const valueIndex = parameter.type.findIndex((option) => value.value === option);
+              if (valueIndex !== -1) {
+                return (
+                  <>{serializeParameter(index, parameter.valueAlias[valueIndex] ?? value.value)}</>
+                );
+              }
+            }
+            return <>{serializeParameter(index, value.value)}</>;
+          })}
+        </div>
+        <div>)</div>
+      </div>
+    </>
+  );
+};
+
+/** Отображает одно действие в обычном (не inline) списке. */
+export const Action: React.FC<ActionProps> = (props) => {
+  const { smId, isSelected, onSelect, onChange, onDragStart, onDrop, data, onDelete } = props;
+
+  const handleDoubleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onChange();
+  };
 
   return (
     <div
@@ -87,86 +171,8 @@ export const Action: React.FC<ActionProps> = (props) => {
       onDoubleClick={handleDoubleClick}
     >
       <div className="flex w-full items-center gap-2">
-        <Picto
-          leftIcon={platform ? platform.getFullComponentIcon(data.component, 'h-5 w-5') : 'unknown'}
-          rightIcon={
-            platform ? platform.getActionIconUrl(data.component, data.method, true) : 'unknown'
-          }
-        />
-        <div className="flex w-full flex-row flex-nowrap items-center">
-          <div>{data.componentName}.</div>
-          <div>{getMethod(data.component, data.method)}</div>
-          <div>(</div>
-          <div className="flex items-center gap-[2px]">
-            {sortedParameters.map(([id, value], index) => {
-              const protoComponent =
-                platform.data.components[platform.resolveComponentType(data.component)];
-              if (!protoComponent) {
-                return <>{serializeParameter(index, value.value)}</>;
-              }
-              const protoMethod = protoComponent.methods[data.method];
-              const protoParameters = protoMethod.parameters;
-
-              if (!protoParameters) return <>{serializeParameter(index, value.value)}</>;
-
-              const parameter = protoParameters.find((param) => param.name === id);
-
-              if (!parameter || !parameter.type)
-                return <>{serializeParameter(index, value.value)}</>;
-
-              if (typeof parameter.type === 'string' && isMatrix(parameter.type)) {
-                const dimensions = getMatrixDimensions(parameter.type);
-
-                if (Array.isArray(value.value) && typeof value.value[0][0] === 'number') {
-                  return (
-                    <>
-                      {index !== 0 && ', '}
-                      <MatrixWidget
-                        key={`${smId}-${dimensions.width}-${dimensions.height}`}
-                        width={dimensions.width}
-                        height={dimensions.height}
-                        values={value.value}
-                        isClickable={false}
-                        onChange={() => undefined}
-                        style={{
-                          ledWidth: 2,
-                          ledHeight: 2,
-                          margin: 0,
-                          border: 1,
-                          isRounded: false,
-                        }}
-                        range={parameter.range ?? getDefaultRange()}
-                        isHalf={false}
-                      />
-                    </>
-                  );
-                }
-              }
-
-              if (
-                Array.isArray(parameter.type) &&
-                Array.isArray(parameter.valueAlias) &&
-                parameter.valueAlias.length === parameter.type.length
-              ) {
-                // Где находится элемент в списке выбора
-                const valueIndex = parameter.type.findIndex((option) => value.value === option);
-                if (valueIndex !== -1) {
-                  return (
-                    <>
-                      {serializeParameter(index, parameter.valueAlias[valueIndex] ?? value.value)}
-                    </>
-                  );
-                }
-              }
-              return <>{serializeParameter(index, value.value)}</>;
-            })}
-          </div>
-          <div>)</div>
-        </div>
-
-        {onDelete && (
-          <DeleteButton onClick={onDelete} className={twMerge('p-2', !onDelete && 'hidden')} />
-        )}
+        <ActionSummary smId={smId} data={data} />
+        {onDelete && <DeleteButton onClick={onDelete} className="p-2" />}
       </div>
     </div>
   );

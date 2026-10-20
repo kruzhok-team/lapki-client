@@ -203,7 +203,6 @@ export const PropertiesModal: React.FC<PropertiesModalProps> = ({
         options={stateMachineOptions}
         onChange={(option) => setSelectedSm(option?.value ?? '')}
         value={stateMachineOptions.find((option) => option.value === selectedSm) ?? null}
-        menuWidth="content"
         isSearchable={false}
         noOptionsMessage={() => 'Нет машин состояний'}
       />

@@ -31,6 +31,9 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
   addressEnrtyEdit,
   openAddressEnrtyAdd,
 }) => {
+  const longestAddressLength =
+    addressBookSetting?.reduce((longest, entry) => Math.max(longest, entry.address.length), 0) ?? 0;
+  const modalWidth = `max(820px, calc(${longestAddressLength + 2}ch + 500px))`;
   const [selectedEntry, setSelectedEntry] = useState<number>();
   const [metaDataEntry, setMetaDataEntry] = useState<AddressData>();
   const [isMetaDataOpen, openMetaData, closeMetaData] = useModal(false);
@@ -69,6 +72,12 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
         isOpen={isOpen}
         onRequestClose={handleClose}
         title="Адресная книга"
+        style={{
+          content: {
+            width: modalWidth,
+            maxWidth: 'calc(100vw - 48px)',
+          },
+        }}
         onSubmit={handleSubmit}
         submitDisabled={selectedEntry === undefined}
         submitLabel="Добавить"
@@ -89,7 +98,12 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
             </WithHint>
           </div>
 
-          <ScrollArea className="min-h-0 flex-1 py-0" viewportClassName="mr-[6px]" role="listbox">
+          <ScrollArea
+            className="min-h-0 flex-1 py-0"
+            viewportClassName="mr-[6px]"
+            horizontalScroll={false}
+            role="listbox"
+          >
             {addressBookSetting === null ? (
               <p className="px-3 py-2 text-text-inactive">Адресная книга не загрузилась</p>
             ) : addressBookSetting.length === 0 ? (
@@ -98,9 +112,9 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
               <table className="w-full table-fixed border-separate border-spacing-0">
                 <colgroup>
                   <col />
-                  <col className="w-40" />
+                  <col style={{ width: `${longestAddressLength + 2}ch` }} />
                   <col />
-                  <col className="w-[78px]" />
+                  <col className="w-[96px]" />
                 </colgroup>
                 <thead className="sticky top-0 z-10 font-medium">
                   <tr>

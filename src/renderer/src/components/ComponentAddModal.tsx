@@ -74,24 +74,29 @@ export const ComponentAddModal: React.FC<ComponentAddModalProps> = ({
       submitLabel="Добавить"
       onSubmit={handleSubmit}
       submitDisabled={!cursor}
-      className="top-[18px] box-border flex h-[704px] max-h-[calc(100vh-36px)] w-[calc(100%-40px)] max-w-[640px] flex-col p-6"
+      className="top-[18px] box-border flex h-[544px] max-h-[calc(100vh-36px)] w-[calc(100%-40px)] max-w-[640px] flex-col p-6"
       formClassName="flex min-h-0 flex-1 flex-col"
       contentClassName="mb-0 min-h-0 flex-1"
       actionsClassName="mt-auto"
       submitClassName="btn-primary h-8 min-w-[82px] px-3 py-1.5"
       hideCancelButton
     >
-      <div className="grid h-full grid-cols-[254px_minmax(0,1fr)] gap-6">
-        <ScrollArea className="h-full">
+      <div className="grid h-full grid-cols-[254px_minmax(0,1fr)] gap-[6px]">
+        <ScrollArea
+          className="h-full py-0"
+          viewportClassName="px-[8px] py-[8px]"
+          verticalOverflowViewportClassName="pr-0"
+        >
           {vacantComponents.map((entry) => (
             <button
               type="button"
               key={entry.idx}
               className={twMerge(
-                'flex h-[42px] w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-[#E6F4FF]',
-                entry.idx === cursor?.idx && 'bg-[#E6F4FF]'
+                'flex h-[42px] w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-bg-hover',
+                entry.idx === cursor?.idx && 'bg-bg-active'
               )}
               onClick={() => onCompClick(entry)}
+              title={entry.name}
             >
               <img
                 className="h-[25px] w-[25px] shrink-0 object-contain"

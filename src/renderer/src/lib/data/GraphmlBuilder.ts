@@ -31,13 +31,13 @@ import {
   InitialState,
   FinalState,
   Note,
+  ChoiceState,
 } from '@renderer/types/diagram';
 import { Platform } from '@renderer/types/platform';
 import { buildMatrix, isString } from '@renderer/utils';
 
 import { isDefaultComponent, convertDefaultComponent } from './ElementsValidator';
 
-import { ChoiceState } from '../drawable';
 import { Point } from '../types';
 
 function exportMeta(visual: boolean, meta: Meta, platform: Platform): CGMLMeta {
@@ -83,9 +83,10 @@ function serializeArgs(
     if (isVariable(argValue)) {
       const trimmedComponentName = argValue.component.trim();
       const component = components[trimmedComponentName];
-      arg.value = `${argValue.component}${getActionDelimeter(platform, component.type)}${
-        argValue.method
-      }`;
+      arg.value = `${argValue.component}${getActionDelimeter(
+        platform,
+        component?.type ?? trimmedComponentName
+      )}${argValue.method}`;
     } else if (Array.isArray(argValue) && Array.isArray(argValue[0])) {
       arg.value = buildMatrix({
         values: argValue,
@@ -117,13 +118,11 @@ export function serializeEvent(
     return convertDefaultComponent(trigger.component, trigger.method);
   }
 
-  const componentName =
-    useName && components[trigger.component].name
-      ? components[trigger.component].name
-      : trigger.component;
-  const protoComponent = platform.components[components[trigger.component].type];
-  const protoSignal = protoComponent.signals[trigger.method];
-  const methodName = useName && protoSignal.alias ? protoSignal.alias : trigger.method;
+  const component = components[trigger.component];
+  const componentName = useName && component?.name ? component.name : trigger.component;
+  const protoComponent = platform.components[component?.type ?? trigger.component];
+  const protoSignal = protoComponent?.signals[trigger.method];
+  const methodName = useName && protoSignal?.alias ? protoSignal.alias : trigger.method;
   if (trigger.args === undefined || Object.keys(trigger.args).length === 0) {
     return `${componentName}.${methodName}`;
   } else {
@@ -133,7 +132,7 @@ export function serializeEvent(
 
 export function getActionDelimeter(platform: Platform, componentType: string): string {
   const platformComponent = platform.components[componentType];
-  return platformComponent.singletone || platform.staticComponents
+  return platformComponent?.singletone || platform.staticComponents
     ? platform.staticActionDelimeter
     : '.';
 }
@@ -154,8 +153,7 @@ export function serializeActions(
 
   for (const action of actions) {
     const component = components[action.component];
-    const platformComponent = platform.components[component.type];
-    const actionDelimeter = platformComponent.singletone ? platform.staticActionDelimeter : '.';
+    const actionDelimeter = getActionDelimeter(platform, component?.type ?? action.component);
     serialized += `${action.component}${actionDelimeter}${action.method}(${serializeArgs(
       components,
       platform,
@@ -279,10 +277,11 @@ function getOperand(
   }
   if (isVariable(operand)) {
     const component = components[operand.component];
-    const protoComponent = platform.components[component.type];
-    const protoVariable = protoComponent.variables[operand.method];
-    return `${operand.component}${getActionDelimeter(platform, component.type)}${
-      protoVariable.alias && useAlias ? protoVariable.alias : operand.method
+    const componentType = component?.type ?? operand.component;
+    const protoComponent = platform.components[componentType];
+    const protoVariable = protoComponent?.variables[operand.method];
+    return `${operand.component}${getActionDelimeter(platform, componentType)}${
+      protoVariable?.alias && useAlias ? protoVariable.alias : operand.method
     }`;
   }
   return operand;

@@ -101,8 +101,9 @@ export const OpenRecentModal: React.FC<OpenRecentModalProps> = ({
   const renderFileList = () => (
     <div className="grid grid-cols-[274px_minmax(0,1fr)] gap-6">
       <ScrollArea
-        className="h-[190px] rounded-lg border border-border-primary"
-        viewportClassName="p-1.5"
+        className="h-[190px] rounded-lg border border-border-primary py-0"
+        viewportClassName="px-[8px] py-[8px]"
+        verticalOverflowViewportClassName="pr-0"
       >
         {recentFiles.map((file, idx) => (
           <button

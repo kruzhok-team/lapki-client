@@ -1,75 +1,39 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg
-   viewBox="0 0 39.69 40.08"
-   version="1.1"
-   id="svg4"
-   sodipodi:docname="flower.svg"
-   inkscape:version="1.3 (0e150ed6c4, 2023-07-21)"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:svg="http://www.w3.org/2000/svg">
-  <sodipodi:namedview
-     id="namedview4"
-     pagecolor="#505050"
-     bordercolor="#eeeeee"
-     borderopacity="1"
-     inkscape:showpageshadow="0"
-     inkscape:pageopacity="0"
-     inkscape:pagecheckerboard="0"
-     inkscape:deskcolor="#505050"
-     inkscape:zoom="7.4288919"
-     inkscape:cx="-17.095416"
-     inkscape:cy="33.45048"
-     inkscape:window-width="2560"
-     inkscape:window-height="1387"
-     inkscape:window-x="-8"
-     inkscape:window-y="-8"
-     inkscape:window-maximized="1"
-     inkscape:current-layer="Слой_1-2" />
-  <defs
-     id="defs1">
-    <style
-       id="style1">.cls-1{fill:#9bcb64;}.cls-2{fill:#fff;}</style>
-  </defs>
-  <g
-     id="Слой_1-2"
-     data-name="Слой 1">
-    <path
-       d="m 25.37,0.8 a 20,20 0 0 1 14.32,18.38 v 1.75 a 20.09,20.09 0 0 1 -6,13.48 19.74,19.74 0 0 1 -13,5.67 H 19.05 A 19.44,19.44 0 0 1 10.83,37.91 20.15,20.15 0 0 1 0,20.53 V 19.64 A 20,20 0 0 1 19.33,0 h 1 a 20.1,20.1 0 0 1 5.07,0.8 z"
-       id="path1"
-       style="fill:#9bcb64;fill-opacity:0.72156864" />
-    <g
-       id="g2"
-       transform="matrix(0.34136982,0,0,0.34136982,-10.878284,-19.280593)">
-      <!-- Стебель -->
-      <path
-         d="m 90,110 c -2,20 -2,40 0,60"
-         stroke="#2e7d32"
-         stroke-width="5"
-         fill="none"
-         id="path1-3"
-         style="stroke:#bfbfbf;stroke-opacity:1;fill:#000000;fill-opacity:0" />
-      <!-- Большой лист вправо -->
-      <ellipse
-         cx="110"
-         cy="120"
-         rx="25"
-         ry="12"
-         fill="#43a047"
-         transform="rotate(-20,110,120)"
-         id="ellipse1"
-         style="fill:#ffffff;fill-opacity:1" />
-      <!-- Большой лист влево -->
-      <ellipse
-         cx="70"
-         cy="120"
-         rx="25"
-         ry="12"
-         fill="#43a047"
-         transform="rotate(20,70,120)"
-         id="ellipse2"
-         style="fill:#ffffff;fill-opacity:1" />
-    </g>
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Creator: CorelDRAW -->
+<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="18.5mm" height="18.8117mm" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd"
+viewBox="0 0 5220.9 5308.9"
+ xmlns:xlink="http://www.w3.org/1999/xlink"
+ xmlns:xodm="http://www.corel.com/coreldraw/odm/2003">
+ <defs>
+  <style type="text/css">
+   <![CDATA[
+    .str1 {stroke:#41D17E;stroke-width:282.2;stroke-linejoin:round;stroke-miterlimit:22.9256}
+    .str2 {stroke:#6CDB9B;stroke-width:282.2;stroke-linejoin:round;stroke-miterlimit:22.9256}
+    .str0 {stroke:#2ECC71;stroke-width:448;stroke-linecap:round;stroke-miterlimit:22.9256}
+    .str3 {stroke:#2ECC71;stroke-width:597.4;stroke-linecap:round;stroke-miterlimit:22.9256}
+    .str4 {stroke:#DB2D28;stroke-width:597.4;stroke-linecap:round;stroke-miterlimit:22.9256}
+    .fil1 {fill:none}
+    .fil5 {fill:none;fill-rule:nonzero}
+    .fil0 {fill:#FBD8D9;fill-rule:nonzero}
+    .fil4 {fill:#1ABC9C;fill-rule:nonzero}
+    .fil2 {fill:#41D17E;fill-rule:nonzero}
+    .fil3 {fill:#6CDB9B;fill-rule:nonzero}
+   ]]>
+  </style>
+ </defs>
+ <g id="Слой_x0020_1">
+  <metadata id="CorelCorpID_0Corel-Layer"/>
+  <g id="_1973351724560">
+   <polygon class="fil0" points="1566.3,166.4 3654.6,166.4 5220.9,5143.9 -0,5143.9 "/>
+   <g>
+    <line class="fil1 str0" x1="892.6" y1="5064.1" x2="4328.3" y2= "5064.1" />
+    <polygon class="fil2 str1" points="2453.6,4428.6 1478.9,3778.8 1966.2,3453.9 2453.6,3941.2 "/>
+    <polygon class="fil3 str2" points="2782.1,4017.5 3573.7,3489.7 3177.9,3225.9 2782.1,3621.7 "/>
+    <line class="fil1 str3" x1="2610.4" y1="5010.2" x2="2610.4" y2= "2648.1" />
+    <polygon class="fil4" points="2610.4,1277.8 3511.5,2357.7 2610.4,3077.6 1709.4,2357.7 "/>
+   </g>
+   <line class="fil5 str4" x1="1690.7" y1="298.7" x2="3530.2" y2= "298.7" />
   </g>
+ </g>
 </svg>

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { ComponentAddModal } from '@renderer/components/ComponentAddModal';
 import { ComponentDeleteModal } from '@renderer/components/ComponentDeleteModal';
@@ -51,6 +51,18 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
 
   const [dragName, setDragName] = useState<string | null>(null);
   const [selectedComponent, setSelectedComponent] = useState<string | null>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const clearSelectionOutsideList = (event: MouseEvent) => {
+      if (event.target instanceof Node && !listRef.current?.contains(event.target)) {
+        setSelectedComponent(null);
+      }
+    };
+
+    document.addEventListener('mousedown', clearSelectionOutsideList);
+    return () => document.removeEventListener('mousedown', clearSelectionOutsideList);
+  }, []);
 
   const onDropComponent = (name: string) => {
     if (!dragName) return;
@@ -73,7 +85,7 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
   }, [sortedComponents.length]);
 
   return (
-    <div key={smId} className="flex h-full min-h-0 flex-col">
+    <div ref={listRef} key={smId} className="flex h-full min-h-0 flex-col">
       <PanelHeader
         title="Компоненты"
         isCollapsed={isCollapsed}
@@ -106,7 +118,7 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
                       platform[smId] !== undefined
                         ? platform[smId].getFullComponentIcon(
                             id,
-                            'size-[26px] [&>p]:bottom-0 [&>p]:right-0 [&>p]:text-[8px] [&>p]:leading-[9px]'
+                            'size-[26px] [&>p]:bottom-0 [&>p]:right-0 [&>p]:text-[14px] [&>p]:leading-[14px]'
                           )
                         : undefined
                     }

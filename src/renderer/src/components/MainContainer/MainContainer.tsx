@@ -32,6 +32,7 @@ import {
 } from '@renderer/lib/data/PlatformLoader';
 import { preloadPicto } from '@renderer/lib/drawable';
 import { useModelContext } from '@renderer/store/ModelContext';
+import { useDoc } from '@renderer/store/useDoc';
 import { useManagerMS } from '@renderer/store/useManagerMS';
 import { useTasks } from '@renderer/store/useTasks';
 import { useWorkspace } from '@renderer/store/useWorkspace';
@@ -39,6 +40,10 @@ import { useWorkspace } from '@renderer/store/useWorkspace';
 import { StartScreen } from './StartScreen';
 
 import type { TaskCatalog } from '../../../../common/tasks';
+import {
+  getRightSidebarOffset,
+  RIGHT_SIDEBAR_DEFAULT_WIDTH,
+} from '../Documentation/rightSidebarLayout';
 import { CompilerConnection } from '../Modules/CompilerConnection';
 import { RestoreDataModal } from '../RestoreDataModal';
 
@@ -54,7 +59,8 @@ export const MainContainer: React.FC = () => {
   const isStale = modelController.model.useData('', 'isStale');
   const isInitialized = modelController.model.useData('', 'isInitialized');
   const basename = modelController.model.useData('', 'basename');
-  const [docWidth, setDocWidth] = useState<number>(0);
+  const [docWidth, setDocWidth] = useState<number>(RIGHT_SIDEBAR_DEFAULT_WIDTH);
+  const isRightSidebarOpen = useDoc((state) => state.isOpen);
   const workspace = useWorkspace((state) => state.activeWorkspace);
   const closeAllWindows = useWindowManagerStore((state) => state.closeAllWindows);
   const [setTaskCatalog, submissionActive] = useTasks((state) => [
@@ -269,7 +275,9 @@ export const MainContainer: React.FC = () => {
               'absolute top-[25px] h-[calc(100%_-_25px)]',
               isMounted && 'top-[69.19px] h-[calc(100%_-_69.19px)]'
             )}
-            style={{ right: `${docWidth}px` }}
+            style={{
+              right: `${getRightSidebarOffset(isRightSidebarOpen, docWidth)}px`,
+            }}
           >
             <EditorSettings />
           </div>

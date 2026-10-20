@@ -311,7 +311,7 @@ export const CompilerTab: React.FC = () => {
         </div>
         <div
           className={twMerge(
-            'h-0 min-h-0 flex-1 rounded-lg border border-border-primary bg-bg-primary font-Fira text-xs leading-4',
+            'h-0 min-h-0 flex-1 rounded-lg border border-border-primary bg-bg-primary font-Inter text-xs leading-4',
             activeSourceTab ? 'overflow-hidden' : 'overflow-auto'
           )}
         >

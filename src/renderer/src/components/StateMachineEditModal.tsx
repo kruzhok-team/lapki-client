@@ -98,14 +98,14 @@ export const StateMachineEditModal: React.FC<StateMachineEditModalProps> = ({
       middleClassName="btn-secondary border-primary text-primary"
       hideCancelButton
     >
-      <div className="flex flex-col gap-3">
+      <div className="grid grid-cols-[max-content,minmax(0,1fr)] gap-x-3 gap-y-3">
         <Controller
           name="name"
           control={control}
           render={({ field: { onChange, value } }) => (
             <ComponentFormFieldLabel
               label="Название"
-              labelClassName="w-[72px]"
+              sharedGrid
               placeholder={isCreateMode ? 'Введите название' : 'Введите название...'}
               onChange={onChange}
               value={value ?? ''}
@@ -117,11 +117,7 @@ export const StateMachineEditModal: React.FC<StateMachineEditModalProps> = ({
           name="platform"
           control={control}
           render={({ field: { onChange, value } }) => (
-            <ComponentFormFieldLabel
-              label="Платформа"
-              labelClassName="w-[72px]"
-              error={errors.platform?.message}
-            >
+            <ComponentFormFieldLabel label="Платформа" sharedGrid error={errors.platform?.message}>
               <ParameterSelect
                 className={twMerge('w-full', selectorDisable && 'opacity-60')}
                 isSearchable={false}

@@ -51,21 +51,21 @@ export const ExecutionHistory: React.FC<ExecutionHistoryProps> = ({
               {isPlaying ? 'Пауза' : 'Воспроизвести'}
             </button>
           </div>
-          <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2">
+          <div className="grid grid-cols-2 gap-2">
+            <span className="col-span-2 text-center">
+              Шаг {hasSteps ? historyIndex + 1 : 0} / {steps.length}
+            </span>
             <button
               type="button"
-              className={twMerge(buttonClassName, 'min-w-0 px-2')}
+              className={twMerge(buttonClassName, 'px-2')}
               disabled={!hasSteps || historyIndex === 0}
               onClick={() => onSelectStep(historyIndex - 1)}
             >
               Назад
             </button>
-            <span className="whitespace-nowrap text-center">
-              Шаг {hasSteps ? historyIndex + 1 : 0} / {steps.length}
-            </span>
             <button
               type="button"
-              className={twMerge(buttonClassName, 'min-w-0 px-2')}
+              className={twMerge(buttonClassName, 'px-2')}
               disabled={!hasSteps || historyIndex === steps.length - 1}
               onClick={() => onSelectStep(historyIndex + 1)}
             >

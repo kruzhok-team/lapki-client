@@ -322,7 +322,6 @@ export const SerialMonitorTab: React.FC<SerialMonitorTabProps> = ({
 
         <span>Бод:</span>
         <ParameterSelect
-          menuWidth="content"
           containerClassName="w-24"
           value={makeOption(monitorSetting.baudRate)}
           onChange={(option) => {
@@ -400,7 +399,6 @@ export const SerialMonitorTab: React.FC<SerialMonitorTabProps> = ({
           )}
         </WithHint>
         <ParameterSelect
-          menuWidth="content"
           containerClassName="w-24 shrink-0"
           value={TextModeOptions[monitorSetting.textMode]}
           onChange={(option) => {
@@ -411,7 +409,6 @@ export const SerialMonitorTab: React.FC<SerialMonitorTabProps> = ({
           options={[TextModeOptions.text, TextModeOptions.hex]}
         />
         <ParameterSelect
-          menuWidth="content"
           containerClassName="w-24 shrink-0"
           value={LineBreakOptions[monitorSetting.lineBreak]}
           onChange={(option) => {

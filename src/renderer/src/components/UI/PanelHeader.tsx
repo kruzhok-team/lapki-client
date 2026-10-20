@@ -25,7 +25,7 @@ export const PanelHeader: React.FC<PanelHeaderProps> = ({
             isCollapsed() ? '-rotate-90 transition-transform' : 'rotate-0 transition-transform'
           }
         />
-        <h3 className="ml-[9px] text-xs font-medium">{title}</h3>
+        <h3 className="ml-[9px] whitespace-nowrap text-xs font-medium">{title}</h3>
       </button>
       {requestAddAction && <AddButton disabled={isAddDisabled} onClick={requestAddAction} />}
     </div>

@@ -101,7 +101,7 @@ export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (prop
       submitClassName="btn-primary h-8 min-w-0 px-3 py-1.5"
       hideCancelButton
     >
-      <div className="flex flex-col gap-4">
+      <div className="grid grid-cols-[max-content,minmax(0,1fr)] gap-x-3 gap-y-4">
         <Controller
           control={control}
           name="name"
@@ -109,6 +109,7 @@ export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (prop
             return (
               <ComponentFormFieldLabel
                 label="Название:"
+                sharedGrid
                 placeholder="Введите название..."
                 hint="Человекочитаемое название, которое будет отображаться в интерфейсе вместо адреса."
                 value={value}
@@ -125,6 +126,7 @@ export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (prop
             return (
               <ComponentFormFieldLabel
                 label="Адрес:"
+                sharedGrid
                 placeholder="Введите адрес..."
                 hint="Адрес платы МС-ТЮК. Это значение нельзя изменить после сохранения!"
                 value={value}
@@ -148,6 +150,7 @@ export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (prop
               return (
                 <ComponentFormFieldLabel
                   label={label}
+                  sharedGrid
                   hint={hint}
                   value={value}
                   disabled={true}
@@ -172,10 +175,9 @@ export const AddressEntryEditModal: React.FC<AddressEntryEditModalProps> = (prop
                   })
               );
               return (
-                <ComponentFormFieldLabel label={label} hint={hint} as="div">
+                <ComponentFormFieldLabel label={label} hint={hint} sharedGrid as="div">
                   <ParameterSelect
                     containerClassName="w-full"
-                    menuWidth="content"
                     placeholder={'Выберите тип платы'}
                     onChange={(v) => onChange(v?.value ?? '')}
                     options={typeOptions}

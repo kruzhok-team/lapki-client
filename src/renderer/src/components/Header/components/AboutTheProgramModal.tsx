@@ -43,7 +43,7 @@ export const AboutTheProgramModal: React.FC<AboutTheProgramModalProps> = ({
       id="about-the-program"
       onRequestClose={onClose}
       title="О программе"
-      className="w-[454px]"
+      className="w-[454px] [&>.content]:overflow-hidden"
       hideCancelButton
     >
       <div className="text-xs leading-[15px]">

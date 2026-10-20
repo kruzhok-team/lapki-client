@@ -3,6 +3,7 @@ import * as TWEEN from '@tweenjs/tween.js';
 import { Canvas, EditorView, Keyboard, Mouse } from '@renderer/lib/basic';
 import { Render } from '@renderer/lib/common';
 import { preloadPicto } from '@renderer/lib/drawable';
+import { clearTextMeasurements } from '@renderer/lib/utils/text';
 
 import { CanvasController } from './data/ModelController/CanvasController';
 
@@ -113,7 +114,19 @@ export class CanvasEditor {
     this.controller.transitions.initEvents();
     this.controller.initializer.init();
     this.controller.watchDrawable();
+
+    document.fonts.addEventListener('loadingdone', this.handleFontsLoaded);
+    void document.fonts.ready.then(this.handleFontsLoaded);
   }
+
+  private handleFontsLoaded = () => {
+    if (!this._canvas) return;
+
+    // Measurements made before loading used the fallback font, including cached widths.
+    clearTextMeasurements();
+    this.controller.notes.forEach((note) => note.prepareText());
+    this.view.isDirty = true;
+  };
 
   setSettings(settings: CanvasEditorSettings) {
     this.settings = settings;
@@ -124,6 +137,7 @@ export class CanvasEditor {
   }
 
   unmount() {
+    document.fonts.removeEventListener('loadingdone', this.handleFontsLoaded);
     this.view.removeEvents();
     this.controller.unwatchDrawable();
 

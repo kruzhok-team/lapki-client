@@ -41,13 +41,13 @@ export const ComponentFormFieldLabel: React.FC<ComponentFormFieldLabelProps> = (
       >
         <div
           className={twMerge(
-            'flex w-20 items-center gap-1',
+            'flex w-20 items-center gap-2',
             sharedGrid && 'w-auto',
             labelClassName
           )}
         >
           {leadingContent}
-          <span className="self-center">{label}</span>
+          <span className="self-center text-medium">{label}</span>
           {hint && (
             <WithHint hint={hint}>
               {(props) => (

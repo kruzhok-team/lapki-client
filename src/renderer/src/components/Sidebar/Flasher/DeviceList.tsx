@@ -113,8 +113,9 @@ export const DeviceList: React.FC<DeviceListProps> = ({
               </button>
             </div>
             <ScrollArea
-              className="h-[140px] rounded-lg border border-border-primary bg-bg-control"
-              viewportClassName="px-[8px]"
+              className="h-[140px] rounded-lg border border-border-primary bg-bg-control py-0"
+              viewportClassName="px-[8px] py-[8px]"
+              verticalOverflowViewportClassName="pr-0"
               horizontalScroll={false}
             >
               {devices.size === 0 ? (

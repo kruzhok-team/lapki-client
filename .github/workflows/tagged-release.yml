@@ -56,7 +56,10 @@ jobs:
 
       - run: npm ci
       - run: npm run build
+      # Hard links fail with EEXIST while electron-builder copies unpacked resources.
       - run: npm run bundle:mac
+        env:
+          USE_HARD_LINKS: 'false'
 
       - name: Extract asset name
         id: extract_asset_name

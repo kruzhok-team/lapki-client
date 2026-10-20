@@ -272,8 +272,8 @@ export class Picto {
   eventWidth = 100;
   PARAMETERS_WINDOW_HEIGHT = 18;
   eventHeight = this.pictoHeight + this.PARAMETERS_WINDOW_HEIGHT;
-  MATRIX_LED_WIDTH = 5;
-  MATRIX_LED_HEIGHT = 5;
+  MATRIX_LED_WIDTH = 10 / 3;
+  MATRIX_LED_HEIGHT = 10 / 3;
   TEXT_FONT = 'px/0 monospace';
   PICTO_OFFSET_X = 15;
   PICTO_OFFSET_Y = 10;

@@ -60,4 +60,29 @@ describe('loadTaskCatalog', () => {
     expect(catalog.tasks).toHaveLength(1);
     expect(catalog.diagnostics[0].file).toBe('invalid.task.json');
   });
+
+  it('loads illustrated Gardener tasks from the bundled catalog', () => {
+    const catalog = loadTaskCatalog(path.resolve('resources/tasks'));
+    const task = catalog.tasks.find((entry) => entry.id === 'gardener-cosmic-delivery');
+    const cartographer = catalog.tasks.find(
+      (entry) => entry.id === 'gardener-uncounting-cartographer'
+    );
+    const cornflowerPath = catalog.tasks.find(
+      (entry) => entry.id === 'gardener-cornflower-path'
+    );
+
+    expect(catalog.diagnostics).toEqual([]);
+    expect(catalog.tasks).toHaveLength(18);
+    expect(catalog.tasks.every((entry) => entry.codeWord)).toBe(true);
+    expect(task?.tests).toHaveLength(1);
+    expect(task?.description).toContain('![Схема космической станции](cosmic-delivery.png)');
+    expect(task?.assetBaseUrl).toContain('/gardener-cosmic-delivery/');
+    expect(cartographer?.tests).toHaveLength(5);
+    expect(cartographer?.title).toBe('"Неуч"-картограф');
+    expect(cartographer?.description).toContain(
+      '![Неточная карта сада](uncounting-cartographer.png)'
+    );
+    expect(cartographer?.assetBaseUrl).toContain('/gardener-uncounting-cartographer/');
+    expect(cornflowerPath?.description).toContain('(cornflower-path.png)');
+  });
 });

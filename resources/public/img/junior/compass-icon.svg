@@ -1,19 +1,43 @@
-<svg id="Layer_1" data-name="Layer 1"
-     xmlns="http://www.w3.org/2000/svg"
-     viewBox="0 0 140 140"
-     width="140" height="140">
-  <title>compass</title>
-  <!-- Внешний круг -->
-  <circle cx="70" cy="70" r="61.44" fill="#f2f2f2" stroke="#666" stroke-width="4"/>
-
-  <!-- Северная стрелка (красная) -->
-  <path d="M85,65l-7.23,4.11a7.56,7.56,0,0,1-.25,1.57,8,8,0,0,1-9.75,5.63,8.19,8.19,0,0,1-1.58-.61l-7.66,4.36L89.43,103,85,65Z" 
-        fill="#e53935" stroke="#222" stroke-width="1"/>
-
-  <!-- Южная стрелка (синяя) -->
-  <path d="M54.55,73.5l7.37-4.19A7.86,7.86,0,0,1,62.16,67a8,8,0,0,1,9.75-5.63,8.28,8.28,0,0,1,2.55,1.2L81,58l-30.86-23,4.41,38.5Z" 
-        fill="#1e88e5" stroke="#222" stroke-width="1"/>
-
-  <!-- Внутренний круг -->
-  <circle cx="70" cy="70" r="48" fill="none" stroke="#444" stroke-width="2"/>
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Creator: CorelDRAW -->
+<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="19.0677mm" height="22.7762mm" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd"
+viewBox="0 0 3720 4443.5"
+ xmlns:xlink="http://www.w3.org/1999/xlink"
+ xmlns:xodm="http://www.corel.com/coreldraw/odm/2003">
+ <defs>
+  <style type="text/css">
+   <![CDATA[
+    .str0 {stroke:#72C1E9;stroke-width:464.6;stroke-miterlimit:22.9256}
+    .str1 {stroke:#00AAFF;stroke-width:309.7;stroke-linecap:round;stroke-miterlimit:22.9256}
+    .fil0 {fill:none}
+    .fil3 {fill:none;fill-rule:nonzero}
+    .fil1 {fill:#FEFEFE}
+    .fil2 {fill:#00AAFF}
+    .fil8 {fill:#BDBFC1;fill-rule:nonzero}
+    .fil4 {fill:#00AAFF;fill-rule:nonzero}
+    .fil5 {fill:#42B7FF;fill-rule:nonzero}
+    .fil6 {fill:#EF7E12;fill-rule:nonzero}
+    .fil7 {fill:#FFA047;fill-rule:nonzero}
+   ]]>
+  </style>
+ </defs>
+ <g id="Слой_x0020_1">
+  <metadata id="CorelCorpID_0Corel-Layer"/>
+  <g id="_1974073045216">
+   <circle class="fil0 str0" cx="1860" cy="2583.5" r="1627.7"/>
+   <circle class="fil1" cx="1860" cy="2583.5" r="1407.6"/>
+   <circle class="fil2" cx="1860" cy="364.2" r="364.2"/>
+   <line class="fil3 str1" x1="1860" y1="3680.4" x2="1860" y2= "3963.5" />
+   <line class="fil3 str1" x1="480" y1="2583.5" x2="763.1" y2= "2583.5" />
+   <line class="fil3 str1" x1="2956.9" y1="2583.5" x2="3240" y2= "2583.5" />
+   <g>
+    <polygon class="fil4" points="2631.2,1482.1 2207.8,2827 2022.4,2351.6 "/>
+    <polygon class="fil5" points="2631.2,1482.1 1512.2,2339.9 2022.4,2351.6 "/>
+    <polygon class="fil6" points="1088.8,3684.9 2207.8,2827 1697.6,2815.4 "/>
+    <polygon class="fil7" points="1088.8,3684.9 1512.2,2339.9 1697.6,2815.4 "/>
+    <circle class="fil8" transform="matrix(0.56153 0.393188 -0.393188 0.561531 1859.99 2583.5)" r="258.1"/>
+   </g>
+  </g>
+ </g>
 </svg>

@@ -91,68 +91,89 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
     setDraggedStateMachineIndex(null);
   };
 
+  const renderPlatformWidthProbe = (withDeleteButton: boolean) => (
+    <div aria-hidden="true" className="invisible h-0 w-max overflow-hidden px-[17px]">
+      {platforms.map(({ idx, name }) => (
+        <div key={idx} className="flex w-max items-center gap-3 px-3 py-1.5">
+          <span className="whitespace-nowrap">{name}</span>
+          {withDeleteButton && <span className="size-[14px]" />}
+        </div>
+      ))}
+    </div>
+  );
+
   return (
-    <div className="grid min-h-[360px] w-[618px] grid-cols-[310px_284px] gap-x-6 gap-y-[22px]">
+    <div className="grid min-h-[360px] w-max min-w-[618px] grid-cols-[minmax(310px,max-content)_minmax(284px,max-content)] gap-x-6 gap-y-[22px]">
+      <div>
+        {renderPlatformWidthProbe(false)}
+        <div className="[contain:inline-size]">
+          <h2 className="mb-[11px] font-medium">Платформы</h2>
+          <ScrollArea
+            className="h-[220px] w-full rounded-lg border border-border-primary bg-bg-control"
+            viewportClassName="px-[7px]"
+            verticalOverflowViewportClassName="pr-0"
+            horizontalScroll={false}
+            onDragOver={(event) => event.preventDefault()}
+            onDrop={() => handleDropStateMachineOnPlatforms()}
+          >
+            {platforms.map(({ idx, name }) => (
+              <div
+                key={idx}
+                className={twMerge(
+                  'flex w-max min-w-full cursor-pointer select-none items-center whitespace-nowrap rounded-lg px-3 py-[5px] leading-4 transition-colors hover:bg-bg-hover',
+                  isPlatformSelected(idx) && 'bg-bg-active'
+                )}
+                onDoubleClick={() => handleAddPlatform(idx)}
+                onClick={() => handleClickPlatform(idx)}
+                draggable
+                onDragStart={() => setDraggedPlatformIdx(idx)}
+                onDragEnd={() => setDraggedPlatformIdx(null)}
+              >
+                {name}
+              </div>
+            ))}
+          </ScrollArea>
+        </div>
+      </div>
       <div
         onDragOver={(event) => event.preventDefault()}
         onDrop={() => handleDropPlatformOnStateMachines()}
       >
-        <h2 className="mb-[11px] font-medium">Выбрано</h2>
-        <ScrollArea
-          className="h-[220px] w-full rounded-lg border border-border-primary bg-bg-control"
-          viewportClassName="px-[7px]"
-          ref={selectedStateMachinesViewportRef}
-        >
-          {selectedStateMachines.length > 0 ? (
-            <StateMachinesStack
-              selectedStateMachines={selectedStateMachines}
-              onDragStart={(index) => setDraggedStateMachineIndex(index)}
-              onDragEnd={() => setDraggedStateMachineIndex(null)}
-              isSelected={isStateMachineSelected}
-              onSelect={handleClickStateMachine}
-              onDelete={handleOnDeletePlatform}
-            />
-          ) : (
-            <div className="px-px py-[3px] leading-[15px] text-text-inactive">
-              <p>
-                Чтобы добавить платформу для документа, выберите её из списка справа и перетащите её
-                сюда, либо дважды нажмите на неё левой кнопкой мыши.
-              </p>
-              <p className="mt-7">
-                Чтобы убрать платформу из этого списка, нажмите на корзину, которая появится
-                напротив неё, либо перетащите её обратно.
-              </p>
-            </div>
-          )}
-        </ScrollArea>
+        {renderPlatformWidthProbe(true)}
+        <div className="[contain:inline-size]">
+          <h2 className="mb-[11px] font-medium">Выбрано</h2>
+          <ScrollArea
+            className="h-[220px] w-full rounded-lg border border-border-primary bg-bg-control"
+            viewportClassName="px-[7px]"
+            verticalOverflowViewportClassName="pr-0"
+            horizontalScroll={false}
+            ref={selectedStateMachinesViewportRef}
+          >
+            {selectedStateMachines.length > 0 ? (
+              <StateMachinesStack
+                selectedStateMachines={selectedStateMachines}
+                onDragStart={(index) => setDraggedStateMachineIndex(index)}
+                onDragEnd={() => setDraggedStateMachineIndex(null)}
+                isSelected={isStateMachineSelected}
+                onSelect={handleClickStateMachine}
+                onDelete={handleOnDeletePlatform}
+              />
+            ) : (
+              <div className="px-px py-[3px] leading-[15px] text-text-inactive">
+                <p>
+                  Чтобы добавить платформу для документа, выберите её из списка слева и перетащите
+                  её сюда, либо дважды нажмите на неё левой кнопкой мыши.
+                </p>
+                <p className="mt-7">
+                  Чтобы убрать платформу из этого списка, нажмите на корзину, которая появится
+                  напротив неё, либо перетащите её обратно.
+                </p>
+              </div>
+            )}
+          </ScrollArea>
+        </div>
       </div>
-      <div>
-        <h2 className="mb-[11px] font-medium">Платформы</h2>
-        <ScrollArea
-          className="h-[220px] w-full rounded-lg border border-border-primary bg-bg-control"
-          viewportClassName="px-[7px]"
-          onDragOver={(event) => event.preventDefault()}
-          onDrop={() => handleDropStateMachineOnPlatforms()}
-        >
-          {platforms.map(({ idx, name }) => (
-            <div
-              key={idx}
-              className={twMerge(
-                'flex cursor-pointer select-none items-center rounded-lg px-3 py-[5px] leading-4 transition-colors hover:bg-bg-hover',
-                isPlatformSelected(idx) && 'bg-bg-active'
-              )}
-              onDoubleClick={() => handleAddPlatform(idx)}
-              onClick={() => handleClickPlatform(idx)}
-              draggable
-              onDragStart={() => setDraggedPlatformIdx(idx)}
-              onDragEnd={() => setDraggedPlatformIdx(null)}
-            >
-              {name}
-            </div>
-          ))}
-        </ScrollArea>
-      </div>
-      <div className="col-span-2 w-full">
+      <div className="col-span-2 w-full [contain:inline-size]">
         <h2 className="mb-[11px] font-medium">Описание</h2>
         <ScrollArea
           className={twMerge(

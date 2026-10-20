@@ -83,12 +83,13 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
   }, [protoParameters, protoInitializationParameters, setErrors]);
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="grid grid-cols-[max-content,minmax(0,1fr)] gap-x-3 gap-y-3">
       {showMainData && (
         <>
           <ComponentFormFieldLabel
             label="Название"
-            labelClassName="w-[109px]"
+            labelClassName="gap-2 font-medium"
+            sharedGrid
             placeholder="Введите название..."
             maxLength={20}
             hint="Человекочитаемое название, которое будет отображаться в интерфейсе вместо технического. До 20 символов."
@@ -100,7 +101,8 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
           <ComponentFormFieldLabel
             placeholder="Введите идентификатор..."
             label="Тех. название"
-            labelClassName="w-[109px]"
+            labelClassName="gap-2 font-medium"
+            sharedGrid
             maxLength={20}
             hint="Уникальное техническое название, которое будет использоваться в коде. До 20 символов, среди которых – латинские буквы, цифры и знаки подчёркивания. Не должно начинаться с цифры."
             value={id}
@@ -111,7 +113,8 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
 
           <ComponentFormFieldLabel
             label="Подпись"
-            labelClassName="w-[109px]"
+            labelClassName="gap-2 font-medium"
+            sharedGrid
             hint="До 3-х символов. Подпись нужна для различения иконок разных компонентов одного типа на схеме."
             as="div"
           >
@@ -134,7 +137,9 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
         </>
       )}
 
-      {!showMainData && !protoParametersArray.length && 'У данного компонента нет параметров'}
+      {!showMainData && !protoParametersArray.length && (
+        <div className="col-span-2">У данного компонента нет параметров</div>
+      )}
 
       {protoParametersArray.map(([idx, param]) => {
         const name = param.name ?? idx;
@@ -155,11 +160,11 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
               key={idx}
               error={error}
               label={name}
-              labelClassName="w-[109px] whitespace-pre"
+              labelClassName="gap-2 whitespace-pre font-medium"
+              sharedGrid
               hint={param.description}
             >
               <ParameterSelect
-                menuWidth="content"
                 options={options}
                 value={options.find((o) => o.value === value || o.value === Number(value))}
                 onChange={(option) => handleInputChange(idx, String(option?.value ?? ''))}
@@ -172,7 +177,8 @@ export const ComponentFormFields: React.FC<ComponentFormFieldsProps> = ({
           <ComponentFormFieldLabel
             key={idx}
             label={name}
-            labelClassName="w-[109px] whitespace-pre"
+            labelClassName="gap-2 whitespace-pre font-medium"
+            sharedGrid
             hint={param.description + (type ? `\nТип: ${formatArgType(type)}` : '')}
             error={error}
             value={value}

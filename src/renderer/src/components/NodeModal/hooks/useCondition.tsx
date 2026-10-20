@@ -157,19 +157,19 @@ export const useCondition = (
 
       if (!c) return;
 
-      setShow(true);
-
       if (typeof c === 'string') {
         if (c === 'else') {
           setText(c);
           setElse(true);
           return undefined;
         }
+        setShow(true);
         setTabValue(1);
         setText(c);
         return undefined;
       }
 
+      setShow(true);
       setTabValue(0);
 
       if (!controller.platform) {

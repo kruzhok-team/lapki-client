@@ -1,9 +1,11 @@
-import React, { useEffect, useLayoutEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
 import { ParameterSelect } from '@renderer/components/UI';
+import { getMissingComponentReferences } from '@renderer/lib/data/ComponentReferences';
 import { exportStateMachineCGML } from '@renderer/lib/data/GraphmlBuilder';
+import { getPlatform } from '@renderer/lib/data/PlatformLoader';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { getActiveTask, useTasks } from '@renderer/store/useTasks';
 import { StateMachine } from '@renderer/types/diagram';
@@ -536,7 +538,7 @@ const ReaderSimulator: React.FC<ReaderRuntimeProps> = ({
             aria-label="Входная строка"
             className={twMerge(
               controlClassName,
-              'h-32 min-h-32 max-w-none resize-y py-2 font-Fira-Mono leading-4'
+              'h-32 min-h-32 max-w-none resize-y py-2 font-Inter leading-4'
             )}
             value={message}
             placeholder="Введите строку"
@@ -576,25 +578,59 @@ export const Simulator: React.FC<SimulatorProps> = ({
   const [selectedSmId, setSelectedSmId] = useState(() =>
     selectInitialMachineId(options, solutionMachineId ?? initialSmId)
   );
-  const [lastRunXml, setLastRunXml] = useState<string>();
+  const [lastRunRevision, setLastRunRevision] = useState<object>();
   const subscriptionSmId = selectedSmId ?? '';
-  modelController.model.useData(subscriptionSmId, 'elements.states');
-  modelController.model.useData(subscriptionSmId, 'elements.transitions');
-  modelController.model.useData(subscriptionSmId, 'elements.components');
-  modelController.model.useData(subscriptionSmId, 'elements.initialStates');
-  modelController.model.useData(subscriptionSmId, 'elements.finalStates');
-  modelController.model.useData(subscriptionSmId, 'elements.choiceStates');
-  modelController.model.useData(subscriptionSmId, 'elements.shallowHistory');
-  modelController.model.useData(subscriptionSmId, 'elements.name');
+  const statesRevision = modelController.model.useData(subscriptionSmId, 'elements.states');
+  const transitionsRevision = modelController.model.useData(
+    subscriptionSmId,
+    'elements.transitions'
+  );
+  const componentsRevision = modelController.model.useData(subscriptionSmId, 'elements.components');
+  const initialStatesRevision = modelController.model.useData(
+    subscriptionSmId,
+    'elements.initialStates'
+  );
+  const finalStatesRevision = modelController.model.useData(
+    subscriptionSmId,
+    'elements.finalStates'
+  );
+  const choiceStatesRevision = modelController.model.useData(
+    subscriptionSmId,
+    'elements.choiceStates'
+  );
+  const shallowHistoryRevision = modelController.model.useData(
+    subscriptionSmId,
+    'elements.shallowHistory'
+  );
+  const nameRevision = modelController.model.useData(subscriptionSmId, 'elements.name');
+  const currentRevision = useMemo(
+    () => ({}),
+    [
+      subscriptionSmId,
+      statesRevision,
+      transitionsRevision,
+      componentsRevision,
+      initialStatesRevision,
+      finalStatesRevision,
+      choiceStatesRevision,
+      shallowHistoryRevision,
+      nameRevision,
+    ]
+  );
   const machine = selectedSmId ? stateMachines[selectedSmId] : undefined;
-  const currentXml =
-    machine && selectedSmId
-      ? exportStateMachineCGML(modelController.model.data.elements, selectedSmId)
+  const platform = machine ? getPlatform(machine.platform) : undefined;
+  const missingComponentReferences =
+    machine && platform ? getMissingComponentReferences(machine, platform) : [];
+  const referenceError =
+    missingComponentReferences.length > 0
+      ? `Нельзя запустить симуляцию: отсутствуют компоненты, на которые ссылается схема: ${missingComponentReferences.join(
+          ', '
+        )}. Восстановите компоненты или удалите ссылки.`
       : undefined;
   const resultStale = isSimulationResultStale(
     interpreter.result !== undefined,
-    lastRunXml,
-    currentXml
+    lastRunRevision,
+    currentRevision
   );
 
   useEffect(() => {
@@ -611,14 +647,14 @@ export const Simulator: React.FC<SimulatorProps> = ({
 
   useEffect(() => {
     if (!activeTask) return;
-    selectSolution(selectedSmId, currentXml);
-  }, [activeTask, currentXml, selectSolution, selectedSmId]);
+    selectSolution(selectedSmId, undefined);
+  }, [activeTask, currentRevision, selectSolution, selectedSmId]);
 
   useEffect(() => {
     if (!initialSmId || interpreter.active) return;
     if (options.some(({ id }) => id === initialSmId)) {
       setSelectedSmId(initialSmId);
-      setLastRunXml(undefined);
+      setLastRunRevision(undefined);
       interpreter.clear();
     }
     // initialSmId changes only when the Simulator workspace is opened for another machine.
@@ -628,7 +664,7 @@ export const Simulator: React.FC<SimulatorProps> = ({
   useEffect(() => {
     if (interpreter.active || options.some(({ id }) => id === selectedSmId)) return;
     setSelectedSmId(selectInitialMachineId(options));
-    setLastRunXml(undefined);
+    setLastRunRevision(undefined);
     interpreter.clear();
     // optionIds represents the supported subset; options itself is rebuilt on each render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -637,19 +673,23 @@ export const Simulator: React.FC<SimulatorProps> = ({
   const selectMachine = (smId: string) => {
     if (interpreter.active || smId === selectedSmId) return;
     setSelectedSmId(smId);
-    setLastRunXml(undefined);
+    setLastRunRevision(undefined);
     interpreter.clear();
-    if (activeTask) {
-      const xml = exportStateMachineCGML(modelController.model.data.elements, smId);
-      selectSolution(smId, xml);
-    }
+  };
+
+  const exportSelectedMachine = () => {
+    if (!selectedSmId || !machine || referenceError) return undefined;
+    const xml = exportStateMachineCGML(modelController.model.data.elements, selectedSmId);
+    if (activeTask) selectSolution(selectedSmId, xml);
+    return xml;
   };
 
   const start = (mode: SimulationMode, timeout: number, parameters: SimulationParameters) => {
-    if (!selectedSmId || !currentXml) return;
-    setLastRunXml(currentXml);
+    const xml = exportSelectedMachine();
+    if (!selectedSmId || !xml) return;
+    setLastRunRevision(currentRevision);
     interpreter.start({
-      xml: currentXml,
+      xml,
       machineId: selectedSmId,
       mode,
       ...(mode === 'finite' ? { timeoutSeconds: timeout } : {}),
@@ -658,9 +698,10 @@ export const Simulator: React.FC<SimulatorProps> = ({
   };
 
   const runTaskTest = (testId: string) => {
-    if (!activeTask || !selectedSmId || !currentXml) return;
+    const xml = exportSelectedMachine();
+    if (!activeTask || !selectedSmId || !xml) return;
     interpreter.startTest({
-      xml: currentXml,
+      xml,
       machineId: selectedSmId,
       task: taskForProtocol(activeTask),
       testId,
@@ -668,9 +709,10 @@ export const Simulator: React.FC<SimulatorProps> = ({
   };
 
   const submitTask = () => {
-    if (!activeTask || !selectedSmId || !currentXml) return;
+    const xml = exportSelectedMachine();
+    if (!activeTask || !selectedSmId || !xml) return;
     interpreter.startSubmission({
-      xml: currentXml,
+      xml,
       machineId: selectedSmId,
       task: taskForProtocol(activeTask),
     });
@@ -706,10 +748,10 @@ export const Simulator: React.FC<SimulatorProps> = ({
       {activeTask && (
         <TaskMode
           task={activeTask}
-          ready={interpreter.ready}
+          ready={interpreter.ready && !referenceError}
           active={interpreter.active}
           operationKind={interpreter.operationKind}
-          error={interpreter.error}
+          error={referenceError ?? interpreter.error}
           hasSolution={machine !== undefined}
           onRunTest={runTaskTest}
           onCancel={interpreter.cancel}
@@ -719,6 +761,8 @@ export const Simulator: React.FC<SimulatorProps> = ({
       {!activeTask && machine?.platform === 'junior-gardener' && (
         <GardenerSimulator
           {...interpreter}
+          ready={interpreter.ready && !referenceError}
+          error={referenceError ?? interpreter.error}
           machineSelector={
             <MachineSelector
               options={options}
@@ -735,6 +779,8 @@ export const Simulator: React.FC<SimulatorProps> = ({
       {!activeTask && machine?.platform === 'junior-reader' && (
         <ReaderSimulator
           {...interpreter}
+          ready={interpreter.ready && !referenceError}
+          error={referenceError ?? interpreter.error}
           machineSelector={
             <MachineSelector
               options={options}

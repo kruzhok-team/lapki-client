@@ -50,7 +50,7 @@ const FileMenuDropdownItem: React.FC<FileMenuItemProps> = ({ item, onItemSelect 
   return (
     <WithMenuItemHint hint={hint}>
       <DropdownMenuItem
-        className={twMerge('py-[5px] leading-none enabled:hover:bg-[#e4f2ff]', className)}
+        className={twMerge('enabled:hover:bg-bg-hover', className)}
         onClick={() => {
           onClick();
           onItemSelect?.();
@@ -72,7 +72,7 @@ const FileMenuInlineItem: React.FC<FileMenuItemProps> = ({ item }) => {
         type="button"
         role="menuitem"
         className={twMerge(
-          'flex w-full items-center rounded-lg px-3 py-[5px] text-left text-xs leading-none outline-none transition-colors focus-visible:bg-[#e6f4ff] enabled:hover:bg-[#e4f2ff] enabled:active:bg-bg-active disabled:cursor-not-allowed disabled:text-text-disabled disabled:opacity-50',
+          'flex w-full items-center rounded-lg px-3 py-[5px] text-left text-xs leading-none outline-none transition-colors focus-visible:bg-bg-hover enabled:hover:bg-bg-hover enabled:active:bg-bg-active disabled:cursor-not-allowed disabled:text-text-disabled disabled:opacity-50',
           className
         )}
         onClick={onClick}

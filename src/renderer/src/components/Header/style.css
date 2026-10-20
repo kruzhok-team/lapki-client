@@ -7,9 +7,18 @@
 }
 
 .header-settings-popover {
-  @apply absolute left-[11px] top-full z-[110] w-[160px] overflow-visible;
+  @apply absolute left-[11px] top-full z-[110] w-max min-w-[160px] overflow-visible;
 }
 
 .header-file-popover {
-  @apply absolute left-[11px] top-full z-[110] w-[144px];
+  @apply absolute left-[11px] top-full z-[110] w-max min-w-[144px];
+}
+
+.header-file-popover .dropdown-menu-item,
+.header-settings-popover .dropdown-menu-item {
+  @apply whitespace-nowrap;
+}
+
+.header-settings-popover .dropdown-submenu {
+  @apply w-max min-w-[92px];
 }

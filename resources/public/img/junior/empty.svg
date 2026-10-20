@@ -1,5 +1,32 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <!-- пустой квадрат -->
-  <rect x="10" y="10" width="80" height="80"
-        fill="none" stroke="#cccccc" stroke-width="4"/>
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Creator: CorelDRAW -->
+<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="18.5mm" height="18.7384mm" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd"
+viewBox="0 0 5220.9 5288.2"
+ xmlns:xlink="http://www.w3.org/1999/xlink"
+ xmlns:xodm="http://www.corel.com/coreldraw/odm/2003">
+ <defs>
+  <style type="text/css">
+   <![CDATA[
+    .str0 {stroke:#2ECC71;stroke-width:448;stroke-linecap:round;stroke-miterlimit:22.9256}
+    .str1 {stroke:#DB2D28;stroke-width:597.4;stroke-linecap:round;stroke-miterlimit:22.9256}
+    .str2 {stroke:#F5413B;stroke-width:211.7;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:22.9256;stroke-dasharray:211.657565 211.657565}
+    .fil1 {fill:none}
+    .fil2 {fill:none;fill-rule:nonzero}
+    .fil0 {fill:#FBD8D9;fill-rule:nonzero}
+   ]]>
+  </style>
+ </defs>
+ <g id="Слой_x0020_1">
+  <metadata id="CorelCorpID_0Corel-Layer"/>
+  <g id="_1973352114720">
+   <polygon class="fil0" points="1566.3,166.4 3654.6,166.4 5220.9,5143.9 -0,5143.9 "/>
+   <line class="fil1 str0" x1="892.6" y1="5064.1" x2="4328.3" y2= "5064.1" />
+   <line class="fil2 str1" x1="1690.7" y1="298.7" x2="3530.2" y2= "298.7" />
+   <g>
+    <line class="fil1 str2" x1="1751.8" y1="2238.8" x2="3501.9" y2= "3988.9" />
+    <line class="fil1 str2" x1="3501.9" y1="2238.8" x2="1751.8" y2= "3988.9" />
+   </g>
+  </g>
+ </g>
 </svg>

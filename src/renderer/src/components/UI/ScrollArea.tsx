@@ -14,6 +14,8 @@ import { twMerge } from 'tailwind-merge';
 export interface ScrollAreaProps extends HTMLAttributes<HTMLDivElement> {
   /** Classes applied to the scrollable viewport. Use these for content padding and typography. */
   viewportClassName?: string;
+  /** Classes applied to the viewport only while its content overflows vertically. */
+  verticalOverflowViewportClassName?: string;
   /** Classes applied to the element that directly wraps `children`. Use these for content layout. */
   contentClassName?: string;
   /** Whether content may overflow and scroll horizontally. */
@@ -55,6 +57,7 @@ export const ScrollArea = forwardRef<HTMLDivElement, ScrollAreaProps>(
       children,
       className,
       viewportClassName,
+      verticalOverflowViewportClassName,
       contentClassName,
       horizontalScroll = true,
       onScroll,
@@ -285,7 +288,8 @@ export const ScrollArea = forwardRef<HTMLDivElement, ScrollAreaProps>(
               'min-h-0 min-w-0 flex-1',
               horizontalScroll ? 'overflow-auto' : 'overflow-y-auto overflow-x-hidden',
               '[scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
-              viewportClassName
+              viewportClassName,
+              hasVerticalOverflow && verticalOverflowViewportClassName
             )}
           >
             <div ref={contentRef} className={contentClassName}>

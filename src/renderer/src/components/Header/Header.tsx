@@ -10,6 +10,7 @@ import { useWindowManagerStore } from '@renderer/hooks/useWindowManagerStore';
 import { useDoc } from '@renderer/store/useDoc';
 import { useSimulatorWindow } from '@renderer/store/useSimulatorWindow';
 import { useTasks } from '@renderer/store/useTasks';
+import { ConnectionIndicator } from '@renderer/components/UI/ConnectionIndicator';
 
 import {
   AboutTheProgramModal,
@@ -225,9 +226,10 @@ export const Header: React.FC<HeaderProps> = ({ fileMenuItems, initialSimulation
       <MovingModal
         id="simulator"
         title={
-          <div className="flex items-center gap-11">
+          <div className="flex items-center gap-2">
             <span>Симулятор</span>
-            <span className="font-normal">
+            <ConnectionIndicator status={simulatorStatus} />
+            <span className="ml-10 font-normal">
               <span className="font-medium">Статус: </span>
               <span className="text-primary">{simulatorStatus}</span>
             </span>

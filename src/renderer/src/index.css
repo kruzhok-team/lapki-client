@@ -8,7 +8,8 @@
   }
 
   body {
-    @apply bg-bg-primary font-Fira text-xs text-text-primary;
+    @apply bg-bg-primary font-Inter text-text-primary;
+    font-size: 14px;
   }
   #canvas {
     @apply absolute outline-none focus:outline-none;
@@ -55,11 +56,11 @@
 
 @layer components {
   .h2-header {
-    @apply text-[12px] font-medium;
+    @apply text-[14px] font-medium;
   }
 
   .btn {
-    @apply min-w-20 cursor-pointer select-none rounded-lg border border-transparent px-3 py-2 transition-all disabled:cursor-not-allowed disabled:opacity-30;
+    @apply min-w-20 cursor-pointer select-none rounded-lg border border-transparent px-3 py-2 leading-[14px] transition-all disabled:cursor-not-allowed disabled:opacity-30;
   }
 
   .btn-primary {
@@ -84,11 +85,11 @@
   }
 
   .dropdown-menu-item {
-    @apply focus-visible:bg-[#e6f4ff] enabled:hover:bg-[#e6f4ff] enabled:active:bg-bg-active disabled:cursor-not-allowed disabled:text-text-disabled disabled:opacity-50;
+    @apply gap-3 focus-visible:bg-bg-hover enabled:hover:bg-bg-hover enabled:active:bg-bg-active disabled:cursor-not-allowed disabled:text-text-disabled disabled:opacity-50;
   }
 
   .context-menu-item {
-    @apply cursor-pointer hover:bg-[#e6f4ff] active:bg-bg-active;
+    @apply cursor-pointer hover:bg-bg-hover active:bg-bg-active;
   }
 
   .context-menu-item > svg {

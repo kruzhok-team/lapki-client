@@ -11,6 +11,13 @@ const repairScript = path.join(
   '../hotfixes/macos-simulator-permissions/fix-macos-simulator.command'
 );
 
+test('Finder launcher has a Unix shebang, LF line endings and executable permissions', () => {
+  const contents = fs.readFileSync(repairScript);
+  assert.equal(contents.subarray(0, 12).toString(), '#!/bin/bash\n');
+  assert.equal(contents.includes(13), false, 'CRLF breaks the macOS shebang');
+  assert.notEqual(fs.statSync(repairScript).mode & 0o111, 0);
+});
+
 function fixture(t, productFilename = 'Cyberiada IDE') {
   const appOutDir = fs.mkdtempSync(path.join(os.tmpdir(), 'macos packaging '));
   t.after(() => fs.rmSync(appOutDir, { recursive: true, force: true }));
@@ -67,14 +74,18 @@ function repairFixture(t) {
     fs.writeFileSync(path.join(bin, name), `#!/bin/sh\n${body}\n`, { mode: 0o755 });
   }
   result.run = (args = [result.app]) =>
-    spawnSync('bash', [repairScript, ...args], {
-      encoding: 'utf8',
-      env: {
-        ...process.env,
-        PATH: `${bin}${path.delimiter}${process.env.PATH}`,
-        REPAIR_TEST_APP: result.app,
-      },
-    });
+    spawnSync(
+      process.platform === 'darwin' ? repairScript : 'bash',
+      process.platform === 'darwin' ? args : [repairScript, ...args],
+      {
+        encoding: 'utf8',
+        env: {
+          ...process.env,
+          PATH: `${bin}${path.delimiter}${process.env.PATH}`,
+          REPAIR_TEST_APP: result.app,
+        },
+      }
+    );
   return result;
 }
 

@@ -6,7 +6,10 @@ const path = require('node:path');
 const { test } = require('node:test');
 
 const afterPack = require('./after-pack.js').default;
-const repairScript = path.join(__dirname, 'fix-macos-simulator.command');
+const repairScript = path.join(
+  __dirname,
+  '../hotfixes/macos-simulator-permissions/fix-macos-simulator.command'
+);
 
 function fixture(t, productFilename = 'Cyberiada IDE') {
   const appOutDir = fs.mkdtempSync(path.join(os.tmpdir(), 'macos packaging '));

@@ -84,6 +84,8 @@ jobs:
         with:
           node-version: '20.x'
       - run: npm ci
+      - name: Check macOS module packaging and repair script
+        run: node --test build/test-macos-packaging.cjs
       - run: npm run build
       - run: npm run bundle:mac
 

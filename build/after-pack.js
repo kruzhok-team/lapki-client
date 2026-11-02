@@ -3,10 +3,26 @@ const path = require('path');
 
 /**
  * Windows bind mounts do not retain Unix modes.  electron-builder copies
- * unpacked resources before this hook, so set the mode on the final Linux
- * staging tree immediately before AppImage, Snap or DEB is created.
+ * unpacked resources before this hook, so restore executable modes in the
+ * final staging tree before signing and creating distribution artifacts.
  */
 exports.default = async (context) => {
+  if (context.electronPlatformName === 'darwin') {
+    const modulesPath = path.join(
+      context.appOutDir,
+      `${context.packager.appInfo.productFilename}.app`,
+      'Contents/Resources/app.asar.unpacked/resources/modules/darwin'
+    );
+    for (const moduleName of ['sm-interpreter', 'lapki-flasher']) {
+      const executablePath = path.join(modulesPath, moduleName);
+      if (!existsSync(executablePath)) {
+        throw new Error(`Required macOS module is missing from package: ${executablePath}`);
+      }
+      chmodSync(executablePath, 0o755);
+    }
+    return;
+  }
+
   if (context.electronPlatformName === 'win32') {
     for (const relativePath of [
       'resources/app.asar.unpacked/resources/modules/win32/lapki-compiler/lapki-compiler.exe',
